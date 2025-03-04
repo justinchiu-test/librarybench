@@ -81,8 +81,8 @@ def main():
     search_examples = get_solutions(search_problems)
     datastructure_examples = get_solutions(datastructure_problems)
     
-    # Select a small sample for testing
-    sample_size = 1  # Start with just 1 example to test
+    # Select a sample for evaluation
+    sample_size = 5  # Process 5 examples of each type
     search_sample = search_examples[:sample_size]
     datastructure_sample = datastructure_examples[:sample_size]
     

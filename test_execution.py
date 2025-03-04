@@ -6,7 +6,10 @@ url = os.getenv("CYBER_URL")
 generations = ["def f(): return 1", "def f(): return 2"]
 tests = ["assert f() == 1", "assert f() == 2"]
 
-def run_unit_tests(generations: list[str], tests: list[str]) -> list[list[dict[str,str]]]:
+
+def run_unit_tests(
+    generations: list[str], tests: list[str]
+) -> list[list[dict[str, str]]]:
     num_tests_per_generation = []
     outputs = []
     for generation in generations:
@@ -19,7 +22,7 @@ def run_unit_tests(generations: list[str], tests: list[str]) -> list[list[dict[s
             params = {
                 "language": "python",
                 "environment": "default",
-                "timeout": 30, # feel free to change this
+                "timeout": 30,  # feel free to change this
                 "generation_formatting": "true",
                 "fill_missing_imports": "true",
             }
@@ -33,8 +36,11 @@ def run_unit_tests(generations: list[str], tests: list[str]) -> list[list[dict[s
         idx += num_tests
     return generation_tests
 
+
 results = run_unit_tests(generations, tests)
-import pdb; pdb.set_trace()
+import pdb
+
+pdb.set_trace()
 
 """
 (Pdb) response.json().keys()

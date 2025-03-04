@@ -1,0 +1,92 @@
+[
+  {
+    "problem_id": 0,
+    "taco_problem_id": 7,
+    "source": "geeksforgeeks",
+    "difficulty": "MEDIUM_HARD",
+    "claude_tests_passed": 0,
+    "claude_tests_total": 2,
+    "human_tests_passed": 0,
+    "human_tests_total": 2,
+    "detailed_claude_results": [
+      {
+        "code": "from collections import *\nfrom typing import *\nimport collections\nimport copy\nimport functools\nimport hashlib\nimport heapq\nimport itertools\nimport math\nimport numpy\nimport numpy as np\nimport re\nimport statistics\nimport string\nimport sys\nclass Solution:\n    def minTime(self, arr, n, k):\n        def is_possible(arr, n, k, max_time):\n            painters = 1\n            curr_time = 0\n            for i in range(n):\n                if curr_time + arr[i] > max_time:\n                    painters += 1\n                    curr_time = arr[i]\n                    if painters > k:\n                        return False\n                else:\n                    curr_time += arr[i]\n            return True\n\n        # Edge case: if there are more painters than boards\n        if k > n:\n            k = n\n\n        # Calculate the sum of all boards' lengths\n        total_length = sum(arr)\n\n        # Initialize the binary search range\n        low = max(arr)  # Minimum possible time is the maximum length of a board\n        high = total_length  # Maximum possible time is the sum of all boards' lengths\n\n        # Perform binary search\n        while low < high:\n            mid = (low + high) // 2\n            if is_possible(arr, n, k, mid):\n                high = mid\n            else:\n                low = mid + 1\n\n        return low",
+        "test": {
+          "stdin": "n = 5\nk = 3\narr[] = {5,10,30,20,15}",
+          "stdout": "35"
+        },
+        "passed": false,
+        "exec_output": {
+          "run_output": {
+            "stdout": "",
+            "stderr": "",
+            "exit_code": 0,
+            "timeout_expired": false,
+            "elapsed_time": 0.44591979900002343
+          },
+          "compile_output": null
+        },
+        "uncaught_exception": "None"
+      },
+      {
+        "code": "from collections import *\nfrom typing import *\nimport collections\nimport copy\nimport functools\nimport hashlib\nimport heapq\nimport itertools\nimport math\nimport numpy\nimport numpy as np\nimport re\nimport statistics\nimport string\nimport sys\nclass Solution:\n    def minTime(self, arr, n, k):\n        def is_possible(arr, n, k, max_time):\n            painters = 1\n            curr_time = 0\n            for i in range(n):\n                if curr_time + arr[i] > max_time:\n                    painters += 1\n                    curr_time = arr[i]\n                    if painters > k:\n                        return False\n                else:\n                    curr_time += arr[i]\n            return True\n\n        # Edge case: if there are more painters than boards\n        if k > n:\n            k = n\n\n        # Calculate the sum of all boards' lengths\n        total_length = sum(arr)\n\n        # Initialize the binary search range\n        low = max(arr)  # Minimum possible time is the maximum length of a board\n        high = total_length  # Maximum possible time is the sum of all boards' lengths\n\n        # Perform binary search\n        while low < high:\n            mid = (low + high) // 2\n            if is_possible(arr, n, k, mid):\n                high = mid\n            else:\n                low = mid + 1\n\n        return low",
+        "test": {
+          "stdin": "n = 4\nk = 2\narr[] = {10,20,30,40}",
+          "stdout": "60"
+        },
+        "passed": false,
+        "exec_output": {
+          "run_output": {
+            "stdout": "",
+            "stderr": "",
+            "exit_code": 0,
+            "timeout_expired": false,
+            "elapsed_time": 0.3538508069977979
+          },
+          "compile_output": null
+        },
+        "uncaught_exception": "None"
+      }
+    ],
+    "detailed_human_results": [
+      {
+        "code": "from collections import *\nfrom typing import *\nimport collections\nimport copy\nimport functools\nimport hashlib\nimport heapq\nimport itertools\nimport math\nimport numpy\nimport numpy as np\nimport re\nimport statistics\nimport string\nimport sys\nclass Solution:\n\n\tdef minTime(self, arr, n, k):\n\n\t\tdef numofPainter(maxLen):\n\t\t\tpainters = 1\n\t\t\ttotal = 0\n\t\t\tfor board in arr:\n\t\t\t\ttotal += board\n\t\t\t\tif total > maxLen:\n\t\t\t\t\ttotal = board\n\t\t\t\t\tpainters += 1\n\t\t\treturn painters\n\t\t(low, high) = (max(arr), sum(arr))\n\t\twhile low < high:\n\t\t\tp = low + (high - low) // 2\n\t\t\tcurr_painters = numofPainter(p)\n\t\t\tif curr_painters <= k:\n\t\t\t\thigh = p\n\t\t\telse:\n\t\t\t\tlow = p + 1\n\t\treturn low",
+        "test": {
+          "stdin": "n = 5\nk = 3\narr[] = {5,10,30,20,15}",
+          "stdout": "35"
+        },
+        "passed": false,
+        "exec_output": {
+          "run_output": {
+            "stdout": "",
+            "stderr": "",
+            "exit_code": 0,
+            "timeout_expired": false,
+            "elapsed_time": 0.3134933250003087
+          },
+          "compile_output": null
+        },
+        "uncaught_exception": "None"
+      },
+      {
+        "code": "from collections import *\nfrom typing import *\nimport collections\nimport copy\nimport functools\nimport hashlib\nimport heapq\nimport itertools\nimport math\nimport numpy\nimport numpy as np\nimport re\nimport statistics\nimport string\nimport sys\nclass Solution:\n\n\tdef minTime(self, arr, n, k):\n\n\t\tdef numofPainter(maxLen):\n\t\t\tpainters = 1\n\t\t\ttotal = 0\n\t\t\tfor board in arr:\n\t\t\t\ttotal += board\n\t\t\t\tif total > maxLen:\n\t\t\t\t\ttotal = board\n\t\t\t\t\tpainters += 1\n\t\t\treturn painters\n\t\t(low, high) = (max(arr), sum(arr))\n\t\twhile low < high:\n\t\t\tp = low + (high - low) // 2\n\t\t\tcurr_painters = numofPainter(p)\n\t\t\tif curr_painters <= k:\n\t\t\t\thigh = p\n\t\t\telse:\n\t\t\t\tlow = p + 1\n\t\treturn low",
+        "test": {
+          "stdin": "n = 4\nk = 2\narr[] = {10,20,30,40}",
+          "stdout": "60"
+        },
+        "passed": false,
+        "exec_output": {
+          "run_output": {
+            "stdout": "",
+            "stderr": "",
+            "exit_code": 0,
+            "timeout_expired": false,
+            "elapsed_time": 0.316187134001666
+          },
+          "compile_output": null
+        },
+        "uncaught_exception": "None"
+      }
+    ]
+  }
+]

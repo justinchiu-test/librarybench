@@ -9,5 +9,6 @@ dependencies = [
     "datasets>=3.3.2",
     "huggingface-hub[hf-transfer]>=0.29.1",
     "ipdb>=0.13.13",
+    "ruff>=0.9.9",
     "tqdm>=4.67.1",
 ]

@@ -5,7 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "anthropic>=0.49.0",
     "datasets>=3.3.2",
     "huggingface-hub[hf-transfer]>=0.29.1",
     "ipdb>=0.13.13",
+    "tqdm>=4.67.1",
 ]

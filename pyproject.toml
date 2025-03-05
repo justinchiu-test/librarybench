@@ -9,6 +9,8 @@ dependencies = [
     "datasets>=3.3.2",
     "huggingface-hub[hf-transfer]>=0.29.1",
     "ipdb>=0.13.13",
+    "openai>=1.65.3",
+    "pyright>=1.1.396",
     "ruff>=0.9.9",
     "tqdm>=4.67.1",
 ]

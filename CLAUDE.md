@@ -7,7 +7,7 @@
 - Run single test: `uv run pytest path/to/test.py::test_function_name`
 - Format code: `uv run ruff format`
 - Lint code: `uv run ruff check .`
-- Type check: `uv run mypy .`
+- Type check: `uv run pyright`
 
 ## Code Style Guidelines
 - **Formatting**: Use Ruff for code formatting

@@ -1,9 +1,7 @@
 import os
-import ipdb
 import json
 import re
 import requests
-import datasets
 from tqdm import tqdm
 
 # URL for execution API - load from environment variable
@@ -71,28 +69,6 @@ def run_unit_tests(generations, stdin_stdout_tests):
     return outputs
 
 
-def fetch_taco_tests(problem_id):
-    """Fetch test cases from the TACO dataset for a given problem ID"""
-    # Load the TACO dataset
-    dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-    train = dataset["train"]
-
-    # Find problem by ID (assuming ID is position in the dataset)
-    if problem_id < len(train):
-        problem = train[problem_id]
-        input_output = (
-            json.loads(problem["input_output"])
-            if isinstance(problem["input_output"], str)
-            else problem["input_output"]
-        )
-
-        # Format as stdin/stdout tests
-        tests = []
-        if "inputs" in input_output and "outputs" in input_output:
-            for inp, out in zip(input_output["inputs"], input_output["outputs"]):
-                tests.append({"stdin": inp, "stdout": out})
-        return tests
-    return []
 
 
 def evaluate_solutions(solution_file):
@@ -101,10 +77,6 @@ def evaluate_solutions(solution_file):
     with open(solution_file, "r") as f:
         solutions = json.load(f)
 
-    # Load the TACO dataset
-    dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-    train = dataset["train"]
-
     results = []
 
     for i, solution_data in enumerate(solutions):
@@ -112,25 +84,19 @@ def evaluate_solutions(solution_file):
             f"Evaluating problem {i + 1}: {solution_data['source']} (Difficulty: {solution_data['difficulty']})"
         )
 
-        # Find matching problem in TACO dataset
-        matching_problems = []
-        for j, problem in enumerate(train):
-            # Match by question content
-            if solution_data["problem"] in problem["question"]:
-                matching_problems.append((j, problem))
-
-        if not matching_problems:
-            print(f"  No matching problem found in TACO dataset for problem {i + 1}")
+        # Use the input_output field directly from the solution data
+        input_output = solution_data.get("input_output")
+        if not input_output:
+            print(f"  No input_output field found in solution data for problem {i + 1}")
             continue
 
-        problem_id, problem = matching_problems[0]  # Use first match
-
-        # Extract test cases from the input_output field
-        input_output = (
-            json.loads(problem["input_output"])
-            if isinstance(problem["input_output"], str)
-            else problem["input_output"]
-        )
+        # Parse input_output if it's a string
+        if isinstance(input_output, str):
+            try:
+                input_output = json.loads(input_output)
+            except json.JSONDecodeError:
+                print(f"  Error parsing input_output JSON for problem {i + 1}")
+                continue
 
         # Format as stdin/stdout tests
         stdin_stdout_tests = []
@@ -140,25 +106,23 @@ def evaluate_solutions(solution_file):
 
         if not stdin_stdout_tests:
             print(f"  No test cases found for problem {i + 1}")
-            ipdb.set_trace()
             continue
 
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
-        # Extract code from Claude's solution
-        claude_code = extract_code(solution_data["claude_solution"])
+        # Extract code from the solution
+        model_code = extract_code(solution_data.get("o3_mini_solution", solution_data.get("claude_solution", "")))
         human_code = solution_data.get("human_solution", "")
 
         # Run code against test cases
-        claude_results = run_unit_tests([claude_code], stdin_stdout_tests)
+        model_results = run_unit_tests([model_code], stdin_stdout_tests)
         human_results = (
             run_unit_tests([human_code], stdin_stdout_tests) if human_code else []
         )
-        ipdb.set_trace()
 
-        # Summarize results - each element in claude_results is a list of test results for each test
-        claude_passed = sum(
-            1 for result in claude_results[0] if result.get("passed", False)
+        # Summarize results - each element in model_results is a list of test results for each test
+        model_passed = sum(
+            1 for result in model_results[0] if result.get("passed", False)
         )
         human_passed = (
             sum(1 for result in human_results[0] if result.get("passed", False))
@@ -167,7 +131,7 @@ def evaluate_solutions(solution_file):
         )
 
         print(
-            f"  Claude solution: {claude_passed}/{len(stdin_stdout_tests)} tests passed"
+            f"  Model solution: {model_passed}/{len(stdin_stdout_tests)} tests passed"
         )
         if human_code:
             print(
@@ -175,20 +139,22 @@ def evaluate_solutions(solution_file):
             )
 
         # Save detailed results
-        results.append(
-            {
-                "problem_id": i,
-                "taco_problem_id": problem_id,
-                "source": solution_data["source"],
-                "difficulty": solution_data["difficulty"],
-                "claude_tests_passed": claude_passed,
-                "claude_tests_total": len(stdin_stdout_tests),
-                "human_tests_passed": human_passed,
-                "human_tests_total": len(stdin_stdout_tests),
-                "detailed_claude_results": claude_results[0] if claude_results else [],
-                "detailed_human_results": human_results[0] if human_results else [],
-            }
-        )
+        result_entry = {
+            "problem_id": i,
+            "model_tests_passed": model_passed,
+            "model_tests_total": len(stdin_stdout_tests),
+            "human_tests_passed": human_passed,
+            "human_tests_total": len(stdin_stdout_tests),
+            "detailed_model_results": model_results[0] if model_results else [],
+            "detailed_human_results": human_results[0] if human_results else [],
+        }
+        
+        # Include all original keys from solution_data
+        for key, value in solution_data.items():
+            if key not in result_entry:
+                result_entry[key] = value
+        
+        results.append(result_entry)
 
     # Save results to file
     output_file = solution_file.replace(".json", "_execution_results.json")
@@ -198,15 +164,15 @@ def evaluate_solutions(solution_file):
     print(f"Execution results saved to {output_file}")
 
     # Print summary
-    claude_total_passed = sum(r["claude_tests_passed"] for r in results)
-    claude_total_tests = sum(r["claude_tests_total"] for r in results)
+    model_total_passed = sum(r["model_tests_passed"] for r in results)
+    model_total_tests = sum(r["model_tests_total"] for r in results)
     human_total_passed = sum(r["human_tests_passed"] for r in results)
     human_total_tests = sum(r["human_tests_total"] for r in results)
 
-    if claude_total_tests > 0:
+    if model_total_tests > 0:
         print("\nSummary:")
         print(
-            f"Claude solutions: {claude_total_passed}/{claude_total_tests} tests passed ({claude_total_passed / claude_total_tests * 100:.2f}%)"
+            f"Model solutions: {model_total_passed}/{model_total_tests} tests passed ({model_total_passed / model_total_tests * 100:.2f}%)"
         )
         if human_total_tests > 0:
             print(
@@ -222,10 +188,11 @@ def main():
 
     # Evaluate solutions
     print("Evaluating search problem solutions...")
-    evaluate_solutions("claude_search_solutions.json")
-
-    print("\nEvaluating data structure problem solutions...")
-    evaluate_solutions("claude_datastructure_solutions.json")
+    evaluate_solutions("o3mini_search_solutions.json")
+    
+    # Uncomment to evaluate data structure problems as well
+    # print("\nEvaluating data structure problem solutions...")
+    # evaluate_solutions("o3mini_datastructure_solutions.json")
 
 
 if __name__ == "__main__":

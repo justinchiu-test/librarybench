@@ -18,38 +18,10 @@ def get_solutions(xs):
     """Extract examples with valid solutions."""
     examples = []
     for i, x in enumerate(xs):
-        try:
-            # Handle case where solutions may already be parsed
-            if isinstance(x["solutions"], list):
-                solutions = x["solutions"]
-            else:
-                # Try to remove any bad characters from the JSON string
-                solutions_str = x["solutions"]
-                # Ensure solutions_str is actually a string
-                if not isinstance(solutions_str, str):
-                    continue
-
-                # Try direct parsing first
-                try:
-                    solutions = json.loads(solutions_str)
-                except json.JSONDecodeError:
-                    # If direct parsing fails, try with ast.literal_eval which is more forgiving
-                    import ast
-
-                    try:
-                        solutions = ast.literal_eval(solutions_str)
-                    except Exception:
-                        # If all parsing fails, skip this example
-                        print("Skipping example with unparseable solutions")
-                        continue
-
-            if len(solutions) > 0:
-                x["solutions"] = solutions
-                examples.append(x)
-        except Exception as e:
-            print(f"Error processing example: {str(e)[:100]}")
-            continue
-
+        solutions = ast.literal_eval(solutions_str)
+        if len(solutions) > 0:
+            x["solutions"] = solutions
+            examples.append(x)
     print(f"Found {len(examples)} valid examples with solutions")
     return examples
 

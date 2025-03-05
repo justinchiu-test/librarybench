@@ -1,3 +1,4 @@
+import ast
 import datasets
 import json
 
@@ -5,7 +6,8 @@ import json
 def get_solutions(xs):
     examples = []
     for x in xs:
-        solutions = json.loads(x["solutions"])
+        #solutions = json.loads(x["solutions"])
+        solutions = ast.literal_eval(x["solutions"])
         if len(solutions) > 0:
             x["solutions"] = solutions
             examples.append(x)
@@ -14,7 +16,8 @@ def get_solutions(xs):
 
 def main():
     dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-    train = dataset["train"]
+    #train = dataset["train"]
+    train = dataset["test"]
     # len = 4695
     datastructures = [x for x in train if "Data structures" in x["skill_types"]]
     # len = 1886

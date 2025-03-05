@@ -70,48 +70,50 @@ Please provide a clear, efficient solution in Python. Make sure to handle edge c
 async def generate_solution(example, semaphore, max_retries=2):
     """Generate a solution using OpenAI API asynchronously."""
     prompt = format_prompt(example)
-
-    async with semaphore:
-    for attempt in range(max_retries):
-        try:
-            response = await async_client.chat.completions.create(
-                model="o3-mini",
-                messages=[
-                    {"role": "system", "content": "You are an expert programming problem solver specializing in competitive programming and algorithm challenges."},
-                    {"role": "user", "content": prompt}
-                ],
-            )
-            # Create a copy of the original example to preserve all keys
-            result = {k: v for k, v in example.items()}
-            # Add the generated solution
-            result["human_solution"] = (
-                example["solutions"][0] if example["solutions"] else None
-            )
-            # Extract solution text from response content
-            result["claude_solution"] = response.choices[0].message.content
-            # Rename question to problem for clarity in the output
-            result["problem"] = result.pop("question") if "question" in result else None
-            # Rename solution field to match the model being used
-            result["o3_mini_solution"] = result.pop("claude_solution")
-            return result
-        except Exception as e:
-            print(f"Error on attempt {attempt + 1}: {e}")
-            if attempt == max_retries - 1:
+    
+    async with semaphore:  # Properly acquire and release the semaphore
+        for attempt in range(max_retries):
+            try:
+                response = await async_client.chat.completions.create(
+                    model="o3-mini",
+                    messages=[
+                        {"role": "system", "content": "You are an expert programming problem solver specializing in competitive programming and algorithm challenges."},
+                        {"role": "user", "content": prompt}
+                    ],
+                )
                 # Create a copy of the original example to preserve all keys
                 result = {k: v for k, v in example.items()}
-                # Add the error message as the solution
+                # Add the generated solution
                 result["human_solution"] = (
                     example["solutions"][0] if example["solutions"] else None
                 )
-                result["o3_mini_solution"] = f"ERROR: {str(e)}"
+                # Extract solution text from response content
+                result["claude_solution"] = response.choices[0].message.content
                 # Rename question to problem for clarity in the output
-                result["problem"] = (
-                    result.pop("question") if "question" in result else None
-                )
+                result["problem"] = result.pop("question") if "question" in result else None
+                # Rename solution field to match the model being used
+                result["o3_mini_solution"] = result.pop("claude_solution")
                 return result
+            except Exception as e:
+                print(f"Error on attempt {attempt + 1}: {e}")
+                if attempt == max_retries - 1:
+                    # Create a copy of the original example to preserve all keys
+                    result = {k: v for k, v in example.items()}
+                    # Add the error message as the solution
+                    result["human_solution"] = (
+                        example["solutions"][0] if example["solutions"] else None
+                    )
+                    result["o3_mini_solution"] = f"ERROR: {str(e)}"
+                    # Rename question to problem for clarity in the output
+                    result["problem"] = (
+                        result.pop("question") if "question" in result else None
+                    )
+                    return result
+                # Add a short delay before retrying
+                await asyncio.sleep(1)
 
 
-async def generate_solutions_from_examples(examples, sample_size, concurrency):
+async def generate_solutions_from_examples(examples, sample_size=None, concurrency=5):
     """
     Generate solutions for a given list of examples asynchronously.
 
@@ -126,15 +128,13 @@ async def generate_solutions_from_examples(examples, sample_size, concurrency):
     if sample_size is not None:
         examples = examples[:sample_size]
 
-    # Use semaphore to limit concurrency
+    # Create semaphore to limit concurrency
     semaphore = asyncio.Semaphore(concurrency)
     
-    async def process_example(example):
-        async with semaphore:
-            return await generate_solution(example)
+    # Create tasks and pass the semaphore to each
+    tasks = [generate_solution(example, semaphore) for example in examples]
     
     # Process examples concurrently with progress bar
-    tasks = [process_example(example) for example in examples]
     results = await tqdm_asyncio.gather(*tasks, desc="Generating solutions")
     
     return results
@@ -177,9 +177,9 @@ async def main_async():
     # Generate solutions for data structure problems
     print(f"Generating solutions for {sample_size} data structure problems...")
     datastructure_examples = get_solutions(datastructure_problems)
-    datastructure_sample = datastructure_examples[:sample_size]
+    # Fix: Use the datastructure_examples directly instead of creating an unused sample
     datastructure_results = await generate_solutions_from_examples(
-        datastructure_sample, concurrency=concurrency
+        datastructure_examples, sample_size, concurrency
     )
     save_solutions(datastructure_results, "o3mini_datastructure_solutions.json")
 

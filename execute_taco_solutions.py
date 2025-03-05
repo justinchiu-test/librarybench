@@ -1,17 +1,25 @@
 import os
 import json
 import re
-import requests
+import asyncio
+import aiohttp
 from tqdm import tqdm
+from typing import List, Dict, Any
 
 # URL for execution API - load from environment variable
-CYBER_URL = os.getenv("CYBER_URL")
+CYBER_URL: str = os.getenv("CYBER_URL", "")
 if not CYBER_URL:
     raise ValueError("Please set the CYBER_URL environment variable")
 
 
-# Function to extract code from Claude's solution
+# Function to extract code from Claude's solution or O3 mini solution
 def extract_code(solution):
+    # For O3 mini solutions, try to extract code between dashed lines
+    dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
+    match = re.search(dashed_code_pattern, solution, re.DOTALL)
+    if match:
+        return match.group(1)
+
     # Try to extract code between ```python and ``` markers
     code_pattern = r"```python\n(.*?)\n```"
     match = re.search(code_pattern, solution, re.DOTALL)
@@ -30,45 +38,63 @@ def extract_code(solution):
     return solution
 
 
-def run_unit_tests(generations, stdin_stdout_tests):
-    """Execute code against unit tests using the execution API"""
+async def execute_test(
+    session: aiohttp.ClientSession,
+    code: str,
+    test: Dict[str, str],
+    semaphore: asyncio.Semaphore,
+) -> Dict[str, Any]:
+    """Execute a single test against the execution API"""
+    async with semaphore:
+        code_dict = {
+            "code": code,
+            "test": test,
+        }
+
+        params = {
+            "language": "python",
+            "environment": "default",
+            "timeout": 30,
+            "generation_formatting": "true",
+            "fill_missing_imports": "true",
+        }
+
+        try:
+            async with session.post(
+                CYBER_URL, json=code_dict, params=params
+            ) as response:
+                result = await response.json()
+                return result
+        except Exception as e:
+            return {
+                "passed": False,
+                "exec_output": {"run_output": {"stderr": str(e)}},
+                "uncaught_exception": str(e),
+            }
+
+
+async def run_unit_tests_async(
+    generations: List[str], stdin_stdout_tests: List[Dict[str, str]]
+) -> List[List[Dict[str, Any]]]:
+    """Execute code against unit tests using the execution API asynchronously"""
     outputs = []
-    for generation in tqdm(generations, desc="Running tests"):
-        test_results = []
+    semaphore = asyncio.Semaphore(512)  # Limit concurrency to 512 simultaneous requests
 
-        # Process each test separately
-        for test in stdin_stdout_tests:
-            # Create the request
-            code_dict = {
-                "code": generation,
-                "test": test,
-            }
+    async with aiohttp.ClientSession() as session:
+        for generation in tqdm(generations, desc="Running tests"):
+            tasks = [
+                execute_test(session, generation, test, semaphore)
+                for test in stdin_stdout_tests
+            ]
+            test_results = await asyncio.gather(*tasks)
+            outputs.append(test_results)
 
-            params = {
-                "language": "python",
-                "environment": "default",
-                "timeout": 30,
-                "generation_formatting": "true",
-                "fill_missing_imports": "true",
-            }
-
-            try:
-                response = requests.post(CYBER_URL, json=code_dict, params=params)
-                result = response.json()
-                test_results.append(result)
-            except Exception as e:
-                test_results.append(
-                    {
-                        "passed": False,
-                        "exec_output": {"run_output": {"stderr": str(e)}},
-                        "uncaught_exception": str(e),
-                    }
-                )
-
-        outputs.append(test_results)
     return outputs
 
 
+def run_unit_tests(generations, stdin_stdout_tests):
+    """Execute code against unit tests using the execution API"""
+    return asyncio.run(run_unit_tests_async(generations, stdin_stdout_tests))
 
 
 def evaluate_solutions(solution_file):
@@ -111,7 +137,10 @@ def evaluate_solutions(solution_file):
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution
-        model_code = extract_code(solution_data.get("o3_mini_solution", solution_data.get("claude_solution", "")))
+        if "o3_mini_solution" in solution_data:
+            model_code = extract_code(solution_data.get("o3_mini_solution", ""))
+        else:
+            model_code = extract_code(solution_data.get("claude_solution", ""))
         human_code = solution_data.get("human_solution", "")
 
         # Run code against test cases
@@ -148,12 +177,12 @@ def evaluate_solutions(solution_file):
             "detailed_model_results": model_results[0] if model_results else [],
             "detailed_human_results": human_results[0] if human_results else [],
         }
-        
+
         # Include all original keys from solution_data
         for key, value in solution_data.items():
             if key not in result_entry:
                 result_entry[key] = value
-        
+
         results.append(result_entry)
 
     # Save results to file
@@ -189,10 +218,10 @@ def main():
     # Evaluate solutions
     print("Evaluating search problem solutions...")
     evaluate_solutions("o3mini_search_solutions.json")
-    
-    # Uncomment to evaluate data structure problems as well
-    # print("\nEvaluating data structure problem solutions...")
-    # evaluate_solutions("o3mini_datastructure_solutions.json")
+
+    # Evaluate data structure problems as well
+    print("\nEvaluating data structure problem solutions...")
+    evaluate_solutions("o3mini_datastructure_solutions.json")
 
 
 if __name__ == "__main__":

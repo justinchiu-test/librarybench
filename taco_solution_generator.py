@@ -172,7 +172,7 @@ async def main_async():
     search_results = await generate_solutions_from_examples(
         search_examples, sample_size, concurrency
     )
-    save_solutions(search_results, "o3mini_search_solutions.json")
+    save_solutions(search_results, "data/o3mini_search_solutions.json")
 
     # Generate solutions for data structure problems
     print(f"Generating solutions for {sample_size} data structure problems...")
@@ -181,7 +181,7 @@ async def main_async():
     datastructure_results = await generate_solutions_from_examples(
         datastructure_examples, sample_size, concurrency
     )
-    save_solutions(datastructure_results, "o3mini_datastructure_solutions.json")
+    save_solutions(datastructure_results, "data/o3mini_datastructure_solutions.json")
 
     print("Done! Solutions generated for both problem types.")
 

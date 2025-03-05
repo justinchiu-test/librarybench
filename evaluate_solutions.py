@@ -68,7 +68,7 @@ def main():
     print("Evaluating solutions...")
 
     # Load and analyze search solutions
-    search_analysis = load_and_analyze_solutions("claude_search_solutions.json")
+    search_analysis = load_and_analyze_solutions("data/claude_search_solutions.json")
     print("\nSearch problems analysis:")
     print(f"Total problems: {search_analysis['count']}")
     print(f"Problem types: {search_analysis['problem_types']}")
@@ -80,7 +80,7 @@ def main():
     )
 
     # Load and analyze data structure solutions
-    ds_analysis = load_and_analyze_solutions("claude_datastructure_solutions.json")
+    ds_analysis = load_and_analyze_solutions("data/claude_datastructure_solutions.json")
     print("\nData Structure problems analysis:")
     print(f"Total problems: {ds_analysis['count']}")
     print(f"Problem types: {ds_analysis['problem_types']}")

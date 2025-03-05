@@ -218,12 +218,12 @@ def main():
     
     # Get feedback for Claude solutions
     print("Getting feedback for Claude search problem solutions...")
-    feedback, _ = get_model_feedback("claude_search_solutions.json", model_name="claude")
+    feedback, _ = get_model_feedback("data/claude_search_solutions.json", model_name="claude")
     print(feedback)
     
     # Get feedback for O3 mini solutions
     print("\nGetting feedback for O3 mini search problem solutions...")
-    feedback, _ = get_model_feedback("o3mini_search_solutions.json", model_name="o3_mini")
+    feedback, _ = get_model_feedback("data/o3mini_search_solutions.json", model_name="o3_mini")
     print(feedback)
 
 

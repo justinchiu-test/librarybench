@@ -186,7 +186,7 @@ def evaluate_solutions(solution_file):
         results.append(result_entry)
 
     # Save results to file
-    output_file = solution_file.replace(".json", "_execution_results.json")
+    output_file = os.path.join("data", os.path.basename(solution_file).replace(".json", "_execution_results.json"))
     with open(output_file, "w") as f:
         json.dump(results, f, indent=2)
 
@@ -217,11 +217,11 @@ def main():
 
     # Evaluate solutions
     print("Evaluating search problem solutions...")
-    evaluate_solutions("o3mini_search_solutions.json")
+    evaluate_solutions("data/o3mini_search_solutions.json")
 
     # Evaluate data structure problems as well
     print("\nEvaluating data structure problem solutions...")
-    evaluate_solutions("o3mini_datastructure_solutions.json")
+    evaluate_solutions("data/o3mini_datastructure_solutions.json")
 
 
 if __name__ == "__main__":

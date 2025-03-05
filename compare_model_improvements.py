@@ -49,6 +49,14 @@ def compare_solutions(
     Returns:
         Dictionary with comparison results
     """
+    # Ensure original_file has data/ prefix if it doesn't already
+    if not original_file.startswith("data/") and not os.path.dirname(original_file):
+        original_file = os.path.join("data", original_file)
+    
+    # Ensure improved_file has data/ prefix if it doesn't already
+    if not improved_file.startswith("data/") and not os.path.dirname(improved_file):
+        improved_file = os.path.join("data", improved_file)
+    
     # Load original solutions
     with open(original_file, "r") as f:
         original_solutions = json.load(f)
@@ -207,9 +215,14 @@ def main():
     
     # Save results if requested
     if args.output_file:
-        with open(args.output_file, "w") as f:
+        # Ensure output file goes to data/ directory
+        output_file = args.output_file
+        if not output_file.startswith("data/") and not os.path.dirname(output_file):
+            output_file = os.path.join("data", output_file)
+        
+        with open(output_file, "w") as f:
             json.dump(results, f, indent=2)
-        print(f"Results saved to {args.output_file}")
+        print(f"Results saved to {output_file}")
 
 
 if __name__ == "__main__":

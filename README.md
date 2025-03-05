@@ -49,16 +49,16 @@ This script implements an iterative feedback loop that allows models to improve 
 
 **Example Usage (Single Problem):**
 ```bash
-uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-id 0 --model-name claude-3-sonnet --max-iterations 3
+uv run python iterative_repair.py --solution-file data/claude_search_solutions.json --problem-id 0 --model-name claude-3-sonnet --max-iterations 3
 ```
 
 **Example Usage (Multiple Problems):**
 ```bash
 # Process a specific set of problems
-uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-ids 0,2,5 --model-name claude-3-haiku
+uv run python iterative_repair.py --solution-file data/claude_search_solutions.json --problem-ids 0,2,5 --model-name claude-3-haiku
 
 # Process a range of problems
-uv run python iterative_repair.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 5
+uv run python iterative_repair.py --solution-file data/claude_search_solutions.json --range 0-9 --max-iterations 5
 ```
 
 **Arguments:**
@@ -87,7 +87,7 @@ This script compares original and improved model solutions, providing detailed s
 
 **Example Usage:**
 ```bash
-uv run python compare_model_improvements.py --original-file claude_search_solutions.json --improved-file improved_claude_search_solutions.json --model-key claude_solution --output-file comparison_results.json
+uv run python compare_model_improvements.py --original-file data/claude_search_solutions.json --improved-file data/improved_claude_search_solutions.json --model-key claude_solution --output-file comparison_results.json
 ```
 
 **Arguments:**
@@ -108,30 +108,30 @@ uv run python model_feedback.py
 
 2. Improve a specific problem solution:
 ```bash
-uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-id 0 --max-iterations 3
+uv run python iterative_repair.py --solution-file data/claude_search_solutions.json --problem-id 0 --max-iterations 3
 ```
 
 3. Compare the original and improved solutions:
 ```bash
-uv run python compare_model_improvements.py --original-file claude_search_solutions.json --improved-file improved_claude_search_solutions.json
+uv run python compare_model_improvements.py --original-file data/claude_search_solutions.json --improved-file data/improved_claude_search_solutions.json
 ```
 
 ### Batch Processing Workflow
 
 1. Improve a range of problems:
 ```bash
-uv run python iterative_repair.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 3 --concurrent-problems 5
+uv run python iterative_repair.py --solution-file data/claude_search_solutions.json --range 0-9 --max-iterations 3 --concurrent-problems 5
 ```
 
 2. Compare the original and improved solutions:
 ```bash
-uv run python compare_model_improvements.py --original-file claude_search_solutions.json --improved-file improved_claude_search_solutions.json --output-file comparison_results.json
+uv run python compare_model_improvements.py --original-file data/claude_search_solutions.json --improved-file data/improved_claude_search_solutions.json --output-file comparison_results.json
 ```
 
 3. Analyze the results:
 ```bash
 # Use any visualization tool or Python script to analyze the JSON results
-uv run python -c "import json; f = open('comparison_results.json'); data = json.load(f); print(f'Average improvement: {data[\"overall_improvement\"]*100:.2f}%')"
+uv run python -c "import json; f = open('data/comparison_results.json'); data = json.load(f); print(f'Average improvement: {data[\"overall_improvement\"]*100:.2f}%')"
 ```
 
 ## Customizing the Model API

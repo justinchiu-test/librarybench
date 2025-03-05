@@ -35,57 +35,47 @@ uv run python model_feedback.py
 
 This will evaluate and print feedback for both Claude and O3 mini models on search problems by default.
 
-### 2. `interactive_model_improvement.py`
+### 2. `iterative_repair.py`
 
-This script implements an interactive feedback loop that allows models to improve their solutions through multiple iterations.
+This script implements an iterative feedback loop that allows models to improve their solutions through multiple iterations. It supports asynchronous processing with semaphores for both LLM API calls and execution.
 
 **Key Features:**
-- Runs a solution against test cases
+- Runs solutions against test cases asynchronously 
 - Formats failure information for the model
-- Queries the model for an improved solution
-- Repeats the process for a specified number of iterations
-- Tracks the best solution found
+- Queries the model for improved solutions
+- Processes multiple problems in parallel
+- Implements global semaphores for LLM and execution API calls
+- Tracks the best solution found per problem
 
-**Example Usage:**
+**Example Usage (Single Problem):**
 ```bash
-uv run python interactive_model_improvement.py --solution-file claude_search_solutions.json --problem-id 0 --model-name claude-3-sonnet --max-iterations 3
+uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-id 0 --model-name claude-3-sonnet --max-iterations 3
 ```
 
-**Arguments:**
-- `--solution-file`: Path to the solution JSON file (required)
-- `--problem-id`: ID of the problem to improve (required)
-- `--model-name`: Name of the model to use (default: claude-3-haiku)
-- `--max-iterations`: Maximum number of improvement iterations (default: 3)
-- `--target-ratio`: Target passing ratio to stop early (default: 1.0)
-
-### 3. `batch_improve_solutions.py`
-
-This script allows batch processing of multiple problems for improvement.
-
-**Key Features:**
-- Process multiple problems in sequence
-- Handle errors gracefully and continue with remaining problems
-- Provide summary statistics of the improvement process
-- Specify problems by individual IDs or ranges
-
-**Example Usage:**
+**Example Usage (Multiple Problems):**
 ```bash
 # Process a specific set of problems
-uv run python batch_improve_solutions.py --solution-file claude_search_solutions.json --problem-ids 0,2,5 --model-name claude-3-haiku
+uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-ids 0,2,5 --model-name claude-3-haiku
 
 # Process a range of problems
-uv run python batch_improve_solutions.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 5
+uv run python iterative_repair.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 5
 ```
 
 **Arguments:**
 - `--solution-file`: Path to the solution JSON file (required)
+- `--problem-id`: ID of a specific problem to improve
 - `--problem-ids`: Comma-separated list of problem IDs to process
 - `--range`: Range of problem IDs to process (e.g., '0-5')
 - `--model-name`: Name of the model to use (default: claude-3-haiku)
 - `--max-iterations`: Maximum number of improvement iterations per problem (default: 3)
 - `--target-ratio`: Target passing ratio to stop early (default: 1.0)
+- `--output-file`: File to save improved solutions (default: improved_<input-file>)
+- `--concurrent-problems`: Number of problems to process concurrently (default: 3)
+- `--llm-semaphore`: Maximum concurrent LLM API calls (default: 5)
+- `--exec-semaphore`: Maximum concurrent execution API calls (default: 50)
+- `--log-level`: Logging level (DEBUG, INFO, WARNING, ERROR) (default: INFO)
 
-### 4. `compare_model_improvements.py`
+### 3. `compare_model_improvements.py`
 
 This script compares original and improved model solutions, providing detailed statistics on the improvements.
 
@@ -118,7 +108,7 @@ uv run python model_feedback.py
 
 2. Improve a specific problem solution:
 ```bash
-uv run python interactive_model_improvement.py --solution-file claude_search_solutions.json --problem-id 0 --max-iterations 3
+uv run python iterative_repair.py --solution-file claude_search_solutions.json --problem-id 0 --max-iterations 3
 ```
 
 3. Compare the original and improved solutions:
@@ -130,7 +120,7 @@ uv run python compare_model_improvements.py --original-file claude_search_soluti
 
 1. Improve a range of problems:
 ```bash
-uv run python batch_improve_solutions.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 3
+uv run python iterative_repair.py --solution-file claude_search_solutions.json --range 0-9 --max-iterations 3 --concurrent-problems 5
 ```
 
 2. Compare the original and improved solutions:
@@ -146,7 +136,7 @@ uv run python -c "import json; f = open('comparison_results.json'); data = json.
 
 ## Customizing the Model API
 
-To use actual model APIs instead of the placeholder in `interactive_model_improvement.py`, update the `query_model()` function with the appropriate API client code for your specific model.
+To use actual model APIs instead of the placeholder in `iterative_repair.py`, update the `query_model()` function with the appropriate API client code for your specific model.
 
 For Claude, use the Anthropic Python SDK:
 ```python
@@ -179,8 +169,20 @@ response = client.chat.completions.create(
 return response.choices[0].message.content
 ```
 
+## Performance Considerations
+
+- The framework uses separate semaphores for controlling concurrency:
+  - `LLM_SEMAPHORE`: Limits concurrent LLM API calls (default: 5)
+  - `EXECUTION_SEMAPHORE`: Limits concurrent execution API calls (default: 50)
+  - Problem-level concurrency for parallel processing (default: 3)
+
+- Adjust these limits based on your specific environment and API rate limits:
+  - Increase `llm-semaphore` if you have higher API rate limits
+  - Adjust `exec-semaphore` based on the execution API's capacity
+  - Set `concurrent-problems` based on available CPU/memory resources
+
 ## Notes
 
-- For batch processing of multiple problems, you can create a simple script that iterates through problem IDs and calls `interactive_model_improvement.py` for each.
 - The execution API requires internet access to function properly.
 - Make sure your model API keys are properly set up in environment variables if you're using real model APIs.
+- For large batches, consider using checkpointing by specifying custom output files.

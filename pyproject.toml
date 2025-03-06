@@ -1,7 +1,7 @@
 [project]
-name = "refactorbench"
+name = "librarybench"
 version = "0.1.0"
-description = "Add your description here"
+description = "A framework for evaluating and improving AI model solutions to coding problems"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,4 +13,25 @@ dependencies = [
     "pyright>=1.1.396",
     "ruff>=0.9.9",
     "tqdm>=4.67.1",
+    "aiohttp>=3.8.0",
+    "asyncio>=3.4.3",
+    "pytest>=8.3.5",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/librarybench"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"

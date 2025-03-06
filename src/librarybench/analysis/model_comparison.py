@@ -1,20 +1,23 @@
+"""Model comparison module for analyzing improvements."""
+
 import os
 import json
-import argparse
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 
-from model_feedback import (
-    extract_code,
-    run_unit_tests,
-    create_test_cases_from_input_output,
-)
+from librarybench.utils import extract_code
+from librarybench.execution import run_unit_tests
+from librarybench.feedback import create_test_cases_from_input_output
 
 
 def evaluate_solution(
     code: str, stdin_stdout_tests: List[Dict[str, str]]
 ) -> Tuple[int, int, float]:
     """
-    Evaluate a solution against test cases
+    Evaluate a solution against test cases.
+
+    Args:
+        code: Python code to evaluate
+        stdin_stdout_tests: Test cases with stdin/stdout pairs
 
     Returns:
         Tuple of (passed tests, total tests, pass ratio)
@@ -35,25 +38,33 @@ def compare_solutions(
     original_file: str,
     improved_file: str,
     model_key: str = "claude_solution",
+    problem_id: Optional[int] = None,
+    output_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
-    Compare original and improved solutions
+    Compare original and improved solutions.
 
     Args:
         original_file: Path to the original solution file
         improved_file: Path to the improved solution file
         model_key: Key to identify the model solutions (e.g., 'claude_solution', 'o3_mini_solution')
+        problem_id: Optional ID of a specific problem to compare (if None, compare all)
+        output_dir: Directory for output files (defaults to "data")
 
     Returns:
         Dictionary with comparison results
     """
-    # Ensure original_file has data/ prefix if it doesn't already
-    if not original_file.startswith("data/") and not os.path.dirname(original_file):
-        original_file = os.path.join("data", original_file)
+    # Set default output directory
+    if output_dir is None:
+        output_dir = "data"
 
-    # Ensure improved_file has data/ prefix if it doesn't already
-    if not improved_file.startswith("data/") and not os.path.dirname(improved_file):
-        improved_file = os.path.join("data", improved_file)
+    # Ensure original_file has correct path prefix if needed
+    if not os.path.dirname(original_file):
+        original_file = os.path.join(output_dir, original_file)
+
+    # Ensure improved_file has correct path prefix if needed
+    if not os.path.dirname(improved_file):
+        improved_file = os.path.join(output_dir, improved_file)
 
     # Load original solutions
     with open(original_file, "r") as f:
@@ -62,6 +73,11 @@ def compare_solutions(
     # Load improved solutions
     with open(improved_file, "r") as f:
         improved_solutions = json.load(f)
+
+    # Filter to specific problem if requested
+    if problem_id is not None:
+        original_solutions = [original_solutions[problem_id]]
+        improved_solutions = [improved_solutions[problem_id]]
 
     # Track improvement statistics
     results = {
@@ -86,8 +102,9 @@ def compare_solutions(
             continue
 
         # Extract the original and improved code
-        original_code = extract_code(orig_solution.get(model_key, ""))
-        improved_code = extract_code(imp_solution.get(improved_key, ""))
+        model_type = "claude" if "claude" in model_key else "openai"
+        original_code = extract_code(orig_solution.get(model_key, ""), model_type)
+        improved_code = extract_code(imp_solution.get(improved_key, ""), model_type)
 
         # Get the input_output field
         input_output = orig_solution.get("input_output")
@@ -167,8 +184,12 @@ def compare_solutions(
     return results
 
 
-def print_comparison_results(results: Dict[str, Any]):
-    """Print comparison results in a human-readable format"""
+def print_comparison_results(results: Dict[str, Any]) -> None:
+    """Print comparison results in a human-readable format.
+
+    Args:
+        results: Dictionary with comparison results from compare_solutions
+    """
     print("=" * 50)
     print("SOLUTION IMPROVEMENT COMPARISON")
     print("=" * 50)
@@ -199,7 +220,7 @@ def print_comparison_results(results: Dict[str, Any]):
     )[:5]
     for i, prob in enumerate(most_improved, 1):
         print(
-            f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) → {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{prob['improvement'] * 100:.1f}% improvement]"
+            f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) -> {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{prob['improvement'] * 100:.1f}% improvement]"
         )
 
     if results["worse_problems"] > 0:
@@ -207,66 +228,34 @@ def print_comparison_results(results: Dict[str, Any]):
         worse = [p for p in results["problem_details"] if p["status"] == "worse"]
         for i, prob in enumerate(worse, 1):
             print(
-                f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) → {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{-prob['improvement'] * 100:.1f}% decline]"
+                f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) -> {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{-prob['improvement'] * 100:.1f}% decline]"
             )
 
     print("=" * 50)
 
 
-def main():
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(
-        description="Compare original and improved model solutions"
-    )
-    parser.add_argument(
-        "--original-file",
-        type=str,
-        required=True,
-        help="Path to the original solution file",
-    )
-    parser.add_argument(
-        "--improved-file",
-        type=str,
-        required=True,
-        help="Path to the improved solution file",
-    )
-    parser.add_argument(
-        "--model-key",
-        type=str,
-        default="claude_solution",
-        help="Key for the model solutions",
-    )
-    parser.add_argument(
-        "--problem-id", type=int, help="Optional ID of a specific problem to compare"
-    )
-    parser.add_argument(
-        "--output-file",
-        type=str,
-        help="Optional file to save comparison results as JSON",
-    )
-    args = parser.parse_args()
+def save_comparison_results(
+    results: Dict[str, Any], output_file: str, output_dir: Optional[str] = None
+) -> str:
+    """Save comparison results to a JSON file.
 
-    # Compare solutions
-    results = compare_solutions(
-        original_file=args.original_file,
-        improved_file=args.improved_file,
-        model_key=args.model_key,
-    )
+    Args:
+        results: Dictionary with comparison results
+        output_file: Name of the output file
+        output_dir: Directory for output files (defaults to "data")
 
-    # Print results
-    print_comparison_results(results)
+    Returns:
+        Path to the saved file
+    """
+    # Set default output directory
+    if output_dir is None:
+        output_dir = "data"
 
-    # Save results if requested
-    if args.output_file:
-        # Ensure output file goes to data/ directory
-        output_file = args.output_file
-        if not output_file.startswith("data/") and not os.path.dirname(output_file):
-            output_file = os.path.join("data", output_file)
+    # Ensure output file goes to correct directory
+    if not os.path.dirname(output_file):
+        output_file = os.path.join(output_dir, output_file)
 
-        with open(output_file, "w") as f:
-            json.dump(results, f, indent=2)
-        print(f"Results saved to {output_file}")
+    with open(output_file, "w") as f:
+        json.dump(results, f, indent=2)
 
-
-if __name__ == "__main__":
-    main()
+    return output_file

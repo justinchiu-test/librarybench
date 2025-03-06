@@ -1,110 +1,16 @@
+"""Execution module for testing generated solutions."""
+
 import os
 import json
-import re
 import asyncio
 import aiohttp
 from tqdm import tqdm
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
+
+from librarybench.utils import extract_code
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
-if not CYBER_URL:
-    raise ValueError("Please set the CYBER_URL environment variable")
-
-
-# Import LLM client classes
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
-try:
-    from taco_solution_generator import OpenAiClient, ClaudeClient
-except ImportError:
-    # Define fallback classes if import fails
-    class OpenAiClient:
-        def extract_code(self, solution):
-            """Extract code from OpenAI solution."""
-            # For O3 mini solutions, try to extract code between dashed lines
-            dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
-            match = re.search(dashed_code_pattern, solution, re.DOTALL)
-            if match:
-                return match.group(1)
-
-            # Try to extract code between ```python and ``` markers
-            code_pattern = r"```python\n(.*?)\n```"
-            match = re.search(code_pattern, solution, re.DOTALL)
-            if match:
-                return match.group(1)
-
-            # If no markers found, try to extract the first code-like block
-            code_pattern = r"class .*?:|def .*?:"
-            match = re.search(code_pattern, solution)
-            if match:
-                # Get the position of the match
-                start_pos = match.start()
-                # Extract from this position to the end
-                return solution[start_pos:]
-
-            return solution
-
-    class ClaudeClient:
-        def extract_code(self, solution):
-            """Extract code from Claude solution."""
-            # Try to extract code between ```python and ``` markers (Claude's standard format)
-            code_pattern = r"```python\n(.*?)\n```"
-            match = re.search(code_pattern, solution, re.DOTALL)
-            if match:
-                return match.group(1)
-
-            # If no python markers found, try with any language marker
-            code_pattern = r"```(?:\w+)?\n(.*?)\n```"
-            match = re.search(code_pattern, solution, re.DOTALL)
-            if match:
-                return match.group(1)
-
-            # If no markers found, try to extract the first code-like block
-            code_pattern = r"class .*?:|def .*?:"
-            match = re.search(code_pattern, solution)
-            if match:
-                # Get the position of the match
-                start_pos = match.start()
-                # Extract from this position to the end
-                return solution[start_pos:]
-
-            return solution
-
-
-# Function to extract code from model solutions
-def extract_code(solution, model_type=None):
-    """
-    Extract code from model solutions using the appropriate extractor.
-
-    Args:
-        solution: String containing the model's solution
-        model_type: Optional string indicating the model type ('openai' or 'claude')
-                   If None, will try to detect from solution format
-
-    Returns:
-        The extracted code
-    """
-    # If model type is explicitly provided
-    if model_type == "openai":
-        extractor = OpenAiClient()
-        return extractor.extract_code(solution)
-    elif model_type == "claude":
-        extractor = ClaudeClient()
-        return extractor.extract_code(solution)
-
-    # Auto-detect model type based on solution patterns
-    # Check for OpenAI's dash pattern first (more specific)
-    dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
-    if re.search(dashed_code_pattern, solution, re.DOTALL):
-        extractor = OpenAiClient()
-        return extractor.extract_code(solution)
-
-    # Default to Claude-style extraction (which is more general)
-    extractor = ClaudeClient()
-    return extractor.extract_code(solution)
 
 
 async def execute_test(
@@ -113,7 +19,17 @@ async def execute_test(
     test: Dict[str, str],
     semaphore: asyncio.Semaphore,
 ) -> Dict[str, Any]:
-    """Execute a single test against the execution API"""
+    """Execute a single test against the execution API.
+
+    Args:
+        session: aiohttp ClientSession
+        code: Python code to execute
+        test: Test case with stdin/stdout
+        semaphore: Semaphore to limit concurrency
+
+    Returns:
+        Test execution result
+    """
     async with semaphore:
         code_dict = {
             "code": code,
@@ -143,11 +59,22 @@ async def execute_test(
 
 
 async def run_unit_tests_async(
-    generations: List[str], stdin_stdout_tests: List[Dict[str, str]]
+    generations: List[str],
+    stdin_stdout_tests: List[Dict[str, str]],
+    concurrency: int = 512,
 ) -> List[List[Dict[str, Any]]]:
-    """Execute code against unit tests using the execution API asynchronously"""
+    """Execute code against unit tests using the execution API asynchronously.
+
+    Args:
+        generations: List of code snippets to test
+        stdin_stdout_tests: List of test cases with stdin/stdout pairs
+        concurrency: Maximum number of concurrent requests
+
+    Returns:
+        Nested list of test results for each generation and test case
+    """
     outputs = []
-    semaphore = asyncio.Semaphore(512)  # Limit concurrency to 512 simultaneous requests
+    semaphore = asyncio.Semaphore(concurrency)  # Limit concurrency
 
     async with aiohttp.ClientSession() as session:
         for generation in tqdm(generations, desc="Running tests"):
@@ -161,13 +88,45 @@ async def run_unit_tests_async(
     return outputs
 
 
-def run_unit_tests(generations, stdin_stdout_tests):
-    """Execute code against unit tests using the execution API"""
-    return asyncio.run(run_unit_tests_async(generations, stdin_stdout_tests))
+def run_unit_tests(
+    generations: List[str],
+    stdin_stdout_tests: List[Dict[str, str]],
+    concurrency: int = 512,
+) -> List[List[Dict[str, Any]]]:
+    """Execute code against unit tests using the execution API.
+
+    Args:
+        generations: List of code snippets to test
+        stdin_stdout_tests: List of test cases with stdin/stdout pairs
+        concurrency: Maximum number of concurrent requests
+
+    Returns:
+        Nested list of test results for each generation and test case
+    """
+    return asyncio.run(
+        run_unit_tests_async(generations, stdin_stdout_tests, concurrency)
+    )
 
 
-def evaluate_solutions(solution_file):
-    """Evaluate generated solutions from the given file"""
+def evaluate_solutions(
+    solution_file: str, output_dir: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Evaluate generated solutions from the given file.
+
+    Args:
+        solution_file: Path to JSON file with solutions
+        output_dir: Directory to save results (defaults to "data")
+
+    Returns:
+        List of evaluation results
+    """
+    if not CYBER_URL:
+        raise ValueError("Please set the CYBER_URL environment variable")
+
+    # Default output directory
+    if output_dir is None:
+        output_dir = "data"
+
     # Load solutions
     with open(solution_file, "r") as f:
         solutions = json.load(f)
@@ -176,7 +135,8 @@ def evaluate_solutions(solution_file):
 
     for i, solution_data in enumerate(solutions):
         print(
-            f"Evaluating problem {i + 1}: {solution_data['source']} (Difficulty: {solution_data['difficulty']})"
+            f"Evaluating problem {i + 1}: {solution_data.get('source', 'unknown')} "
+            f"(Difficulty: {solution_data.get('difficulty', 'unknown')})"
         )
 
         # Use the input_output field directly from the solution data
@@ -279,7 +239,7 @@ def evaluate_solutions(solution_file):
 
     # Save results to file
     output_file = os.path.join(
-        "data",
+        output_dir,
         os.path.basename(solution_file).replace(".json", "_execution_results.json"),
     )
     with open(output_file, "w") as f:
@@ -303,52 +263,4 @@ def evaluate_solutions(solution_file):
                 f"Human solutions: {human_total_passed}/{human_total_tests} tests passed ({human_total_passed / human_total_tests * 100:.2f}%)"
             )
 
-
-def main():
-    """Run the evaluation with command-line arguments."""
-    import argparse
-    import glob
-
-    # Check if CYBER_URL is set
-    if not CYBER_URL:
-        print("Error: CYBER_URL environment variable is not set")
-        return
-
-    parser = argparse.ArgumentParser(description="Evaluate generated solutions")
-    parser.add_argument(
-        "--files", nargs="*", help="Specific solution files to evaluate"
-    )
-    parser.add_argument(
-        "--model",
-        type=str,
-        help="Filter files by model name (e.g., 'o3_mini', 'claude_3_opus')",
-    )
-
-    args = parser.parse_args()
-
-    # Use provided files, or find all solution files that don't have "execution_results" in their name
-    if args.files:
-        solution_files = args.files
-    else:
-        solution_files = [
-            f
-            for f in glob.glob("data/*_solutions.json")
-            if "execution_results" not in f
-        ]
-
-        # Filter by model if specified
-        if args.model:
-            solution_files = [f for f in solution_files if args.model in f]
-
-    if not solution_files:
-        print("No solution files found to evaluate.")
-        return
-
-    # Evaluate each file
-    for solution_file in solution_files:
-        print(f"\nEvaluating solutions in {solution_file}...")
-        evaluate_solutions(solution_file)
-
-
-if __name__ == "__main__":
-    main()
+    return results

@@ -6,7 +6,7 @@ import json
 def get_solutions(xs):
     examples = []
     for x in xs:
-        #solutions = json.loads(x["solutions"])
+        # solutions = json.loads(x["solutions"])
         solutions = ast.literal_eval(x["solutions"])
         if len(solutions) > 0:
             x["solutions"] = solutions
@@ -30,13 +30,13 @@ def filter_solutions_by_def(xs):
     return good_examples
 
 
-
 def get_chess(xs):
     return [x for x in xs if "chess" in x["question"].lower()]
 
+
 def main():
     dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-    #train = dataset["train"]
+    # train = dataset["train"]
     train = dataset["test"]
     # len = 4695
     datastructures = [x for x in train if "Data structures" in x["skill_types"]]
@@ -60,7 +60,9 @@ def main():
 
     # good_dp[1], good_dp[8], good_dp[9]
     chess = get_solutions(get_chess(train))
-    import ipdb; ipdb.set_trace()
+    import ipdb
+
+    ipdb.set_trace()
 
     # First print the available keys from the first example
     if search:

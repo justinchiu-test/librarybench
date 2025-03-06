@@ -8,8 +8,7 @@ import requests
 import json
 import aiohttp
 
-from librarybench.execution import execute_test, run_unit_tests_async, run_unit_tests
-from librarybench.execution.executor import CYBER_URL
+from librarybench.execution import execute_test, run_unit_tests_async, run_unit_tests, CYBER_URL
 
 
 def run_unit_tests_sync(
@@ -140,8 +139,8 @@ async def test_sync_and_async_correctness():
     print("\nBoth sync and async implementations work correctly with string test format")
 
 
-@patch("librarybench.execution.executor.CYBER_URL", "https://mock-url.com")
-@patch("librarybench.execution.executor.asyncio.run")
+@patch("librarybench.execution.CYBER_URL", "https://mock-url.com")
+@patch("librarybench.execution.asyncio.run")
 def test_run_unit_tests(mock_asyncio_run):
     """Test that run_unit_tests correctly calls run_unit_tests_async using asyncio.run."""
     # Setup test data

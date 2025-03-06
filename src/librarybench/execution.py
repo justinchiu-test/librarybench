@@ -16,17 +16,20 @@ CYBER_URL: str = os.getenv("CYBER_URL", "")
 
 class StdinStdoutDict(Dict[str, str]):
     """A stdin/stdout pair for evaluation."""
+
     pass
 
 
 class ExecutionOutput(BaseModel):
     """Output of the execution of a generation on a test."""
+
     run_output: Dict[str, Any] = Field(default_factory=dict)
     compile_output: Optional[Dict[str, Any]] = None
 
 
 class EvaluationResult(BaseModel):
     """Result of evaluating a single code snippet against a single test."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
     code: str
     test: Union[str, StdinStdoutDict]
@@ -34,7 +37,7 @@ class EvaluationResult(BaseModel):
     exec_output: ExecutionOutput = Field(default_factory=ExecutionOutput)
     uncaught_exception: Optional[str] = None
     error_type: Optional[str] = None
-    
+
     @field_validator("uncaught_exception", mode="after")
     def validate_uncaught_exception(cls, field) -> Optional[str]:
         if isinstance(field, Exception):
@@ -46,6 +49,7 @@ class EvaluationResult(BaseModel):
 
 class ProblemEvaluationResult(BaseModel):
     """Results of evaluating all solutions for a single problem."""
+
     problem_id: int
     model_tests_passed: int = 0
     model_tests_total: int = 0
@@ -59,6 +63,7 @@ class ProblemEvaluationResult(BaseModel):
 
 class EvaluationResults(BaseModel):
     """Collection of evaluation results for multiple problems."""
+
     results: List[ProblemEvaluationResult] = Field(default_factory=list)
     model_total_passed: int = 0
     model_total_tests: int = 0
@@ -185,7 +190,7 @@ async def evaluate_solutions_async(
         solutions = json.load(f)
 
     results = []
-    
+
     for i, solution_data in enumerate(solutions):
         print(
             f"Evaluating problem {i + 1}: {solution_data.get('source', 'unknown')} "
@@ -251,7 +256,9 @@ async def evaluate_solutions_async(
         # Run code against test cases asynchronously
         model_results = await run_unit_tests_async([model_code], stdin_stdout_tests)
         human_results = (
-            await run_unit_tests_async([human_code], stdin_stdout_tests) if human_code else []
+            await run_unit_tests_async([human_code], stdin_stdout_tests)
+            if human_code
+            else []
         )
 
         # Summarize results - each element in model_results is a list of test results for each test
@@ -295,7 +302,7 @@ async def evaluate_solutions_async(
     model_total_tests = sum(r.model_tests_total for r in results)
     human_total_passed = sum(r.human_tests_passed for r in results)
     human_total_tests = sum(r.human_tests_total for r in results)
-    
+
     evaluation_results = EvaluationResults(
         results=results,
         model_total_passed=model_total_passed,

@@ -7,6 +7,7 @@ import argparse
 from typing import Optional
 from librarybench.generation import generate_solutions
 
+
 async def main(
     model_type: str = "claude",
     model_name: Optional[str] = None,
@@ -15,7 +16,7 @@ async def main(
     output_dir: str = "data",
 ):
     """Generate solutions for chess problems.
-    
+
     Args:
         model_type: Type of model to use ("openai" or "claude")
         model_name: Specific model name (optional)
@@ -48,13 +49,16 @@ async def main(
         problem_types=["chess"],  # Only generate chess problems
         output_dir=output_dir,
     )
-    
+
     print("\nGeneration complete!")
     model_key = model_name.replace("-", "_").replace(".", "_")
     print(f"Results saved to: {output_dir}/{model_key}_chess_solutions.json")
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Generate solutions for chess problems in TACO")
+    parser = argparse.ArgumentParser(
+        description="Generate solutions for chess problems in TACO"
+    )
     parser.add_argument(
         "--model-type",
         choices=["openai", "claude"],
@@ -84,9 +88,9 @@ if __name__ == "__main__":
         default="data",
         help="Directory for output files",
     )
-    
+
     args = parser.parse_args()
-    
+
     asyncio.run(
         main(
             model_type=args.model_type,

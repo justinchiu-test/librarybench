@@ -63,7 +63,9 @@ async def run_workflow(
         solution_file = f"{output_dir}/{model_key}_{problem_type}_solutions.json"
 
         print(f"\nStep 2: Evaluating {problem_type} solutions...")
-        await evaluate_solutions_async(solution_file=solution_file, output_dir=output_dir)
+        await evaluate_solutions_async(
+            solution_file=solution_file, output_dir=output_dir
+        )
 
         print(f"\nStep 3: Improving {problem_type} solutions...")
         improved_file = (

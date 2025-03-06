@@ -45,7 +45,7 @@ def format_prompt(example: Dict[str, Any]) -> str:
             input_output = json.loads(input_output)
         except json.JSONDecodeError:
             input_output = {"inputs": [], "outputs": []}
-    
+
     # Extract up to 3 test cases
     test_cases_md = ""
     if "inputs" in input_output and "outputs" in input_output:
@@ -53,7 +53,7 @@ def format_prompt(example: Dict[str, Any]) -> str:
         outputs = input_output["outputs"]
         for i in range(min(3, len(inputs))):
             test_cases_md += f"""
-### Test Case {i+1}
+### Test Case {i + 1}
 **Input:**
 ```
 {inputs[i]}
@@ -128,6 +128,8 @@ async def generate_solution(
                 # Store the solution with the model-specific key name
                 model_solution_key = f"{llm_client.model_name}_solution"
                 result[model_solution_key] = solution_text
+                # Save the prompt used for this generation
+                result["prompt"] = prompt
                 # Rename question to problem for clarity in the output
                 result["problem"] = (
                     result.pop("question") if "question" in result else None
@@ -146,6 +148,8 @@ async def generate_solution(
                     # Store the error with the model-specific key name
                     model_solution_key = f"{llm_client.model_name}_solution"
                     result[model_solution_key] = f"ERROR: {str(e)}"
+                    # Save the prompt used for this generation
+                    result["prompt"] = prompt
                     # Rename question to problem for clarity in the output
                     result["problem"] = (
                         result.pop("question") if "question" in result else None

@@ -120,6 +120,10 @@ results = compare_solutions(
 print_comparison_results(results)
 ```
 
+## Package Structure
+
+The codebase has been refactored into a proper Python package structure. All functionality is organized in the `src/librarybench` package with improved structure and interfaces.
+
 ### Complete Workflow Example
 
 The library includes a complete example workflow that demonstrates the entire pipeline:

@@ -16,7 +16,7 @@ async def run_workflow(
     model_name: Optional[str] = None,
     sample_size: int = 5,
     problem_types: list = ["search"],
-    max_iterations: int = 3,
+    max_iterations: int = 2,
     output_dir: str = "data",
 ):
     """Run the full LibraryBench workflow.

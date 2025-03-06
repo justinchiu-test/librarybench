@@ -12,30 +12,97 @@ if not CYBER_URL:
     raise ValueError("Please set the CYBER_URL environment variable")
 
 
-# Function to extract code from Claude's solution or O3 mini solution
-def extract_code(solution):
-    # For O3 mini solutions, try to extract code between dashed lines
+# Import LLM client classes
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+try:
+    from taco_solution_generator import OpenAiClient, ClaudeClient
+except ImportError:
+    # Define fallback classes if import fails
+    class OpenAiClient:
+        def extract_code(self, solution):
+            """Extract code from OpenAI solution."""
+            # For O3 mini solutions, try to extract code between dashed lines
+            dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
+            match = re.search(dashed_code_pattern, solution, re.DOTALL)
+            if match:
+                return match.group(1)
+                
+            # Try to extract code between ```python and ``` markers
+            code_pattern = r"```python\n(.*?)\n```"
+            match = re.search(code_pattern, solution, re.DOTALL)
+            if match:
+                return match.group(1)
+                
+            # If no markers found, try to extract the first code-like block
+            code_pattern = r"class .*?:|def .*?:"
+            match = re.search(code_pattern, solution)
+            if match:
+                # Get the position of the match
+                start_pos = match.start()
+                # Extract from this position to the end
+                return solution[start_pos:]
+                
+            return solution
+            
+    class ClaudeClient:
+        def extract_code(self, solution):
+            """Extract code from Claude solution."""
+            # Try to extract code between ```python and ``` markers (Claude's standard format)
+            code_pattern = r"```python\n(.*?)\n```"
+            match = re.search(code_pattern, solution, re.DOTALL)
+            if match:
+                return match.group(1)
+                
+            # If no python markers found, try with any language marker
+            code_pattern = r"```(?:\w+)?\n(.*?)\n```"
+            match = re.search(code_pattern, solution, re.DOTALL)
+            if match:
+                return match.group(1)
+                
+            # If no markers found, try to extract the first code-like block
+            code_pattern = r"class .*?:|def .*?:"
+            match = re.search(code_pattern, solution)
+            if match:
+                # Get the position of the match
+                start_pos = match.start()
+                # Extract from this position to the end
+                return solution[start_pos:]
+                
+            return solution
+
+# Function to extract code from model solutions
+def extract_code(solution, model_type=None):
+    """
+    Extract code from model solutions using the appropriate extractor.
+    
+    Args:
+        solution: String containing the model's solution
+        model_type: Optional string indicating the model type ('openai' or 'claude')
+                   If None, will try to detect from solution format
+    
+    Returns:
+        The extracted code
+    """
+    # If model type is explicitly provided
+    if model_type == "openai":
+        extractor = OpenAiClient()
+        return extractor.extract_code(solution)
+    elif model_type == "claude":
+        extractor = ClaudeClient()
+        return extractor.extract_code(solution)
+    
+    # Auto-detect model type based on solution patterns
+    # Check for OpenAI's dash pattern first (more specific)
     dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
-    match = re.search(dashed_code_pattern, solution, re.DOTALL)
-    if match:
-        return match.group(1)
-
-    # Try to extract code between ```python and ``` markers
-    code_pattern = r"```python\n(.*?)\n```"
-    match = re.search(code_pattern, solution, re.DOTALL)
-    if match:
-        return match.group(1)
-
-    # If no markers found, try to extract the first code-like block
-    code_pattern = r"class .*?:|def .*?:"
-    match = re.search(code_pattern, solution)
-    if match:
-        # Get the position of the match
-        start_pos = match.start()
-        # Extract from this position to the end
-        return solution[start_pos:]
-
-    return solution
+    if re.search(dashed_code_pattern, solution, re.DOTALL):
+        extractor = OpenAiClient()
+        return extractor.extract_code(solution)
+    
+    # Default to Claude-style extraction (which is more general)
+    extractor = ClaudeClient()
+    return extractor.extract_code(solution)
 
 
 async def execute_test(
@@ -136,11 +203,30 @@ def evaluate_solutions(solution_file):
 
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
-        # Extract code from the solution
-        if "o3_mini_solution" in solution_data:
-            model_code = extract_code(solution_data.get("o3_mini_solution", ""))
-        else:
-            model_code = extract_code(solution_data.get("claude_solution", ""))
+        # Extract code from the solution - find model-specific solution key
+        model_code = ""
+        model_type = None
+        
+        # Find the first key that looks like a model solution
+        for key in solution_data:
+            if key.endswith("_solution") and key != "human_solution":
+                # Determine model type based on key name
+                if "claude" in key or "anthropic" in key:
+                    model_type = "claude"
+                elif "o3" in key or "gpt" in key or "openai" in key:
+                    model_type = "openai"
+                    
+                model_code = extract_code(solution_data.get(key, ""), model_type)
+                break
+                
+        # Fallback if no model solution found
+        if not model_code:
+            # Try the most common solution keys
+            if "o3_mini_solution" in solution_data:
+                model_code = extract_code(solution_data.get("o3_mini_solution", ""), "openai")
+            elif "claude_solution" in solution_data:
+                model_code = extract_code(solution_data.get("claude_solution", ""), "claude")
+                
         human_code = solution_data.get("human_solution", "")
 
         # Run code against test cases
@@ -210,21 +296,50 @@ def evaluate_solutions(solution_file):
 
 
 def main():
+    """Run the evaluation with command-line arguments."""
+    import argparse
+    import glob
+    
     # Check if CYBER_URL is set
     if not CYBER_URL:
         print("Error: CYBER_URL environment variable is not set")
         return
-
-    # Evaluate solutions
-    print("Evaluating chess problem solutions...")
-    evaluate_solutions("data/o3mini_chess_solutions.json")
-
-    print("Evaluating search problem solutions...")
-    evaluate_solutions("data/o3mini_search_solutions.json")
-
-    # Evaluate data structure problems as well
-    print("\nEvaluating data structure problem solutions...")
-    evaluate_solutions("data/o3mini_datastructure_solutions.json")
+    
+    parser = argparse.ArgumentParser(description="Evaluate generated solutions")
+    parser.add_argument(
+        "--files", 
+        nargs="*", 
+        help="Specific solution files to evaluate"
+    )
+    parser.add_argument(
+        "--model", 
+        type=str,
+        help="Filter files by model name (e.g., 'o3_mini', 'claude_3_opus')"
+    )
+    
+    args = parser.parse_args()
+    
+    # Use provided files, or find all solution files that don't have "execution_results" in their name
+    if args.files:
+        solution_files = args.files
+    else:
+        solution_files = [
+            f for f in glob.glob("data/*_solutions.json") 
+            if "execution_results" not in f
+        ]
+        
+        # Filter by model if specified
+        if args.model:
+            solution_files = [f for f in solution_files if args.model in f]
+    
+    if not solution_files:
+        print("No solution files found to evaluate.")
+        return
+        
+    # Evaluate each file
+    for solution_file in solution_files:
+        print(f"\nEvaluating solutions in {solution_file}...")
+        evaluate_solutions(solution_file)
 
 
 if __name__ == "__main__":

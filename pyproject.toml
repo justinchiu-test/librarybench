@@ -16,6 +16,7 @@ dependencies = [
     "aiohttp>=3.8.0",
     "asyncio>=3.4.3",
     "pytest>=8.3.5",
+    "pytest-asyncio>=0.25.3",
 ]
 
 [project.optional-dependencies]

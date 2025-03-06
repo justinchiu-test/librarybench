@@ -1,3 +1,4 @@
+import ast
 import os
 import json
 import datasets
@@ -17,8 +18,8 @@ async_client = openai.AsyncOpenAI(api_key=api_key)
 def get_solutions(xs):
     """Extract examples with valid solutions."""
     examples = []
-    for i, x in enumerate(xs):
-        solutions = ast.literal_eval(solutions_str)
+    for x in xs:
+        solutions = ast.literal_eval(x["solutions"])
         if len(solutions) > 0:
             x["solutions"] = solutions
             examples.append(x)
@@ -133,6 +134,7 @@ async def main_async():
     # Filter for problems with specific skills
     search_problems = [x for x in train if "Complete search" in x["skill_types"]]
     datastructure_problems = [x for x in train if "Data structures" in x["skill_types"]]
+    chess_problems = [x for x in train if "chess" in x["question"].lower()]
 
     # Select a sample for evaluation
     sample_size = 5  # Process 5 examples of each type
@@ -154,6 +156,14 @@ async def main_async():
         datastructure_examples, sample_size, concurrency
     )
     save_solutions(datastructure_results, "data/o3mini_datastructure_solutions.json")
+
+    # Generate solutions for data structure problems
+    print(f"Generating solutions for {sample_size} chess problems...")
+    chess_examples = get_solutions(chess_problems)
+    chess_results = await generate_solutions_from_examples(
+        chess_examples, sample_size, concurrency
+    )
+    save_solutions(chess_results, "data/o3mini_chess_solutions.json")
 
     print("Done! Solutions generated for both problem types.")
 

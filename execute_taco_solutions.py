@@ -216,6 +216,9 @@ def main():
         return
 
     # Evaluate solutions
+    print("Evaluating chess problem solutions...")
+    evaluate_solutions("data/o3mini_chess_solutions.json")
+
     print("Evaluating search problem solutions...")
     evaluate_solutions("data/o3mini_search_solutions.json")
 

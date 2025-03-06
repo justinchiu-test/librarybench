@@ -5,12 +5,65 @@ import json
 import asyncio
 import aiohttp
 from tqdm import tqdm
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
+
+
+class StdinStdoutDict(Dict[str, str]):
+    """A stdin/stdout pair for evaluation."""
+    pass
+
+
+class ExecutionOutput(BaseModel):
+    """Output of the execution of a generation on a test."""
+    run_output: Dict[str, Any] = Field(default_factory=dict)
+    compile_output: Optional[Dict[str, Any]] = None
+
+
+class EvaluationResult(BaseModel):
+    """Result of evaluating a single code snippet against a single test."""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    code: str
+    test: Union[str, StdinStdoutDict]
+    passed: bool = False
+    exec_output: ExecutionOutput = Field(default_factory=ExecutionOutput)
+    uncaught_exception: Optional[str] = None
+    error_type: Optional[str] = None
+    
+    @field_validator("uncaught_exception", mode="after")
+    def validate_uncaught_exception(cls, field) -> Optional[str]:
+        if isinstance(field, Exception):
+            field = str(field)
+        if field is not None and not isinstance(field, str):
+            raise ValueError("uncaught_exception must be a string or None")
+        return field
+
+
+class ProblemEvaluationResult(BaseModel):
+    """Results of evaluating all solutions for a single problem."""
+    problem_id: int
+    model_tests_passed: int = 0
+    model_tests_total: int = 0
+    human_tests_passed: int = 0
+    human_tests_total: int = 0
+    detailed_model_results: List[Dict[str, Any]] = Field(default_factory=list)
+    detailed_human_results: List[Dict[str, Any]] = Field(default_factory=list)
+    # Additional fields from original solution data
+    model_config = ConfigDict(extra="allow")
+
+
+class EvaluationResults(BaseModel):
+    """Collection of evaluation results for multiple problems."""
+    results: List[ProblemEvaluationResult] = Field(default_factory=list)
+    model_total_passed: int = 0
+    model_total_tests: int = 0
+    human_total_passed: int = 0
+    human_total_tests: int = 0
 
 
 async def execute_test(
@@ -108,17 +161,17 @@ def run_unit_tests(
     )
 
 
-def evaluate_solutions(
+async def evaluate_solutions_async(
     solution_file: str, output_dir: Optional[str] = None
-) -> List[Dict[str, Any]]:
-    """Evaluate generated solutions from the given file.
+) -> EvaluationResults:
+    """Evaluate generated solutions from the given file asynchronously.
 
     Args:
         solution_file: Path to JSON file with solutions
         output_dir: Directory to save results (defaults to "data")
 
     Returns:
-        List of evaluation results
+        EvaluationResults object with evaluation results
     """
     if not CYBER_URL:
         raise ValueError("Please set the CYBER_URL environment variable")
@@ -132,7 +185,7 @@ def evaluate_solutions(
         solutions = json.load(f)
 
     results = []
-
+    
     for i, solution_data in enumerate(solutions):
         print(
             f"Evaluating problem {i + 1}: {solution_data.get('source', 'unknown')} "
@@ -195,10 +248,10 @@ def evaluate_solutions(
 
         human_code = solution_data.get("human_solution", "")
 
-        # Run code against test cases
-        model_results = run_unit_tests([model_code], stdin_stdout_tests)
+        # Run code against test cases asynchronously
+        model_results = await run_unit_tests_async([model_code], stdin_stdout_tests)
         human_results = (
-            run_unit_tests([human_code], stdin_stdout_tests) if human_code else []
+            await run_unit_tests_async([human_code], stdin_stdout_tests) if human_code else []
         )
 
         # Summarize results - each element in model_results is a list of test results for each test
@@ -219,23 +272,37 @@ def evaluate_solutions(
                 f"  Human solution: {human_passed}/{len(stdin_stdout_tests)} tests passed"
             )
 
-        # Save detailed results
-        result_entry = {
-            "problem_id": i,
-            "model_tests_passed": model_passed,
-            "model_tests_total": len(stdin_stdout_tests),
-            "human_tests_passed": human_passed,
-            "human_tests_total": len(stdin_stdout_tests),
-            "detailed_model_results": model_results[0] if model_results else [],
-            "detailed_human_results": human_results[0] if human_results else [],
-        }
+        # Create problem evaluation result
+        problem_result = ProblemEvaluationResult(
+            problem_id=i,
+            model_tests_passed=model_passed,
+            model_tests_total=len(stdin_stdout_tests),
+            human_tests_passed=human_passed,
+            human_tests_total=len(stdin_stdout_tests),
+            detailed_model_results=model_results[0] if model_results else [],
+            detailed_human_results=human_results[0] if human_results else [],
+        )
 
         # Include all original keys from solution_data
         for key, value in solution_data.items():
-            if key not in result_entry:
-                result_entry[key] = value
+            if key not in problem_result.model_dump():
+                setattr(problem_result, key, value)
 
-        results.append(result_entry)
+        results.append(problem_result)
+
+    # Create evaluation results
+    model_total_passed = sum(r.model_tests_passed for r in results)
+    model_total_tests = sum(r.model_tests_total for r in results)
+    human_total_passed = sum(r.human_tests_passed for r in results)
+    human_total_tests = sum(r.human_tests_total for r in results)
+    
+    evaluation_results = EvaluationResults(
+        results=results,
+        model_total_passed=model_total_passed,
+        model_total_tests=model_total_tests,
+        human_total_passed=human_total_passed,
+        human_total_tests=human_total_tests,
+    )
 
     # Save results to file
     output_file = os.path.join(
@@ -243,16 +310,11 @@ def evaluate_solutions(
         os.path.basename(solution_file).replace(".json", "_execution_results.json"),
     )
     with open(output_file, "w") as f:
-        json.dump(results, f, indent=2)
+        json.dump([r.model_dump() for r in results], f, indent=2)
 
     print(f"Execution results saved to {output_file}")
 
     # Print summary
-    model_total_passed = sum(r["model_tests_passed"] for r in results)
-    model_total_tests = sum(r["model_tests_total"] for r in results)
-    human_total_passed = sum(r["human_tests_passed"] for r in results)
-    human_total_tests = sum(r["human_tests_total"] for r in results)
-
     if model_total_tests > 0:
         print("\nSummary:")
         print(
@@ -263,4 +325,21 @@ def evaluate_solutions(
                 f"Human solutions: {human_total_passed}/{human_total_tests} tests passed ({human_total_passed / human_total_tests * 100:.2f}%)"
             )
 
-    return results
+    return evaluation_results
+
+
+def evaluate_solutions(
+    solution_file: str, output_dir: Optional[str] = None
+) -> List[Dict[str, Any]]:
+    """Evaluate generated solutions from the given file (synchronous wrapper).
+
+    Args:
+        solution_file: Path to JSON file with solutions
+        output_dir: Directory to save results (defaults to "data")
+
+    Returns:
+        List of evaluation results
+    """
+    # Use run_unit_tests_async directly to avoid nested asyncio.run() calls
+    results = asyncio.run(evaluate_solutions_async(solution_file, output_dir))
+    return [r.model_dump() for r in results.results]

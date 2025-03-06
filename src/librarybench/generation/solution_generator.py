@@ -38,13 +38,55 @@ def format_prompt(example: Dict[str, Any]) -> str:
     Returns:
         Formatted prompt for the model
     """
+    # Parse input_output field to extract test cases
+    input_output = example.get("input_output", "{}")
+    if isinstance(input_output, str):
+        try:
+            input_output = json.loads(input_output)
+        except json.JSONDecodeError:
+            input_output = {"inputs": [], "outputs": []}
+    
+    # Extract up to 3 test cases
+    test_cases_md = ""
+    if "inputs" in input_output and "outputs" in input_output:
+        inputs = input_output["inputs"]
+        outputs = input_output["outputs"]
+        for i in range(min(3, len(inputs))):
+            test_cases_md += f"""
+### Test Case {i+1}
+**Input:**
+```
+{inputs[i]}
+```
+
+**Expected Output:**
+```
+{outputs[i]}
+```
+"""
+
     prompt = f"""
-You are an expert programming problem solver. Please solve the following problem using efficient algorithms and provide a well-commented solution.
+You are an expert programming problem solver. Please solve the following problem with a complete, runnable solution.
 
 Problem:
 {example["question"]}
 
-Please provide a clear, efficient solution in Python. Make sure to handle edge cases and optimize for the expected time and space complexity.
+## Example Test Cases
+{test_cases_md}
+
+## Requirements
+1. Your solution MUST read all input from standard input (stdin) and write to standard output (stdout)
+2. Include ALL necessary code to parse input and format output correctly
+3. Your solution must pass ALL test cases and handle edge cases
+4. Provide a fully executable solution - this code will be run as-is without modification
+5. Do not include explanatory text or comments outside of your code block
+
+## Solution
+Please write your complete solution below:
+
+```python
+# Your solution code here
+```
 """
     return prompt
 

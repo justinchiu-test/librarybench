@@ -6,7 +6,7 @@ import argparse
 from typing import Optional
 
 from librarybench.generation import generate_solutions
-from librarybench.execution import evaluate_solutions
+from librarybench.execution import evaluate_solutions_async
 from librarybench.improvement import batch_improve_solutions
 from librarybench.analysis import compare_solutions, print_comparison_results
 
@@ -43,7 +43,7 @@ async def run_workflow(
         if model_type == "openai":
             model_name = "o3-mini"
         else:
-            model_name = "claude-3-haiku-20240307"
+            model_name = "claude-3-7-sonnet-20250219"
 
     # Standardize model name for filenames
     model_key = model_name.replace("-", "_").replace(".", "_")
@@ -63,7 +63,7 @@ async def run_workflow(
         solution_file = f"{output_dir}/{model_key}_{problem_type}_solutions.json"
 
         print(f"\nStep 2: Evaluating {problem_type} solutions...")
-        evaluate_solutions(solution_file=solution_file, output_dir=output_dir)
+        await evaluate_solutions_async(solution_file=solution_file, output_dir=output_dir)
 
         print(f"\nStep 3: Improving {problem_type} solutions...")
         improved_file = (
@@ -118,7 +118,7 @@ def main():
         "--problem-types",
         nargs="+",
         choices=["search", "datastructure", "chess"],
-        default=["search"],
+        default=["chess"],
         help="Problem types to process",
     )
     parser.add_argument(

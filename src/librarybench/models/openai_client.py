@@ -9,6 +9,7 @@ from librarybench.models.llm_client import LlmClient
 
 class OpenAiClient(LlmClient):
     """Client for OpenAI models."""
+    type = "openai"
 
     def __init__(self, model: str = "o3-mini"):
         # Load API key from environment variable

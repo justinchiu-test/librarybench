@@ -76,7 +76,7 @@ class Problem(BaseModel):
 class SolutionResult(BaseModel):
     """Result of solution generation or improvement."""
 
-    problem_id: int
+    problem: Problem
     status: str = "success"
     code: str
     pass_ratio: float = 0.0
@@ -84,6 +84,8 @@ class SolutionResult(BaseModel):
     tests_total: int = 0
     iterations: int = 1
     history: list[dict[str, Any]] = Field(default_factory=list)
+    model_type: str
+    model: str
 
 
 class BatchResult(BaseModel):

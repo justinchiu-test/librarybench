@@ -185,33 +185,7 @@ async def evaluate_solutions_async(
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution - find model-specific solution key
-        model_code = ""
-        model_type = None
-
-        # Find the first key that looks like a model solution
-        for key in solution_data:
-            if key.endswith("_solution") and key != "human_solution":
-                # Determine model type based on key name
-                if "claude" in key or "anthropic" in key:
-                    model_type = "claude"
-                elif "o3" in key or "gpt" in key or "openai" in key:
-                    model_type = "openai"
-
-                model_code = extract_code(solution_data.get(key, ""), model_type)
-                break
-
-        # Fallback if no model solution found
-        if not model_code:
-            # Try the most common solution keys
-            if "o3_mini_solution" in solution_data:
-                model_code = extract_code(
-                    solution_data.get("o3_mini_solution", ""), "openai"
-                )
-            elif "claude_solution" in solution_data:
-                model_code = extract_code(
-                    solution_data.get("claude_solution", ""), "claude"
-                )
-
+        model_code = extract_code(solution_data.get("model_code"))
         human_code = solution_data.get("human_solution", "")
 
         # Run code against test cases asynchronously

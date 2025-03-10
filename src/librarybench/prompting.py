@@ -86,7 +86,7 @@ This solution is failing on some test cases. Here are the test results:
 Please rewrite the solution to fix the issues and make it pass all the test cases.
 Focus on correctness first, then efficiency. Make sure to handle all edge cases.
 
-Return the improved solution wrapped in markdown
+Return the improved solution wrapped in markdown:
 ```python
 ...
 ```"""

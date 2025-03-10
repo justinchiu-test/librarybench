@@ -76,8 +76,6 @@ def get_problems(xs: List[Dict[str, Any]]) -> List[Problem]:
 
 def save_solutions(
     results: List[SolutionResult],
-    problems: List[Problem],
-    llm_client: LlmClient,
     output_file: str,
 ) -> None:
     """
@@ -85,35 +83,11 @@ def save_solutions(
 
     Args:
         results: List of solution results
-        problems: Original list of problems
-        llm_client: LLM client used for generation
         output_file: Path to save the results to
     """
-    # Create a map from problem ID to result
-    result_map = {r.problem_id: r for r in results}
-
-    # Prepare output data
-    output_data = []
-
-    # For each problem, add its result data
-    for i, problem in enumerate(problems):
-        if i in result_map:
-            result = result_map[i]
-
-            # Create a solution entry
-            solution_entry = problem.model_dump()
-
-            # Add the model solution
-            model_key = f"{llm_client.model_name}_solution"
-            solution_entry[model_key] = result.code
-
-            # Add to output
-            output_data.append(solution_entry)
-
     # Save to file
     with open(output_file, "w") as f:
-        json.dump(output_data, f, indent=2)
-
+        json.dump([x.model_dump() for x in results], f, indent=2)
     print(f"Results saved to {output_file}")
 
 
@@ -145,7 +119,9 @@ async def process_solution(
     if not stdin_stdout_tests:
         logger.warning(f"No test cases found for problem {problem_id}")
         return SolutionResult(
-            problem_id=problem_id, code="# Error: No test cases found", status="error"
+            problem=problem, code="# Error: No test cases found", status="error",
+            model_name=llm_client.model_name,
+            model_type=llm_client.type,
         )
 
     # Track solution history
@@ -184,7 +160,7 @@ async def process_solution(
         if passed_ratio >= target_passed_ratio:
             logger.info("Initial solution already meets target pass ratio")
             return SolutionResult(
-                problem_id=problem_id,
+                problem=problem,
                 code=original_code,
                 status="success",
                 pass_ratio=passed_ratio,
@@ -192,6 +168,8 @@ async def process_solution(
                 tests_total=total,
                 iterations=1,
                 history=history,
+                model_name=llm_client.model_name,
+                model_type=llm_client.type
             )
 
         # Set initial code to start improving
@@ -233,7 +211,7 @@ async def process_solution(
                 logger.info("Target pass ratio reached. Stopping.")
 
                 return SolutionResult(
-                    problem_id=problem_id,
+                    problem=problem,
                     code=code,
                     status="success",
                     pass_ratio=passed_ratio,
@@ -241,6 +219,8 @@ async def process_solution(
                     tests_total=total,
                     iterations=1,
                     history=history,
+                    model_name=llm_client.model_name,
+                    model_type=llm_client.type
                 )
         else:
             logger.warning(f"Failed to extract code for problem {problem_id}")
@@ -248,6 +228,8 @@ async def process_solution(
                 problem_id=problem_id,
                 code="# Error: Failed to extract code",
                 status="error",
+                model_name=llm_client.model_name,
+                model_type=llm_client.type
             )
 
     # If we need to iterate for improvement or didn't reach target on first try
@@ -325,7 +307,7 @@ async def process_solution(
 
     # Return the final solution
     return SolutionResult(
-        problem_id=problem_id,
+        problem=problem,
         code=code,
         status="success",
         pass_ratio=passed_ratio,
@@ -333,6 +315,8 @@ async def process_solution(
         tests_total=total,
         iterations=len(history),
         history=history,
+        model_name=llm_client.model_name,
+        model_type=llm_client.type
     )
 
 

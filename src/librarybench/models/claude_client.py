@@ -8,6 +8,7 @@ from librarybench.models.llm_client import LlmClient
 
 class ClaudeClient(LlmClient):
     """Client for Anthropic Claude models."""
+    type = "claude"
 
     def __init__(self, model: str = "claude-3-7-sonnet-20250219"):
         try:

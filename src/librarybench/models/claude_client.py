@@ -42,8 +42,9 @@ class ClaudeClient(LlmClient):
             if isinstance(response.content, list):
                 text_blocks = []
                 for block in response.content:
+                    # TODO: thinking blocks might have a different field?
                     if hasattr(block, "text"):
-                        text_blocks.append(block.text)
+                        text_blocks.append(block.text) # type: ignore
                 return "".join(text_blocks)
             # Legacy API access
             return response.content

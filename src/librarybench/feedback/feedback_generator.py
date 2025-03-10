@@ -95,22 +95,8 @@ def get_model_feedback(
     all_results = []
 
     for solution_data in solutions:
-        # Use the input_output field directly from the solution data
-        input_output = solution_data.get("input_output")
-        if not input_output:
-            continue
-
-        # Parse input_output if it's a string
-        if isinstance(input_output, str):
-            try:
-                input_output = json.loads(input_output)
-            except json.JSONDecodeError:
-                continue
-
-        # Format as stdin/stdout tests
-        stdin_stdout_tests = create_test_cases_from_input_output(input_output)
-        if not stdin_stdout_tests:
-            continue
+        stdin_stdout_tests = solution_data.get("tests")
+        stdin_stdout_tests = json.loads(stdin_stdout_tests)
 
         # Extract code from the solution based on model name
         model_solution_key = None

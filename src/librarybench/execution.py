@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
-from librarybench.types import StdinStdoutDict, ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult
+from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, StdinStdoutDict
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
@@ -62,7 +62,7 @@ async def execute_test(
 
 async def run_unit_tests_async(
     generations: List[str],
-    stdin_stdout_tests: List[Dict[str, str]],
+    stdin_stdout_tests: List[StdinStdoutDict],
     concurrency: int = 512,
 ) -> List[List[Dict[str, Any]]]:
     """Execute code against unit tests using the execution API asynchronously.
@@ -92,7 +92,7 @@ async def run_unit_tests_async(
 
 def run_unit_tests(
     generations: List[str],
-    stdin_stdout_tests: List[Dict[str, str]],
+    stdin_stdout_tests: List[StdinStdoutDict],
     concurrency: int = 512,
 ) -> List[List[Dict[str, Any]]]:
     """Execute code against unit tests using the execution API.
@@ -112,7 +112,7 @@ def run_unit_tests(
 
 async def evaluate_solution(
     code: str,
-    test_cases: List[Dict[str, str]],
+    test_cases: List[StdinStdoutDict],
     cyber_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
@@ -181,29 +181,7 @@ async def evaluate_solutions_async(
         )
 
         # Use the input_output field directly from the solution data
-        input_output = solution_data.get("input_output")
-        if not input_output:
-            print(f"  No input_output field found in solution data for problem {i + 1}")
-            continue
-
-        # Parse input_output if it's a string
-        if isinstance(input_output, str):
-            try:
-                input_output = json.loads(input_output)
-            except json.JSONDecodeError:
-                print(f"  Error parsing input_output JSON for problem {i + 1}")
-                continue
-
-        # Format as stdin/stdout tests
-        stdin_stdout_tests = []
-        if "inputs" in input_output and "outputs" in input_output:
-            for inp, out in zip(input_output["inputs"], input_output["outputs"]):
-                stdin_stdout_tests.append({"stdin": inp, "stdout": out})
-
-        if not stdin_stdout_tests:
-            print(f"  No test cases found for problem {i + 1}")
-            continue
-
+        stdin_stdout_tests = solution_data.get("tests")
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution - find model-specific solution key

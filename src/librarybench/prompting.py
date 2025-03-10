@@ -3,8 +3,10 @@
 import json
 from typing import Dict, Any, List
 
+from librarybench.types import Problem
 
-def format_generation_prompt(example: Dict[str, Any]) -> str:
+
+def format_generation_prompt(example: Problem) -> str:
     """Format the problem for initial solution generation.
 
     Args:
@@ -14,27 +16,17 @@ def format_generation_prompt(example: Dict[str, Any]) -> str:
         Formatted prompt for the model
     """
     # Parse input_output field to extract test cases
-    input_output = example.get("input_output", "{}")
-    if isinstance(input_output, str):
-        try:
-            input_output = json.loads(input_output)
-        except json.JSONDecodeError:
-            input_output = {}
+    input_output = example.tests
 
     # Extract the first test case for the prompt
-    first_input = ""
-    first_output = ""
-
-    if "inputs" in input_output and "outputs" in input_output:
-        if len(input_output["inputs"]) > 0 and len(input_output["outputs"]) > 0:
-            first_input = input_output["inputs"][0]
-            first_output = input_output["outputs"][0]
+    first_input = input_output[0]["stdin"]
+    first_output = input_output[0]["stdout"]
 
     # Construct the prompt
     prompt = f"""You are an expert Python programmer. Your task is to solve a coding problem.
 
 Problem statement:
-{example.get("question", "No problem statement provided.")}
+{example.question}
 
 Write a Python solution that solves this problem. The solution should be efficient and handle all edge cases.
 
@@ -53,10 +45,9 @@ Implement your solution wrapped in markdown:
 
 
 def format_improvement_prompt(
-    problem: Dict[str, Any],
+    problem: Problem,
     original_code: str,
     test_results: List[Dict[str, Any]],
-    stdin_stdout_tests: List[Dict[str, str]],
     passed: int,
     total: int,
 ) -> str:
@@ -76,12 +67,12 @@ def format_improvement_prompt(
     # Format feedback for the model
     from librarybench.utils import format_feedback
 
-    feedback = format_feedback(test_results, stdin_stdout_tests, passed, total)
+    feedback = format_feedback(test_results, problem.tests, passed, total)
 
     prompt = f"""You are an expert Python programmer. Your task is to fix a solution to a coding problem.
 
 Problem statement:
-{problem.get("question", "No problem statement provided.")}
+{problem.question}
 
 The current solution is:
 ```python

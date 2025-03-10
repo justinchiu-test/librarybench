@@ -2,7 +2,7 @@
 
 import re
 from typing import Optional, Dict, List, Any
-
+from librarybench.types import StdinStdoutDict
 
 def extract_code(solution: str, model_type: Optional[str] = None) -> str:
     """
@@ -65,7 +65,7 @@ def extract_code(solution: str, model_type: Optional[str] = None) -> str:
 
 def create_test_cases_from_input_output(
     input_output: dict,
-) -> List[Dict[str, str]]:
+) -> List[StdinStdoutDict]:
     """Convert input-output pairs to test cases for execution.
 
     Args:
@@ -83,7 +83,7 @@ def create_test_cases_from_input_output(
 
 def format_feedback(
     test_results: List[Dict[str, Any]],
-    test_cases: List[Dict[str, str]],
+    test_cases: List[StdinStdoutDict],
     passed_count: int,
     total_count: int,
 ) -> str:

@@ -6,10 +6,11 @@ from typing import Dict, Any, List, Tuple, Optional
 
 from librarybench.utils import extract_code
 from librarybench.feedback import create_test_cases_from_input_output
+from librarybench.types import StdinStdoutDict
 
 
 async def evaluate_solution(
-    code: str, stdin_stdout_tests: List[Dict[str, str]]
+    code: str, stdin_stdout_tests: list[StdinStdoutDict]
 ) -> Tuple[int, int, float]:
     """
     Evaluate a solution against test cases.
@@ -108,21 +109,8 @@ async def compare_solutions(
         improved_code = extract_code(imp_solution.get(improved_key, ""), model_type)
 
         # Get the input_output field
-        input_output = orig_solution.get("input_output")
-        if not input_output:
-            continue
-
-        # Parse input_output if it's a string
-        if isinstance(input_output, str):
-            try:
-                input_output = json.loads(input_output)
-            except json.JSONDecodeError:
-                continue
-
-        # Format as stdin/stdout tests
-        stdin_stdout_tests = create_test_cases_from_input_output(input_output)
-        if not stdin_stdout_tests:
-            continue
+        stdin_stdout_tests = orig_solution.get("tests")
+        stdin_stdout_tests = json.loads(stdin_stdout_tests)
 
         # Evaluate original solution asynchronously
         orig_passed, orig_total, orig_ratio = await evaluate_solution(

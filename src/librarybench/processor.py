@@ -5,7 +5,7 @@ import datasets
 import logging
 from typing import List, Optional
 
-from librarybench.solution import get_solutions, save_solutions, batch_process_solutions
+from librarybench.solution import get_problems, save_solutions, batch_process_solutions
 from librarybench.models import ClaudeClient, OpenAiClient
 from librarybench.types import BatchResult
 
@@ -160,60 +160,25 @@ async def solution_process(
         ]
         chess_problems = [x for x in train if "chess" in x["question"].lower()] # type: ignore
 
-        for problem_type in problem_types:
-            if problem_type == "search":
-                print(f"Processing {sample_size} search problems...")
-                search_examples = get_solutions(search_problems)
-                results = await batch_process_solutions(
-                    problems=search_examples[:sample_size],
-                    llm_client=llm_client,
-                    cyber_url=cyber_url,
-                    max_iterations=max_iterations,
-                    target_passed_ratio=target_passed_ratio,
-                    improvement_mode=False,
-                    concurrency=concurrency,
-                )
-                solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(
-                    results, search_examples[:sample_size], llm_client, solution_file
-                )
-                generated_files[problem_type] = solution_file
-
-            elif problem_type == "datastructure":
-                print(f"Processing {sample_size} data structure problems...")
-                ds_examples = get_solutions(datastructure_problems)
-                results = await batch_process_solutions(
-                    problems=ds_examples[:sample_size],
-                    llm_client=llm_client,
-                    cyber_url=cyber_url,
-                    max_iterations=max_iterations,
-                    target_passed_ratio=target_passed_ratio,
-                    improvement_mode=False,
-                    concurrency=concurrency,
-                )
-                solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(
-                    results, ds_examples[:sample_size], llm_client, solution_file
-                )
-                generated_files[problem_type] = solution_file
-
-            elif problem_type == "chess":
-                print(f"Processing {sample_size} chess problems...")
-                chess_examples = get_solutions(chess_problems)
-                results = await batch_process_solutions(
-                    problems=chess_examples[:sample_size],
-                    llm_client=llm_client,
-                    cyber_url=cyber_url,
-                    max_iterations=max_iterations,
-                    target_passed_ratio=target_passed_ratio,
-                    improvement_mode=False,
-                    concurrency=concurrency,
-                )
-                solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(
-                    results, chess_examples[:sample_size], llm_client, solution_file
-                )
-                generated_files[problem_type] = solution_file
+        mapping = dict(search=search_problems, datastrcutre=datastructure_problems, chess=chess_problems)
+        problem_sets = [mapping[x] for x in problem_types]
+        for problem_type, problems in zip(problem_types, problem_sets):
+            print(f"Processing {sample_size} {problem_type} problems...")
+            examples = get_problems(search_problems) # type: ignore
+            results = await batch_process_solutions(
+                problems=examples[:sample_size],
+                llm_client=llm_client,
+                cyber_url=cyber_url,
+                max_iterations=max_iterations,
+                target_passed_ratio=target_passed_ratio,
+                improvement_mode=False,
+                concurrency=concurrency,
+            )
+            solution_file = f"{output_prefix}_{problem_type}_solutions.json"
+            save_solutions(
+                results, examples[:sample_size], llm_client, solution_file
+            )
+            generated_files[problem_type] = solution_file
 
         print(
             f"Done! Solutions processed for all problem types using {llm_client.model_name}."

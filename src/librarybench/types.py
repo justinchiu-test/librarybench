@@ -65,6 +65,16 @@ class EvaluationResults(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
+class Problem(BaseModel):
+    problem_id: int
+    question: str
+    tests: list[StdinStdoutDict]
+    source: str
+    difficulty: str
+    human_solutions: list[str]
+    original_solution: str | None
+
+
 class SolutionResult(BaseModel):
     """Result of solution generation or improvement."""
 

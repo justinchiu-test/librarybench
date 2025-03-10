@@ -6,12 +6,13 @@ import asyncio
 import logging
 from typing import Dict, List, Any, Optional
 
-from librarybench.utils import extract_code, create_test_cases_from_input_output
+from librarybench.utils import extract_code
 from librarybench.models.llm_client import LlmClient
 from librarybench.llm import query_model
 from librarybench.execution import evaluate_solution
 from librarybench.prompting import format_generation_prompt, format_improvement_prompt
-from librarybench.types import SolutionResult
+from librarybench.types import Problem, SolutionResult
+from librarybench.utils import create_test_cases_from_input_output
 
 # Configure logging
 logging.basicConfig(
@@ -20,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def get_problems(xs: List[Dict[str, Any]]) -> List[Problem]:
     """
     Filter and prepare problem examples for solution generation.
 
@@ -44,12 +45,8 @@ def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             input_output = json.loads(input_output)
             # if this doesnt work, can use ast.literal_eval
 
-        # Check if the input_output has valid structure
-        if not isinstance(input_output, dict):
-            continue
-
-        if "inputs" not in input_output or "outputs" not in input_output:
-            continue
+        # Format as stdin/stdout tests
+        stdin_stdout_tests = create_test_cases_from_input_output(input_output)
 
         # Add source and difficulty if available
         source = x.get("source", "unknown")
@@ -58,15 +55,19 @@ def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         solutions = x.get("solutions")
         if solutions is not None:
             solutions = ast.literal_eval(solutions)
+        else:
+            solutions = []
 
         # Add to results
-        problem = {
-            "question": x["question"],
-            "input_output": input_output,
-            "source": source,
-            "difficulty": difficulty,
-            "human_solutions": solutions,
-        }
+        problem = Problem(
+            problem_id=i,
+            question=x["question"],
+            tests=stdin_stdout_tests,
+            source=source,
+            difficulty=difficulty,
+            human_solutions=solutions,
+            original_solution=None,
+        )
 
         results.append(problem)
 
@@ -75,7 +76,7 @@ def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 def save_solutions(
     results: List[SolutionResult],
-    problems: List[Dict[str, Any]],
+    problems: List[Problem],
     llm_client: LlmClient,
     output_file: str,
 ) -> None:
@@ -100,7 +101,7 @@ def save_solutions(
             result = result_map[i]
 
             # Create a solution entry
-            solution_entry = problem.copy()
+            solution_entry = problem.model_dump()
 
             # Add the model solution
             model_key = f"{llm_client.model_name}_solution"
@@ -117,8 +118,7 @@ def save_solutions(
 
 
 async def process_solution(
-    problem: Dict[str, Any],
-    problem_id: int,
+    problem: Problem,
     llm_client: LlmClient,
     cyber_url: str,
     improvement_mode: bool = False,
@@ -130,7 +130,6 @@ async def process_solution(
 
     Args:
         problem: Problem data
-        problem_id: ID of the problem
         llm_client: LLM client to use
         cyber_url: URL for the execution API
         improvement_mode: Whether to improve an existing solution
@@ -140,6 +139,7 @@ async def process_solution(
     Returns:
         SolutionResult with the generated or improved solution
     """
+    problem_id = problem.problem_id
     result = SolutionResult(
         problem_id=problem_id,
         code="",
@@ -147,8 +147,7 @@ async def process_solution(
     )
 
     # Convert input_output to test cases
-    input_output = problem.get("input_output", {})
-    stdin_stdout_tests = create_test_cases_from_input_output(input_output)
+    stdin_stdout_tests = problem.tests
 
     if not stdin_stdout_tests:
         logger.warning(f"No test cases found for problem {problem_id}")
@@ -162,25 +161,10 @@ async def process_solution(
     # Generate initial solution or extract existing one
     if improvement_mode:
         # Find the first solution key in the problem
-        solution_key = None
-        for key in problem:
-            if key.endswith("_solution") and key != "human_solution":
-                solution_key = key
-                break
-
-        if not solution_key:
-            logger.warning(f"No model solution found for problem {problem_id}")
-            return SolutionResult(
-                problem_id=problem_id,
-                code="# Error: No model solution found to improve",
-                status="error",
-            )
+        assert problem.original_solution is not None
 
         # Extract code from the solution
-        original_code = extract_code(
-            problem.get(solution_key, ""),
-            "claude" if "claude" in solution_key else "openai",
-        )
+        original_code = problem.original_solution
 
         # Evaluate the original solution
         evaluation = await evaluate_solution(
@@ -294,7 +278,6 @@ async def process_solution(
                 problem=problem,
                 original_code=code,
                 test_results=test_results,
-                stdin_stdout_tests=stdin_stdout_tests,
                 passed=passed,
                 total=total,
             )
@@ -310,7 +293,7 @@ async def process_solution(
             if improved_code:
                 # Evaluate the improved solution
                 evaluation = await evaluate_solution(
-                    improved_code, stdin_stdout_tests, cyber_url
+                    improved_code, problem.tests, cyber_url
                 )
 
                 # Get results
@@ -361,7 +344,7 @@ async def process_solution(
 
 
 async def batch_process_solutions(
-    problems: List[Dict[str, Any]],
+    problems: List[Problem],
     llm_client: LlmClient,
     cyber_url: str,
     max_iterations: int = 1,
@@ -387,14 +370,11 @@ async def batch_process_solutions(
     # Process each problem concurrently with limited concurrency
     semaphore = asyncio.Semaphore(concurrency)
 
-    async def process_with_semaphore(
-        problem: Dict[str, Any], idx: int
-    ) -> SolutionResult:
+    async def process_with_semaphore(problem: Problem) -> SolutionResult:
         """Process a single problem with semaphore."""
         async with semaphore:
             return await process_solution(
                 problem=problem,
-                problem_id=idx,
                 llm_client=llm_client,
                 cyber_url=cyber_url,
                 improvement_mode=improvement_mode,
@@ -403,7 +383,7 @@ async def batch_process_solutions(
             )
 
     # Create tasks
-    tasks = [process_with_semaphore(problem, i) for i, problem in enumerate(problems)]
+    tasks = [process_with_semaphore(problem) for problem in problems]
 
     # Run tasks and get results
     results = await asyncio.gather(*tasks)

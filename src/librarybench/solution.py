@@ -33,21 +33,16 @@ def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     results = []
 
     for i, x in enumerate(xs):
-        # Skip examples without questions
-        if "question" not in x:
-            continue
+        assert "question" in x
 
         # Check if input_output exists and is valid
         input_output = x.get("input_output")
-        if not input_output:
-            continue
+        assert input_output is not None
 
         # Parse input_output if it's a string
         if isinstance(input_output, str):
-            try:
-                input_output = json.loads(input_output)
-            except:
-                continue
+            input_output = json.loads(input_output)
+            # if this doesnt work, can use ast.literal_eval
 
         # Check if the input_output has valid structure
         if not isinstance(input_output, dict):
@@ -60,17 +55,18 @@ def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         source = x.get("source", "unknown")
         difficulty = x.get("difficulty", "unknown")
 
+        solutions = x.get("solutions")
+        if solutions is not None:
+            solutions = ast.literal_eval(solutions)
+
         # Add to results
         problem = {
             "question": x["question"],
             "input_output": input_output,
             "source": source,
             "difficulty": difficulty,
+            "human_solutions": solutions,
         }
-
-        # Copy any human solutions
-        if "human_solution" in x:
-            problem["human_solution"] = x["human_solution"]
 
         results.append(problem)
 

@@ -9,70 +9,10 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
+from librarybench.types import StdinStdoutDict, ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
-
-
-class StdinStdoutDict(Dict[str, str]):
-    """A stdin/stdout pair for evaluation."""
-
-    pass
-
-
-class ExecutionOutput(BaseModel):
-    """Output of the execution of a generation on a test."""
-
-    run_output: Dict[str, Any] = Field(default_factory=dict)
-    compile_output: Optional[Dict[str, Any]] = None
-
-
-class EvaluationResult(BaseModel):
-    """Result of evaluating a single code snippet against a single test."""
-
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-    code: str
-    test: Union[str, StdinStdoutDict]
-    passed: bool = False
-    exec_output: ExecutionOutput = Field(default_factory=ExecutionOutput)
-    uncaught_exception: Optional[str] = None
-    error_type: Optional[str] = None
-
-    @field_validator("uncaught_exception", mode="after")
-    def validate_uncaught_exception(cls, field) -> Optional[str]:
-        if isinstance(field, Exception):
-            field = str(field)
-        if field is not None and not isinstance(field, str):
-            raise ValueError("uncaught_exception must be a string or None")
-        return field
-
-
-class ProblemEvaluationResult(BaseModel):
-    """Results of evaluating all solutions for a single problem."""
-
-    problem_id: int
-    model_tests_passed: int = 0
-    model_tests_total: int = 0
-    human_tests_passed: int = 0
-    human_tests_total: int = 0
-    detailed_model_results: List[Dict[str, Any]] = Field(default_factory=list)
-    detailed_human_results: List[Dict[str, Any]] = Field(default_factory=list)
-    
-    # Allow arbitrary fields
-    model_config = ConfigDict(extra="allow")
-
-
-class EvaluationResults(BaseModel):
-    """Collection of evaluation results for multiple problems."""
-
-    results: List[ProblemEvaluationResult] = Field(default_factory=list)
-    model_total_passed: int = 0
-    model_total_tests: int = 0
-    human_total_passed: int = 0
-    human_total_tests: int = 0
-    
-    # Allow arbitrary fields
-    model_config = ConfigDict(extra="allow")
 
 
 async def execute_test(

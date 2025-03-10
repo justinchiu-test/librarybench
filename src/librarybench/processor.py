@@ -151,14 +151,14 @@ async def solution_process(
     else:
         # Load the TACO dataset
         dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-        train = dataset["test"]
+        train = dataset["test"] # type: ignore
 
         # Filter for problems with specific skills
-        search_problems = [x for x in train if "Complete search" in x["skill_types"]]
+        search_problems = [x for x in train if "Complete search" in x["skill_types"]] # type: ignore
         datastructure_problems = [
-            x for x in train if "Data structures" in x["skill_types"]
+            x for x in train if "Data structures" in x["skill_types"] # type: ignore
         ]
-        chess_problems = [x for x in train if "chess" in x["question"].lower()]
+        chess_problems = [x for x in train if "chess" in x["question"].lower()] # type: ignore
 
         for problem_type in problem_types:
             if problem_type == "search":

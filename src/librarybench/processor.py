@@ -138,7 +138,8 @@ async def solution_process(
         return BatchResult(
             status="success",
             generated_files=generated_files,
-            model_key=llm_client.model_name,
+            model_type=model_type.lower(),
+            model=llm_client.model_name,
             total_problems=len(solutions),
             completed=len(completed),
             errors=len(errors),
@@ -187,7 +188,8 @@ async def solution_process(
         return BatchResult(
             status="success",
             generated_files=generated_files,
-            model_key=llm_client.model_name,
+            model_type=model_type,
+            model=llm_client.model_name,
             total_problems=sum([sample_size] * len(problem_types)),
             completed=len(problem_types)
             * sample_size,  # Simplistic - assumes all completed

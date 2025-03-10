@@ -57,6 +57,9 @@ class ProblemEvaluationResult(BaseModel):
     human_tests_total: int = 0
     detailed_model_results: List[Dict[str, Any]] = Field(default_factory=list)
     detailed_human_results: List[Dict[str, Any]] = Field(default_factory=list)
+    
+    # Allow arbitrary fields
+    model_config = ConfigDict(extra="allow")
 
 
 class EvaluationResults(BaseModel):
@@ -67,6 +70,9 @@ class EvaluationResults(BaseModel):
     model_total_tests: int = 0
     human_total_passed: int = 0
     human_total_tests: int = 0
+    
+    # Allow arbitrary fields
+    model_config = ConfigDict(extra="allow")
 
 
 async def execute_test(
@@ -162,6 +168,45 @@ def run_unit_tests(
     return asyncio.run(
         run_unit_tests_async(generations, stdin_stdout_tests, concurrency)
     )
+
+
+async def evaluate_solution(
+    code: str,
+    test_cases: List[Dict[str, str]],
+    cyber_url: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Evaluate a code solution with the execution API.
+    
+    Args:
+        code: Python code to evaluate
+        test_cases: List of input/output test cases
+        cyber_url: URL for execution API (optional)
+        
+    Returns:
+        Dict with execution results
+    """
+    # Set up cyber URL
+    if cyber_url is None:
+        cyber_url = CYBER_URL
+        if not cyber_url:
+            raise ValueError("No execution API URL provided. Set CYBER_URL environment variable.")
+    
+    # Run code against all test cases
+    test_results = await run_unit_tests_async([code], test_cases)
+    test_results_flat = test_results[0] if test_results else []
+    
+    # Calculate pass ratio
+    passed = sum(1 for result in test_results_flat if result.get("passed", False))
+    total = len(test_cases)
+    pass_ratio = passed / total if total > 0 else 0
+    
+    return {
+        "pass_ratio": pass_ratio,
+        "tests_passed": passed,
+        "tests_total": total,
+        "results": test_results_flat
+    }
 
 
 async def evaluate_solutions_async(

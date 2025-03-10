@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 from librarybench.utils import extract_code, create_test_cases_from_input_output
 from librarybench.models.llm_client import LlmClient
 from librarybench.llm import query_model
-from librarybench.execution import evaluate_solutions
+from librarybench.execution import evaluate_solution
 from librarybench.prompting import format_generation_prompt, format_improvement_prompt
 from librarybench.types import SolutionResult
 

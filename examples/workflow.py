@@ -5,8 +5,7 @@ import asyncio
 import argparse
 from typing import Optional
 
-from librarybench.solution import solution_process
-from librarybench.models import BatchResult
+from librarybench import solution_process, BatchResult
 from librarybench.execution import evaluate_solutions_async
 from librarybench.analysis.model_comparison import (
     compare_solutions,

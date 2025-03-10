@@ -7,6 +7,7 @@ from typing import List, Optional
 
 from librarybench.solution import get_solutions, save_solutions, batch_process_solutions
 from librarybench.models import ClaudeClient, OpenAiClient
+from librarybench.types import BatchResult
 
 # Configure logging
 logging.basicConfig(

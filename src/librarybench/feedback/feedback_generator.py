@@ -97,45 +97,7 @@ def get_model_feedback(
     for solution_data in solutions:
         stdin_stdout_tests = solution_data.get("tests")
         stdin_stdout_tests = json.loads(stdin_stdout_tests)
-
-        # Extract code from the solution based on model name
-        model_solution_key = None
-        model_type = None
-
-        # Try to find the model solution key and type
-        if model_name:
-            # Determine the model solution key and type based on the provided model name
-            if model_name == "o3_mini" or model_name == "openai":
-                model_solution_key = "o3_mini_solution"
-                model_type = "openai"
-            elif model_name == "claude" or model_name == "anthropic":
-                model_solution_key = "claude_solution"
-                model_type = "claude"
-
-            # Handle other possible model name formats
-            for key in solution_data:
-                if key.endswith("_solution") and model_name in key:
-                    model_solution_key = key
-                    model_type = "claude" if "claude" in key else "openai"
-                    break
-
-        # If no specific model name provided or not found, try to find any model solution
-        if not model_solution_key:
-            for key in solution_data:
-                if key.endswith("_solution") and key != "human_solution":
-                    model_solution_key = key
-                    model_type = "claude" if "claude" in key else "openai"
-                    break
-
-        # Extract code if we found a model solution key
-        if model_solution_key and model_solution_key in solution_data:
-            model_code = extract_code(solution_data[model_solution_key], model_type)
-        else:
-            # Fallback to a default key if none found
-            model_code = extract_code(
-                solution_data.get("claude_solution", ""), "claude"
-            )
-
+        model_code = extract_code(solution_data.get("code", ""))
         # Run code against test cases
         model_results = run_unit_tests([model_code], stdin_stdout_tests)
 

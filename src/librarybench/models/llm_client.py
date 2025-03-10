@@ -5,6 +5,7 @@ import abc
 
 class LlmClient(abc.ABC):
     """Abstract base class for LLM clients."""
+    type = "OVERWRITE"
 
     @abc.abstractmethod
     async def generate_completion(self, prompt: str, system_prompt: str) -> str:

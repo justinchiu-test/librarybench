@@ -169,7 +169,7 @@ async def process_solution(
                 iterations=1,
                 history=history,
                 model_name=llm_client.model_name,
-                model_type=llm_client.type
+                model_type=llm_client.type,
             )
 
         # Set initial code to start improving
@@ -182,7 +182,7 @@ async def process_solution(
         response = await query_model(prompt=prompt, llm_client=llm_client, iteration=1)
 
         # Extract code from the response
-        code = extract_code(response, llm_client.model_name)
+        code = extract_code(response)
 
         # Evaluate the solution
         if code:
@@ -225,7 +225,7 @@ async def process_solution(
         else:
             logger.warning(f"Failed to extract code for problem {problem_id}")
             return SolutionResult(
-                problem_id=problem_id,
+                problem=problem,
                 code="# Error: Failed to extract code",
                 status="error",
                 model_name=llm_client.model_name,
@@ -263,7 +263,7 @@ async def process_solution(
             )
 
             # Extract improved code
-            improved_code = extract_code(response, llm_client.model_name)
+            improved_code = extract_code(response)
 
             if improved_code:
                 # Evaluate the improved solution

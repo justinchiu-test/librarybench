@@ -85,7 +85,7 @@ class SolutionResult(BaseModel):
     iterations: int = 1
     history: list[dict[str, Any]] = Field(default_factory=list)
     model_type: str
-    model: str
+    model_name: str
 
 
 class BatchResult(BaseModel):

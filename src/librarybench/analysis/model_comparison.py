@@ -104,9 +104,8 @@ async def compare_solutions(
             continue
 
         # Extract the original and improved code
-        model_type = "claude" if "claude" in model_key else "openai"
-        original_code = extract_code(orig_solution.get(model_key, ""), model_type)
-        improved_code = extract_code(imp_solution.get(improved_key, ""), model_type)
+        original_code = extract_code(orig_solution.get("code", ""))
+        improved_code = extract_code(imp_solution.get("code", ""))
 
         # Get the input_output field
         stdin_stdout_tests = orig_solution.get("tests")

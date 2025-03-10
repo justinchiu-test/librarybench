@@ -122,16 +122,17 @@ async def solution_process(
             output_file = f"{output_prefix}_improved_{file_type}_solutions.json"
 
             # Modify solutions to include improved_ prefix for comparison
+            # TODO: fix this hack?
             for solution in solutions:
                 for result in results:
-                    if result.problem_id == solutions.index(solution):
+                    if result.problem.problem_id == solutions.index(solution):
                         # Add the improved solution with improved_ prefix
                         solution_key = f"{llm_client.model_name}_solution"
                         improved_key = f"improved_{solution_key}"
                         solution[improved_key] = result.code
 
             # Save modified solutions
-            save_solutions(results, solutions, llm_client, output_file)
+            save_solutions(results, output_file)
             generated_files[file_type] = output_file
 
         # Return batch result
@@ -176,9 +177,7 @@ async def solution_process(
                 concurrency=concurrency,
             )
             solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-            save_solutions(
-                results, examples[:sample_size], llm_client, solution_file
-            )
+            save_solutions(results, solution_file)
             generated_files[problem_type] = solution_file
 
         print(

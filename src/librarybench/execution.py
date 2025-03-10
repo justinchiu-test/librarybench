@@ -181,12 +181,12 @@ async def evaluate_solutions_async(
         )
 
         # Use the input_output field directly from the solution data
-        stdin_stdout_tests = solution_data.get("tests")
+        stdin_stdout_tests = solution_data.get("problem").get("tests")
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution - find model-specific solution key
-        model_code = extract_code(solution_data.get("model_code"))
-        human_code = solution_data.get("human_solution", "")
+        model_code = extract_code(solution_data.get("code"))
+        human_code = solution_data.get("problem").get("human_solution", "")
 
         # Run code against test cases asynchronously
         model_results = await run_unit_tests_async([model_code], stdin_stdout_tests)

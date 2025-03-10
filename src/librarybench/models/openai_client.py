@@ -36,12 +36,6 @@ class OpenAiClient(LlmClient):
 
     def extract_code(self, solution: str) -> str:
         """Extract code from OpenAI solution using dash pattern."""
-        # For O3 mini solutions, try to extract code between dashed lines
-        dashed_code_pattern = r"[-]{5,}\n(.*?)[-]{5,}"
-        match = re.search(dashed_code_pattern, solution, re.DOTALL)
-        if match:
-            return match.group(1)
-
         # Try to extract code between ```python and ``` markers
         code_pattern = r"```python\n(.*?)\n```"
         match = re.search(code_pattern, solution, re.DOTALL)

@@ -44,7 +44,10 @@ Example Input:
 Example Output:
 {first_output}
 
-Now implement your solution:"""
+Implement your solution wrapped in markdown:
+```python
+...
+```"""
 
     return prompt
 
@@ -92,6 +95,9 @@ This solution is failing on some test cases. Here are the test results:
 Please rewrite the solution to fix the issues and make it pass all the test cases.
 Focus on correctness first, then efficiency. Make sure to handle all edge cases.
 
-Here's my improved solution:"""
+Return the improved solution wrapped in markdown
+```python
+...
+```"""
 
     return prompt

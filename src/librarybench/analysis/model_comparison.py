@@ -23,6 +23,7 @@ async def evaluate_solution(
     """
     # Run code against test cases asynchronously
     from librarybench.execution import run_unit_tests_async
+
     test_results = await run_unit_tests_async([code], stdin_stdout_tests)
     test_results_flat = test_results[0] if test_results else []
 
@@ -195,9 +196,9 @@ def print_comparison_results(results: Dict[str, Any]) -> None:
     print("=" * 50)
 
     print(f"Total problems evaluated: {results['total_problems']}")
-    
+
     # Only calculate percentages if there are problems
-    if results['total_problems'] > 0:
+    if results["total_problems"] > 0:
         print(
             f"Problems improved: {results['improved_problems']} ({results['improved_problems'] / results['total_problems'] * 100:.1f}%)"
         )

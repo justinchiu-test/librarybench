@@ -4,7 +4,7 @@ import os
 import re
 import openai
 
-from librarybench.models.unified_llm_client import LlmClient
+from librarybench.models.llm_client import LlmClient
 
 
 class OpenAiClient(LlmClient):

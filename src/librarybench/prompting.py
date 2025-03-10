@@ -6,10 +6,10 @@ from typing import Dict, Any, List
 
 def format_generation_prompt(example: Dict[str, Any]) -> str:
     """Format the problem for initial solution generation.
-    
+
     Args:
         example: Problem example with metadata
-        
+
     Returns:
         Formatted prompt for the model
     """
@@ -24,7 +24,7 @@ def format_generation_prompt(example: Dict[str, Any]) -> str:
     # Extract the first test case for the prompt
     first_input = ""
     first_output = ""
-    
+
     if "inputs" in input_output and "outputs" in input_output:
         if len(input_output["inputs"]) > 0 and len(input_output["outputs"]) > 0:
             first_input = input_output["inputs"][0]
@@ -58,7 +58,7 @@ def format_improvement_prompt(
     total: int,
 ) -> str:
     """Format the improvement prompt with test results.
-    
+
     Args:
         problem: Original problem data
         original_code: The code that needs improvement
@@ -66,14 +66,15 @@ def format_improvement_prompt(
         stdin_stdout_tests: The test cases
         passed: Number of passed tests
         total: Total number of tests
-        
+
     Returns:
         Formatted improvement prompt
     """
     # Format feedback for the model
-    from librarybench.unified_utils import format_feedback
+    from librarybench.utils import format_feedback
+
     feedback = format_feedback(test_results, stdin_stdout_tests, passed, total)
-    
+
     prompt = f"""You are an expert Python programmer. Your task is to fix a solution to a coding problem.
 
 Problem statement:

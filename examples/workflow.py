@@ -1,13 +1,16 @@
-"""Example workflow demonstrating the unified LibraryBench pipeline."""
+"""Example workflow demonstrating the LibraryBench pipeline."""
 
 import os
 import asyncio
 import argparse
 from typing import Optional
 
-from librarybench import unified_solution_process, BatchResult
-from librarybench.unified_execution import evaluate_solutions_async
-from librarybench.analysis.model_comparison import compare_solutions, print_comparison_results
+from librarybench import solution_process, BatchResult
+from librarybench.execution_async import evaluate_solutions_async
+from librarybench.analysis.model_comparison import (
+    compare_solutions,
+    print_comparison_results,
+)
 
 
 async def run_workflow(
@@ -45,9 +48,9 @@ async def run_workflow(
             model_name = "claude-3-haiku-20240307"
 
     print(f"Step 1: Generating solutions using {model_name}...")
-    
-    # Use unified solution process for generation (set max_iterations=1 for generation only)
-    generation_result: BatchResult = await unified_solution_process(
+
+    # Use solution process for generation (set max_iterations=1 for generation only)
+    generation_result: BatchResult = await solution_process(
         model_type=model_type,
         model_name=model_name,
         sample_size=sample_size,
@@ -55,7 +58,7 @@ async def run_workflow(
         problem_types=problem_types,
         output_dir=output_dir,
         cyber_url=cyber_url,
-        max_iterations=1  # Just generate solutions
+        max_iterations=1,  # Just generate solutions
     )
 
     # Process each problem type
@@ -91,9 +94,9 @@ async def run_workflow(
             improved_file = solution_file
         else:
             print(f"Improving {problem_type} solutions...")
-            
-            # Use unified solution process for improvement
-            improved_result = await unified_solution_process(
+
+            # Use solution process for improvement
+            improved_result = await solution_process(
                 model_type=model_type,
                 model_name=model_name,
                 problem_types=[problem_type],
@@ -101,9 +104,9 @@ async def run_workflow(
                 max_iterations=max_iterations,
                 target_passed_ratio=1.0,
                 input_solution_file=solution_file,
-                concurrency=3
+                concurrency=3,
             )
-            
+
             # Get the improved solution file
             improved_file = improved_result.generated_files.get(problem_type)
             if not improved_file:

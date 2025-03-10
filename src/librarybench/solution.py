@@ -6,12 +6,22 @@ import asyncio
 import logging
 from typing import Dict, List, Any, Optional
 
-from librarybench.unified_utils import extract_code, create_test_cases_from_input_output
-from librarybench.models.unified_llm_client import LlmClient
-from librarybench.unified_models import SolutionResult
-from librarybench.unified_llm import query_model
-from librarybench.unified_execution import evaluate_solution
-from librarybench.unified_prompting import format_generation_prompt, format_improvement_prompt
+from librarybench.utils import extract_code
+from librarybench.utils import create_test_cases_from_input_output
+from librarybench.models.llm_client import LlmClient
+# Import SolutionResult directly from models.py
+import importlib.util
+import os
+spec = importlib.util.spec_from_file_location(
+    "models_file", 
+    os.path.join(os.path.dirname(__file__), "models.py")
+)
+models_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(models_module)
+SolutionResult = models_module.SolutionResult
+from librarybench.llm import query_model
+from librarybench.execution_async import evaluate_solution
+from librarybench.prompting import format_generation_prompt, format_improvement_prompt
 
 # Configure logging
 logging.basicConfig(
@@ -23,57 +33,57 @@ logger = logging.getLogger(__name__)
 def get_solutions(xs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Filter and prepare problem examples for solution generation.
-    
+
     Args:
         xs: List of problem examples
-        
+
     Returns:
         Filtered list of problems ready for processing
     """
     results = []
-    
+
     for i, x in enumerate(xs):
         # Skip examples without questions
         if "question" not in x:
             continue
-            
+
         # Check if input_output exists and is valid
         input_output = x.get("input_output")
         if not input_output:
             continue
-            
+
         # Parse input_output if it's a string
         if isinstance(input_output, str):
             try:
                 input_output = json.loads(input_output)
             except:
                 continue
-                
+
         # Check if the input_output has valid structure
         if not isinstance(input_output, dict):
             continue
-            
+
         if "inputs" not in input_output or "outputs" not in input_output:
             continue
-            
+
         # Add source and difficulty if available
         source = x.get("source", "unknown")
         difficulty = x.get("difficulty", "unknown")
-        
+
         # Add to results
         problem = {
             "question": x["question"],
             "input_output": input_output,
             "source": source,
-            "difficulty": difficulty
+            "difficulty": difficulty,
         }
-        
+
         # Copy any human solutions
         if "human_solution" in x:
             problem["human_solution"] = x["human_solution"]
-            
+
         results.append(problem)
-    
+
     return results
 
 
@@ -85,7 +95,7 @@ def save_solutions(
 ) -> None:
     """
     Save solution results to a JSON file.
-    
+
     Args:
         results: List of solution results
         problems: Original list of problems
@@ -94,29 +104,29 @@ def save_solutions(
     """
     # Create a map from problem ID to result
     result_map = {r.problem_id: r for r in results}
-    
+
     # Prepare output data
     output_data = []
-    
+
     # For each problem, add its result data
     for i, problem in enumerate(problems):
         if i in result_map:
             result = result_map[i]
-            
+
             # Create a solution entry
             solution_entry = problem.copy()
-            
+
             # Add the model solution
             model_key = f"{llm_client.model_name}_solution"
             solution_entry[model_key] = result.code
-            
+
             # Add to output
             output_data.append(solution_entry)
-    
+
     # Save to file
     with open(output_file, "w") as f:
         json.dump(output_data, f, indent=2)
-        
+
     print(f"Results saved to {output_file}")
 
 
@@ -131,7 +141,7 @@ async def process_solution(
 ) -> SolutionResult:
     """
     Process a single problem to generate or improve a solution.
-    
+
     Args:
         problem: Problem data
         problem_id: ID of the problem
@@ -140,7 +150,7 @@ async def process_solution(
         improvement_mode: Whether to improve an existing solution
         max_iterations: Maximum number of iterations
         target_passed_ratio: Target ratio of passed tests
-        
+
     Returns:
         SolutionResult with the generated or improved solution
     """
@@ -149,22 +159,20 @@ async def process_solution(
         code="",
         status="error",
     )
-    
+
     # Convert input_output to test cases
     input_output = problem.get("input_output", {})
     stdin_stdout_tests = create_test_cases_from_input_output(input_output)
-    
+
     if not stdin_stdout_tests:
         logger.warning(f"No test cases found for problem {problem_id}")
         return SolutionResult(
-            problem_id=problem_id,
-            code="# Error: No test cases found",
-            status="error"
+            problem_id=problem_id, code="# Error: No test cases found", status="error"
         )
-        
+
     # Track solution history
     history = []
-    
+
     # Generate initial solution or extract existing one
     if improvement_mode:
         # Find the first solution key in the problem
@@ -173,40 +181,42 @@ async def process_solution(
             if key.endswith("_solution") and key != "human_solution":
                 solution_key = key
                 break
-                
+
         if not solution_key:
             logger.warning(f"No model solution found for problem {problem_id}")
             return SolutionResult(
                 problem_id=problem_id,
                 code="# Error: No model solution found to improve",
-                status="error"
+                status="error",
             )
-            
+
         # Extract code from the solution
-        original_code = extract_code(problem.get(solution_key, ""), 
-                                    "claude" if "claude" in solution_key else "openai")
-                                    
+        original_code = extract_code(
+            problem.get(solution_key, ""),
+            "claude" if "claude" in solution_key else "openai",
+        )
+
         # Evaluate the original solution
         evaluation = await evaluate_solution(
-            original_code,
-            stdin_stdout_tests,
-            cyber_url
+            original_code, stdin_stdout_tests, cyber_url
         )
-        
+
         # Add to history
         passed = evaluation["tests_passed"]
         total = evaluation["tests_total"]
         passed_ratio = evaluation["pass_ratio"]
         test_results = evaluation["results"]
-        
-        history.append({
-            "iteration": 0,
-            "code": original_code,
-            "pass_ratio": passed_ratio,
-            "tests_passed": passed,
-            "tests_total": total
-        })
-        
+
+        history.append(
+            {
+                "iteration": 0,
+                "code": original_code,
+                "pass_ratio": passed_ratio,
+                "tests_passed": passed,
+                "tests_total": total,
+            }
+        )
+
         # Check if initial solution already meets target
         if passed_ratio >= target_passed_ratio:
             logger.info("Initial solution already meets target pass ratio")
@@ -218,53 +228,47 @@ async def process_solution(
                 tests_passed=passed,
                 tests_total=total,
                 iterations=1,
-                history=history
+                history=history,
             )
-            
+
         # Set initial code to start improving
         code = original_code
     else:
         # Generate a new solution
         prompt = format_generation_prompt(problem)
-        
+
         # Query the model
-        response = await query_model(
-            prompt=prompt,
-            llm_client=llm_client,
-            iteration=1
-        )
-        
+        response = await query_model(prompt=prompt, llm_client=llm_client, iteration=1)
+
         # Extract code from the response
         code = extract_code(response, llm_client.model_name)
-        
+
         # Evaluate the solution
         if code:
-            evaluation = await evaluate_solution(
-                code,
-                stdin_stdout_tests,
-                cyber_url
-            )
-            
+            evaluation = await evaluate_solution(code, stdin_stdout_tests, cyber_url)
+
             # Get results
             passed = evaluation["tests_passed"]
             total = evaluation["tests_total"]
             passed_ratio = evaluation["pass_ratio"]
             test_results = evaluation["results"]
-            
+
             # Add to history
-            history.append({
-                "iteration": 1,
-                "code": code,
-                "pass_ratio": passed_ratio,
-                "tests_passed": passed,
-                "tests_total": total
-            })
-            
+            history.append(
+                {
+                    "iteration": 1,
+                    "code": code,
+                    "pass_ratio": passed_ratio,
+                    "tests_passed": passed,
+                    "tests_total": total,
+                }
+            )
+
             # Check if we've reached the target
             if passed_ratio >= target_passed_ratio:
                 logger.info(f"Current pass rate: {passed}/{total} ({passed_ratio:.2%})")
                 logger.info("Target pass ratio reached. Stopping.")
-                
+
                 return SolutionResult(
                     problem_id=problem_id,
                     code=code,
@@ -273,30 +277,32 @@ async def process_solution(
                     tests_passed=passed,
                     tests_total=total,
                     iterations=1,
-                    history=history
+                    history=history,
                 )
         else:
             logger.warning(f"Failed to extract code for problem {problem_id}")
             return SolutionResult(
                 problem_id=problem_id,
                 code="# Error: Failed to extract code",
-                status="error"
+                status="error",
             )
-    
+
     # If we need to iterate for improvement or didn't reach target on first try
     if max_iterations > 1:
         # Record initial pass ratio
         if improvement_mode:
-            logger.info(f"Initial solution pass rate: {passed}/{total} ({passed_ratio:.2%})")
-        
+            logger.info(
+                f"Initial solution pass rate: {passed}/{total} ({passed_ratio:.2%})"
+            )
+
         # Iterate to improve the solution
         for i in range(1 if improvement_mode else 2, max_iterations + 1):
             # Only continue if we haven't reached the target
             if passed_ratio >= target_passed_ratio:
                 break
-                
+
             logger.info(f"Iteration {i}/{max_iterations} for problem {problem_id}")
-            
+
             # Create improvement prompt with test feedback
             improve_prompt = format_improvement_prompt(
                 problem=problem,
@@ -304,57 +310,57 @@ async def process_solution(
                 test_results=test_results,
                 stdin_stdout_tests=stdin_stdout_tests,
                 passed=passed,
-                total=total
+                total=total,
             )
-            
+
             # Query the model for an improved solution
             response = await query_model(
-                prompt=improve_prompt,
-                llm_client=llm_client,
-                iteration=i
+                prompt=improve_prompt, llm_client=llm_client, iteration=i
             )
-            
+
             # Extract improved code
             improved_code = extract_code(response, llm_client.model_name)
-            
+
             if improved_code:
                 # Evaluate the improved solution
                 evaluation = await evaluate_solution(
-                    improved_code,
-                    stdin_stdout_tests,
-                    cyber_url
+                    improved_code, stdin_stdout_tests, cyber_url
                 )
-                
+
                 # Get results
                 new_passed = evaluation["tests_passed"]
                 new_total = evaluation["tests_total"]
                 new_ratio = evaluation["pass_ratio"]
                 test_results = evaluation["results"]
-                
+
                 # Log progress
-                logger.info(f"Current pass rate: {new_passed}/{new_total} ({new_ratio:.2%})")
-                
+                logger.info(
+                    f"Current pass rate: {new_passed}/{new_total} ({new_ratio:.2%})"
+                )
+
                 # Add to history
-                history.append({
-                    "iteration": i,
-                    "code": improved_code,
-                    "pass_ratio": new_ratio,
-                    "tests_passed": new_passed,
-                    "tests_total": new_total
-                })
-                
+                history.append(
+                    {
+                        "iteration": i,
+                        "code": improved_code,
+                        "pass_ratio": new_ratio,
+                        "tests_passed": new_passed,
+                        "tests_total": new_total,
+                    }
+                )
+
                 # Only update if it's better
                 if new_ratio >= passed_ratio:
                     code = improved_code
                     passed = new_passed
                     total = new_total
                     passed_ratio = new_ratio
-                    
+
                 # Check if we've reached the target
                 if passed_ratio >= target_passed_ratio:
                     logger.info("Target pass ratio reached. Stopping.")
                     break
-    
+
     # Return the final solution
     return SolutionResult(
         problem_id=problem_id,
@@ -364,7 +370,7 @@ async def process_solution(
         tests_passed=passed,
         tests_total=total,
         iterations=len(history),
-        history=history
+        history=history,
     )
 
 
@@ -379,7 +385,7 @@ async def batch_process_solutions(
 ) -> List[SolutionResult]:
     """
     Process a batch of problems concurrently.
-    
+
     Args:
         problems: List of problems to process
         llm_client: LLM client to use
@@ -388,14 +394,16 @@ async def batch_process_solutions(
         target_passed_ratio: Target ratio of passed tests
         improvement_mode: Whether to improve existing solutions
         concurrency: Number of concurrent processes
-        
+
     Returns:
         List of solution results
     """
     # Process each problem concurrently with limited concurrency
     semaphore = asyncio.Semaphore(concurrency)
-    
-    async def process_with_semaphore(problem: Dict[str, Any], idx: int) -> SolutionResult:
+
+    async def process_with_semaphore(
+        problem: Dict[str, Any], idx: int
+    ) -> SolutionResult:
         """Process a single problem with semaphore."""
         async with semaphore:
             return await process_solution(
@@ -405,16 +413,13 @@ async def batch_process_solutions(
                 cyber_url=cyber_url,
                 improvement_mode=improvement_mode,
                 max_iterations=max_iterations,
-                target_passed_ratio=target_passed_ratio
+                target_passed_ratio=target_passed_ratio,
             )
-    
+
     # Create tasks
-    tasks = [
-        process_with_semaphore(problem, i)
-        for i, problem in enumerate(problems)
-    ]
-    
+    tasks = [process_with_semaphore(problem, i) for i, problem in enumerate(problems)]
+
     # Run tasks and get results
     results = await asyncio.gather(*tasks)
-    
+
     return results

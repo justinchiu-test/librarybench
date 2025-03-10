@@ -3,7 +3,7 @@
 import os
 import re
 
-from librarybench.models.unified_llm_client import LlmClient
+from librarybench.models.llm_client import LlmClient
 
 
 class ClaudeClient(LlmClient):

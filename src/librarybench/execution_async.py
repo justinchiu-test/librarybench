@@ -11,9 +11,11 @@ from pydantic import BaseModel, ConfigDict
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
 
+
 # Classes for evaluation results
 class ProblemEvaluationResult(BaseModel):
     """Results of evaluating a single problem."""
+
     problem_id: int
     model_tests_passed: int = 0
     model_tests_total: int = 0
@@ -21,18 +23,20 @@ class ProblemEvaluationResult(BaseModel):
     human_tests_total: int = 0
     detailed_model_results: List[Dict[str, Any]] = []
     detailed_human_results: List[Dict[str, Any]] = []
-    
+
     # Allow arbitrary additional fields
     model_config = ConfigDict(extra="allow")
 
+
 class EvaluationResults(BaseModel):
     """Results of evaluating a batch of problems."""
+
     results: List[ProblemEvaluationResult] = []
     model_total_passed: int = 0
     model_total_tests: int = 0
     human_total_passed: int = 0
     human_total_tests: int = 0
-    
+
     # Allow arbitrary additional fields
     model_config = ConfigDict(extra="allow")
 
@@ -44,12 +48,12 @@ async def evaluate_solution(
 ) -> Dict[str, Any]:
     """
     Evaluate a code solution with the execution API.
-    
+
     Args:
         code: Python code to evaluate
         test_cases: List of input/output test cases
         cyber_url: URL for execution API (optional)
-        
+
     Returns:
         Dict with execution results
     """
@@ -57,22 +61,24 @@ async def evaluate_solution(
     if cyber_url is None:
         cyber_url = CYBER_URL
         if not cyber_url:
-            raise ValueError("No execution API URL provided. Set CYBER_URL environment variable.")
-    
+            raise ValueError(
+                "No execution API URL provided. Set CYBER_URL environment variable."
+            )
+
     # Run code against all test cases
     test_results = await run_unit_tests_async([code], test_cases)
     test_results_flat = test_results[0] if test_results else []
-    
+
     # Calculate pass ratio
     passed = sum(1 for result in test_results_flat if result.get("passed", False))
     total = len(test_cases)
     pass_ratio = passed / total if total > 0 else 0
-    
+
     return {
         "pass_ratio": pass_ratio,
         "tests_passed": passed,
         "tests_total": total,
-        "results": test_results_flat
+        "results": test_results_flat,
     }
 
 
@@ -83,26 +89,26 @@ async def run_unit_tests_async(
 ) -> List[List[Dict[str, Any]]]:
     """
     Run multiple solutions against multiple test cases concurrently.
-    
+
     Args:
         solutions: List of code snippets to test
         stdin_stdout_tests: List of input/output test cases
         concurrency: Maximum number of concurrent requests
-        
+
     Returns:
         Nested list of test results (solution -> test case -> result)
     """
     if not stdin_stdout_tests:
         return []
-    
+
     # Set up cyber URL
     url = CYBER_URL
     if not url:
         raise ValueError("CYBER_URL environment variable not set")
-        
+
     # Create semaphore for limiting concurrency
     semaphore = asyncio.Semaphore(concurrency)
-    
+
     async def run_test(solution: str, test_case: Dict[str, str]) -> Dict[str, Any]:
         """Run a single test for a solution."""
         async with semaphore:
@@ -115,53 +121,49 @@ async def run_unit_tests_async(
                         "stdin": test_case.get("stdin", ""),
                         "expected_stdout": test_case.get("stdout", ""),
                     }
-                    
+
                     # Make API request
                     async with session.post(url, json=payload) as response:
                         if response.status != 200:
                             error_msg = await response.text()
                             return {
                                 "passed": False,
-                                "error": f"API Error: {response.status}: {error_msg}"
+                                "error": f"API Error: {response.status}: {error_msg}",
                             }
-                        
+
                         # Parse response
                         exec_output = await response.json()
-                        
+
                         # Access run output safely
                         run_output = exec_output.get("run_output", {})
                         stdout = run_output.get("stdout", "").strip()
                         stderr = run_output.get("stderr", "").strip()
-                        
+
                         # Normalize newlines in expected
                         expected = test_case.get("stdout", "").strip()
-                        
+
                         # Check if test passed
                         passed = False
                         if not stderr and stdout:
                             if stdout == expected:
                                 passed = True
-                            elif stdout.replace("\r\n", "\n") == expected.replace("\r\n", "\n"):
+                            elif stdout.replace("\r\n", "\n") == expected.replace(
+                                "\r\n", "\n"
+                            ):
                                 passed = True
-                            
-                        return {
-                            "passed": passed,
-                            "exec_output": exec_output
-                        }
+
+                        return {"passed": passed, "exec_output": exec_output}
                 except Exception as e:
-                    return {
-                        "passed": False,
-                        "error": f"Exception: {str(e)}"
-                    }
-    
+                    return {"passed": False, "error": f"Exception: {str(e)}"}
+
     # Create tasks for all solution-test combinations
     all_results = []
-    
+
     for solution in solutions:
         tasks = [run_test(solution, test) for test in stdin_stdout_tests]
         solution_results = await asyncio.gather(*tasks)
         all_results.append(solution_results)
-    
+
     return all_results
 
 
@@ -235,7 +237,8 @@ async def evaluate_solutions_async(
                 elif "o3" in key or "gpt" in key or "openai" in key:
                     model_type = "openai"
 
-                from librarybench.unified_utils import extract_code
+                from librarybench.utils import extract_code
+
                 model_code = extract_code(solution_data.get(key, ""), model_type)
                 break
 
@@ -243,12 +246,14 @@ async def evaluate_solutions_async(
         if not model_code:
             # Try the most common solution keys
             if "o3_mini_solution" in solution_data:
-                from librarybench.unified_utils import extract_code
+                from librarybench.utils import extract_code
+
                 model_code = extract_code(
                     solution_data.get("o3_mini_solution", ""), "openai"
                 )
             elif "claude_solution" in solution_data:
-                from librarybench.unified_utils import extract_code
+                from librarybench.utils import extract_code
+
                 model_code = extract_code(
                     solution_data.get("claude_solution", ""), "claude"
                 )

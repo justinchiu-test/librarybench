@@ -5,12 +5,17 @@ import datasets
 import logging
 from typing import List, Optional
 
-from librarybench.unified_models import BatchResult
-from librarybench.unified_solution import (
-    get_solutions, 
-    save_solutions, 
-    batch_process_solutions
+# Import BatchResult directly from models.py
+import importlib.util
+import os
+spec = importlib.util.spec_from_file_location(
+    "models_file", 
+    os.path.join(os.path.dirname(__file__), "models.py")
 )
+models_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(models_module)
+BatchResult = models_module.BatchResult
+from librarybench.solution import get_solutions, save_solutions, batch_process_solutions
 from librarybench.models import ClaudeClient, OpenAiClient
 
 # Configure logging
@@ -20,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def unified_solution_process(
+async def solution_process(
     model_type: str = "openai",
     model_name: Optional[str] = None,
     sample_size: int = 5,
@@ -33,8 +38,8 @@ async def unified_solution_process(
     input_solution_file: Optional[str] = None,
 ) -> BatchResult:
     """
-    Unified entry point for solution generation and improvement.
-    
+    Main entry point for solution generation and improvement.
+
     Args:
         model_type: Type of model to use ("openai" or "claude")
         model_name: Specific model name to use, or None to use default
@@ -46,7 +51,7 @@ async def unified_solution_process(
         max_iterations: Max iterations per problem (1 for generation, >1 for improvement)
         target_passed_ratio: Target passing ratio to stop early
         input_solution_file: Optional file with existing solutions to improve
-        
+
     Returns:
         BatchResult with results and statistics
     """
@@ -66,22 +71,25 @@ async def unified_solution_process(
 
     # Define output directory prefix based on model
     output_prefix = f"{output_dir}/{llm_client.model_name}"
-    
+
     # Set up cyber URL if not provided
     if cyber_url is None:
         cyber_url = os.environ.get("CYBER_URL")
         if not cyber_url:
-            raise ValueError("No execution API URL provided. Set CYBER_URL environment variable.")
-    
+            raise ValueError(
+                "No execution API URL provided. Set CYBER_URL environment variable."
+            )
+
     generated_files = {}
-    
+
     # If improving existing solutions
     if input_solution_file:
         print(f"Improving solutions from {input_solution_file}...")
         with open(input_solution_file, "r") as f:
             import json
+
             solutions = json.load(f)
-            
+
         # Process the solutions
         results = await batch_process_solutions(
             problems=solutions,
@@ -90,39 +98,38 @@ async def unified_solution_process(
             max_iterations=max_iterations,
             target_passed_ratio=target_passed_ratio,
             improvement_mode=True,
-            concurrency=concurrency
+            concurrency=concurrency,
         )
-        
+
         # Calculate statistics
         completed = [r for r in results if r.status == "success"]
         errors = [r for r in results if r.status == "error"]
-        
+
         # Calculate average pass ratios
         avg_initial = 0.0
         avg_final = 0.0
-        
+
         if completed:
             # Get initial ratio from first history item
             initial_ratios = [
-                r.history[0]["pass_ratio"] if r.history else 0.0 
-                for r in completed
+                r.history[0]["pass_ratio"] if r.history else 0.0 for r in completed
             ]
             final_ratios = [r.pass_ratio for r in completed]
-            
+
             avg_initial = sum(initial_ratios) / len(completed) if completed else 0.0
             avg_final = sum(final_ratios) / len(completed) if completed else 0.0
-            
+
         # Determine file type from input file
         file_type = None
         for pt in problem_types:
             if pt in input_solution_file:
                 file_type = pt
                 break
-                
+
         if file_type:
             # Create output file
             output_file = f"{output_prefix}_improved_{file_type}_solutions.json"
-            
+
             # Modify solutions to include improved_ prefix for comparison
             for solution in solutions:
                 for result in results:
@@ -131,11 +138,11 @@ async def unified_solution_process(
                         solution_key = f"{llm_client.model_name}_solution"
                         improved_key = f"improved_{solution_key}"
                         solution[improved_key] = result.code
-            
+
             # Save modified solutions
             save_solutions(results, solutions, llm_client, output_file)
             generated_files[file_type] = output_file
-            
+
         # Return batch result
         return BatchResult(
             status="success",
@@ -146,20 +153,22 @@ async def unified_solution_process(
             errors=len(errors),
             avg_initial_ratio=avg_initial,
             avg_final_ratio=avg_final,
-            avg_improvement=avg_final - avg_initial
+            avg_improvement=avg_final - avg_initial,
         )
-    
+
     # Otherwise, fresh generation from TACO dataset
     else:
         # Load the TACO dataset
         dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
         train = dataset["test"]
-        
+
         # Filter for problems with specific skills
         search_problems = [x for x in train if "Complete search" in x["skill_types"]]
-        datastructure_problems = [x for x in train if "Data structures" in x["skill_types"]]
+        datastructure_problems = [
+            x for x in train if "Data structures" in x["skill_types"]
+        ]
         chess_problems = [x for x in train if "chess" in x["question"].lower()]
-        
+
         for problem_type in problem_types:
             if problem_type == "search":
                 print(f"Processing {sample_size} search problems...")
@@ -171,12 +180,14 @@ async def unified_solution_process(
                     max_iterations=max_iterations,
                     target_passed_ratio=target_passed_ratio,
                     improvement_mode=False,
-                    concurrency=concurrency
+                    concurrency=concurrency,
                 )
                 solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(results, search_examples[:sample_size], llm_client, solution_file)
+                save_solutions(
+                    results, search_examples[:sample_size], llm_client, solution_file
+                )
                 generated_files[problem_type] = solution_file
-                
+
             elif problem_type == "datastructure":
                 print(f"Processing {sample_size} data structure problems...")
                 ds_examples = get_solutions(datastructure_problems)
@@ -187,12 +198,14 @@ async def unified_solution_process(
                     max_iterations=max_iterations,
                     target_passed_ratio=target_passed_ratio,
                     improvement_mode=False,
-                    concurrency=concurrency
+                    concurrency=concurrency,
                 )
                 solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(results, ds_examples[:sample_size], llm_client, solution_file)
+                save_solutions(
+                    results, ds_examples[:sample_size], llm_client, solution_file
+                )
                 generated_files[problem_type] = solution_file
-                
+
             elif problem_type == "chess":
                 print(f"Processing {sample_size} chess problems...")
                 chess_examples = get_solutions(chess_problems)
@@ -203,19 +216,24 @@ async def unified_solution_process(
                     max_iterations=max_iterations,
                     target_passed_ratio=target_passed_ratio,
                     improvement_mode=False,
-                    concurrency=concurrency
+                    concurrency=concurrency,
                 )
                 solution_file = f"{output_prefix}_{problem_type}_solutions.json"
-                save_solutions(results, chess_examples[:sample_size], llm_client, solution_file)
+                save_solutions(
+                    results, chess_examples[:sample_size], llm_client, solution_file
+                )
                 generated_files[problem_type] = solution_file
-        
-        print(f"Done! Solutions processed for all problem types using {llm_client.model_name}.")
-        
+
+        print(
+            f"Done! Solutions processed for all problem types using {llm_client.model_name}."
+        )
+
         return BatchResult(
             status="success",
             generated_files=generated_files,
             model_key=llm_client.model_name,
             total_problems=sum([sample_size] * len(problem_types)),
-            completed=len(problem_types) * sample_size,  # Simplistic - assumes all completed
-            errors=0
+            completed=len(problem_types)
+            * sample_size,  # Simplistic - assumes all completed
+            errors=0,
         )

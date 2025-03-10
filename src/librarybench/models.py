@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 class SolutionResult(BaseModel):
     """Result of solution generation or improvement."""
+
     problem_id: int
     status: str = "success"
     code: str
@@ -18,6 +19,7 @@ class SolutionResult(BaseModel):
 
 class BatchResult(BaseModel):
     """Result of a batch solution operation."""
+
     status: str = "success"
     generated_files: Dict[str, str] = Field(default_factory=dict)
     model_key: str

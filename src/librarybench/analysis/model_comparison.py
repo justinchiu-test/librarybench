@@ -5,11 +5,10 @@ import json
 from typing import Dict, Any, List, Tuple, Optional
 
 from librarybench.utils import extract_code
-from librarybench.execution import run_unit_tests
 from librarybench.feedback import create_test_cases_from_input_output
 
 
-def evaluate_solution(
+async def evaluate_solution(
     code: str, stdin_stdout_tests: List[Dict[str, str]]
 ) -> Tuple[int, int, float]:
     """
@@ -22,8 +21,9 @@ def evaluate_solution(
     Returns:
         Tuple of (passed tests, total tests, pass ratio)
     """
-    # Run code against test cases
-    test_results = run_unit_tests([code], stdin_stdout_tests)
+    # Run code against test cases asynchronously
+    from librarybench.execution import run_unit_tests_async
+    test_results = await run_unit_tests_async([code], stdin_stdout_tests)
     test_results_flat = test_results[0] if test_results else []
 
     # Calculate pass rate
@@ -34,7 +34,7 @@ def evaluate_solution(
     return passed, total, passed_ratio
 
 
-def compare_solutions(
+async def compare_solutions(
     original_file: str,
     improved_file: str,
     model_key: str = "claude_solution",
@@ -123,13 +123,13 @@ def compare_solutions(
         if not stdin_stdout_tests:
             continue
 
-        # Evaluate original solution
-        orig_passed, orig_total, orig_ratio = evaluate_solution(
+        # Evaluate original solution asynchronously
+        orig_passed, orig_total, orig_ratio = await evaluate_solution(
             original_code, stdin_stdout_tests
         )
 
-        # Evaluate improved solution
-        imp_passed, imp_total, imp_ratio = evaluate_solution(
+        # Evaluate improved solution asynchronously
+        imp_passed, imp_total, imp_ratio = await evaluate_solution(
             improved_code, stdin_stdout_tests
         )
 
@@ -195,15 +195,22 @@ def print_comparison_results(results: Dict[str, Any]) -> None:
     print("=" * 50)
 
     print(f"Total problems evaluated: {results['total_problems']}")
-    print(
-        f"Problems improved: {results['improved_problems']} ({results['improved_problems'] / results['total_problems'] * 100:.1f}%)"
-    )
-    print(
-        f"Problems unchanged: {results['unchanged_problems']} ({results['unchanged_problems'] / results['total_problems'] * 100:.1f}%)"
-    )
-    print(
-        f"Problems worse: {results['worse_problems']} ({results['worse_problems'] / results['total_problems'] * 100:.1f}%)"
-    )
+    
+    # Only calculate percentages if there are problems
+    if results['total_problems'] > 0:
+        print(
+            f"Problems improved: {results['improved_problems']} ({results['improved_problems'] / results['total_problems'] * 100:.1f}%)"
+        )
+        print(
+            f"Problems unchanged: {results['unchanged_problems']} ({results['unchanged_problems'] / results['total_problems'] * 100:.1f}%)"
+        )
+        print(
+            f"Problems worse: {results['worse_problems']} ({results['worse_problems'] / results['total_problems'] * 100:.1f}%)"
+        )
+    else:
+        print("Problems improved: 0 (0.0%)")
+        print("Problems unchanged: 0 (0.0%)")
+        print("Problems worse: 0 (0.0%)")
 
     print("\nTest passing rates:")
     print(
@@ -214,14 +221,18 @@ def print_comparison_results(results: Dict[str, Any]) -> None:
     )
     print(f"Overall improvement: {results['overall_improvement'] * 100:.1f}%")
 
-    print("\nTop 5 most improved problems:")
-    most_improved = sorted(
-        results["problem_details"], key=lambda x: x["improvement"], reverse=True
-    )[:5]
-    for i, prob in enumerate(most_improved, 1):
-        print(
-            f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) -> {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{prob['improvement'] * 100:.1f}% improvement]"
-        )
+    # Only show most improved problems if there are any problems
+    if results["problem_details"]:
+        print("\nTop 5 most improved problems:")
+        most_improved = sorted(
+            results["problem_details"], key=lambda x: x["improvement"], reverse=True
+        )[:5]
+        for i, prob in enumerate(most_improved, 1):
+            print(
+                f"{i}. Problem {prob['problem_id']}: {prob['original_passed']}/{prob['original_total']} ({prob['original_ratio'] * 100:.1f}%) -> {prob['improved_passed']}/{prob['improved_total']} ({prob['improved_ratio'] * 100:.1f}%) [{prob['improvement'] * 100:.1f}% improvement]"
+            )
+    else:
+        print("\nNo problems to show improvement stats for.")
 
     if results["worse_problems"] > 0:
         print("\nProblems that got worse:")

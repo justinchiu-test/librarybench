@@ -21,3 +21,4 @@
 - **Error Handling**: Use explicit try/except blocks with specific exceptions
 - **Documentation**: Use docstrings for all functions, classes, and modules
 - **Line Length**: Maximum 88 characters per line
+- **Pydantic**: Use Pydantic BaseModel when possible. Minimize complexity

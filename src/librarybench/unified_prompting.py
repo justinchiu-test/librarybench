@@ -1,0 +1,96 @@
+"""Prompt generation module for solution generation and improvement."""
+
+import json
+from typing import Dict, Any, List
+
+
+def format_generation_prompt(example: Dict[str, Any]) -> str:
+    """Format the problem for initial solution generation.
+    
+    Args:
+        example: Problem example with metadata
+        
+    Returns:
+        Formatted prompt for the model
+    """
+    # Parse input_output field to extract test cases
+    input_output = example.get("input_output", "{}")
+    if isinstance(input_output, str):
+        try:
+            input_output = json.loads(input_output)
+        except json.JSONDecodeError:
+            input_output = {}
+
+    # Extract the first test case for the prompt
+    first_input = ""
+    first_output = ""
+    
+    if "inputs" in input_output and "outputs" in input_output:
+        if len(input_output["inputs"]) > 0 and len(input_output["outputs"]) > 0:
+            first_input = input_output["inputs"][0]
+            first_output = input_output["outputs"][0]
+
+    # Construct the prompt
+    prompt = f"""You are an expert Python programmer. Your task is to solve a coding problem.
+
+Problem statement:
+{example.get("question", "No problem statement provided.")}
+
+Write a Python solution that solves this problem. The solution should be efficient and handle all edge cases.
+
+Example Input:
+{first_input}
+
+Example Output:
+{first_output}
+
+Now implement your solution:"""
+
+    return prompt
+
+
+def format_improvement_prompt(
+    problem: Dict[str, Any],
+    original_code: str,
+    test_results: List[Dict[str, Any]],
+    stdin_stdout_tests: List[Dict[str, str]],
+    passed: int,
+    total: int,
+) -> str:
+    """Format the improvement prompt with test results.
+    
+    Args:
+        problem: Original problem data
+        original_code: The code that needs improvement
+        test_results: Results from test runs
+        stdin_stdout_tests: The test cases
+        passed: Number of passed tests
+        total: Total number of tests
+        
+    Returns:
+        Formatted improvement prompt
+    """
+    # Format feedback for the model
+    from librarybench.unified_utils import format_feedback
+    feedback = format_feedback(test_results, stdin_stdout_tests, passed, total)
+    
+    prompt = f"""You are an expert Python programmer. Your task is to fix a solution to a coding problem.
+
+Problem statement:
+{problem.get("question", "No problem statement provided.")}
+
+The current solution is:
+```python
+{original_code}
+```
+
+This solution is failing on some test cases. Here are the test results:
+
+{feedback}
+
+Please rewrite the solution to fix the issues and make it pass all the test cases.
+Focus on correctness first, then efficiency. Make sure to handle all edge cases.
+
+Here's my improved solution:"""
+
+    return prompt

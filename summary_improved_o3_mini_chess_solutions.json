@@ -1,0 +1,33 @@
+{
+  "total_problems": 1,
+  "completed": 1,
+  "errors": 0,
+  "problem_results": [
+    {
+      "problem_id": 0,
+      "status": "completed",
+      "initial_ratio": 0.0,
+      "final_ratio": 1.0,
+      "iterations": 2,
+      "history": [
+        {
+          "iteration": 1,
+          "pass_ratio": 0.0,
+          "passed": 0,
+          "total": 292
+        },
+        {
+          "iteration": 2,
+          "pass_ratio": 1.0,
+          "passed": 292,
+          "total": 292
+        }
+      ],
+      "best_code": "def main():\n    import sys\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    n = int(data[0])\n    k = int(data[1])\n    mod = 998244353\n    # As explained, valid configurations exist only when 0 <= k <= n-1.\n    if k < 0 or k > n - 1:\n        sys.stdout.write(\"0\")\n        return\n    # Let d = n - k be the number of distinct columns used in the setting \"all rows nonempty\"\n    d = n - k\n\n    # Precompute factorials and inverse factorials up to n.\n    maxN = n\n    fact = [1] * (maxN + 1)\n    invfact = [1] * (maxN + 1)\n    for i in range(2, maxN + 1):\n        fact[i] = fact[i - 1] * i % mod\n    invfact[maxN] = pow(fact[maxN], mod - 2, mod)\n    for i in range(maxN, 0, -1):\n        invfact[i - 1] = invfact[i] * i % mod\n\n    # binom(n, d) = fact[n] * invfact[d] * invfact[n-d]\n    binom_nd = fact[n] * invfact[d] % mod * invfact[n - d] % mod\n\n    # Compute number of surjections from an n-set to a d-set.\n    # This equals: sum_{j=0}^{d} (-1)^j * C(d, j) * (d-j)^n\n    surj = 0\n    for j in range(d + 1):\n        # C(d, j)\n        c = fact[d] * invfact[j] % mod * invfact[d - j] % mod\n        term = c * pow(d - j, n, mod) % mod\n        if j & 1:\n            surj = (surj - term) % mod\n        else:\n            surj = (surj + term) % mod\n\n    # A(n, d): number of functions from rows to columns that use exactly d distinct columns\n    A_nd = binom_nd * surj % mod\n\n    # By symmetry, our answer is:\n    # ans = 2 * A(n, d), but if k==0 the configurations with both all rows and all columns nonempty (permutation matrices)\n    # are counted twice; there are n! of these.\n    ans = (2 * A_nd) % mod\n    if k == 0:\n        ans = (ans - fact[n]) % mod\n\n    sys.stdout.write(str(ans))\n\nif __name__ == '__main__':\n    main()"
+    }
+  ],
+  "avg_initial_ratio": 0.0,
+  "avg_final_ratio": 1.0,
+  "avg_improvement": 1.0,
+  "perfect_solutions": 1
+}

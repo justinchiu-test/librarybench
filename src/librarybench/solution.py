@@ -140,13 +140,6 @@ async def process_solution(
         SolutionResult with the generated or improved solution
     """
     problem_id = problem.problem_id
-    result = SolutionResult(
-        problem_id=problem_id,
-        code="",
-        status="error",
-    )
-
-    # Convert input_output to test cases
     stdin_stdout_tests = problem.tests
 
     if not stdin_stdout_tests:

@@ -2,7 +2,7 @@
 
 import re
 from typing import Optional, Dict, List, Any
-from librarybench.types import StdinStdoutDict
+from librarybench.types import StdinStdout
 
 def extract_code(solution: str, model_type: Optional[str] = None) -> str:
     """
@@ -65,7 +65,7 @@ def extract_code(solution: str, model_type: Optional[str] = None) -> str:
 
 def create_test_cases_from_input_output(
     input_output: dict,
-) -> List[StdinStdoutDict]:
+) -> List[StdinStdout]:
     """Convert input-output pairs to test cases for execution.
 
     Args:
@@ -77,13 +77,17 @@ def create_test_cases_from_input_output(
     stdin_stdout_tests = []
     if "inputs" in input_output and "outputs" in input_output:
         for inp, out in zip(input_output["inputs"], input_output["outputs"]):
-            stdin_stdout_tests.append({"stdin": inp, "stdout": out})
+            if isinstance(inp, list):
+                inp = "\n".join([str(x) for x in inp])
+            if isinstance(out, list):
+                out = "\n".join([str(x) for x in out])
+            stdin_stdout_tests.append(StdinStdout(stdin=inp, stdout=out))
     return stdin_stdout_tests
 
 
 def format_feedback(
     test_results: List[Dict[str, Any]],
-    test_cases: List[StdinStdoutDict],
+    test_cases: List[StdinStdout],
     passed_count: int,
     total_count: int,
 ) -> str:
@@ -103,8 +107,8 @@ def format_feedback(
     for i, (test, result) in enumerate(zip(test_cases, test_results), 1):
         status = "✅ PASSED" if result.get("passed", False) else "❌ FAILED"
         feedback += f"Test #{i}: {status}\n"
-        feedback += f"Input:\n{test['stdin']}\n"
-        feedback += f"Expected Output:\n{test['stdout']}\n"
+        feedback += f"Input:\n{test.stdin}\n"
+        feedback += f"Expected Output:\n{test.stdout}\n"
 
         if not result.get("passed", False):
             stdout = (

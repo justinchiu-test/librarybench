@@ -19,8 +19,8 @@ def format_generation_prompt(example: Problem) -> str:
     input_output = example.tests
 
     # Extract the first test case for the prompt
-    first_input = input_output[0]["stdin"]
-    first_output = input_output[0]["stdout"]
+    first_input = input_output[0].stdin
+    first_output = input_output[0].stdout
 
     # Construct the prompt
     prompt = f"""You are an expert Python programmer. Your task is to solve a coding problem.

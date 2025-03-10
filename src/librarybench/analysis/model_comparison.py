@@ -6,11 +6,11 @@ from typing import Dict, Any, List, Tuple, Optional
 
 from librarybench.utils import extract_code
 from librarybench.feedback import create_test_cases_from_input_output
-from librarybench.types import StdinStdoutDict
+from librarybench.types import StdinStdout
 
 
 async def evaluate_solution(
-    code: str, stdin_stdout_tests: list[StdinStdoutDict]
+    code: str, stdin_stdout_tests: list[StdinStdout]
 ) -> Tuple[int, int, float]:
     """
     Evaluate a solution against test cases.

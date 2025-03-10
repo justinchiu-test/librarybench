@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
-from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, StdinStdoutDict
+from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, StdinStdout
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
@@ -18,7 +18,7 @@ CYBER_URL: str = os.getenv("CYBER_URL", "")
 async def execute_test(
     session: aiohttp.ClientSession,
     code: str,
-    test: Dict[str, str],
+    test: StdinStdout,
     semaphore: asyncio.Semaphore,
 ) -> Dict[str, Any]:
     """Execute a single test against the execution API.
@@ -35,7 +35,7 @@ async def execute_test(
     async with semaphore:
         code_dict = {
             "code": code,
-            "test": test,
+            "test": test.model_dump(),
         }
 
         params = {
@@ -62,7 +62,7 @@ async def execute_test(
 
 async def run_unit_tests_async(
     generations: List[str],
-    stdin_stdout_tests: List[StdinStdoutDict],
+    stdin_stdout_tests: List[StdinStdout],
     concurrency: int = 512,
 ) -> List[List[Dict[str, Any]]]:
     """Execute code against unit tests using the execution API asynchronously.
@@ -92,7 +92,7 @@ async def run_unit_tests_async(
 
 def run_unit_tests(
     generations: List[str],
-    stdin_stdout_tests: List[StdinStdoutDict],
+    stdin_stdout_tests: List[StdinStdout],
     concurrency: int = 512,
 ) -> List[List[Dict[str, Any]]]:
     """Execute code against unit tests using the execution API.
@@ -112,7 +112,7 @@ def run_unit_tests(
 
 async def evaluate_solution(
     code: str,
-    test_cases: List[StdinStdoutDict],
+    test_cases: List[StdinStdout],
     cyber_url: Optional[str] = None,
 ) -> Dict[str, Any]:
     """

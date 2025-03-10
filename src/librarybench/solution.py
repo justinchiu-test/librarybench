@@ -6,22 +6,12 @@ import asyncio
 import logging
 from typing import Dict, List, Any, Optional
 
-from librarybench.utils import extract_code
-from librarybench.utils import create_test_cases_from_input_output
+from librarybench.utils import extract_code, create_test_cases_from_input_output
 from librarybench.models.llm_client import LlmClient
-# Import SolutionResult directly from models.py
-import importlib.util
-import os
-spec = importlib.util.spec_from_file_location(
-    "models_file", 
-    os.path.join(os.path.dirname(__file__), "models.py")
-)
-models_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(models_module)
-SolutionResult = models_module.SolutionResult
 from librarybench.llm import query_model
-from librarybench.execution_async import evaluate_solution
+from librarybench.execution import evaluate_solutions
 from librarybench.prompting import format_generation_prompt, format_improvement_prompt
+from librarybench.types import SolutionResult
 
 # Configure logging
 logging.basicConfig(

@@ -5,16 +5,6 @@ import datasets
 import logging
 from typing import List, Optional
 
-# Import BatchResult directly from models.py
-import importlib.util
-import os
-spec = importlib.util.spec_from_file_location(
-    "models_file", 
-    os.path.join(os.path.dirname(__file__), "models.py")
-)
-models_module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(models_module)
-BatchResult = models_module.BatchResult
 from librarybench.solution import get_solutions, save_solutions, batch_process_solutions
 from librarybench.models import ClaudeClient, OpenAiClient
 

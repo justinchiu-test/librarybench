@@ -57,8 +57,6 @@ class ProblemEvaluationResult(BaseModel):
     human_tests_total: int = 0
     detailed_model_results: List[Dict[str, Any]] = Field(default_factory=list)
     detailed_human_results: List[Dict[str, Any]] = Field(default_factory=list)
-    # Additional fields from original solution data
-    model_config = ConfigDict(extra="allow")
 
 
 class EvaluationResults(BaseModel):

@@ -35,6 +35,25 @@ LibraryBench requires the following environment variables:
 
 ## Usage
 
+### Solution Visualization
+
+Run the Streamlit app to interactively explore and analyze solutions:
+
+```bash
+uv run streamlit run app.py
+```
+
+The Streamlit app provides an interactive visualization interface for exploring model solutions:
+
+- View solution details including code, test results, and iteration history
+- Compare performance metrics across different models and problem types
+- Filter solutions by source, difficulty, and other attributes 
+- Examine test cases and expected outputs
+- Track improvement across solution iterations
+- View human-written solutions (when available) for comparison
+
+### API Components
+
 The main workflow is in `examples/workflow.py`. For individual components:
 
 ```python
@@ -127,15 +146,6 @@ Run the streamlit app:
 ```bash
 uv run streamlit run app.py
 ```
-
-The Streamlit app provides an interactive visualization interface for exploring model solutions:
-
-- View solution details including code, test results, and iteration history
-- Compare performance metrics across different models and problem types
-- Filter solutions by source, difficulty, and other attributes 
-- Examine test cases and expected outputs
-- Track improvement across solution iterations
-- View human-written solutions (when available) for comparison
 
 Format code:
 ```bash

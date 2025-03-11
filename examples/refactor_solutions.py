@@ -125,7 +125,9 @@ async def refactor_solutions(
     # Save refactored code
     with open(output_file, "w") as f:
         f.write(refactored_code)
+    refactored_line_count = len(refactored_code.split("\n"))
     print(f"Refactored solution saved to {output_file}")
+    print(f"Refactored solution line count: {refactored_line_count}")
 
     # Evaluate refactored solution against all test cases
     print("\nEvaluating refactored solution against all test cases...")
@@ -165,6 +167,15 @@ async def refactor_solutions(
     else:
         print("\n⚠️ The refactored solution doesn't pass all test cases.")
 
+    # Print line count comparison
+    # Get the original solutions line count from solutions data
+    original_line_count = sum(len(solution.code.split("\n")) for solution in solutions)
+    refactored_line_count = len(refactored_code.split("\n"))
+    print("\nLine count comparison:")
+    print(f"Original solutions total: {original_line_count} lines")
+    print(f"Refactored solution: {refactored_line_count} lines")
+    print(f"Difference: {refactored_line_count - original_line_count} lines")
+
 
 async def main(args):
     """Main entry point for the refactoring workflow."""
@@ -175,6 +186,18 @@ async def main(args):
     cyber_url = os.environ.get("CYBER_URL")
     if not cyber_url:
         raise ValueError("CYBER_URL environment variable is not set")
+
+    # Count the number of code lines in the original solutions (first 5)
+    original_line_count = 0
+    if args.solution_file.endswith(".json"):
+        with open(args.solution_file, "r") as f:
+            solutions_data = json.load(f)
+        original_line_count = sum(
+            len(sol["code"].split("\n")) for sol in solutions_data[: args.num_solutions]
+        )
+        print(
+            f"Original solutions line count (first {args.num_solutions}): {original_line_count}"
+        )
 
     # Run refactoring workflow
     await refactor_solutions(

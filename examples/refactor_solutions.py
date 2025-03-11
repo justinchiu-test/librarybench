@@ -205,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model-name",
         type=str,
-        default="claude-3-haiku-20240307",
+        default="claude-3-7-sonnet-20250219",
         help="Claude model to use for refactoring",
     )
     parser.add_argument(

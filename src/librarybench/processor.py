@@ -167,7 +167,7 @@ async def solution_process(
         problem_sets = [mapping[x] for x in problem_types]
         for problem_type, problems in zip(problem_types, problem_sets):
             print(f"Processing {sample_size} {problem_type} problems...")
-            examples = get_problems(search_problems)  # type: ignore
+            examples = get_problems(problems)  # type: ignore
             results = await batch_process_solutions(
                 problems=examples[:sample_size],
                 llm_client=llm_client,

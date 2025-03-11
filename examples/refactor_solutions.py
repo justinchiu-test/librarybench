@@ -38,8 +38,9 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
         Formatted prompt for the LLM
     """
     prompt = "# Refactoring Task\n\n"
-    prompt += "You are tasked with refactoring multiple chess-related solutions into a single, cohesive implementation.\n\n"
-    prompt += "Please create a unified solution that handles all the following problems while passing all test cases:\n\n"
+    prompt += "You are tasked with refactoring multiple solutions into a single, cohesive implementation.\n\n"
+    prompt += "Please create a unified solution that handles all the following problems while passing all test cases.\n\n"
+    prompt += "In order to make the code as concise as possible, try to use shared representations across problems.\n\n"
 
     for i, solution in enumerate(solutions):
         prompt += f"## Problem {i + 1}: {solution.problem.source}\n\n"

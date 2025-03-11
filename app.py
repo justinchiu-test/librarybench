@@ -1,8 +1,9 @@
 """Streamlit app to visualize solutions from JSON files."""
 
 import json
+import os
 import streamlit as st
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 # Set page configuration
 st.set_page_config(
@@ -61,7 +62,7 @@ def load_solution_file(file_path: str) -> List[Dict[str, Any]]:
         return []
 
 
-def display_solution(solution: Dict[str, Any], index: int):
+def display_solution(solution: Dict[str, Any], index: int, show_human: bool = False):
     """Display a single solution with details."""
     # Extract data
     problem = solution.get("problem", {})
@@ -76,6 +77,7 @@ def display_solution(solution: Dict[str, Any], index: int):
     model_name = solution.get("model_name", "Unknown")
     iterations = solution.get("iterations", 1)
     history = solution.get("history", [])
+    human_solutions = problem.get("human_solutions", [])
 
     # Create expandable section for this solution
     with st.expander(
@@ -93,22 +95,49 @@ def display_solution(solution: Dict[str, Any], index: int):
         with col4:
             st.metric("Iterations", iterations)
 
-        # Problem description and test cases in tabs
-        tab1, tab2, tab3, tab4 = st.tabs(
-            ["Problem", "Solution", "Test Cases", "Iteration History"]
-        )
+        # Determine the tab list based on whether we have human solutions
+        tabs = ["Problem", "Solution", "Test Cases", "Iteration History"]
+        if human_solutions and show_human:
+            tabs.insert(2, "Human Solution")
 
-        with tab1:
+        # Create tabs
+        tab_objects = st.tabs(tabs)
+
+        # Problem tab
+        with tab_objects[0]:
             st.markdown(question)
 
-        with tab2:
+        # Solution tab
+        with tab_objects[1]:
             st.code(code, language="python")
 
             if st.button("Copy Code", key=f"copy_{index}"):
                 st.toast("Code copied to clipboard!")
                 st.session_state[f"copied_{index}"] = True
 
-        with tab3:
+        # Human Solution tab (if enabled)
+        if human_solutions and show_human:
+            with tab_objects[2]:
+                if len(human_solutions) > 1:
+                    human_solution_index = st.selectbox(
+                        "Select human solution",
+                        range(len(human_solutions)),
+                        format_func=lambda i: f"Human Solution {i + 1}",
+                        key=f"human_sol_select_{index}",
+                    )
+                    st.code(human_solutions[human_solution_index], language="python")
+                elif len(human_solutions) == 1:
+                    st.code(human_solutions[0], language="python")
+                else:
+                    st.info("No human solutions available")
+
+                if len(human_solutions) > 0:
+                    if st.button("Copy Human Code", key=f"copy_human_{index}"):
+                        st.toast("Human code copied to clipboard!")
+
+        # Test Cases tab
+        test_tab_index = 3 if human_solutions and show_human else 2
+        with tab_objects[test_tab_index]:
             tests = problem.get("tests", [])
             if tests:
                 for i, test in enumerate(tests):
@@ -121,7 +150,9 @@ def display_solution(solution: Dict[str, Any], index: int):
             else:
                 st.info("No test cases available")
 
-        with tab4:
+        # Iteration History tab
+        history_tab_index = 4 if human_solutions and show_human else 3
+        with tab_objects[history_tab_index]:
             if history:
                 for i, entry in enumerate(history):
                     iteration = entry.get("iteration", i)
@@ -147,11 +178,27 @@ def main():
     # Sidebar for file selection
     st.sidebar.header("Settings")
 
-    # Default file path
-    default_path = "data/o3_mini_chess_solutions_improved.json"
+    # Get list of JSON files in data directory
+    data_files = [f for f in os.listdir("data") if f.endswith(".json")]
 
-    # File path input
-    file_path = st.sidebar.text_input("Solution file path", value=default_path)
+    # Default file path
+    default_file = "o3_mini_chess_solutions_improved.json"
+    default_index = data_files.index(default_file) if default_file in data_files else 0
+
+    # File selection dropdown
+    selected_file = st.sidebar.selectbox(
+        "Select data file", options=data_files, index=default_index
+    )
+
+    # Construct full file path
+    file_path = os.path.join("data", selected_file)
+
+    # Also allow manual file path input
+    custom_path = st.sidebar.text_input("Or enter custom file path", value="")
+
+    # Use custom path if provided
+    if custom_path:
+        file_path = custom_path
 
     # Load solutions
     if file_path:
@@ -227,6 +274,12 @@ def main():
                 "Sort by", options=list(sort_options.keys()), index=0
             )
 
+            # Display options
+            st.sidebar.header("Display Options")
+            show_human_solutions = st.sidebar.checkbox(
+                "Show Human Solutions", value=False
+            )
+
             # Sort solutions
             sorted_solutions = sorted(filtered_solutions, key=sort_options[sort_by])
 
@@ -235,7 +288,7 @@ def main():
                 st.write(f"Showing {len(sorted_solutions)} solutions")
 
                 for i, solution in enumerate(sorted_solutions):
-                    display_solution(solution, i)
+                    display_solution(solution, i, show_human=show_human_solutions)
             else:
                 st.warning("No solutions match the selected filters")
         else:

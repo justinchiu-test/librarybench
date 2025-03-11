@@ -114,11 +114,9 @@ async def run_workflow(
                 improved_file = solution_file
 
         print(f"\nStep 4: Comparing original and improved {problem_type} solutions...")
-        model_solution_key = f"{generation_result.model_name}_solution"
-        results = await compare_solutions(
+        results = compare_solutions(
             original_file=solution_file,
             improved_file=improved_file,
-            model_key=model_solution_key,
             output_dir=output_dir,
         )
 

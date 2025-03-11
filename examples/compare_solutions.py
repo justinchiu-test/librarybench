@@ -8,10 +8,9 @@ from typing import Optional
 from librarybench.analysis.model_comparison import compare_solutions, print_comparison_results
 
 
-async def compare_model_solutions(
+def compare_model_solutions(
     original_file: str,
     improved_file: str,
-    model_key: str = "o3-mini_solution",
     problem_id: Optional[int] = None,
     output_dir: str = "data",
 ):
@@ -28,13 +27,11 @@ async def compare_model_solutions(
     print(f"Comparing solutions from:")
     print(f"  Original: {original_file}")
     print(f"  Improved: {improved_file}")
-    print(f"  Model key: {model_key}")
     print()
 
-    results = await compare_solutions(
+    results = compare_solutions(
         original_file=original_file,
         improved_file=improved_file,
-        model_key=model_key,
         problem_id=problem_id,
         output_dir=output_dir,
     )
@@ -64,12 +61,6 @@ def main():
     
     # Optional arguments
     parser.add_argument(
-        "--model-key",
-        type=str,
-        default="o3-mini_solution",
-        help="Key to identify model solutions (default: o3-mini_solution)"
-    )
-    parser.add_argument(
         "--problem-id",
         type=int,
         help="ID of a specific problem to compare (default: compare all)"
@@ -83,14 +74,11 @@ def main():
 
     args = parser.parse_args()
 
-    asyncio.run(
-        compare_model_solutions(
-            original_file=args.original_file,
-            improved_file=args.improved_file,
-            model_key=args.model_key,
-            problem_id=args.problem_id,
-            output_dir=args.output_dir,
-        )
+    compare_model_solutions(
+        original_file=args.original_file,
+        improved_file=args.improved_file,
+        problem_id=args.problem_id,
+        output_dir=args.output_dir,
     )
 
 

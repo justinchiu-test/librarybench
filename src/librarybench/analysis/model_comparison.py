@@ -9,10 +9,9 @@ from librarybench.feedback import create_test_cases_from_input_output
 from librarybench.types import StdinStdout, SolutionResult
 
 
-async def compare_solutions(
+def compare_solutions(
     original_file: str,
     improved_file: str,
-    model_key: str = "claude_solution",
     problem_id: Optional[int] = None,
     output_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
@@ -22,7 +21,6 @@ async def compare_solutions(
     Args:
         original_file: Path to the original solution file
         improved_file: Path to the improved solution file
-        model_key: Key to identify the model solutions (e.g., 'claude_solution', 'o3_mini_solution')
         problem_id: Optional ID of a specific problem to compare (if None, compare all)
         output_dir: Directory for output files (defaults to "data")
 

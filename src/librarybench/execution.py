@@ -175,11 +175,11 @@ async def evaluate_solutions_async(
     results = []
 
     for i, solution_data in enumerate(solutions):
-        print(
-            f"Evaluating problem {i + 1}: {solution_data.get('source', 'unknown')} "
-            f"(Difficulty: {solution_data.get('difficulty', 'unknown')})"
-        )
         solution = SolutionResult.model_validate(solution_data)
+        print(
+            f"Evaluating problem {i + 1}: {solution.problem.source} "
+            f"(Difficulty: {solution.problem.difficulty})"
+        )
 
         # Use the input_output field directly from the solution data
         stdin_stdout_tests: list[StdinStdout] = solution.problem.tests

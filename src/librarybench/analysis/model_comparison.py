@@ -6,34 +6,7 @@ from typing import Dict, Any, List, Tuple, Optional
 
 from librarybench.utils import extract_code
 from librarybench.feedback import create_test_cases_from_input_output
-from librarybench.types import StdinStdout
-
-
-async def evaluate_solution(
-    code: str, stdin_stdout_tests: list[StdinStdout]
-) -> Tuple[int, int, float]:
-    """
-    Evaluate a solution against test cases.
-
-    Args:
-        code: Python code to evaluate
-        stdin_stdout_tests: Test cases with stdin/stdout pairs
-
-    Returns:
-        Tuple of (passed tests, total tests, pass ratio)
-    """
-    # Run code against test cases asynchronously
-    from librarybench.execution import run_unit_tests_async
-
-    test_results = await run_unit_tests_async([code], stdin_stdout_tests)
-    test_results_flat = test_results[0] if test_results else []
-
-    # Calculate pass rate
-    passed = sum(1 for result in test_results_flat if result.get("passed", False))
-    total = len(stdin_stdout_tests)
-    passed_ratio = passed / total if total > 0 else 0
-
-    return passed, total, passed_ratio
+from librarybench.types import StdinStdout, SolutionResult
 
 
 async def compare_solutions(
@@ -76,10 +49,8 @@ async def compare_solutions(
     with open(improved_file, "r") as f:
         improved_solutions = json.load(f)
 
-    # Filter to specific problem if requested
-    if problem_id is not None:
-        original_solutions = [original_solutions[problem_id]]
-        improved_solutions = [improved_solutions[problem_id]]
+    original_solutions = [SolutionResult.model_validate(x) for x in original_solutions]
+    improved_solutions = [SolutionResult.model_validate(x) for x in improved_solutions]
 
     # Track improvement statistics
     results = {
@@ -98,41 +69,18 @@ async def compare_solutions(
     for i, (orig_solution, imp_solution) in enumerate(
         zip(original_solutions, improved_solutions)
     ):
-        # Skip if no improved solution
-        improved_key = f"improved_{model_key}"
-        if improved_key not in imp_solution:
-            continue
-
-        # Extract the original and improved code
-        original_code = extract_code(orig_solution.get("code", ""))
-        improved_code = extract_code(imp_solution.get("code", ""))
-
-        # Get the input_output field
-        stdin_stdout_tests = orig_solution.get("tests")
-        stdin_stdout_tests = json.loads(stdin_stdout_tests)
-
-        # Evaluate original solution asynchronously
-        orig_passed, orig_total, orig_ratio = await evaluate_solution(
-            original_code, stdin_stdout_tests
-        )
-
-        # Evaluate improved solution asynchronously
-        imp_passed, imp_total, imp_ratio = await evaluate_solution(
-            improved_code, stdin_stdout_tests
-        )
-
         # Update statistics
         results["total_problems"] += 1
-        results["original_total_passed"] += orig_passed
-        results["original_total_tests"] += orig_total
-        results["improved_total_passed"] += imp_passed
-        results["improved_total_tests"] += imp_total
+        results["original_total_passed"] += orig_solution.tests_passed
+        results["original_total_tests"] += orig_solution.tests_total
+        results["improved_total_passed"] += imp_solution.tests_passed
+        results["improved_total_tests"] += imp_solution.tests_total
 
         # Determine if improved
-        if imp_ratio > orig_ratio:
+        if imp_solution.pass_ratio > orig_solution.pass_ratio:
             status = "improved"
             results["improved_problems"] += 1
-        elif imp_ratio == orig_ratio:
+        elif imp_solution.pass_ratio == orig_solution.pass_ratio:
             status = "unchanged"
             results["unchanged_problems"] += 1
         else:
@@ -142,15 +90,15 @@ async def compare_solutions(
         # Add problem detail
         results["problem_details"].append(
             {
-                "problem_id": i,
+                "problem_id": orig_solution.problem.problem_id,
                 "status": status,
-                "original_passed": orig_passed,
-                "original_total": orig_total,
-                "original_ratio": orig_ratio,
-                "improved_passed": imp_passed,
-                "improved_total": imp_total,
-                "improved_ratio": imp_ratio,
-                "improvement": imp_ratio - orig_ratio,
+                "original_passed": orig_solution.tests_passed,
+                "original_total": orig_solution.tests_total,
+                "original_ratio": orig_solution.pass_ratio,
+                "improved_passed": imp_solution.tests_passed,
+                "improved_total": imp_solution.tests_total,
+                "improved_ratio": imp_solution.pass_ratio,
+                "improvement": imp_solution.pass_ratio - orig_solution.pass_ratio,
             }
         )
 

@@ -4,9 +4,9 @@ import os
 import json
 import asyncio
 import argparse
-from typing import List
+from typing import List, Dict, Any
 
-from librarybench.models import ClaudeClient
+from librarybench.models import ClaudeClient, OpenAiClient
 from librarybench.llm import query_model
 from librarybench.types import SolutionResult
 from librarybench.execution import evaluate_solution
@@ -77,11 +77,68 @@ Please provide your refactored solution in Python code format.
     return prompt
 
 
+async def create_correction_prompt(
+    refactored_code: str,
+    solutions: List[SolutionResult],
+    failed_tests: Dict[int, List[Dict[str, Any]]],
+) -> str:
+    """Create a prompt for correcting the refactored solution based on test feedback.
+
+    Args:
+        refactored_code: The refactored code to be corrected
+        solutions: List of original solution results
+        failed_tests: Dictionary mapping problem index to list of failed test results
+
+    Returns:
+        Formatted prompt for the LLM to correct the solution
+    """
+    prompt = "# Solution Correction Task\n\n"
+    prompt += "The refactored solution you previously created has some failing test cases.\n"
+    prompt += "Please correct the solution to address the failing tests.\n\n"
+    
+    prompt += "## Current Refactored Solution\n\n"
+    prompt += f"```python\n{refactored_code}\n```\n\n"
+    
+    prompt += "## Failing Tests\n\n"
+    
+    for problem_idx, problem_tests in failed_tests.items():
+        solution = solutions[problem_idx]
+        prompt += f"### Problem {problem_idx + 1}: {solution.problem.source}\n\n"
+        prompt += f"Description: {solution.problem.question}\n\n"
+        
+        for i, test_result in enumerate(problem_tests):
+            test_case = solution.problem.tests[test_result.get("test_idx", i)]
+            prompt += f"Test {i + 1}:\n"
+            prompt += f"Input: {test_case.stdin}\n"
+            prompt += f"Expected Output: {test_case.stdout}\n"
+            prompt += f"Actual Output: {test_result.get('exec_output', {}).get('run_output', {}).get('stdout', 'N/A')}\n"
+            
+            # Include error information if available
+            if error := test_result.get('exec_output', {}).get('run_output', {}).get('stderr'):
+                prompt += f"Error: {error}\n"
+                
+            prompt += "\n"
+    
+    prompt += """
+## Correction Instructions
+
+1. Analyze the failing test cases and their output
+2. Identify the root causes of the failures
+3. Correct the refactored solution while maintaining its unified structure
+4. Ensure your solution passes all test cases for all problems
+5. Keep the code as efficient and concise as possible
+
+Please provide your corrected solution in Python code format.
+"""
+    
+    return prompt
+
 async def refactor_solutions(
     solution_file: str,
     output_file: str,
     cyber_url: str,
-    model_name: str = "claude-3-haiku-20240307",
+    model_name: str = "o3-mini",
+    model_provider: str = "openai",
     num_solutions: int = 5,
 ) -> None:
     """Refactor multiple solutions into a single implementation.
@@ -91,6 +148,7 @@ async def refactor_solutions(
         output_file: Path to save the refactored solution
         cyber_url: URL for code execution API
         model_name: LLM model to use for refactoring
+        model_provider: Provider of the LLM ("openai" or "anthropic")
         num_solutions: Number of solutions to include in refactoring
     """
     # Load solutions
@@ -101,9 +159,12 @@ async def refactor_solutions(
     solutions = solutions[:num_solutions]
     print(f"Using {len(solutions)} solutions for refactoring")
 
-    # Create Claude client
-    llm_client = ClaudeClient(model=model_name)
-    print(f"Using {llm_client.model_name} for refactoring")
+    # Create LLM client based on provider
+    if model_provider.lower() == "openai":
+        llm_client = OpenAiClient(model=model_name)
+    else:
+        llm_client = ClaudeClient(model=model_name)
+    print(f"Using {llm_client.model_name} ({model_provider}) for refactoring")
 
     # Create refactoring prompt
     prompt = await create_refactor_prompt(solutions)
@@ -135,6 +196,7 @@ async def refactor_solutions(
     all_tests_passed = True
     total_passed = 0
     total_tests = 0
+    failed_tests = {}  # Dictionary to track failing tests by problem index
 
     for i, solution in enumerate(solutions):
         print(f"\nTesting Problem {i + 1}: {solution.problem.source}")
@@ -156,6 +218,12 @@ async def refactor_solutions(
 
         if passed < total:
             all_tests_passed = False
+            # Collect failing tests for this problem
+            failed_tests[i] = [
+                {**test, "test_idx": idx}
+                for idx, test in enumerate(evaluation["results"])
+                if not test.get("passed", False)
+            ]
 
     # Summary
     overall_pass_ratio = total_passed / total_tests if total_tests > 0 else 0
@@ -163,10 +231,78 @@ async def refactor_solutions(
         f"\nOverall Results: {total_passed}/{total_tests} tests passed ({overall_pass_ratio:.2%})"
     )
 
-    if all_tests_passed:
-        print("\n✅ Success! The refactored solution passes all test cases.")
-    else:
+    return
+
+    # If some tests failed, give the model a chance to correct the solution
+    if not all_tests_passed:
         print("\n⚠️ The refactored solution doesn't pass all test cases.")
+        print("\nGenerating correction prompt based on test feedback...")
+        
+        # Create correction prompt with failing test information
+        correction_prompt = await create_correction_prompt(refactored_code, solutions, failed_tests)
+        
+        # Query model for corrected solution
+        print("Requesting corrected solution from LLM...")
+        correction_response = await query_model(
+            prompt=correction_prompt,
+            llm_client=llm_client,
+            system_prompt="You are an expert Python programmer specializing in algorithm optimization and code refactoring.",
+        )
+        
+        # Extract corrected code
+        corrected_code = extract_code(correction_response)
+        
+        if not corrected_code:
+            print("Failed to extract corrected code from LLM response")
+        else:
+            # Save corrected code
+            with open(output_file, "w") as f:
+                f.write(corrected_code)
+            corrected_line_count = len(corrected_code.split("\n"))
+            print(f"Corrected solution saved to {output_file}")
+            print(f"Corrected solution line count: {corrected_line_count}")
+            
+            # Re-evaluate corrected solution
+            print("\nRe-evaluating corrected solution against all test cases...")
+            corrected_all_passed = True
+            corrected_total_passed = 0
+            
+            for i, solution in enumerate(solutions):
+                print(f"\nTesting Problem {i + 1}: {solution.problem.source}")
+                
+                # Evaluate against this problem's test cases
+                corrected_evaluation = await evaluate_solution(
+                    corrected_code, solution.problem.tests, cyber_url
+                )
+                
+                # Update counts
+                corrected_passed = corrected_evaluation["tests_passed"]
+                corrected_total = corrected_evaluation["tests_total"]
+                corrected_ratio = corrected_evaluation["pass_ratio"]
+                corrected_total_passed += corrected_passed
+                
+                # Report results
+                print(f"  Passed {corrected_passed}/{corrected_total} tests ({corrected_ratio:.2%})")
+                
+                if corrected_passed < corrected_total:
+                    corrected_all_passed = False
+            
+            # Summary of correction
+            corrected_overall_ratio = corrected_total_passed / total_tests if total_tests > 0 else 0
+            print(
+                f"\nCorrected Results: {corrected_total_passed}/{total_tests} tests passed ({corrected_overall_ratio:.2%})"
+            )
+            
+            if corrected_all_passed:
+                print("\n✅ Success! The corrected solution passes all test cases.")
+            else:
+                print("\n⚠️ The corrected solution still doesn't pass all test cases.")
+                
+            # Use the corrected code for the final metrics
+            refactored_code = corrected_code
+            refactored_line_count = corrected_line_count
+    else:
+        print("\n✅ Success! The refactored solution passes all test cases.")
 
     # Print line count comparison
     # Get the original solutions line count from solutions data
@@ -180,9 +316,13 @@ async def refactor_solutions(
 
 async def main(args):
     """Main entry point for the refactoring workflow."""
-    # Check environment variables
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
+    # Check environment variables based on model provider
+    if args.model_provider.lower() == "openai":
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise ValueError("OPENAI_API_KEY environment variable is not set")
+    else:
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
 
     cyber_url = os.environ.get("CYBER_URL")
     if not cyber_url:
@@ -206,6 +346,7 @@ async def main(args):
         output_file=args.output_file,
         cyber_url=cyber_url,
         model_name=args.model_name,
+        model_provider=args.model_provider,
         num_solutions=args.num_solutions,
     )
 
@@ -229,8 +370,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model-name",
         type=str,
-        default="claude-3-7-sonnet-20250219",
-        help="Claude model to use for refactoring",
+        default="o3-mini",
+        help="Model to use for refactoring",
+    )
+    parser.add_argument(
+        "--model-provider",
+        type=str,
+        default="openai",
+        choices=["openai", "anthropic"],
+        help="Provider of the LLM (openai or anthropic)",
     )
     parser.add_argument(
         "--num-solutions",

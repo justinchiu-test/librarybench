@@ -1,6 +1,5 @@
 """Prompt generation module for solution generation and improvement."""
 
-import json
 from typing import Dict, Any, List
 
 from librarybench.types import Problem

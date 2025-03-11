@@ -5,13 +5,10 @@ import json
 import asyncio
 import aiohttp
 from tqdm import tqdm
-from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from typing import Any, Dict, List, Optional
 
 from librarybench.utils import extract_code
 from librarybench.types import (
-    ExecutionOutput,
-    EvaluationResult,
     EvaluationResults,
     ProblemEvaluationResult,
     SolutionResult,

@@ -1,7 +1,5 @@
 """Compare original and improved solutions from LibraryBench."""
 
-import os
-import asyncio
 import argparse
 from typing import Optional
 
@@ -27,7 +25,7 @@ def compare_model_solutions(
         problem_id: Optional ID of a specific problem to compare
         output_dir: Directory for output files
     """
-    print(f"Comparing solutions from:")
+    print("Comparing solutions from:")
     print(f"  Original: {original_file}")
     print(f"  Improved: {improved_file}")
     print()

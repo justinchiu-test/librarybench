@@ -1,7 +1,7 @@
 """Utility functions for code generation and improvement."""
 
 import re
-from typing import Optional, Dict, List, Any
+from typing import Dict, List, Any
 from librarybench.types import StdinStdout
 
 

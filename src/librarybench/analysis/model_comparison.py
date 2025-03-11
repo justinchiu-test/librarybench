@@ -2,11 +2,9 @@
 
 import os
 import json
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, Optional
 
-from librarybench.utils import extract_code
-from librarybench.feedback import create_test_cases_from_input_output
-from librarybench.types import StdinStdout, SolutionResult
+from librarybench.types import SolutionResult
 
 
 def compare_solutions(

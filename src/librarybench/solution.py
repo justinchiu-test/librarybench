@@ -4,7 +4,7 @@ import ast
 import json
 import asyncio
 import logging
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 
 from librarybench.utils import extract_code
 from librarybench.models.llm_client import LlmClient

@@ -1,6 +1,6 @@
 """Data models for solution generation and improvement."""
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 

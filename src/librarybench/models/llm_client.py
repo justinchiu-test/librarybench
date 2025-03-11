@@ -5,6 +5,7 @@ import abc
 
 class LlmClient(abc.ABC):
     """Abstract base class for LLM clients."""
+
     type = "OVERWRITE"
 
     @abc.abstractmethod

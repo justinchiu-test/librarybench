@@ -56,7 +56,7 @@ await solution_process(
 # Compare solutions
 await compare_solutions(
     original_file="path/to/solutions.json",
-    improved_file="path/to/improved_solutions.json"
+    improved_file="path/to/solutions_improved.json"
 )
 ```
 

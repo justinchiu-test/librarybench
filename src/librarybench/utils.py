@@ -4,6 +4,7 @@ import re
 from typing import Optional, Dict, List, Any
 from librarybench.types import StdinStdout
 
+
 def extract_code(solution: str) -> str:
     """
     Extract code from model solutions.

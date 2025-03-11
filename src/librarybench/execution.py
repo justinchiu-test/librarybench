@@ -9,7 +9,14 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
-from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, SolutionResult, StdinStdout
+from librarybench.types import (
+    ExecutionOutput,
+    EvaluationResult,
+    EvaluationResults,
+    ProblemEvaluationResult,
+    SolutionResult,
+    StdinStdout,
+)
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
@@ -117,12 +124,12 @@ async def evaluate_solution(
 ) -> Dict[str, Any]:
     """
     Evaluate a code solution with the execution API.
-    
+
     Args:
         code: Python code to evaluate
         test_cases: List of input/output test cases
         cyber_url: URL for execution API (optional)
-        
+
     Returns:
         Dict with execution results
     """
@@ -130,22 +137,24 @@ async def evaluate_solution(
     if cyber_url is None:
         cyber_url = CYBER_URL
         if not cyber_url:
-            raise ValueError("No execution API URL provided. Set CYBER_URL environment variable.")
-    
+            raise ValueError(
+                "No execution API URL provided. Set CYBER_URL environment variable."
+            )
+
     # Run code against all test cases
     test_results = await run_unit_tests_async([code], test_cases)
     test_results_flat = test_results[0] if test_results else []
-    
+
     # Calculate pass ratio
     passed = sum(1 for result in test_results_flat if result.get("passed", False))
     total = len(test_cases)
     pass_ratio = passed / total if total > 0 else 0
-    
+
     return {
         "pass_ratio": pass_ratio,
         "tests_passed": passed,
         "tests_total": total,
-        "results": test_results_flat
+        "results": test_results_flat,
     }
 
 

@@ -5,7 +5,10 @@ import asyncio
 import argparse
 from typing import Optional
 
-from librarybench.analysis.model_comparison import compare_solutions, print_comparison_results
+from librarybench.analysis.model_comparison import (
+    compare_solutions,
+    print_comparison_results,
+)
 
 
 def compare_model_solutions(
@@ -44,32 +47,32 @@ def compare_model_solutions(
 def main():
     """Parse command line arguments and run the comparison."""
     parser = argparse.ArgumentParser(description="Compare model solution improvements")
-    
+
     # Required arguments
     parser.add_argument(
-        "--original-file", 
-        type=str, 
+        "--original-file",
+        type=str,
         required=True,
-        help="Path to the original solution file"
+        help="Path to the original solution file",
     )
     parser.add_argument(
-        "--improved-file", 
-        type=str, 
+        "--improved-file",
+        type=str,
         required=True,
-        help="Path to the improved solution file"
+        help="Path to the improved solution file",
     )
-    
+
     # Optional arguments
     parser.add_argument(
         "--problem-id",
         type=int,
-        help="ID of a specific problem to compare (default: compare all)"
+        help="ID of a specific problem to compare (default: compare all)",
     )
     parser.add_argument(
-        "--output-dir", 
-        type=str, 
-        default="data", 
-        help="Directory for output files (default: data)"
+        "--output-dir",
+        type=str,
+        default="data",
+        help="Directory for output files (default: data)",
     )
 
     args = parser.parse_args()

@@ -5,7 +5,12 @@ import datasets
 import logging
 from typing import List, Optional
 
-from librarybench.solution import get_problems, save_solutions, batch_process_solutions, convert_solutions_to_problems
+from librarybench.solution import (
+    get_problems,
+    save_solutions,
+    batch_process_solutions,
+    convert_solutions_to_problems,
+)
 from librarybench.models import ClaudeClient, OpenAiClient
 from librarybench.types import BatchResult, SolutionResult
 
@@ -78,6 +83,7 @@ async def solution_process(
         print(f"Improving solutions from {input_solution_file}...")
         with open(input_solution_file, "r") as f:
             import json
+
             solutions = [SolutionResult.model_validate(x) for x in json.load(f)]
 
         problems = convert_solutions_to_problems(solutions)
@@ -120,7 +126,7 @@ async def solution_process(
 
         if file_type:
             # Save modified solutions
-            output_file = f"{output_prefix}_improved_{file_type}_solutions.json"
+            output_file = f"{output_prefix}_{file_type}_solutions_improved.json"
             save_solutions(results, output_file)
             generated_files[file_type] = output_file
 
@@ -142,20 +148,26 @@ async def solution_process(
     else:
         # Load the TACO dataset
         dataset = datasets.load_dataset("BAAI/TACO", trust_remote_code=True)
-        train = dataset["test"] # type: ignore
+        train = dataset["test"]  # type: ignore
 
         # Filter for problems with specific skills
-        search_problems = [x for x in train if "Complete search" in x["skill_types"]] # type: ignore
+        search_problems = [x for x in train if "Complete search" in x["skill_types"]]  # type: ignore
         datastructure_problems = [
-            x for x in train if "Data structures" in x["skill_types"] # type: ignore
+            x
+            for x in train
+            if "Data structures" in x["skill_types"]  # type: ignore
         ]
-        chess_problems = [x for x in train if "chess" in x["question"].lower()] # type: ignore
+        chess_problems = [x for x in train if "chess" in x["question"].lower()]  # type: ignore
 
-        mapping = dict(search=search_problems, datastrcutre=datastructure_problems, chess=chess_problems)
+        mapping = dict(
+            search=search_problems,
+            datastrcutre=datastructure_problems,
+            chess=chess_problems,
+        )
         problem_sets = [mapping[x] for x in problem_types]
         for problem_type, problems in zip(problem_types, problem_sets):
             print(f"Processing {sample_size} {problem_type} problems...")
-            examples = get_problems(search_problems) # type: ignore
+            examples = get_problems(search_problems)  # type: ignore
             results = await batch_process_solutions(
                 problems=examples[:sample_size],
                 llm_client=llm_client,

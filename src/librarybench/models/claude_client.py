@@ -8,6 +8,7 @@ from librarybench.models.llm_client import LlmClient
 
 class ClaudeClient(LlmClient):
     """Client for Anthropic Claude models."""
+
     type = "claude"
 
     def __init__(self, model: str = "claude-3-7-sonnet-20250219"):
@@ -45,7 +46,7 @@ class ClaudeClient(LlmClient):
                 for block in response.content:
                     # TODO: thinking blocks might have a different field?
                     if hasattr(block, "text"):
-                        text_blocks.append(block.text) # type: ignore
+                        text_blocks.append(block.text)  # type: ignore
                 return "".join(text_blocks)
             # Legacy API access
             return response.content

@@ -8,6 +8,7 @@ class StdinStdout(BaseModel):
     stdin: str
     stdout: str
 
+
 class ExecutionOutput(BaseModel):
     """Output of the execution of a generation on a test."""
 
@@ -45,7 +46,7 @@ class ProblemEvaluationResult(BaseModel):
     human_tests_total: int = 0
     detailed_model_results: list[dict[str, Any]] = Field(default_factory=list)
     detailed_human_results: list[dict[str, Any]] = Field(default_factory=list)
-    
+
     # Allow arbitrary fields
     model_config = ConfigDict(extra="allow")
 
@@ -58,7 +59,7 @@ class EvaluationResults(BaseModel):
     model_total_tests: int = 0
     human_total_passed: int = 0
     human_total_tests: int = 0
-    
+
     # Allow arbitrary fields
     model_config = ConfigDict(extra="allow")
 

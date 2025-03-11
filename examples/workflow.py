@@ -78,11 +78,11 @@ async def run_workflow(
         )
 
         # Use the evaluation results directly instead of loading from file
-        execution_results = [r.model_dump() for r in evaluation_results.results]
+        execution_results = evaluation_results.results
 
         # Count how many solutions already pass all tests
         all_tests_pass = all(
-            result.get("model_tests_passed", 0) == result.get("model_tests_total", 0)
+            result.model_tests_passed == result.model_tests_total
             for result in execution_results
         )
 
@@ -132,7 +132,7 @@ def main():
     parser.add_argument(
         "--model-type",
         choices=["openai", "claude"],
-        default="claude",
+        default="openai",
         help="Type of model to use (openai or claude)",
     )
     parser.add_argument(

@@ -19,7 +19,6 @@ __all__ = [
     "feedback",
     "analysis",
     "utils",
-    
     # Main API
     "SolutionResult",
     "BatchResult",

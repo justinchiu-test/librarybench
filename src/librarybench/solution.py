@@ -119,7 +119,9 @@ async def process_solution(
     if not stdin_stdout_tests:
         logger.warning(f"No test cases found for problem {problem_id}")
         return SolutionResult(
-            problem=problem, code="# Error: No test cases found", status="error",
+            problem=problem,
+            code="# Error: No test cases found",
+            status="error",
             model_name=llm_client.model_name,
             model_type=llm_client.type,
         )
@@ -220,7 +222,7 @@ async def process_solution(
                     iterations=1,
                     history=history,
                     model_name=llm_client.model_name,
-                    model_type=llm_client.type
+                    model_type=llm_client.type,
                 )
         else:
             logger.warning(f"Failed to extract code for problem {problem_id}")
@@ -229,7 +231,7 @@ async def process_solution(
                 code="# Error: Failed to extract code",
                 status="error",
                 model_name=llm_client.model_name,
-                model_type=llm_client.type
+                model_type=llm_client.type,
             )
 
     # If we need to iterate for improvement or didn't reach target on first try
@@ -316,7 +318,7 @@ async def process_solution(
         iterations=len(history),
         history=history,
         model_name=llm_client.model_name,
-        model_type=llm_client.type
+        model_type=llm_client.type,
     )
 
 

@@ -66,7 +66,7 @@ def get_problems(xs: List[Dict[str, Any]]) -> List[Problem]:
             source=source,
             difficulty=difficulty,
             human_solutions=solutions,
-            original_solution=None,
+            original_code=None,
         )
 
         results.append(problem)
@@ -130,10 +130,10 @@ async def process_solution(
     # Generate initial solution or extract existing one
     if improvement_mode:
         # Find the first solution key in the problem
-        assert problem.original_solution is not None
+        assert problem.original_code is not None
 
         # Extract code from the solution
-        original_code = problem.original_solution
+        original_code = problem.original_code
 
         # Evaluate the original solution
         evaluation = await evaluate_solution(
@@ -366,3 +366,10 @@ async def batch_process_solutions(
     results = await asyncio.gather(*tasks)
 
     return results
+
+
+def convert_solutions_to_problems(solutions: list[SolutionResult]) -> list[Problem]:
+    return [
+        solution.problem.model_copy(update=dict(original_code=solution.code))
+        for solution in solutions
+    ]

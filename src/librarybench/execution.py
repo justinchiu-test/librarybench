@@ -181,7 +181,7 @@ async def evaluate_solutions_async(
         )
 
         # Use the input_output field directly from the solution data
-        stdin_stdout_tests = solution_data.get("problem").get("tests")
+        stdin_stdout_tests: list[StdinStdout] = [StdinStdout.model_validate(x) for x in solution_data.get("problem").get("tests")]
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution - find model-specific solution key

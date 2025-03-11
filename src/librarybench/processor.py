@@ -5,9 +5,9 @@ import datasets
 import logging
 from typing import List, Optional
 
-from librarybench.solution import get_problems, save_solutions, batch_process_solutions
+from librarybench.solution import get_problems, save_solutions, batch_process_solutions, convert_solutions_to_problems
 from librarybench.models import ClaudeClient, OpenAiClient
-from librarybench.types import BatchResult
+from librarybench.types import BatchResult, SolutionResult
 
 # Configure logging
 logging.basicConfig(
@@ -78,12 +78,13 @@ async def solution_process(
         print(f"Improving solutions from {input_solution_file}...")
         with open(input_solution_file, "r") as f:
             import json
+            solutions = [SolutionResult.model_validate(x) for x in json.load(f)]
 
-            solutions = json.load(f)
+        problems = convert_solutions_to_problems(solutions)
 
         # Process the solutions
         results = await batch_process_solutions(
-            problems=solutions,
+            problems=problems,
             llm_client=llm_client,
             cyber_url=cyber_url,
             max_iterations=max_iterations,
@@ -118,20 +119,8 @@ async def solution_process(
                 break
 
         if file_type:
-            # Create output file
-            output_file = f"{output_prefix}_improved_{file_type}_solutions.json"
-
-            # Modify solutions to include improved_ prefix for comparison
-            # TODO: fix this hack?
-            for solution in solutions:
-                for result in results:
-                    if result.problem.problem_id == solutions.index(solution):
-                        # Add the improved solution with improved_ prefix
-                        solution_key = f"{llm_client.model_name}_solution"
-                        improved_key = f"improved_{solution_key}"
-                        solution[improved_key] = result.code
-
             # Save modified solutions
+            output_file = f"{output_prefix}_improved_{file_type}_solutions.json"
             save_solutions(results, output_file)
             generated_files[file_type] = output_file
 

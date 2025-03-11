@@ -70,7 +70,7 @@ class Problem(BaseModel):
     source: str
     difficulty: str
     human_solutions: list[str]
-    original_solution: str | None
+    original_code: str | None
 
 
 class SolutionResult(BaseModel):

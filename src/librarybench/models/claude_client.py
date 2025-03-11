@@ -30,11 +30,16 @@ class ClaudeClient(LlmClient):
 
     async def generate_completion(self, prompt: str, system_prompt: str) -> str:
         """Generate a completion using Anthropic API."""
-        response = await self.client.messages.create(
+        response = await self.client.beta.messages.create(
             model=self._model,
             system=system_prompt,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=4096,
+            thinking={
+                "type": "enabled",
+                "budget_tokens": 2048
+            },
+            betas=["output-128k-2025-02-19"]
         )
         if not response.content or len(response.content) == 0:
             return ""

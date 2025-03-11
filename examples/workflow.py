@@ -14,7 +14,7 @@ from librarybench.analysis.model_comparison import (
 
 
 async def run_workflow(
-    model_type: str = "claude",
+    model_type: str = "openai",
     model_name: Optional[str] = None,
     sample_size: int = 3,
     problem_types: list = ["chess"],
@@ -45,7 +45,7 @@ async def run_workflow(
         if model_type == "openai":
             model_name = "o3-mini"
         else:
-            model_name = "claude-3-haiku-20240307"
+            model_name = "claude-3-7-sonnet-20250219"
 
     print(f"Step 1: Generating solutions using {model_name}...")
 
@@ -138,7 +138,7 @@ def main():
     parser.add_argument(
         "--model-name",
         type=str,
-        help="Specific model name (e.g., 'o3-mini' or 'claude-3-opus-20240229')",
+        help="Specific model name (e.g., 'o3-mini' or 'claude-3-7-sonnet-20250219')",
     )
     parser.add_argument(
         "--sample-size",

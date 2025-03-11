@@ -94,7 +94,7 @@ class BatchResult(BaseModel):
     status: str = "success"
     generated_files: dict[str, str] = Field(default_factory=dict)
     model_type: str
-    model: str
+    model_name: str
     total_problems: int = 0
     completed: int = 0
     errors: int = 0

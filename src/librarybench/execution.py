@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from librarybench.utils import extract_code
-from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, StdinStdout
+from librarybench.types import ExecutionOutput, EvaluationResult, EvaluationResults, ProblemEvaluationResult, SolutionResult, StdinStdout
 
 # URL for execution API - load from environment variable
 CYBER_URL: str = os.getenv("CYBER_URL", "")
@@ -179,14 +179,15 @@ async def evaluate_solutions_async(
             f"Evaluating problem {i + 1}: {solution_data.get('source', 'unknown')} "
             f"(Difficulty: {solution_data.get('difficulty', 'unknown')})"
         )
+        solution = SolutionResult.model_validate(solution_data)
 
         # Use the input_output field directly from the solution data
-        stdin_stdout_tests: list[StdinStdout] = [StdinStdout.model_validate(x) for x in solution_data.get("problem").get("tests")]
+        stdin_stdout_tests: list[StdinStdout] = solution.problem.tests
         print(f"  Found {len(stdin_stdout_tests)} test cases")
 
         # Extract code from the solution - find model-specific solution key
-        model_code = extract_code(solution_data.get("code"))
-        human_code = solution_data.get("problem").get("human_solution", "")
+        model_code = extract_code(solution.code)
+        human_code = solution.problem.human_solutions[0]
 
         # Run code against test cases asynchronously
         model_results = await run_unit_tests_async([model_code], stdin_stdout_tests)
@@ -224,12 +225,6 @@ async def evaluate_solutions_async(
             detailed_model_results=model_results[0] if model_results else [],
             detailed_human_results=human_results[0] if human_results else [],
         )
-
-        # Include all original keys from solution_data
-        for key, value in solution_data.items():
-            if key not in problem_result.model_dump():
-                setattr(problem_result, key, value)
-
         results.append(problem_result)
 
     # Create evaluation results

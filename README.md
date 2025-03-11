@@ -123,6 +123,20 @@ Run a specific test:
 uv run pytest path/to/test.py::test_function_name
 ```
 
+Run the streamlit app:
+```bash
+uv run streamlit run app.py
+```
+
+The Streamlit app provides an interactive visualization interface for exploring model solutions:
+
+- View solution details including code, test results, and iteration history
+- Compare performance metrics across different models and problem types
+- Filter solutions by source, difficulty, and other attributes 
+- Examine test cases and expected outputs
+- Track improvement across solution iterations
+- View human-written solutions (when available) for comparison
+
 Format code:
 ```bash
 uv run ruff format

@@ -134,8 +134,7 @@ def display_solution(solution: Dict[str, Any], index: int):
                     st.markdown(
                         f"Pass ratio: {iter_pass_ratio:.2%} ({iter_tests_passed}/{iter_tests_total})"
                     )
-                    with st.expander("Code", expanded=False):
-                        st.code(iter_code, language="python")
+                    st.code(iter_code, language="python")
                     st.divider()
             else:
                 st.info("No iteration history available")

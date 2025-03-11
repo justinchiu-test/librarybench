@@ -17,6 +17,7 @@ dependencies = [
     "asyncio>=3.4.3",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.25.3",
+    "streamlit>=1.43.1",
 ]
 
 [project.optional-dependencies]

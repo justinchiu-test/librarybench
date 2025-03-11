@@ -35,153 +35,80 @@ LibraryBench requires the following environment variables:
 
 ## Usage
 
-### Generating Solutions
+The main workflow is in `examples/workflow.py`. For individual components:
 
 ```python
-import asyncio
-from librarybench.generation.solution_generator import generate_solutions
-
-async def main():
-    await generate_solutions(
-        model_type="claude",  # or "openai"
-        model_name="claude-3-sonnet-20240229",  # or specific OpenAI model
-        sample_size=5,  # Number of examples to process
-        concurrency=5,  # Number of concurrent requests
-        problem_types=["search", "datastructure", "chess"],
-        output_dir="data"
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Executing and Evaluating Solutions
-
-```python
-from librarybench.execution.executor import evaluate_solutions
+# Generate solutions
+await solution_process(
+    model_type="openai", model_name="o3-mini", 
+    problem_types=["chess"], max_iterations=1
+)
 
 # Evaluate solutions
-results = evaluate_solutions(
-    solution_file="data/claude_3_sonnet_20240229_search_solutions.json",
-    output_dir="data"
+await evaluate_solutions_async(solution_file="path/to/solutions.json")
+
+# Improve solutions
+await solution_process(
+    model_type="openai", model_name="o3-mini",
+    input_solution_file="path/to/solutions.json", max_iterations=2
+)
+
+# Compare solutions
+await compare_solutions(
+    original_file="path/to/solutions.json",
+    improved_file="path/to/improved_solutions.json"
 )
 ```
 
-### Getting Model Feedback
+## Main Workflow Example
 
-```python
-from librarybench.feedback.feedback_generator import get_model_feedback
-
-# Get feedback for a specific model solution
-feedback = get_model_feedback(
-    solution_file="data/claude_3_sonnet_20240229_search_solutions.json",
-    execution_results_file="data/claude_3_sonnet_20240229_search_solutions_execution_results.json",
-    problem_id=0,  # Optional: specific problem ID
-    model_name="claude"  # or "o3_mini"
-)
-print(feedback)
-```
-
-### Iteratively Improving Solutions
-
-```python
-import asyncio
-from librarybench.improvement.iterative_repair import batch_improve_solutions
-
-async def main():
-    # Improve all solutions in a file
-    results = await batch_improve_solutions(
-        solution_file="data/claude_3_sonnet_20240229_search_solutions.json",
-        execution_results_file="data/claude_3_sonnet_20240229_search_solutions_execution_results.json",
-        model_name="claude-3-sonnet-20240229",
-        max_iterations=3,
-        target_passed_ratio=1.0,
-        output_file="data/improved_claude_3_sonnet_20240229_search_solutions.json",
-        concurrent_problems=3
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Comparing Improvements
-
-```python
-from librarybench.analysis.model_comparison import compare_solutions, print_comparison_results
-
-# Compare original and improved solutions
-results = compare_solutions(
-    original_file="data/claude_3_sonnet_20240229_search_solutions.json",
-    improved_file="data/improved_claude_3_sonnet_20240229_search_solutions.json",
-    model_key="claude_3_sonnet_20240229_solution"
-)
-
-# Print human-readable comparison
-print_comparison_results(results)
-```
-
-## Package Structure
-
-The codebase has been refactored into a proper Python package structure. All functionality is organized in the `src/librarybench` package with improved structure and interfaces.
-
-### Complete Workflow Example
-
-The library includes a complete example workflow that demonstrates the entire pipeline:
-
-```python
-import asyncio
-from librarybench.examples.example_workflow import run_workflow
-
-async def main():
-    await run_workflow(
-        model_type="claude",
-        model_name="claude-3-sonnet-20240229",
-        sample_size=3,
-        problem_types=["search"],
-        max_iterations=3,
-        output_dir="data"
-    )
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-You can also run the example directly from the command line:
+The main entrypoint is `examples/workflow.py`:
 
 ```bash
-uv run python examples/example_workflow.py \
-    --model-type claude \
-    --model-name claude-3-sonnet-20240229 \
-    --sample-size 3 \
-    --problem-types search \
-    --max-iterations 3
+uv run python examples/workflow.py \
+    --model-type openai \
+    --model-name o3-mini \
+    --sample-size 5 \
+    --problem-types chess \
+    --max-iterations 2
 ```
 
 ## Project Structure
 
 ```
 librarybench/
+├── CLAUDE.md                 # Command references and coding standards
+├── README.md                 # Project documentation
+├── pyproject.toml            # Project configuration
 ├── src/
-│   └── librarybench/
-│       ├── generation/        # Solution generation
-│       │   ├── models/        # LLM client interfaces
-│       │   │   ├── llm_client.py     # Abstract base class
-│       │   │   ├── claude_client.py  # Claude-specific client
-│       │   │   └── openai_client.py  # OpenAI-specific client
-│       │   └── solution_generator.py # Solution generation pipeline
-│       ├── execution/         # Solution testing
-│       │   └── executor.py    # Execution and evaluation logic
-│       ├── feedback/          # Feedback generation
-│       │   └── feedback_generator.py # Model feedback generation 
-│       ├── improvement/       # Iterative improvement
-│       │   └── iterative_repair.py   # Solution refinement
-│       ├── analysis/          # Comparison tools
-│       │   └── model_comparison.py   # Solution comparison logic
-│       └── utils/             # Shared utilities
-│           └── helpers.py     # Helper functions
-├── tests/                     # Test suite
-├── examples/                  # Example scripts
-└── data/                      # Solution data storage
+│   └── librarybench/         # Core package
+│       ├── __init__.py       
+│       ├── models/           # LLM clients
+│       │   ├── __init__.py
+│       │   ├── llm_client.py       # Base client class
+│       │   ├── claude_client.py    # Anthropic client
+│       │   └── openai_client.py    # OpenAI client
+│       ├── analysis/         # Analysis tools
+│       │   ├── __init__.py
+│       │   └── model_comparison.py # Compare solutions
+│       ├── feedback/         # Feedback generation
+│       │   ├── __init__.py
+│       │   └── feedback_generator.py
+│       ├── execution.py      # Solution execution
+│       ├── llm.py            # LLM interface
+│       ├── processor.py      # Main pipeline
+│       ├── prompting.py      # Prompt templates
+│       ├── solution.py       # Solution data structures
+│       ├── types.py          # Type definitions
+│       └── utils.py          # Utility functions
+├── examples/                 # Example workflows
+│   └── workflow.py           # Main workflow script
+├── scripts/                  # Utility scripts
+│   └── examine_taco.py       # TACO evaluation tool
+├── tests/                    # Test suite
+│   ├── test_execution.py     # Execution tests
+│   └── test_generation.py    # Generation tests
+└── data/                     # Solution data storage
 ```
 
 ## Development

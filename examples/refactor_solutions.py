@@ -41,13 +41,15 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
     prompt += "You are tasked with refactoring multiple solutions into a single, cohesive implementation.\n\n"
     prompt += "Please create a unified solution that handles all the following problems while passing all test cases.\n\n"
     prompt += "In order to make the code as concise as possible, try to use shared representations across problems.\n\n"
+    prompt += "For example, start with a class Chessboard, which represents the state as a 2D numpy matrix.\n\n"
+
 
     for i, solution in enumerate(solutions):
         prompt += f"## Problem {i + 1}: {solution.problem.source}\n\n"
         prompt += f"### Problem Description\n{solution.problem.question}\n\n"
         prompt += "### Test Cases\n"
 
-        for j, test in enumerate(solution.problem.tests):
+        for j, test in enumerate(solution.problem.tests[:5]):
             prompt += f"Test {j + 1}:\n"
             prompt += f"Input: {test.stdin}\n"
             prompt += f"Expected Output: {test.stdout}\n\n"
@@ -71,13 +73,19 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
 
 Your solution should handle the input format properly and output the expected result for each problem. The code should be able to detect which problem is being presented based on the input pattern.
 
-Please provide your refactored solution in Python code format.
+Please provide your refactored solution in the markdown Python code format: ```python ... ```.
+
+Your code style should make use of python classes and dataclasses.
+Implement a chessboard class with a 2D numpy array and use that for the solutions.
+You are not allowed to define helper functions in each solution.
+They must be defined outside the particular solution implementations in a library of functions and classes.
+Change the implementations of the given solutions to use the library and do NOT repeat code.
 """
 
     return prompt
 
 
-async def create_correction_prompt(
+def create_correction_prompt(
     refactored_code: str,
     solutions: List[SolutionResult],
     failed_tests: Dict[int, List[Dict[str, Any]]],
@@ -239,7 +247,7 @@ async def refactor_solutions(
         print("\nGenerating correction prompt based on test feedback...")
         
         # Create correction prompt with failing test information
-        correction_prompt = await create_correction_prompt(refactored_code, solutions, failed_tests)
+        correction_prompt = create_correction_prompt(refactored_code, solutions, failed_tests)
         
         # Query model for corrected solution
         print("Requesting corrected solution from LLM...")
@@ -248,6 +256,8 @@ async def refactor_solutions(
             llm_client=llm_client,
             system_prompt="You are an expert Python programmer specializing in algorithm optimization and code refactoring.",
         )
+        with open(output_file + ".fullresponse", "w") as f:
+            f.write(correction_response)
         
         # Extract corrected code
         corrected_code = extract_code(correction_response)

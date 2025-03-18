@@ -50,6 +50,8 @@ def main():
     search = get_solutions(search)
     dp = get_solutions(dp)
 
+    import pdb; pdb.set_trace()
+
     count_defs_(datastructures)
     count_defs_(search)
     count_defs_(dp)
@@ -60,9 +62,6 @@ def main():
 
     # good_dp[1], good_dp[8], good_dp[9]
     chess = get_solutions(get_chess(train))
-    import ipdb
-
-    ipdb.set_trace()
 
     # First print the available keys from the first example
     if search:

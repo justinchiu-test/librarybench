@@ -58,6 +58,7 @@ def get_problems(xs: List[Dict[str, Any]]) -> List[Problem]:
         else:
             solutions = []
 
+        import pdb; pdb.set_trace()
         # Add to results
         problem = Problem(
             problem_id=i,
@@ -67,6 +68,7 @@ def get_problems(xs: List[Dict[str, Any]]) -> List[Problem]:
             difficulty=difficulty,
             human_solutions=solutions,
             original_code=None,
+            language="cpp",
         )
 
         results.append(problem)
@@ -139,7 +141,7 @@ async def process_solution(
 
         # Evaluate the original solution
         evaluation = await evaluate_solution(
-            original_code, stdin_stdout_tests, cyber_url
+            problem.language, original_code, stdin_stdout_tests, cyber_url
         )
 
         # Add to history
@@ -188,7 +190,7 @@ async def process_solution(
 
         # Evaluate the solution
         if code:
-            evaluation = await evaluate_solution(code, stdin_stdout_tests, cyber_url)
+            evaluation = await evaluate_solution(problem.language, code, stdin_stdout_tests, cyber_url)
 
             # Get results
             passed = evaluation["tests_passed"]
@@ -270,7 +272,7 @@ async def process_solution(
             if improved_code:
                 # Evaluate the improved solution
                 evaluation = await evaluate_solution(
-                    improved_code, problem.tests, cyber_url
+                    problem.language, improved_code, problem.tests, cyber_url
                 )
 
                 # Get results

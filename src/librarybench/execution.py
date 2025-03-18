@@ -21,6 +21,7 @@ CYBER_URL: str = os.getenv("CYBER_URL", "")
 
 async def execute_test(
     session: aiohttp.ClientSession,
+    language: str,
     code: str,
     test: StdinStdout,
     semaphore: asyncio.Semaphore,
@@ -43,7 +44,7 @@ async def execute_test(
         }
 
         params = {
-            "language": "python",
+            "language": language,
             "environment": "default",
             "timeout": 30,
             "generation_formatting": "true",
@@ -65,6 +66,7 @@ async def execute_test(
 
 
 async def run_unit_tests_async(
+    language: str,
     generations: List[str],
     stdin_stdout_tests: List[StdinStdout],
     concurrency: int = 512,
@@ -85,7 +87,7 @@ async def run_unit_tests_async(
     async with aiohttp.ClientSession() as session:
         for generation in tqdm(generations, desc="Running tests"):
             tasks = [
-                execute_test(session, generation, test, semaphore)
+                execute_test(session, language, generation, test, semaphore)
                 for test in stdin_stdout_tests
             ]
             test_results = await asyncio.gather(*tasks)
@@ -95,6 +97,7 @@ async def run_unit_tests_async(
 
 
 def run_unit_tests(
+    language: str,
     generations: List[str],
     stdin_stdout_tests: List[StdinStdout],
     concurrency: int = 512,
@@ -110,11 +113,12 @@ def run_unit_tests(
         Nested list of test results for each generation and test case
     """
     return asyncio.run(
-        run_unit_tests_async(generations, stdin_stdout_tests, concurrency)
+        run_unit_tests_async(language, generations, stdin_stdout_tests, concurrency)
     )
 
 
 async def evaluate_solution(
+    language: str,
     code: str,
     test_cases: List[StdinStdout],
     cyber_url: Optional[str] = None,
@@ -139,7 +143,7 @@ async def evaluate_solution(
             )
 
     # Run code against all test cases
-    test_results = await run_unit_tests_async([code], test_cases)
+    test_results = await run_unit_tests_async(language, [code], test_cases)
     test_results_flat = test_results[0] if test_results else []
 
     # Calculate pass ratio
@@ -156,7 +160,7 @@ async def evaluate_solution(
 
 
 async def evaluate_solutions_async(
-    solution_file: str, output_dir: Optional[str] = None
+    language: str, solution_file: str, output_dir: Optional[str] = None
 ) -> EvaluationResults:
     """Evaluate generated solutions from the given file asynchronously.
 
@@ -196,9 +200,9 @@ async def evaluate_solutions_async(
         human_code = solution.problem.human_solutions[0]
 
         # Run code against test cases asynchronously
-        model_results = await run_unit_tests_async([model_code], stdin_stdout_tests)
+        model_results = await run_unit_tests_async(language, [model_code], stdin_stdout_tests)
         human_results = (
-            await run_unit_tests_async([human_code], stdin_stdout_tests)
+            await run_unit_tests_async(language, [human_code], stdin_stdout_tests)
             if human_code
             else []
         )
@@ -272,7 +276,7 @@ async def evaluate_solutions_async(
 
 
 def evaluate_solutions(
-    solution_file: str, output_dir: Optional[str] = None
+    language: str, solution_file: str, output_dir: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """Evaluate generated solutions from the given file (synchronous wrapper).
 
@@ -284,5 +288,5 @@ def evaluate_solutions(
         List of evaluation results
     """
     # Use run_unit_tests_async directly to avoid nested asyncio.run() calls
-    results = asyncio.run(evaluate_solutions_async(solution_file, output_dir))
+    results = asyncio.run(evaluate_solutions_async(language, solution_file, output_dir))
     return [r.model_dump() for r in results.results]

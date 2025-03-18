@@ -72,6 +72,7 @@ class Problem(BaseModel):
     difficulty: str
     human_solutions: list[str]
     original_code: str | None
+    language: str
 
 
 class SolutionResult(BaseModel):

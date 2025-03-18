@@ -84,7 +84,7 @@ def get_model_feedback(
     """
     # Load solutions
     with open(solution_file, "r") as f:
-        solutions = json.load(f)
+        solutions = [SolutionResult.model_validate(x) for x in json.load(f)]
 
     # If problem_id specified, filter to that problem
     if problem_id is not None:
@@ -93,13 +93,15 @@ def get_model_feedback(
     # Track all feedbacks
     all_feedbacks = []
     all_results = []
+    import pdb; pdb.set_trace()
 
     for solution_data in solutions:
         stdin_stdout_tests = solution_data.get("tests")
         stdin_stdout_tests = json.loads(stdin_stdout_tests)
         model_code = extract_code(solution_data.get("code", ""))
+        # todo: use pydantic...
         # Run code against test cases
-        model_results = run_unit_tests([model_code], stdin_stdout_tests)
+        model_results = run_unit_tests(language, [model_code], stdin_stdout_tests)
 
         # Calculate passed tests
         model_results_flat = model_results[0] if model_results else []

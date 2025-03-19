@@ -127,7 +127,8 @@ async def evaluate_solution(
     Evaluate a code solution with the execution API.
 
     Args:
-        code: Python code to evaluate
+        language: Code language
+        code: Code to evaluate
         test_cases: List of input/output test cases
         cyber_url: URL for execution API (optional)
 

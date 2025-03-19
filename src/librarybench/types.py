@@ -69,7 +69,7 @@ class Problem(BaseModel):
     question: str
     tests: list[StdinStdout]
     source: str
-    difficulty: str
+    difficulty: str | int
     human_solutions: list[str]
     original_code: str | None
     language: str

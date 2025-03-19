@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from librarybench.utils import extract_code
 from librarybench.execution import run_unit_tests
+from librarybench.types import SolutionResult, Problem
 
 
 def create_test_cases_from_input_output(
@@ -67,6 +68,7 @@ def format_feedback(
 
 
 def get_model_feedback(
+    language: str,
     solution_file: str,
     problem_id: Optional[int] = None,
     model_name: Optional[str] = None,

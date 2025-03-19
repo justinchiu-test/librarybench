@@ -28,7 +28,7 @@ async def load_solutions(file_path: str) -> List[SolutionResult]:
     return [SolutionResult.model_validate(solution) for solution in solutions_data]
 
 
-async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
+def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
     """Create a prompt for refactoring multiple solutions.
 
     Args:
@@ -38,10 +38,10 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
         Formatted prompt for the LLM
     """
     prompt = "# Refactoring Task\n\n"
-    prompt += "You are tasked with refactoring multiple solutions into a single, cohesive implementation.\n\n"
-    prompt += "Please create a unified solution that handles all the following problems while passing all test cases.\n\n"
-    prompt += "In order to make the code as concise as possible, try to use shared representations across problems.\n\n"
-    prompt += "For example, start with a class Chessboard, which represents the state as a 2D numpy matrix.\n\n"
+    prompt += "You are tasked with refactoring multiple solutions into a single, cohesive implementation.\n"
+    prompt += "Please create a unified solution that handles all the following problems while passing all test cases.\n"
+    prompt += "Make the code as concise as possible by writing library functions that are shared across all problems.\n\n"
+    #prompt += "For example, start with a class Chessboard, which represents the state as a 2D numpy matrix.\n\n"
 
 
     for i, solution in enumerate(solutions):
@@ -55,7 +55,7 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
             prompt += f"Expected Output: {test.stdout}\n\n"
 
         prompt += "### Current Solution\n"
-        prompt += f"```python\n{solution.code}\n```\n\n"
+        prompt += f"```cpp\n{solution.code}\n```\n\n"
 
         # Add pass stats
         prompt += f"This solution currently passes {solution.tests_passed}/{solution.tests_total} tests.\n\n"
@@ -71,16 +71,10 @@ async def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
 5. Maintain or improve the efficiency of the original solutions
 6. Provide clear function names and add helpful comments
 
-Your solution should handle the input format properly and output the expected result for each problem. The code should be able to detect which problem is being presented based on the input pattern.
+Your solution should handle the input format properly and output the expected result for each problem.
+The first input line will tell you which problem to solve (int in 1, ..., 5), with the problem input following on subsequent lines.
 
-Please provide your refactored solution in the markdown Python code format: ```python ... ```.
-
-Your code style should make use of python classes and dataclasses.
-Implement a chessboard class with a 2D numpy array and use that for the solutions.
-You are not allowed to define helper functions in each solution.
-They must be defined outside the particular solution implementations in a library of functions and classes.
-Change the implementations of the given solutions to use the library and do NOT repeat code.
-"""
+Please provide your refactored solution in the markdown Cpp code format: ```cpp ... ```."""
 
     return prompt
 
@@ -105,7 +99,7 @@ def create_correction_prompt(
     prompt += "Please correct the solution to address the failing tests.\n\n"
     
     prompt += "## Current Refactored Solution\n\n"
-    prompt += f"```python\n{refactored_code}\n```\n\n"
+    prompt += f"```cpp\n{refactored_code}\n```\n\n"
     
     prompt += "## Failing Tests\n\n"
     
@@ -136,7 +130,7 @@ def create_correction_prompt(
 4. Ensure your solution passes all test cases for all problems
 5. Keep the code as efficient and concise as possible
 
-Please provide your corrected solution in Python code format.
+Please provide your corrected solution in Cpp code format.
 """
     
     return prompt
@@ -175,7 +169,7 @@ async def refactor_solutions(
     print(f"Using {llm_client.model_name} ({model_provider}) for refactoring")
 
     # Create refactoring prompt
-    prompt = await create_refactor_prompt(solutions)
+    prompt = create_refactor_prompt(solutions)
 
     # Query model for refactored solution
     print("Requesting refactored solution from LLM...")
@@ -211,7 +205,7 @@ async def refactor_solutions(
 
         # Evaluate against this problem's test cases
         evaluation = await evaluate_solution(
-            refactored_code, solution.problem.tests, cyber_url
+            "cpp", refactored_code, [test.model_copy(dict(stdin=f"{i+1}\n{test.stdin}")) for test in solution.problem.tests], cyber_url
         )
 
         # Update counts
@@ -368,13 +362,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--solution-file",
         type=str,
-        default="data/o3_mini_chess_solutions_improved.json",
+        default="data/saved_graph_solutions.json",
         help="Path to JSON file with solutions",
     )
     parser.add_argument(
         "--output-file",
         type=str,
-        default="data/refactored_solution.py",
+        default="data/refactored_graph_solution.py",
         help="Path to save the refactored solution",
     )
     parser.add_argument(

@@ -41,8 +41,7 @@ def create_refactor_prompt(solutions: List[SolutionResult]) -> str:
     prompt += "You are tasked with refactoring multiple solutions into a single, cohesive implementation.\n"
     prompt += "Please create a unified solution that handles all the following problems while passing all test cases.\n"
     prompt += "Make the code as concise as possible by writing library functions that are shared across all problems.\n\n"
-    #prompt += "For example, start with a class Chessboard, which represents the state as a 2D numpy matrix.\n\n"
-
+    # prompt += "For example, start with a class Chessboard, which represents the state as a 2D numpy matrix.\n\n"
 
     for i, solution in enumerate(solutions):
         prompt += f"## Problem {i + 1}: {solution.problem.source}\n\n"
@@ -95,32 +94,38 @@ def create_correction_prompt(
         Formatted prompt for the LLM to correct the solution
     """
     prompt = "# Solution Correction Task\n\n"
-    prompt += "The refactored solution you previously created has some failing test cases.\n"
+    prompt += (
+        "The refactored solution you previously created has some failing test cases.\n"
+    )
     prompt += "Please correct the solution to address the failing tests.\n\n"
-    
+
     prompt += "## Current Refactored Solution\n\n"
     prompt += f"```cpp\n{refactored_code}\n```\n\n"
-    
+
     prompt += "## Failing Tests\n\n"
-    
+
     for problem_idx, problem_tests in failed_tests.items():
         solution = solutions[problem_idx]
         prompt += f"### Problem {problem_idx + 1}: {solution.problem.source}\n\n"
         prompt += f"Description: {solution.problem.question}\n\n"
-        
+
         for i, test_result in enumerate(problem_tests):
             test_case = solution.problem.tests[test_result.get("test_idx", i)]
             prompt += f"Test {i + 1}:\n"
             prompt += f"Input: {test_case.stdin}\n"
             prompt += f"Expected Output: {test_case.stdout}\n"
             prompt += f"Actual Output: {test_result.get('exec_output', {}).get('run_output', {}).get('stdout', 'N/A')}\n"
-            
+
             # Include error information if available
-            if error := test_result.get('exec_output', {}).get('run_output', {}).get('stderr'):
+            if (
+                error := test_result.get("exec_output", {})
+                .get("run_output", {})
+                .get("stderr")
+            ):
                 prompt += f"Error: {error}\n"
-                
+
             prompt += "\n"
-    
+
     prompt += """
 ## Correction Instructions
 
@@ -132,8 +137,9 @@ def create_correction_prompt(
 
 Please provide your corrected solution in Cpp code format.
 """
-    
+
     return prompt
+
 
 async def refactor_solutions(
     solution_file: str,
@@ -205,7 +211,13 @@ async def refactor_solutions(
 
         # Evaluate against this problem's test cases
         evaluation = await evaluate_solution(
-            "cpp", refactored_code, [test.model_copy(dict(stdin=f"{i+1}\n{test.stdin}")) for test in solution.problem.tests], cyber_url
+            "cpp",
+            refactored_code,
+            [
+                test.model_copy(update=dict(stdin=f"{i + 1}\n{test.stdin}"))
+                for test in solution.problem.tests
+            ],
+            cyber_url,
         )
 
         # Update counts
@@ -239,10 +251,12 @@ async def refactor_solutions(
     if not all_tests_passed:
         print("\n⚠️ The refactored solution doesn't pass all test cases.")
         print("\nGenerating correction prompt based on test feedback...")
-        
+
         # Create correction prompt with failing test information
-        correction_prompt = create_correction_prompt(refactored_code, solutions, failed_tests)
-        
+        correction_prompt = create_correction_prompt(
+            refactored_code, solutions, failed_tests
+        )
+
         # Query model for corrected solution
         print("Requesting corrected solution from LLM...")
         correction_response = await query_model(
@@ -252,10 +266,10 @@ async def refactor_solutions(
         )
         with open(output_file + ".fullresponse", "w") as f:
             f.write(correction_response)
-        
+
         # Extract corrected code
         corrected_code = extract_code(correction_response)
-        
+
         if not corrected_code:
             print("Failed to extract corrected code from LLM response")
         else:
@@ -265,43 +279,47 @@ async def refactor_solutions(
             corrected_line_count = len(corrected_code.split("\n"))
             print(f"Corrected solution saved to {output_file}")
             print(f"Corrected solution line count: {corrected_line_count}")
-            
+
             # Re-evaluate corrected solution
             print("\nRe-evaluating corrected solution against all test cases...")
             corrected_all_passed = True
             corrected_total_passed = 0
-            
+
             for i, solution in enumerate(solutions):
                 print(f"\nTesting Problem {i + 1}: {solution.problem.source}")
-                
+
                 # Evaluate against this problem's test cases
                 corrected_evaluation = await evaluate_solution(
                     corrected_code, solution.problem.tests, cyber_url
                 )
-                
+
                 # Update counts
                 corrected_passed = corrected_evaluation["tests_passed"]
                 corrected_total = corrected_evaluation["tests_total"]
                 corrected_ratio = corrected_evaluation["pass_ratio"]
                 corrected_total_passed += corrected_passed
-                
+
                 # Report results
-                print(f"  Passed {corrected_passed}/{corrected_total} tests ({corrected_ratio:.2%})")
-                
+                print(
+                    f"  Passed {corrected_passed}/{corrected_total} tests ({corrected_ratio:.2%})"
+                )
+
                 if corrected_passed < corrected_total:
                     corrected_all_passed = False
-            
+
             # Summary of correction
-            corrected_overall_ratio = corrected_total_passed / total_tests if total_tests > 0 else 0
+            corrected_overall_ratio = (
+                corrected_total_passed / total_tests if total_tests > 0 else 0
+            )
             print(
                 f"\nCorrected Results: {corrected_total_passed}/{total_tests} tests passed ({corrected_overall_ratio:.2%})"
             )
-            
+
             if corrected_all_passed:
                 print("\n✅ Success! The corrected solution passes all test cases.")
             else:
                 print("\n⚠️ The corrected solution still doesn't pass all test cases.")
-                
+
             # Use the corrected code for the final metrics
             refactored_code = corrected_code
             refactored_line_count = corrected_line_count

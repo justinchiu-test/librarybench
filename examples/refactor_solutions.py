@@ -200,6 +200,15 @@ async def refactor_solutions(
     print(f"Refactored solution saved to {output_file}")
     print(f"Refactored solution line count: {refactored_line_count}")
 
+    original_logprobs = 0
+    for solution in solutions:
+        lp = await get_log_probabilities(solution.code)
+        original_logprobs += sum(lp.logprobs)
+    refactored_logprobs = await get_log_probabilities(refactored_code)
+    refactored_logprobs = sum(refactored_logprobs.logprobs)
+    print(f"Original logprobs: {original_logprobs:.3f}")
+    print(f"Refactored logprobs: {refactored_logprobs:.3f}")
+
     # Evaluate refactored solution against all test cases
     print("\nEvaluating refactored solution against all test cases...")
     all_tests_passed = True
@@ -337,9 +346,6 @@ async def refactor_solutions(
     print(f"Refactored solution: {refactored_line_count} lines")
     print(f"Difference: {refactored_line_count - original_line_count} lines")
 
-    original_logprobs = await get_log_probabilities(solution.code)
-    refactored_logprobs = await get_log_probabilities(refactored_code)
-    import pdb; pdb.set_trace()
 
 
 async def main(args):

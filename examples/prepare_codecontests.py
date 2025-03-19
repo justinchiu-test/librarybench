@@ -118,7 +118,7 @@ def main():
     similarities = np.take_along_axis(similarity_matrix, rankings[:, :6], axis=1)
 
     # save full texts for refactoring
-    selected = rankings[0, :6]
+    selected = rankings[1, :6]
     selected_fulltexts = [fulltexts[x] for x in selected]
     selected_texts = [texts[x] for x in selected]
 

@@ -13,7 +13,7 @@ from librarybench.execution import evaluate_solution
 from librarybench.utils import extract_code
 
 
-async def load_solutions(file_path: str) -> List[SolutionResult]:
+def load_solutions(file_path: str) -> List[SolutionResult]:
     """Load solutions from a JSON file.
 
     Args:
@@ -160,7 +160,7 @@ async def refactor_solutions(
         num_solutions: Number of solutions to include in refactoring
     """
     # Load solutions
-    solutions = await load_solutions(solution_file)
+    solutions = load_solutions(solution_file)
     print(f"Loaded {len(solutions)} solutions")
 
     # Take specified number of solutions
@@ -244,8 +244,6 @@ async def refactor_solutions(
     print(
         f"\nOverall Results: {total_passed}/{total_tests} tests passed ({overall_pass_ratio:.2%})"
     )
-
-    return
 
     # If some tests failed, give the model a chance to correct the solution
     if not all_tests_passed:
@@ -361,6 +359,23 @@ async def main(args):
         print(
             f"Original solutions line count (first {args.num_solutions}): {original_line_count}"
         )
+
+    # check pass rate of original code
+    solutions = load_solutions(args.solution_file)
+    for i, solution in enumerate(solutions):
+        print(f"Evaluating solution {i}")
+        evaluation = await evaluate_solution(
+            "cpp",
+            solution.code,
+            solution.problem.tests,
+            cyber_url,
+        )
+        # Update counts
+        passed = evaluation["tests_passed"]
+        total = evaluation["tests_total"]
+        passed_ratio = evaluation["pass_ratio"]
+        # Report results
+        print(f"  Passed {passed}/{total} tests ({passed_ratio:.2%})")
 
     # Run refactoring workflow
     await refactor_solutions(

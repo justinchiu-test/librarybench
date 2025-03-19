@@ -13,6 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Set up semaphore for API calls
+# TODO: whoa...do not se this statically
 LLM_SEMAPHORE = asyncio.Semaphore(5)
 
 

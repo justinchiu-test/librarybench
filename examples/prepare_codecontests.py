@@ -47,7 +47,8 @@ def get_problems(xs, max_solutions=3):
                 tests=[
                     StdinStdout(stdin=stdin, stdout=stdout)
                     for stdin, stdout in zip(
-                        x["private_tests"]["input"], x["private_tests"]["output"]
+                        x["public_tests"]["input"] + x["private_tests"]["input"] + x["generated_tests"]["input"],
+                        x["public_tests"]["input"] + x["private_tests"]["output"] + x["generated_tests"]["input"],
                     )
                 ],
                 source="codeforces",

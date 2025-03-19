@@ -245,6 +245,9 @@ async def refactor_solutions(
         f"\nOverall Results: {total_passed}/{total_tests} tests passed ({overall_pass_ratio:.2%})"
     )
 
+    print("Break before repair")
+    # TODO: fix repair
+    return
     # If some tests failed, give the model a chance to correct the solution
     if not all_tests_passed:
         print("\n⚠️ The refactored solution doesn't pass all test cases.")

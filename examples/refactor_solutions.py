@@ -11,6 +11,7 @@ from librarybench.llm import query_model
 from librarybench.types import SolutionResult
 from librarybench.execution import evaluate_solution
 from librarybench.utils import extract_code
+from librarybench.logprobs import get_log_probabilities
 
 
 def load_solutions(file_path: str) -> List[SolutionResult]:
@@ -335,6 +336,10 @@ async def refactor_solutions(
     print(f"Original solutions total: {original_line_count} lines")
     print(f"Refactored solution: {refactored_line_count} lines")
     print(f"Difference: {refactored_line_count - original_line_count} lines")
+
+    original_logprobs = await get_log_probabilities(solution.code)
+    refactored_logprobs = await get_log_probabilities(refactored_code)
+    import pdb; pdb.set_trace()
 
 
 async def main(args):

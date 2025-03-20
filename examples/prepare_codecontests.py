@@ -7,7 +7,7 @@ from openai import OpenAI
 import tqdm
 from pathlib import Path
 
-from librarybench.types import Problem, StdinStdout, SolutionResult
+from librarybench.types import Problem, ProblemDescriptions, StdinStdout, SolutionResult
 
 client = OpenAI()
 tokenizer = tiktoken.encoding_for_model("text-embedding-3-small")
@@ -76,7 +76,9 @@ def main():
     # concatenate prompt and solution
     texts = []
     fulltexts = []
+    problems_with_descriptions = []
     for i, problem in enumerate(examples):
+        descriptions = []
         for solution in problem.human_solutions:
             text = solution
             texts.append(text)
@@ -84,7 +86,21 @@ def main():
                 question=problem.question, code=solution
             )
             fulltexts.append(fulltext)
+            response = client.chat.completions.create(
+                model="o3-mini",
+                messages = [
+                    {"role": "user", "content": f"Please briefly describe the approach given for the following problem in terms of common and generic graph algorithms. For example BFS, DFS, topological sort, cliques. Your description should be very brief, at most 10 words.\n\n{fulltext}"}
+                ],
+                reasoning_effort="low",
+            )
+            description = response.choices[0].message.content
+            descriptions.append(description)
+        problems_with_descriptions.append(ProblemDescriptions(problem=problem, descriptions=descriptions).model_dump())
 
+    with open("data/codecontests_graph_descriptions.json", "w") as f:
+        json.dump(problems_with_descriptions, f)
+
+    # deprecated embeddings
     embeddings_path = Path("embeddings.npy")
     if embeddings_path.exists():
         # load cached embeddings

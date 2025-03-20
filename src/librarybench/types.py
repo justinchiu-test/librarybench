@@ -74,6 +74,10 @@ class Problem(BaseModel):
     original_code: str | None
     language: str
 
+class ProblemDescriptions(BaseModel):
+    problem: Problem
+    descriptions: list[str]
+
 
 class SolutionResult(BaseModel):
     """Result of solution generation or improvement."""

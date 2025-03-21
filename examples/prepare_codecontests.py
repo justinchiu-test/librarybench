@@ -1,3 +1,4 @@
+import bm25s
 import datasets
 import json
 from collections import defaultdict
@@ -60,8 +61,7 @@ def get_problems(xs, max_solutions=3):
         )
     return problems
 
-
-def main():
+def generate_descriptions():
     dataset = datasets.load_dataset("deepmind/code_contests", trust_remote_code=True)
     # train = dataset["train"]
     train = dataset["train"]
@@ -100,7 +100,8 @@ def main():
     with open("data/codecontests_graph_descriptions.json", "w") as f:
         json.dump(problems_with_descriptions, f)
 
-    # deprecated embeddings
+
+def embeddings(texts):
     embeddings_path = Path("embeddings.npy")
     if embeddings_path.exists():
         # load cached embeddings
@@ -166,6 +167,46 @@ def main():
     with solutions_path.open("w") as f:
         json.dump(solutions, f)
     print(f"saved selected solutions to {solutions_path}")
+
+
+def main():
+    problems_path = Path("data/codecontests_graph_descriptions.json")
+    if not problems_path.exists():
+        generate_descriptions()
+    with problems_path.open("r") as f:
+        problems = [ProblemDescriptions.model_validate(x) for x in json.load(f)]
+
+    # flatten descriptions
+    texts = [x for problem in problems for x in problem.descriptions]
+    invidxs = np.array([i for i, problem in enumerate(problems) for x in problem.descriptions])
+    problems = [(problem, j) for problem in problems for j, x in enumerate(problem.descriptions)]
+
+    # retrieval
+    corpus_tokens = bm25s.tokenize(texts, stopwords="en")
+    retriever = bm25s.BM25()
+    retriever.index(corpus_tokens)
+
+    results, scores = retriever.retrieve(corpus_tokens, k=10)
+    groups = invidxs[results]
+    mask = groups != invidxs[:,None]
+    filtered_scores = np.where(mask, scores, 0)
+    total_scores = filtered_scores.sum(-1)
+    idxs = (-total_scores).argsort()
+
+
+    # save the closest solutions, but filter out the solutions from the same problem
+    solutions = results[idxs[0]]
+    seen = set()
+    save_problems = []
+    for i in solutions:
+        problem_desc, j = problems[i]
+        problem = problem_desc.problem.model_dump()
+        if problem["problem_id"] not in seen:
+            problem["human_solutions"] = [problem["human_solutions"][j]]
+            save_problems.append(problem)
+            seen.add(problem["problem_id"])
+    with open("data/saved_graph_problems_from_descriptions.json", "w") as f:
+        json.dump(save_problems, f)
 
 
 if __name__ == "__main__":

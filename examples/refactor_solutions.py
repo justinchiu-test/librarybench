@@ -409,8 +409,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--solution-file",
         type=str,
-        default="data/saved_graph_solutions.json",
-        help="Path to JSON file with solutions",
+        default="data/saved_graph_problems_from_descriptions.json",
+        help="Path to JSON file with problems",
     )
     parser.add_argument(
         "--output-file",

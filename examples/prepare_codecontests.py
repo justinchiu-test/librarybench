@@ -197,16 +197,29 @@ def main():
     # save the closest solutions, but filter out the solutions from the same problem
     solutions = results[idxs[0]]
     seen = set()
-    save_problems = []
+    save_solutions= []
     for i in solutions:
         problem_desc, j = problems[i]
         problem = problem_desc.problem.model_dump()
         if problem["problem_id"] not in seen:
-            problem["human_solutions"] = [problem["human_solutions"][j]]
-            save_problems.append(problem)
+            problem["original_code"] = problem["human_solutions"][j]
+            solution = SolutionResult(
+                problem=problem,
+                code=problem["original_code"],
+                # dummy values
+                status="success",
+                pass_ratio=1,
+                tests_passed=1,
+                tests_total=1,
+                iterations=1,
+                history=[],
+                model_name="human",
+                model_type="human",
+            ).model_dump()
+            save_solutions.append(solution)
             seen.add(problem["problem_id"])
-    with open("data/saved_graph_problems_from_descriptions.json", "w") as f:
-        json.dump(save_problems, f)
+    with open("data/saved_graph_solutions_from_descriptions.json", "w") as f:
+        json.dump(save_solutions, f)
 
 
 if __name__ == "__main__":

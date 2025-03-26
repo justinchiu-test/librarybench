@@ -49,7 +49,7 @@ def get_problems(xs, max_solutions=3):
                     StdinStdout(stdin=stdin, stdout=stdout)
                     for stdin, stdout in zip(
                         x["public_tests"]["input"] + x["private_tests"]["input"] + x["generated_tests"]["input"],
-                        x["public_tests"]["input"] + x["private_tests"]["output"] + x["generated_tests"]["input"],
+                        x["public_tests"]["output"] + x["private_tests"]["output"] + x["generated_tests"]["output"],
                     )
                 ],
                 source="codeforces",
@@ -60,6 +60,7 @@ def get_problems(xs, max_solutions=3):
             )
         )
     return problems
+
 
 def generate_descriptions():
     dataset = datasets.load_dataset("deepmind/code_contests", trust_remote_code=True)

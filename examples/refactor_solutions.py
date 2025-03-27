@@ -217,7 +217,7 @@ async def refactor_solutions(
     failed_tests = {}  # Dictionary to track failing tests by problem index
 
     for i, solution in enumerate(solutions):
-        print(f"\nTesting Problem {i + 1}: {solution.problem.source}")
+        print(f"\nTesting Problem {i}: {solution.problem.source}")
 
         # Evaluate against this problem's test cases
         evaluation = await evaluate_solution(

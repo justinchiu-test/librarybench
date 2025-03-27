@@ -27,7 +27,7 @@ def count_tokens(text):
     return len(tokenizer.encode(text))
 
 
-def get_problems(xs, max_solutions=3):
+def get_problems(xs, max_solutions):
     problems = []
     for i, x in enumerate(xs):
         stuff = x["solutions"]
@@ -73,7 +73,7 @@ def generate_descriptions():
     idxs_with_tags = [(i, x) for i, x in enumerate(train["cf_tags"]) if x]
     problems = [train[i] for i, x in idxs_with_tags if skill in x]
 
-    examples = get_problems(problems)
+    examples = get_problems(problems, max_solutions=32)
     # concatenate prompt and solution
     texts = []
     fulltexts = []

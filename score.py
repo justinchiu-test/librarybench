@@ -7,43 +7,78 @@ import json
 import os
 
 # ---- Helpers ----
-import io
-import tokenize
+import ast
 
-def remove_comments(code_str) -> str:
+def remove_comments(source: str) -> str:
     """
-    Removes all comments and docstrings from the input Python code string.
-    Preserves only logical lines of code.
-    
+    Remove comments and docstrings from Python source code by parsing and unparsing
+    the AST. Note: Comments are not present in the AST, so this effectively removes
+    both comments and docstrings (since docstrings appear as literal expressions in the AST).
+
     Args:
-        code_str (str): Input Python code as a string.
+        source (str): The original Python source code.
 
     Returns:
-        str: Code with comments and docstrings removed.
+        str: The source code with comments and docstrings removed.
     """
-    output = []
-    prev_toktype = tokenize.INDENT
-    last_lineno = -1
-    last_col = 0
+    # Parse the source into an AST.
+    try:
+        tree = ast.parse(source)
+    except SyntaxError as se:
+        raise ValueError("Invalid Python code provided") from se
 
-    tokgen = tokenize.generate_tokens(io.StringIO(code_str).readline)
+    # Define a NodeTransformer that will remove docstrings.
+    class DocstringRemover(ast.NodeTransformer):
+        def visit_FunctionDef(self, node):
+            self.generic_visit(node)
+            if (node.body and isinstance(node.body[0], ast.Expr) and 
+                isinstance(node.body[0].value, ast.Constant) and 
+                isinstance(node.body[0].value.value, str)):
+                # Remove function docstring.
+                node.body.pop(0)
+            return node
 
-    for toktype, tokval, (lineno, col), _, _ in tokgen:
-        if toktype == tokenize.COMMENT:
-            continue  # Skip comments entirely
-        elif toktype == tokenize.STRING:
-            if prev_toktype == tokenize.INDENT:
-                continue  # Likely a docstring at module/class/function level
-            if last_lineno == lineno:
-                # Likely a docstring or multi-line string assignment
-                continue
-        output.append(tokval)
-        prev_toktype = toktype
-        last_lineno = lineno
-        last_col = col
+        def visit_AsyncFunctionDef(self, node):
+            self.generic_visit(node)
+            if (node.body and isinstance(node.body[0], ast.Expr) and 
+                isinstance(node.body[0].value, ast.Constant) and 
+                isinstance(node.body[0].value.value, str)):
+                # Remove async function docstring.
+                node.body.pop(0)
+            return node
 
-    return "".join(output)
+        def visit_ClassDef(self, node):
+            self.generic_visit(node)
+            if (node.body and isinstance(node.body[0], ast.Expr) and 
+                isinstance(node.body[0].value, ast.Constant) and 
+                isinstance(node.body[0].value.value, str)):
+                # Remove class docstring.
+                node.body.pop(0)
+            return node
 
+        def visit_Module(self, node):
+            self.generic_visit(node)
+            if (node.body and isinstance(node.body[0], ast.Expr) and 
+                isinstance(node.body[0].value, ast.Constant) and 
+                isinstance(node.body[0].value.value, str)):
+                # Remove module-level docstring.
+                node.body.pop(0)
+            return node
+
+    # Remove docstrings by transforming the AST.
+    tree = DocstringRemover().visit(tree)
+    ast.fix_missing_locations(tree)
+
+    try:
+        # Python 3.9+ provides ast.unparse.
+        new_source = ast.unparse(tree)
+    except AttributeError:
+        # For earlier versions of Python, you might use the astor package:
+        #   pip install astor
+        import astor
+        new_source = astor.to_source(tree)
+
+    return new_source
 
 
 # ---- Logprobs ----

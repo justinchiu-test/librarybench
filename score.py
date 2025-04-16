@@ -1,4 +1,3 @@
-### conda activate openai_0.28
 import os
 import argparse
 from radon.complexity import cc_visit

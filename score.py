@@ -2,47 +2,87 @@
 import os
 import argparse
 from radon.complexity import cc_visit
-from radon.metrics import h_visit
 from radon.raw import analyze
 
-import openai
 import json
+import os
 
-# ---- Logprob via vLLM OpenAI-compatible API ----
-openai.api_base = os.getenv("OPENAI_API_BASE", "http://nlplarge-compute-01:9646/v1") # change badfellow --> gpu-node name | 9649 --> forwarding number
-# openai.api_base = os.getenv("OPENAI_API_BASE", "http://rush-compute-03:9646/v1") # change badfellow --> gpu-node name | 9649 --> forwarding number
-# openai.api_base = os.getenv("OPENAI_API_BASE", "http://0.0.0.0:9646/v1") # change badfellow --> gpu-node name | 9649 --> forwarding number
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# ---- Helpers ----
+import io
+import tokenize
 
-# change `model` based on the name in vLLM serve
-def compute_logprob_vllm(text, model="Qwen2.5-Instruct", chunk_size=2048*3) -> float:
-    # import tiktoken  
-    # tokenizer = tiktoken.encoding_for_model(model)
-    # tokens = tokenizer.encode(text)
-
-    total_logprob = 0.0
-    for i in range(0, len(text), chunk_size):
-        # chunk_tokens = tokens[i:i + chunk_size]
-        # chunk_text = tokenizer.decode(chunk_tokens)
-        chunk_text = text[i:i+chunk_size]
-        
-        try:
-            response = openai.Completion.create(
-                model=model,
-                prompt=chunk_text,
-                echo=True,
-                logprobs=1,
-                max_tokens=1
-            )
-            logprobs = response['choices'][0]['logprobs']['token_logprobs']
-            total_logprob += sum(lp for lp in logprobs if lp is not None)
-        except Exception as e:
-            print(f"[ERROR] Failed at chunk {i}: {e}")
-            return float('nan')
-
-    return total_logprob
+def remove_comments(code_str) -> str:
+    """
+    Removes all comments and docstrings from the input Python code string.
+    Preserves only logical lines of code.
     
+    Args:
+        code_str (str): Input Python code as a string.
 
+    Returns:
+        str: Code with comments and docstrings removed.
+    """
+    output = []
+    prev_toktype = tokenize.INDENT
+    last_lineno = -1
+    last_col = 0
+
+    tokgen = tokenize.generate_tokens(io.StringIO(code_str).readline)
+
+    for toktype, tokval, (lineno, col), _, _ in tokgen:
+        if toktype == tokenize.COMMENT:
+            continue  # Skip comments entirely
+        elif toktype == tokenize.STRING:
+            if prev_toktype == tokenize.INDENT:
+                continue  # Likely a docstring at module/class/function level
+            if last_lineno == lineno:
+                # Likely a docstring or multi-line string assignment
+                continue
+        output.append(tokval)
+        prev_toktype = toktype
+        last_lineno = lineno
+        last_col = col
+
+    return "".join(output)
+
+
+
+# ---- Logprobs ----
+
+# Setup Together API
+from together import Together
+
+client = Together(api_key=os.getenv("TOGETHER_API_KEY"))
+
+def compute_logprob_together(text, model) -> float:
+    """
+    Compute log probability of text using Together API.
+
+    Args:
+        text (str): The input text to compute logprob for.
+        model (str): The Together.ai model name.
+
+    Returns:
+        float: Average log probability across all tokens.
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": text}],
+            max_tokens=0,
+            echo=True,
+            logprobs=1,
+        )
+        sum_logprobs = sum(response.choices[0].logprobs.token_logprobs)
+        num_toks = len(response.choices[0].logprobs.token_logprobs)
+
+    except Exception as e:
+        print(f"[ERROR] Failed to compute logprobs: {e}")
+        return float('nan'), float('nan')
+
+    return sum_logprobs, num_toks
+    
 # ---- Code Metrics ----
 
 def analyze_file(filepath):
@@ -54,34 +94,29 @@ def analyze_file(filepath):
     cc_blocks = cc_visit(code)
     cyclomatic_total = sum(block.complexity for block in cc_blocks)
 
-    # Halstead Metrics (just found this, migth be useful)
-    # h_metrics = h_visit(code).total  # This is a HalsteadReport namedtuple
-    # halstead_dict = h_metrics._asdict()  
-
     return {
         'code': code,
         'loc': raw_metrics.loc,
         'sloc': raw_metrics.sloc,
         'lloc': raw_metrics.lloc,
         'cyclomatic_complexity': cyclomatic_total,
-        # 'halstead': halstead_dict
     }
 
-from collections import defaultdict
 # ---- Repo Metrics ----
-def analyze_repo(files, logprob_mode="individual", model="Qwen2.5-Instruct"):
+def analyze_repo(files, logprob_mode, model):
     results = {}
     all_codes = []
 
-    for filepath in files: #os.listdir(folder_path):
+    for filepath in files: 
         if filepath.endswith('.py'):
-            # filepath = os.path.join(folder_path, filename)
             file_metrics = analyze_file(filepath)
             all_codes.append(file_metrics["code"])
 
             # Compute per-file logprob if needed
             if logprob_mode == "individual":
-                file_metrics["log_prob"] = compute_logprob_vllm(file_metrics["code"], model)
+                file_metrics["log_prob"], file_metrics["num_toks"] = compute_logprob_together(file_metrics["code"], model)
+                code_lloc = remove_comments(file_metrics["code"])
+                file_metrics["lloc_log_prob"], file_metrics["num_lloc_toks"] = compute_logprob_together(code_lloc, model)
 
             results[str(filepath)] = file_metrics
 
@@ -92,7 +127,9 @@ def analyze_repo(files, logprob_mode="individual", model="Qwen2.5-Instruct"):
         "lloc": 0,
         "cyclomatic_complexity": 0,
         "log_prob": 0.0,
-        # "halstead": defaultdict(float) # will be all 0 if there is no operands or operators
+        "num_toks": 0.0,
+        "lloc_log_prob": 0.0,
+        "num_lloc_toks": 0.0,
     }
 
     for metrics in results.values():
@@ -103,16 +140,18 @@ def analyze_repo(files, logprob_mode="individual", model="Qwen2.5-Instruct"):
 
         if logprob_mode == "individual":
             aggregate["log_prob"] += metrics["log_prob"]
+            aggregate["num_toks"] += metrics["num_toks"]
+            aggregate["lloc_log_prob"] += metrics["lloc_log_prob"]
+            aggregate["num_lloc_toks"] += metrics["num_lloc_toks"]
 
-        # for key, val in metrics["halstead"].items():
-        #     aggregate["halstead"][key] += val
 
     # if concatenated mode
     if logprob_mode == "concat":
         full_code = "\n\n".join(all_codes)
-        aggregate["log_prob"] = compute_logprob_vllm(full_code, model)
+        aggregate["log_prob"], aggregate["num_toks"] = compute_logprob_together(full_code, model)
+        code_lloc = remove_comments(full_code)
+        aggregate["lloc_log_prob"], aggregate["num_lloc_toks"] = compute_logprob_together(code_lloc, model)
 
-    # aggregate["halstead"] = dict(aggregate["halstead"])
 
     return {
         "per_file": results,
@@ -137,6 +176,4 @@ if __name__ == "__main__":
 
 
 # ---- Example usage ----
-# 1. serve vLLM, I do `vllm serve Qwen/Qwen2.5-1.5B-Instruct --host 0.0.0.0 --port 9646 --served-model-name Qwen2.5-Instruct`
-# 2. python score.py ./folder_path --output_file folder_path_metrics.json --logprob-mode individual (or concat) (optional) --model Qwen2.5-Instruct
-# RETURNS: dictionary with per-file metrics and aggregate metrics
+# python score.py --files workflow_orchestration_claude_refactor/workflow.py --output_file workflow_orchestration_metrics.json --model deepseek-ai/DeepSeek-V3 --branch_name claude_code

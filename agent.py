@@ -651,18 +651,31 @@ class OpenAIAgent(Agent):
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
 
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to implement or refactor code according to the provided specifications and tests.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            temperature=sampling_params.get("temperature", 0.7),
-            max_tokens=sampling_params.get("max_tokens", 4000),
-        )
+        if self.model_name in {"o3-mini", "o4-mini"}:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to implement or refactor code according to the provided specifications and tests.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                max_completion_tokens=sampling_params.get("max_tokens", 4000),
+            )
+        else:
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to implement or refactor code according to the provided specifications and tests.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=sampling_params.get("temperature", 0.7),
+                max_tokens=sampling_params.get("max_tokens", 4000),
+            )
 
         if not response.choices:
             return ""

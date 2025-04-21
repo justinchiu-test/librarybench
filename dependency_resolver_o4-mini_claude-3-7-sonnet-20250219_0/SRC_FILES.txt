@@ -1,0 +1,2 @@
+dependency_resolver_o4-mini_claude-3-7-sonnet-20250219_0/package_manager.py
+package_manager.py

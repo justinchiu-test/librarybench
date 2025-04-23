@@ -90,6 +90,7 @@ async def run_unit_tests_async(
                 execute_test(session, language, generation, test, semaphore)
                 for test in stdin_stdout_tests
             ]
+            # TODO: THIS IS SYNCHRONOUS IN GENERATIONS
             test_results = await asyncio.gather(*tasks)
             outputs.append(test_results)
 

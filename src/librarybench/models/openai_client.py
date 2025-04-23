@@ -30,6 +30,7 @@ class OpenAiClient(LlmClient):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
+            reasoning_effort="high",
         )
         if len(response.choices) == 0:
             return "Error: len(response.choices) == 0"

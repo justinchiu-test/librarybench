@@ -34,7 +34,7 @@ async def run_workflow(
     # Check environment variables
     if model_type == "openai" and not os.environ.get("OPENAI_API_KEY"):
         raise ValueError("OPENAI_API_KEY environment variable is not set")
-    if model_type == "claude" and not os.environ.get("ANTHROPIC_API_KEY"):
+    elif model_type == "claude" and not os.environ.get("ANTHROPIC_API_KEY"):
         raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
     cyber_url = os.environ.get("CYBER_URL")
     if not cyber_url:

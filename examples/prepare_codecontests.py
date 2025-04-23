@@ -1,3 +1,4 @@
+import bm25s
 import datasets
 import json
 from collections import defaultdict
@@ -26,7 +27,7 @@ def count_tokens(text):
     return len(tokenizer.encode(text))
 
 
-def get_problems(xs, max_solutions=3):
+def get_problems(xs, max_solutions):
     problems = []
     for i, x in enumerate(xs):
         stuff = x["solutions"]
@@ -49,7 +50,7 @@ def get_problems(xs, max_solutions=3):
                     StdinStdout(stdin=stdin, stdout=stdout)
                     for stdin, stdout in zip(
                         x["public_tests"]["input"] + x["private_tests"]["input"] + x["generated_tests"]["input"],
-                        x["public_tests"]["input"] + x["private_tests"]["output"] + x["generated_tests"]["input"],
+                        x["public_tests"]["output"] + x["private_tests"]["output"] + x["generated_tests"]["output"],
                     )
                 ],
                 source="codeforces",
@@ -62,7 +63,7 @@ def get_problems(xs, max_solutions=3):
     return problems
 
 
-def main():
+def generate_descriptions():
     dataset = datasets.load_dataset("deepmind/code_contests", trust_remote_code=True)
     # train = dataset["train"]
     train = dataset["train"]
@@ -74,7 +75,7 @@ def main():
     problems = [train[i] for i, x in idxs_with_tags if skill in x]
     #problems = train
 
-    examples = get_problems(problems)
+    examples = get_problems(problems, max_solutions=32)
     # concatenate prompt and solution
     texts = []
     fulltexts = []
@@ -106,7 +107,8 @@ def main():
     with open("data/codecontests_all_train_descriptions.json", "w") as f:
         json.dump(problems_with_descriptions, f)
 
-    # deprecated embeddings
+
+def embeddings(texts):
     embeddings_path = Path("embeddings.npy")
     if embeddings_path.exists():
         # load cached embeddings
@@ -172,6 +174,59 @@ def main():
     with solutions_path.open("w") as f:
         json.dump(solutions, f)
     print(f"saved selected solutions to {solutions_path}")
+
+
+def main():
+    problems_path = Path("data/codecontests_graph_descriptions.json")
+    if not problems_path.exists():
+        generate_descriptions()
+    with problems_path.open("r") as f:
+        problems = [ProblemDescriptions.model_validate(x) for x in json.load(f)]
+
+    # flatten descriptions
+    texts = [x for problem in problems for x in problem.descriptions]
+    invidxs = np.array([i for i, problem in enumerate(problems) for x in problem.descriptions])
+    problems = [(problem, j) for problem in problems for j, x in enumerate(problem.descriptions)]
+
+    # retrieval
+    corpus_tokens = bm25s.tokenize(texts, stopwords="en")
+    retriever = bm25s.BM25()
+    retriever.index(corpus_tokens)
+
+    results, scores = retriever.retrieve(corpus_tokens, k=10)
+    groups = invidxs[results]
+    mask = groups != invidxs[:,None]
+    filtered_scores = np.where(mask, scores, 0)
+    total_scores = filtered_scores.sum(-1)
+    idxs = (-total_scores).argsort()
+
+
+    # save the closest solutions, but filter out the solutions from the same problem
+    solutions = results[idxs[0]]
+    seen = set()
+    save_solutions= []
+    for i in solutions:
+        problem_desc, j = problems[i]
+        problem = problem_desc.problem.model_dump()
+        if problem["problem_id"] not in seen:
+            problem["original_code"] = problem["human_solutions"][j]
+            solution = SolutionResult(
+                problem=problem,
+                code=problem["original_code"],
+                # dummy values
+                status="success",
+                pass_ratio=1,
+                tests_passed=1,
+                tests_total=1,
+                iterations=1,
+                history=[],
+                model_name="human",
+                model_type="human",
+            ).model_dump()
+            save_solutions.append(solution)
+            seen.add(problem["problem_id"])
+    with open("data/saved_graph_solutions_from_descriptions.json", "w") as f:
+        json.dump(save_solutions, f)
 
 
 if __name__ == "__main__":

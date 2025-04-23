@@ -36,7 +36,8 @@ def get_problems(xs, max_solutions=3):
         selected_solutions = []
         for lang, sol in zip(languages, solutions):
             # if lang == 2 and count_tokens(description) + count_tokens(sol) <= 8192:
-            if lang == 2 and count_tokens(sol) <= 8192:
+            # get python3
+            if lang == 3 and count_tokens(sol) <= 8192:
                 selected_solutions.append(sol)
             if len(selected_solutions) >= max_solutions:
                 break
@@ -55,7 +56,7 @@ def get_problems(xs, max_solutions=3):
                 difficulty=x["cf_rating"],
                 human_solutions=selected_solutions,
                 original_code=None,
-                language="cpp",
+                language="python",
             )
         )
     return problems
@@ -71,13 +72,14 @@ def main():
 
     idxs_with_tags = [(i, x) for i, x in enumerate(train["cf_tags"]) if x]
     problems = [train[i] for i, x in idxs_with_tags if skill in x]
+    #problems = train
 
     examples = get_problems(problems)
     # concatenate prompt and solution
     texts = []
     fulltexts = []
     problems_with_descriptions = []
-    for i, problem in enumerate(examples):
+    for i, problem in enumerate(tqdm.tqdm(examples, desc="Getting solution descriptions")):
         descriptions = []
         for solution in problem.human_solutions:
             text = solution
@@ -87,9 +89,13 @@ def main():
             )
             fulltexts.append(fulltext)
             response = client.chat.completions.create(
-                model="o3-mini",
+                model="o4-mini",
                 messages = [
-                    {"role": "user", "content": f"Please briefly describe the approach given for the following problem in terms of common and generic graph algorithms. For example BFS, DFS, topological sort, cliques. Your description should be very brief, at most 10 words.\n\n{fulltext}"}
+                    {"role": "user", "content":
+                            #f"Please briefly describe the approach given for the following problem in terms of common and generic algorithms. For example BFS, DFS, topological sort, cliques, max flow, dynamic programming, knapsack. Your description should be very brief, at most 10 words.\n\n{fulltext}"
+                            # new claude prompt
+                            f"Summarize the solution below using standard algorithm terminology in exactly 10 words or less. Focus on the core approach (e.g., BFS, DFS, dynamic programming, two pointers, greedy, divide and conquer, binary search, segment trees, union-find, sliding window, Dijkstra's algorithm, Floyd-Warshall, topological sort, KMP, Z-algorithm, minimum spanning tree, LCA, fenwick tree, sparse table, suffix array, trie, sweep line, meet-in-the-middle, convex hull) rather than implementation details. Be precise but concise.\n\n# Problem and solution\n\n{fulltext}"
+                    }
                 ],
                 reasoning_effort="low",
             )
@@ -97,7 +103,7 @@ def main():
             descriptions.append(description)
         problems_with_descriptions.append(ProblemDescriptions(problem=problem, descriptions=descriptions).model_dump())
 
-    with open("data/codecontests_graph_descriptions.json", "w") as f:
+    with open("data/codecontests_all_train_descriptions.json", "w") as f:
         json.dump(problems_with_descriptions, f)
 
     # deprecated embeddings

@@ -118,7 +118,7 @@ Where <relative_file_path> is the relative path to the file and <file_content> i
 
         # Generate implementation
         self.logger.info(f"Generating implementation using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.3, "max_tokens": 8000})
+        response = self.generate(prompt, {"temperature": 0.3}, task="implement")
 
         if not response:
             self.logger.error("Failed to generate implementation: empty response")
@@ -138,6 +138,12 @@ Where <relative_file_path> is the relative path to the file and <file_content> i
                 continue
 
             file_path = lines[0].strip()
+            if os.path.basename(file_path) in repo.test_files + repo.task_files:
+                self.logger.info(
+                    f"Will not write modifications to {file_path}"
+                )
+                continue
+
             content_parts = "\n".join(lines[1:]).split("```")
             if not content_parts:
                 continue
@@ -317,7 +323,7 @@ including any edge cases or special conditions mentioned in the tests.
 """
         # Generate fixed implementation
         self.logger.info(f"Generating fixes for failed tests using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.2, "max_tokens": 8000})
+        response = self.generate(prompt, {"temperature": 0.2}, task="implement")
 
         if not response:
             self.logger.error("Failed to generate fixed implementation: empty response")
@@ -525,7 +531,7 @@ compatibility with existing tests and functionality.
 
         # Generate refactored code
         self.logger.info(f"Generating refactored code using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.2, "max_tokens": 8000})
+        response = self.generate(prompt, {"temperature": 0.2}, task="refactor")
 
         if not response:
             self.logger.error("Failed to generate refactored code: empty response")
@@ -647,7 +653,7 @@ class OpenAIAgent(Agent):
         super().__init__(model_name)
         self.client = OpenAI()
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any]) -> str:
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
 
@@ -657,11 +663,10 @@ class OpenAIAgent(Agent):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to implement or refactor code according to the provided specifications and tests.",
+                        "content": f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests.",
                     },
                     {"role": "user", "content": prompt},
                 ],
-                max_completion_tokens=sampling_params.get("max_tokens", 4000),
             )
         else:
             response = self.client.chat.completions.create(
@@ -669,12 +674,11 @@ class OpenAIAgent(Agent):
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to implement or refactor code according to the provided specifications and tests.",
+                        "content": f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests.",
                     },
                     {"role": "user", "content": prompt},
                 ],
                 temperature=sampling_params.get("temperature", 0.7),
-                max_tokens=sampling_params.get("max_tokens", 4000),
             )
 
         if not response.choices:
@@ -696,7 +700,7 @@ class ClaudeAgent(Agent):
         super().__init__(model_name)
         self.client = anthropic.Anthropic()
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any]) -> str:
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
         system_prompt = """You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. 
 Your task is to implement or refactor code according to the provided specifications and tests. 
 When implementing new files or refactoring existing ones, focus on creating well-structured, 
@@ -708,7 +712,6 @@ Always ensure your code passes all tests and maintains the expected functionalit
 
         message = self.client.messages.create(
             model=self.model_name,
-            max_tokens=sampling_params.get("max_tokens", 4000),
             temperature=sampling_params.get("temperature", 0.7),
             system=system_prompt,
             messages=[{"role": "user", "content": [{"type": "text", "text": prompt}]}],
@@ -749,7 +752,7 @@ class TogetherAgent(Agent):
         # This is a placeholder - implementation depends on Together API
         self.client = None
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any]) -> str:
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
 

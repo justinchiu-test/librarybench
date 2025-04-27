@@ -1,0 +1,3 @@
+# The Task
+
+I want to define some tasks and dependencies between them, and then run the whole thing as a pipeline. Some tasks might fail or take a while, so retries and state tracking would be helpful. Think like a really simple version of Airflow or a DAG runner. I want to support task states of pending, running, success, failure... we also want to make sure we handle retries and failure propagation. 

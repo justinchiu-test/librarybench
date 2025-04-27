@@ -1,0 +1,650 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 15 items
+
+tests.py ...FF..FFF..F.F                                                 [100%]
+
+=================================== FAILURES ===================================
+_____________________________ test_task_execution ______________________________
+
+    def test_task_execution():
+        """Test execution of a single task."""
+        # Successful task
+        task = Task(name="success_task", func=successful_task)
+        task.execute()
+    
+>       assert task.state == TaskState.SUCCESS
+E       AssertionError: assert <TaskState.FAILURE: 'failure'> == <TaskState.SUCCESS: 'success'>
+E        +  where <TaskState.FAILURE: 'failure'> = <workflow.Task object at 0x106cf86b0>.state
+E        +  and   <TaskState.SUCCESS: 'success'> = TaskState.SUCCESS
+
+tests.py:83: AssertionError
+___________________________ test_workflow_execution ____________________________
+
+    def test_workflow_execution():
+        """Test execution of a workflow with multiple tasks."""
+        workflow = Workflow()
+    
+        # Create tasks with dependencies
+        task1 = Task(name="task1", func=lambda: "result1")
+        task2 = Task(
+            name="task2", func=lambda: f"result2 using {workflow.get_task_result('task1')}"
+        )
+        task2.dependencies = ["task1"]
+    
+        workflow.add_task(task1)
+        workflow.add_task(task2)
+    
+        # Run the workflow
+>       results = workflow.run()
+
+tests.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x1065d08a0>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_workflow_execution.<locals>.<lambda>() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+___________________________ test_parallel_execution ____________________________
+
+    def test_parallel_execution():
+        """Test parallel execution of independent tasks."""
+    
+        def slow_task1():
+            time.sleep(0.2)
+            return "slow1"
+    
+        def slow_task2():
+            time.sleep(0.2)
+            return "slow2"
+    
+        workflow = Workflow()
+    
+        task1 = Task(name="slow_task1", func=slow_task1)
+        task2 = Task(name="slow_task2", func=slow_task2)
+        task3 = Task(
+            name="dependent_task",
+            func=lambda: "dependent",
+            dependencies=["slow_task1", "slow_task2"],
+        )
+    
+        workflow.add_task(task1)
+        workflow.add_task(task2)
+        workflow.add_task(task3)
+    
+        start_time = time.time()
+>       workflow.run()
+
+tests.py:209: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x1066d15b0>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_parallel_execution.<locals>.slow_task1() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+_______________________ test_workflow_partial_execution ________________________
+
+    def test_workflow_partial_execution():
+        """Test workflow execution with partially completed tasks."""
+        workflow = Workflow()
+    
+        task1 = Task(name="task1", func=lambda: "result1")
+        task2 = Task(name="task2", func=lambda: "result2", dependencies=["task1"])
+    
+        workflow.add_task(task1)
+        workflow.add_task(task2)
+    
+        # Manually mark the first task as complete
+        workflow.tasks["task1"].state = TaskState.SUCCESS
+        workflow.tasks["task1"].result = "result1"
+    
+        # Run the workflow - it should skip task1 and only run task2
+>       results = workflow.run()
+
+tests.py:237: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x106cf9260>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_workflow_partial_execution.<locals>.<lambda>() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+______________________________ test_task_timeout _______________________________
+
+    def test_task_timeout():
+        """Test task timeout functionality."""
+    
+        def slow_task():
+            time.sleep(0.5)
+            return "slow result"
+    
+        task = Task(name="timeout_task", func=slow_task, timeout=0.1)
+    
+        workflow = Workflow()
+        workflow.add_task(task)
+    
+        with pytest.raises(TaskFailedError, match="timed out"):
+>           workflow.run()
+
+tests.py:258: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x106cfa8b0>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_task_timeout.<locals>.slow_task() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+
+During handling of the above exception, another exception occurred:
+
+    def test_task_timeout():
+        """Test task timeout functionality."""
+    
+        def slow_task():
+            time.sleep(0.5)
+            return "slow result"
+    
+        task = Task(name="timeout_task", func=slow_task, timeout=0.1)
+    
+        workflow = Workflow()
+        workflow.add_task(task)
+    
+>       with pytest.raises(TaskFailedError, match="timed out"):
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'timed out'
+E        Input: 'test_task_timeout.<locals>.slow_task() takes 0 positional arguments but 1 was given'
+
+tests.py:257: AssertionError
+______________________________ test_task_logging _______________________________
+
+    def test_task_logging():
+        """Test task execution logging."""
+        # Configure a logger for testing
+        logger = logging.getLogger("test_logger")
+        logger.setLevel(logging.INFO)
+    
+        # Use a StringIO as a log handler to capture logs
+        from io import StringIO
+        log_capture = StringIO()
+        handler = logging.StreamHandler(log_capture)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    
+        # Define a task that logs messages
+        def logging_task():
+            logger.info("Task started")
+            logger.warning("This is a warning")
+            logger.error("This is an error")
+            return "success with logs"
+    
+        # Create and execute the task
+        task = Task(name="logging_task", func=logging_task, logger=logger)
+    
+        # Create a workflow and run it
+        workflow = Workflow()
+        workflow.add_task(task)
+>       workflow.run()
+
+tests.py:364: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x106bd9d50>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_task_logging.<locals>.logging_task() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+_______________________ test_workflow_execution_history ________________________
+
+    def test_workflow_execution_history():
+        """Test that workflow execution history is properly tracked."""
+        workflow = Workflow(name="history_workflow")
+    
+        # Create tasks
+        task1 = Task(name="task1", func=lambda: "result1")
+        task2 = Task(name="task2", func=lambda: "result2", dependencies=["task1"])
+        workflow.add_task(task1)
+        workflow.add_task(task2)
+    
+        # Run the workflow multiple times
+        for _ in range(3):
+>           workflow.run()
+
+tests.py:432: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <workflow.Workflow object at 0x106c5d130>
+
+    def run(self):
+        self.validate()
+        run_rec = ExecutionRunRecord(self.name)
+        run_rec.start_time = datetime.datetime.now()
+        context = {}
+        results = {}
+    
+        # Partial success tasks
+        for name, task in self.tasks.items():
+            if task.state == TaskState.SUCCESS:
+                results[name] = task.result
+    
+        pending = set(self.tasks.keys())
+        running_futs = {}
+        executor = ThreadPoolExecutor(max_workers=len(self.tasks) or 1)
+        failed_task = None
+    
+        try:
+            while pending or running_futs:
+                # Schedule new tasks
+                if failed_task is None:
+                    for t_name in list(pending):
+                        task = self.tasks[t_name]
+                        if task.state == TaskState.SUCCESS:
+                            pending.remove(t_name)
+                            continue
+                        # dependencies satisfied?
+                        if all(dep in results for dep in task.dependencies):
+                            fut = executor.submit(task.execute, context)
+                            running_futs[fut] = t_name
+                            pending.remove(t_name)
+                if not running_futs:
+                    break
+                done, _ = wait(running_futs.keys(), return_when=FIRST_COMPLETED)
+                for fut in done:
+                    t_name = running_futs.pop(fut)
+                    task = self.tasks[t_name]
+                    rec = task.execution_records[-1]
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(
+                        rec.start_time, rec.end_time, rec.status
+                    )
+                    if task.state == TaskState.SUCCESS:
+                        results[t_name] = task.result
+                        # update context if dict
+                        if isinstance(task.result, dict):
+                            context = task.result
+                    elif task.state == TaskState.RETRYING:
+                        # re-queue
+                        pending.add(t_name)
+                    else:  # FAILURE
+                        failed_task = task
+                if failed_task:
+                    break
+        finally:
+            executor.shutdown(wait=False)
+    
+        # Handle failures and propagation
+        if failed_task:
+            # mark downstream tasks as failed
+            for t_name in list(pending):
+                task = self.tasks[t_name]
+                if any(self.tasks[d].state == TaskState.FAILURE for d in task.dependencies):
+                    task.state = TaskState.FAILURE
+                    task.error = TaskFailedError(f"Task {t_name} failed due to dependency failure")
+                    run_rec.task_executions[t_name] = ExecutionTaskRecord(None, None, "failure")
+            run_rec.end_time = datetime.datetime.now()
+            run_rec.status = "failure"
+            self.execution_history.append(run_rec)
+>           raise TaskFailedError(str(failed_task.error))
+E           workflow.TaskFailedError: test_workflow_execution_history.<locals>.<lambda>() takes 0 positional arguments but 1 was given
+
+workflow.py:251: TaskFailedError
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED tests.py::test_task_execution - AssertionError: assert <TaskState.FAIL...
+FAILED tests.py::test_workflow_execution - workflow.TaskFailedError: test_wor...
+FAILED tests.py::test_parallel_execution - workflow.TaskFailedError: test_par...
+FAILED tests.py::test_workflow_partial_execution - workflow.TaskFailedError: ...
+FAILED tests.py::test_task_timeout - AssertionError: Regex pattern did not ma...
+FAILED tests.py::test_task_logging - workflow.TaskFailedError: test_task_logg...
+FAILED tests.py::test_workflow_execution_history - workflow.TaskFailedError: ...
+========================= 7 failed, 8 passed in 0.19s ==========================

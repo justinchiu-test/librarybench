@@ -1,0 +1,30 @@
+============================================== test session starts ==============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 17 items
+
+tests.py ..............F..                                                                                [100%]
+
+=================================================== FAILURES ====================================================
+___________________________________ TestPackageManagerV2.test_version_support ___________________________________
+
+self = <tests.TestPackageManagerV2 testMethod=test_version_support>
+
+    def test_version_support(self):
+        """Test that packages can be installed with specific versions"""
+        self.pm.install_package("A", "1.0", [])
+        self.pm.install_package("A", "2.0", [])
+        self.pm.install_package("B", "1.5", ["A>=1.0"])
+    
+        self.assertTrue(self.pm.is_installed("A", "1.0"))
+>       self.assertTrue(self.pm.is_installed("A", "2.0"))
+E       AssertionError: False is not true
+
+tests.py:121: AssertionError
+-------------------------------------------------- JSON report --------------------------------------------------
+report saved to: report.json
+============================================ short test summary info ============================================
+FAILED tests.py::TestPackageManagerV2::test_version_support - AssertionError: False is not true
+========================================= 1 failed, 16 passed in 0.06s ==========================================

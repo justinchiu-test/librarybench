@@ -1,0 +1,2397 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 15 items
+
+tests.py EEEEEEEEEEEEEEE                                                 [100%]
+
+==================================== ERRORS ====================================
+_____________________ ERROR at setup of test_task_creation _____________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adca40>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+___________________ ERROR at setup of test_workflow_creation ___________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104add580>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+____________________ ERROR at setup of test_dag_validation _____________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adcae0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+____________________ ERROR at setup of test_task_execution _____________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adda80>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+__________________ ERROR at setup of test_workflow_execution ___________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104addbc0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+______________________ ERROR at setup of test_task_retry _______________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104addda0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+__________________ ERROR at setup of test_failure_propagation __________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adde40>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+__________________ ERROR at setup of test_parallel_execution ___________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104ade0c0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+______________ ERROR at setup of test_workflow_partial_execution _______________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104ade340>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+_____________________ ERROR at setup of test_task_timeout ______________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104addbc0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+________________ ERROR at setup of test_task_retry_with_backoff ________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104438040>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+_________________ ERROR at setup of test_task_context_passing __________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adf1a0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+_____________________ ERROR at setup of test_task_logging ______________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adf240>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+__________________ ERROR at setup of test_workflow_scheduling __________________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adeca0>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+______________ ERROR at setup of test_workflow_execution_history _______________
+
+name = '__init__', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+>       return _bootstrap._gcd_import(name[level:], package, level)
+
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    # package init, re-export main classes
+>   from .workflow import (
+        Task,
+        TaskState,
+        Workflow,
+        TaskFailedError,
+        Schedule,
+        ScheduleType,
+    )
+E   ImportError: attempted relative import with no known parent package
+
+__init__.py:2: ImportError
+
+The above exception was the direct cause of the following exception:
+
+cls = <class '_pytest.runner.CallInfo'>
+func = <function call_and_report.<locals>.<lambda> at 0x104adea20>
+when = 'setup'
+reraise = (<class '_pytest.outcomes.Exit'>, <class 'KeyboardInterrupt'>)
+
+    @classmethod
+    def from_call(
+        cls,
+        func: Callable[[], TResult],
+        when: Literal["collect", "setup", "call", "teardown"],
+        reraise: type[BaseException] | tuple[type[BaseException], ...] | None = None,
+    ) -> CallInfo[TResult]:
+        """Call func, wrapping the result in a CallInfo.
+    
+        :param func:
+            The function to call. Called without arguments.
+        :type func: Callable[[], _pytest.runner.TResult]
+        :param when:
+            The phase in which the function is called.
+        :param reraise:
+            Exception or exceptions that shall propagate if raised by the
+            function, instead of being wrapped in the CallInfo.
+        """
+        excinfo = None
+        start = timing.time()
+        precise_start = timing.perf_counter()
+        try:
+>           result: TResult | None = func()
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:341: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:242: in <lambda>
+    lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_hooks.py:513: in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/pluggy/_manager.py:120: in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:90: in pytest_runtest_setup
+    yield from unraisable_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/unraisableexception.py:70: in unraisable_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:840: in pytest_runtest_setup
+    yield from self._runtest_for(item, "setup")
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/logging.py:829: in _runtest_for
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/capture.py:893: in pytest_runtest_setup
+    return (yield)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:87: in pytest_runtest_setup
+    yield from thread_exception_runtest_hook()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:68: in thread_exception_runtest_hook
+    yield
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:160: in pytest_runtest_setup
+    item.session._setupstate.setup(item)
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:507: in setup
+    raise exc[0].with_traceback(exc[1])
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/runner.py:514: in setup
+    col.setup()
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:663: in setup
+    init_mod = importtestmodule(self.path / "__init__.py", self.config)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py')
+config = <_pytest.config.Config object at 0x103ce2510>
+
+    def importtestmodule(
+        path: Path,
+        config: Config,
+    ):
+        # We assume we are only called once per module.
+        importmode = config.getoption("--import-mode")
+        try:
+            mod = import_path(
+                path,
+                mode=importmode,
+                root=config.rootpath,
+                consider_namespace_packages=config.getini("consider_namespace_packages"),
+            )
+        except SyntaxError as e:
+            raise nodes.Collector.CollectError(
+                ExceptionInfo.from_current().getrepr(style="short")
+            ) from e
+        except ImportPathMismatchError as e:
+            raise nodes.Collector.CollectError(
+                "import file mismatch:\n"
+                "imported module {!r} has this __file__ attribute:\n"
+                "  {}\n"
+                "which is not the same as the test file we want to collect:\n"
+                "  {}\n"
+                "HINT: remove __pycache__ / .pyc files and/or use a "
+                "unique basename for your test file modules".format(*e.args)
+            ) from e
+        except ImportError as e:
+            exc_info = ExceptionInfo.from_current()
+            if config.get_verbosity() < 2:
+                exc_info.traceback = exc_info.traceback.filter(filter_traceback)
+            exc_repr = (
+                exc_info.getrepr(style="short")
+                if exc_info.traceback
+                else exc_info.exconly()
+            )
+            formatted_tb = str(exc_repr)
+>           raise nodes.Collector.CollectError(
+                f"ImportError while importing test module '{path}'.\n"
+                "Hint: make sure your test modules/packages have valid Python names.\n"
+                "Traceback:\n"
+                f"{formatted_tb}"
+            ) from e
+E           _pytest.nodes.Collector.CollectError: ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_onepass_2/__init__.py'.
+E           Hint: make sure your test modules/packages have valid Python names.
+E           Traceback:
+E           ../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+E               return _bootstrap._gcd_import(name[level:], package, level)
+E           __init__.py:2: in <module>
+E               from .workflow import (
+E           E   ImportError: attempted relative import with no known parent package
+
+../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:523: CollectError
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+ERROR tests.py::test_task_creation - _pytest.nodes.Collector.CollectError: Im...
+ERROR tests.py::test_workflow_creation - _pytest.nodes.Collector.CollectError...
+ERROR tests.py::test_dag_validation - _pytest.nodes.Collector.CollectError: I...
+ERROR tests.py::test_task_execution - _pytest.nodes.Collector.CollectError: I...
+ERROR tests.py::test_workflow_execution - _pytest.nodes.Collector.CollectErro...
+ERROR tests.py::test_task_retry - _pytest.nodes.Collector.CollectError: Impor...
+ERROR tests.py::test_failure_propagation - _pytest.nodes.Collector.CollectErr...
+ERROR tests.py::test_parallel_execution - _pytest.nodes.Collector.CollectErro...
+ERROR tests.py::test_workflow_partial_execution - _pytest.nodes.Collector.Col...
+ERROR tests.py::test_task_timeout - _pytest.nodes.Collector.CollectError: Imp...
+ERROR tests.py::test_task_retry_with_backoff - _pytest.nodes.Collector.Collec...
+ERROR tests.py::test_task_context_passing - _pytest.nodes.Collector.CollectEr...
+ERROR tests.py::test_task_logging - _pytest.nodes.Collector.CollectError: Imp...
+ERROR tests.py::test_workflow_scheduling - _pytest.nodes.Collector.CollectErr...
+ERROR tests.py::test_workflow_execution_history - _pytest.nodes.Collector.Col...
+============================== 15 errors in 1.69s ==============================

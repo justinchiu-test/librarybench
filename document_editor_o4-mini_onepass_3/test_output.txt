@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 15 items
+
+test.py ....F..........                                                  [100%]
+
+=================================== FAILURES ===================================
+___________________ TestDocumentEditor.test_complex_history ____________________
+
+self = <test.TestDocumentEditor testMethod=test_complex_history>
+
+    def test_complex_history(self):
+        """Test more complex history with multiple branches and merges."""
+        doc_name = "complex_doc"
+        doc = create_document(doc_name)
+    
+        # Initial content
+        edit(doc_name, "intro", "Introduction")
+        initial_commit = commit(doc_name, "Initial commit")
+    
+        # Create first feature branch
+        branch(doc_name, "feature1")
+        edit(doc_name, "feature1_content", "Feature 1 content")
+        commit(doc_name, "Feature 1 changes")
+    
+        # Create second feature branch from feature1
+        branch(doc_name, "feature2")
+        edit(doc_name, "feature2_content", "Feature 2 content")
+        commit(doc_name, "Feature 2 changes")
+    
+        # Go back to main
+        checkout(doc_name, initial_commit)
+        edit(doc_name, "main_update", "Main branch update")
+        commit(doc_name, "Main branch update")
+    
+        # Merge feature1 into main
+        merge(doc_name, "feature1", "main")
+    
+        # Verify first merge
+        self.assertEqual(doc.content.get("intro"), "Introduction")
+        self.assertEqual(doc.content.get("main_update"), "Main branch update")
+        self.assertEqual(doc.content.get("feature1_content"), "Feature 1 content")
+    
+        # Merge feature2 into main
+        merge(doc_name, "feature2", "main")
+    
+        # Verify second merge
+        self.assertEqual(doc.content.get("feature2_content"), "Feature 2 content")
+    
+        # Check history length
+        history = log(doc_name)
+>       self.assertEqual(
+            len(history), 6
+        )  # Initial + 2 features + 1 main update + 2 merges
+E       AssertionError: 4 != 6
+
+test.py:226: AssertionError
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED test.py::TestDocumentEditor::test_complex_history - AssertionError: 4 ...
+========================= 1 failed, 14 passed in 0.06s =========================

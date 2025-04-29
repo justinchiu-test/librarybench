@@ -5,6 +5,8 @@ from typing import Any, Dict
 import anthropic
 from openai import OpenAI
 
+from prompts import implementation_prompt_template, fix_implementation_prompt_template, refactoring_prompt_template
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -55,7 +57,11 @@ class Agent:
         self.model_name = model_name
         self.logger = logger
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any]) -> str:
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], system_prompt: str) -> str:
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any]) -> str:
         """Generate a response from the model.
 
         Args:
@@ -98,27 +104,11 @@ class Agent:
                     )
 
         # Create prompt for implementation
-        prompt = f"""I need you to implement a solution based on the following task and test files. 
-Your code must pass the tests provided.
-
-# Task Details:
-{task_content}
-
-# Test Files:
-{test_content}
-
-Please implement all necessary files to solve this task. For each file, provide the content in the following format:
-
-```file:<relative_file_path>
-<file_content>
-```
-
-Where <relative_file_path> is the relative path to the file and <file_content> is the content of the file.
-"""
+        prompt = implementation_prompt_template.format(task_content=task_content, test_content=test_content)
 
         # Generate implementation
         self.logger.info(f"Generating implementation using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.3}, task="implement")
+        response = self.generate_code(prompt, {"temperature": 0.3}, task="implement")
 
         if not response:
             self.logger.error("Failed to generate implementation: empty response")
@@ -289,41 +279,10 @@ Where <relative_file_path> is the relative path to the file and <file_content> i
                 self.logger.warning(f"Could not read test output file: {e}")
 
         # Create prompt for fixing implementation
-        prompt = f"""I need you to fix the implementation of the following code that is failing tests.
-
-# Current Implementation:
-{src_code_content}
-
-# Test Files:
-{test_content}
-
-# Failed Tests:
-{failed_test_details}
-
-# Test Output (if available):
-{test_output}
-
-Please carefully analyze the errors and test failures. Pay special attention to:
-1. The exact assertion failures or error messages
-2. What the tests expect vs. what your current implementation provides
-3. Any edge cases or special conditions you might have missed
-
-Your task is to fix the implementation to make all tests pass. For each file that needs to be modified, 
-provide the content in the following format:
-
-```file:<relative_file_path>
-<file_content>
-```
-
-Where <relative_file_path> is the relative path to the file and <file_content> is the updated content of the file.
-Focus on fixing the specific issues identified in the errors and failed tests while maintaining the overall structure of the code.
-
-IMPORTANT: Make targeted changes to address the specific failing test cases. Make sure your implementation passes all test cases,
-including any edge cases or special conditions mentioned in the tests.
-"""
+        prompt = fix_implementation_prompt_template.format(src_code_content=src_code_content, test_content=test_content, failed_test_details=failed_test_details, test_output=test_output)
         # Generate fixed implementation
         self.logger.info(f"Generating fixes for failed tests using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.2}, task="implement")
+        response = self.generate_code(prompt, {"temperature": 0.2}, task="implement")
 
         if not response:
             self.logger.error("Failed to generate fixed implementation: empty response")
@@ -493,45 +452,11 @@ including any edge cases or special conditions mentioned in the tests.
                     test_content += f"\n\n{test_file}:\n{f.read()}"
 
         # Create prompt for refactoring
-        prompt = f"""I need you to refactor the following source code to improve its maintainability, readability, and efficiency.
-The refactored code must still pass all the existing tests.
-
-# Source Code Files:
-{src_code_content}
-
-# Test Files (for your reference):
-{test_content}
-
-Please refactor each source code file, focusing on:
-1. Abstracting out helper functions to reduce complexity
-2. Improving code organization and structure
-3. Enhancing readability while maintaining functionality
-4. Optimizing performance where possible
-5. Applying consistent code styling and documentation
-
-Specifically, consider these refactoring techniques:
-- Extract complex or duplicated logic into helper functions
-- Apply design patterns where appropriate
-- Improve variable and function naming for clarity
-- Add type hints for better code understanding
-- Restructure code to reduce nesting levels
-- Implement better error handling
-- Remove any unused code or imports
-
-For each file, provide the refactored content in the following format:
-
-```file:<relative_file_path>
-<file_content>
-```
-
-IMPORTANT: The refactored files MUST execute to the same results as the original programs and pass all tests.
-Do not change the external API or behavior of the code. Focus on internal improvements while maintaining
-compatibility with existing tests and functionality.
-"""
+        prompt = refactoring_prompt_template.format(src_code_content=src_code_content, test_content=test_content)
 
         # Generate refactored code
         self.logger.info(f"Generating refactored code using {self.model_name}")
-        response = self.generate(prompt, {"temperature": 0.2}, task="refactor")
+        response = self.generate_code(prompt, {"temperature": 0.2}, task="refactor")
 
         if not response:
             self.logger.error("Failed to generate refactored code: empty response")
@@ -653,31 +578,27 @@ class OpenAIAgent(Agent):
         super().__init__(model_name)
         self.client = OpenAI()
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], system_prompt: str) -> str:
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
-
+        messages = []
+        if system_prompt:
+            messages.append(
+                {
+                    "role": "system",
+                    "content": system_prompt,
+                },
+            )
+        messages.append({"role": "user", "content": prompt})
         if self.model_name in {"o3-mini", "o4-mini"}:
             response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
+                messages=messages,
             )
         else:
             response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
+                messages=messages,
                 temperature=sampling_params.get("temperature", 0.7),
             )
 
@@ -695,18 +616,25 @@ class OpenAIAgent(Agent):
         return result
 
 
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+        system_prompt = f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests."
+        return self.generate(prompt, sampling_params, system_prompt)
+        
+
 class ClaudeAgent(Agent):
     def __init__(self, model_name):
         super().__init__(model_name)
         self.client = anthropic.Anthropic()
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
         system_prompt = """You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. 
 Your task is to implement or refactor code according to the provided specifications and tests. 
 When implementing new files or refactoring existing ones, focus on creating well-structured, 
 modular code that is easy to understand and maintain. 
 Always ensure your code passes all tests and maintains the expected functionality."""
+        return self.generate(prompt, sampling_params, system_prompt)
 
+    def generate(self, prompt: str, sampling_params: Dict[str, Any], system_prompt: str) -> str:
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
 
@@ -752,7 +680,7 @@ class TogetherAgent(Agent):
         # This is a placeholder - implementation depends on Together API
         self.client = None
 
-    def generate(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
         # Log the prompt
         prompt_logger.info(f"MODEL: {self.model_name} - PROMPT:\n{prompt}\n{'=' * 80}")
 

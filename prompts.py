@@ -32,19 +32,22 @@ I am a <...> I want to be able to <...> This code repository <...>
 Be creative! Write the task description in the style of the proposed persona. Be as exhaustive as possible in including the listed features in the task description's requirements.
 """
 
-implementation_prompt_template = """I need you to implement a solution based on the following task and test files. 
+implementation_prompt_template = """I need you to implement a solution and COMPREHENSIVE suite of tests based on the following task files. 
 Your code must pass the tests provided.
 
 # Task Details:
 {task_content}
 
-# Test Files:
-{test_content}
-
-Please implement all necessary files to solve this task. For each file, provide the content in the following format:
+Please implement all necessary files to solve this task. For each source code file, provide the content in the following format:
 
 ```file:<relative_file_path>
 <file_content>
+```
+
+For each test file, provide the content in the following format so that it can be run with `pytest`:
+
+```file:<relative_file_path starting with test_>
+<test_file_content>
 ```
 
 Where <relative_file_path> is the relative path to the file and <file_content> is the content of the file.

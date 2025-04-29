@@ -21,19 +21,47 @@ class Repo:
     def __init__(self, repo_path, test_command="pytest"):
         self.logger = logger
         self.repo_path = repo_path
-        test_files = glob.glob(os.path.join(repo_path, "test*.py"))
-        task_files = glob.glob(os.path.join(repo_path, "TASK*.md"))
-        self.src_code_files = [filename for filename in glob.glob(os.path.join(repo_path, "*.py")) if filename not in test_files + task_files]
-        self.test_files = test_files
-        self.task_files = task_files
+        test_file_paths = glob.glob(os.path.join(repo_path, "test*.py"))
+        task_file_paths = glob.glob(os.path.join(repo_path, "TASK*.md"))
+        
+        # Store just the filenames, not the full paths
+        self.test_files = [os.path.basename(path) for path in test_file_paths]
+        self.task_files = [os.path.basename(path) for path in task_file_paths]
+        
         self.test_command = test_command
-        print(f"New repo implemented with test files {test_files} and task files {task_files} and src files {self.src_code_files}")
+        self.src_code_files = []
+        self.src_files_path = os.path.join(repo_path, "SRC_FILES.txt")
+        if os.path.exists(self.src_files_path):
+            try:
+                with open(self.src_files_path, "r") as rf:
+                    self.src_code_files = [
+                        line.strip() for line in rf.readlines() if line.strip()
+                    ]
+            except Exception as e:
+                self.logger.error(f"Error reading existing SRC_FILES.txt: {e}")
+        self.logger.info(f"New repo implemented with test files {self.test_files} and task files {self.task_files}.")
 
     def update_src_files(self, new_src_files):
-        self.src_code_files.extend([new_file for new_file in new_src_files if new_file not in self.src_code_files])
-
+        """Update the list of source code files and write to SRC_FILES.txt."""
+        # Make sure we only store relative paths, not absolute ones
+        relative_src_files = [
+            file_path
+            if not os.path.isabs(file_path)
+            else os.path.relpath(file_path, self.repo_path)
+            for file_path in new_src_files
+        ]
+        
+        # Update the in-memory list
+        self.src_code_files = sorted(set(self.src_code_files).union(set(relative_src_files)))
+        
+        # Write the combined list to SRC_FILES.txt
+        with open(self.src_files_path, "w") as wf:
+            wf.write("\n".join(self.src_code_files))
+            self.logger.info(
+                f"Updated SRC_FILES.txt with {len(relative_src_files)} source files"
+            )
+    
     def make_new_to_implement(self, new_repo_location) -> 'Repo':
-        # new_repo_location = os.path.join(os.path.dirname(self.repo_path), f"{os.path.basename(self.repo_path)}_{agent.model_name}")
         # if new_repo_location already exists, raise an error
         if os.path.exists(new_repo_location):
             raise FileExistsError(f"Directory {new_repo_location} already exists")
@@ -41,7 +69,7 @@ class Repo:
         # make a directory at target_repo_location and copy only the test_files and task_files in
         os.makedirs(new_repo_location, exist_ok=False)
         
-        for file in self.test_files + self.task_files:
+        for file in self.task_files:
             src_path = os.path.join(self.repo_path, file)
             dst_path = os.path.join(new_repo_location, file)
             

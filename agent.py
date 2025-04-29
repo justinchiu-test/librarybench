@@ -1,4 +1,5 @@
 import os
+import glob
 import json
 import logging
 from typing import Any, Dict
@@ -91,20 +92,8 @@ class Agent:
                         f"Loaded task file: {task_file} ({len(content)} chars)"
                     )
 
-        # Read test files
-        test_content = ""
-        for test_file in repo.test_files:
-            file_path = os.path.join(repo.repo_path, test_file)
-            if os.path.exists(file_path):
-                with open(file_path, "r") as f:
-                    content = f.read()
-                    test_content += f"\n\n{test_file}:\n{content}"
-                    self.logger.info(
-                        f"Loaded test file: {test_file} ({len(content)} chars)"
-                    )
-
         # Create prompt for implementation
-        prompt = implementation_prompt_template.format(task_content=task_content, test_content=test_content)
+        prompt = implementation_prompt_template.format(task_content=task_content)
 
         # Generate implementation
         self.logger.info(f"Generating implementation using {self.model_name}")
@@ -230,8 +219,7 @@ class Agent:
         # Store original file checksums for later comparison
         original_file_checksums = {}
         original_file_contents = {}  # Store actual content for better comparison
-        for src_file in repo.src_code_files:
-            file_path = os.path.join(repo.repo_path, src_file)
+        for file_path in glob.glob(os.path.join(repo.repo_path, "*.py")):
             if os.path.exists(file_path):
                 try:
                     with open(file_path, "r") as f:
@@ -247,11 +235,15 @@ class Agent:
 
         # Read source code files
         src_code_content = ""
-        for src_file in repo.src_code_files:
-            file_path = os.path.join(repo.repo_path, src_file)
-            if os.path.exists(file_path):
-                with open(file_path, "r") as f:
-                    src_code_content += f"\n\n{src_file}:\n{f.read()}"
+        for src_file in glob.glob(os.path.join(repo.repo_path, "*.py")):
+            if os.path.basename(src_file).startswith("test"): continue
+            if os.path.exists(src_file):
+                with open(src_file, "r") as f:
+                    content = f.read()
+                    src_code_content += f"\n\n{os.path.basename(src_file)}:\n{content}"
+                    self.logger.info(
+                        f"Loaded source file: {os.path.basename(src_file)} ({len(content)} chars)"
+                    )
 
         # Read test files
         test_content = ""
@@ -259,7 +251,11 @@ class Agent:
             file_path = os.path.join(repo.repo_path, test_file)
             if os.path.exists(file_path):
                 with open(file_path, "r") as f:
-                    test_content += f"\n\n{test_file}:\n{f.read()}"
+                    content = f.read()
+                    test_content += f"\n\n{test_file}:\n{content}"
+                    self.logger.info(
+                        f"Loaded test file: {test_file} ({len(content)} chars)"
+                    )
 
         failed_test_details = "\n\n".join(
             [
@@ -441,7 +437,11 @@ class Agent:
             file_path = os.path.join(repo.repo_path, src_file)
             if os.path.exists(file_path):
                 with open(file_path, "r") as f:
-                    src_code_content += f"\n\n{src_file}:\n{f.read()}"
+                    content = f.read()
+                    src_code_content += f"\n\n{src_file}:\n{content}"
+                    self.logger.info(
+                        f"Loaded source file: {src_file} ({len(content)} chars)"
+                    )
 
         # Read test files
         test_content = ""
@@ -449,7 +449,11 @@ class Agent:
             file_path = os.path.join(repo.repo_path, test_file)
             if os.path.exists(file_path):
                 with open(file_path, "r") as f:
-                    test_content += f"\n\n{test_file}:\n{f.read()}"
+                    content = f.read()
+                    test_content += f"\n\n{test_file}:\n{content}"
+                    self.logger.info(
+                        f"Loaded test file: {test_file} ({len(content)} chars)"
+                    )
 
         # Create prompt for refactoring
         prompt = refactoring_prompt_template.format(src_code_content=src_code_content, test_content=test_content)

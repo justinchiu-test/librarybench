@@ -8,6 +8,19 @@ from openai import OpenAI
 
 from prompts import implementation_prompt_template, fix_implementation_prompt_template, refactoring_prompt_template
 
+import sys
+import ipdb
+import traceback
+
+def debughook(etype, value, tb):
+    traceback.print_exception(etype, value, tb)
+    print()
+    ipdb.pm()  # post-mortem debugger
+
+
+sys.excepthook = debughook
+
+
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
@@ -92,24 +105,33 @@ class Agent:
                         f"Loaded task file: {task_file} ({len(content)} chars)"
                     )
 
-        # Create prompt for implementation
-        prompt = implementation_prompt_template.format(task_content=task_content)
+        file_blocks = []
+        # While no blocks extracted, sample again
+        num_attempts = 0
+        while len(file_blocks) <= 1: 
+            if num_attempts > 5: 
+                return {"error": "No blocks generated"}, False
+            # Create prompt for implementation
+            prompt = implementation_prompt_template.format(task_content=task_content)
 
-        # Generate implementation
-        self.logger.info(f"Generating implementation using {self.model_name}")
-        response = self.generate_code(prompt, {"temperature": 0.3}, task="implement")
+            # Generate implementation
+            self.logger.info(f"Generating implementation using {self.model_name}")
+            response = self.generate_code(prompt, {"temperature": 0.3}, task="implement")
 
-        if not response:
-            self.logger.error("Failed to generate implementation: empty response")
-            return {"error": "Empty response from model"}
+            if not response:
+                self.logger.error("Failed to generate implementation: empty response")
+                return {"error": "Empty response from model"}
 
-        # Extract and write files
-        file_blocks = response.split("```file:")
+            # Extract and write files
+            file_blocks = response.split("```file:")
+
+            self.logger.info(
+                f"Model returned {len(file_blocks) - 1} file blocks to process"
+            )
+            num_attempts += 1
+
+
         new_src_files = []
-
-        self.logger.info(
-            f"Model returned {len(file_blocks) - 1} file blocks to process"
-        )
 
         for block in file_blocks[1:]:
             lines = block.split("\n")
@@ -260,7 +282,8 @@ class Agent:
         failed_test_details = "\n\n".join(
             [
                 f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['call']['longrepr']}"
-                for test in failed_tests
+                if 'call' in test else f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['setup']['longrepr']}"
+                for test in failed_tests 
             ]
         )
         # Add test output if it exists
@@ -278,21 +301,29 @@ class Agent:
         prompt = fix_implementation_prompt_template.format(src_code_content=src_code_content, test_content=test_content, failed_test_details=failed_test_details, test_output=test_output)
         # Generate fixed implementation
         self.logger.info(f"Generating fixes for failed tests using {self.model_name}")
-        response = self.generate_code(prompt, {"temperature": 0.2}, task="implement")
 
-        if not response:
-            self.logger.error("Failed to generate fixed implementation: empty response")
-            return {"error": "Empty response from model"}, False
+        file_blocks = []
+        num_attempts = 0
+        while len(file_blocks) <= 1:
+            if num_attempts > 5: 
+                return {"error": "No blocks generated"}, False
+            response = self.generate_code(prompt, {"temperature": 0.2}, task="implement")
 
-        # Extract and write files
-        file_blocks = response.split("```file:")
+            if not response:
+                self.logger.error("Failed to generate fixed implementation: empty response")
+                return {"error": "Empty response from model"}, False
+
+            # Extract and write files
+            file_blocks = response.split("```file:")
+            self.logger.info(
+                f"Model returned {len(file_blocks) - 1} file blocks to process"
+            )
+            num_attempts += 1
+        
         modified_files = []
         files_with_actual_changes = 0
         has_content_changes = False  # Flag to indicate if any actual content changed
 
-        self.logger.info(
-            f"Model returned {len(file_blocks) - 1} file blocks to process"
-        )
 
         for block in file_blocks[1:]:
             lines = block.split("\n")

@@ -64,10 +64,11 @@ class Repo:
     def make_new_to_implement(self, new_repo_location) -> 'Repo':
         # if new_repo_location already exists, raise an error
         if os.path.exists(new_repo_location):
-            raise FileExistsError(f"Directory {new_repo_location} already exists")
+            self.logger.warning(f"Directory {new_repo_location} already exists. Overwriting...")
+            shutil.rmtree(new_repo_location)
         
         # make a directory at target_repo_location and copy only the test_files and task_files in
-        os.makedirs(new_repo_location, exist_ok=False)
+        os.makedirs(new_repo_location)
         
         for file in self.task_files:
             src_path = os.path.join(self.repo_path, file)
@@ -257,7 +258,10 @@ def implement(agent, args):
             eval_before = repo.evaluate()
             attempt_results.append({"attempt": num_attempts, "before": eval_before})
             
-            new_src_files, has_changes = agent.fix_implementation(repo)
+            fix_results = agent.fix_implementation(repo)
+            if fix_results is None:
+                continue
+            new_src_files, has_changes = fix_results
             num_attempts += 1
             repo.update_src_files(new_src_files)
             
@@ -310,7 +314,9 @@ def refactor(agent, args):
             eval_before = new_repo.evaluate()
             attempt_results.append({"attempt": num_attempts, "before": eval_before})
             
-            new_src_files, has_changes = agent.fix_implementation(new_repo)
+            fix_results = agent.fix_implementation(new_repo)
+            if fix_results is None: continue
+            new_src_files, has_changes = fix_results
             num_attempts += 1
             new_repo.update_src_files(new_src_files)
             

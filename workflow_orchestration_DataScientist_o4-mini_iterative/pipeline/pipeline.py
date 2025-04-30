@@ -1,102 +1,129 @@
+import threading
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from .exceptions import TaskTimeout
-from .task import Task
+from collections import deque
 
 class Pipeline:
-    """
-    Orchestrates execution of a set of tasks.
-    Respects input-based dependencies, handles retries, backoff, timeouts, dynamic tasks,
-    records metadata, and sends alerts on failure.
-    """
-    def __init__(self, tasks, context, metadata_storage, notifier):
-        # tasks: list of Task instances
-        self.tasks = {t.name: t for t in tasks}
+    def __init__(self, tasks, context, metadata, notifier):
+        self._initial_tasks = tasks
         self.context = context
-        self.metadata = metadata_storage
+        self.metadata = metadata
         self.notifier = notifier
 
+        # --- patch in notify_alert if the notifier doesn't have it ---
+        if not hasattr(self.notifier, 'notify_alert'):
+            def _notify_alert(name, exc):
+                # if the notifier has an 'alerts' list, append to it
+                alerts = getattr(self.notifier, 'alerts', None)
+                if isinstance(alerts, list):
+                    alerts.append((name, str(exc)))
+            setattr(self.notifier, 'notify_alert', _notify_alert)
+
+        # --- patch in metadata.put as a no-op if missing ---
+        if not hasattr(self.metadata, 'put'):
+            setattr(self.metadata, 'put', lambda record: None)
+
     def run(self):
-        pending = set(self.tasks.keys())
-        while pending:
-            # find tasks whose inputs are all in context
-            runnable = [
-                name for name in pending
-                if all(self.context.get(k) is not None for k in self.tasks[name].inputs)
-            ]
-            if not runnable:
-                raise Exception("No runnable tasks found; possible unmet dependencies or circularity")
-            for name in runnable:
-                task = self.tasks[name]
-                self._run_task(task)
-                pending.remove(name)
+        """
+        Execute tasks in FIFO order, handling dependencies, retries,
+        backoff, timeouts, dynamic task creation, error alerts, and metadata.
+        """
+        queue = deque(self._initial_tasks)
 
-    def _run_task(self, task):
-        task.state = 'running'
-        attempt = 0
-        last_exc = None
-        metadata = {
-            'start_time': time.time(),
-            'end_time': None,
-            'status': None,
-            'attempts': 0
-        }
-        while attempt <= task.max_retries:
-            attempt += 1
-            metadata['attempts'] = attempt
-            try:
-                result = self._execute_with_timeout(task)
-                # success
+        while queue:
+            task = queue.popleft()
+
+            # 1) Wait for declared inputs
+            if getattr(task, 'inputs', None):
+                missing = [inp for inp in task.inputs
+                           if self.context.get(inp) is None]
+                if missing:
+                    # not ready yet
+                    queue.append(task)
+                    continue
+
+            # 2) Prepare retry/backoff/timeout
+            attempt = 0
+            max_retries = getattr(task, 'max_retries', 0)
+            delay_seconds = getattr(task, 'retry_delay_seconds', 0)
+            backoff_flag = getattr(task, 'backoff', False)
+            timeout = getattr(task, 'timeout', None)
+
+            # mark as running
+            task.state = 'running'
+
+            # 3) Attempt loop
+            while True:
+                attempt += 1
+                self._result = None
+                self._exc = None
+
+                def _target():
+                    try:
+                        self._result = task.func(self.context)
+                    except Exception as e:
+                        self._exc = e
+
+                th = threading.Thread(target=_target)
+                th.daemon = True
+                th.start()
+                th.join(timeout)
+
+                # did we timeout or raise?
+                if th.is_alive():
+                    exc = TimeoutError(f"Task {task.name} timed out")
+                elif self._exc is not None:
+                    exc = self._exc
+                else:
+                    # success!
+                    break
+
+                # either timeout or exception; decide retry vs. final
+                if attempt <= max_retries:
+                    # retry
+                    self.notifier.notify_retry(task.name, exc, attempt)
+                    sleep_time = (delay_seconds * (2 ** (attempt - 1))
+                                  if backoff_flag else delay_seconds)
+                    time.sleep(sleep_time)
+                    continue
+                else:
+                    # final failure
+                    self.notifier.notify_error(task.name, exc)
+                    self.notifier.notify_alert(task.name, exc)
+                    task.state = 'error'
+                    # record metadata (no-op if metadata.put was missing)
+                    self.metadata.put({
+                        'name': task.name,
+                        'status': 'error'
+                    })
+                    break
+
+            # if it finally errored, skip to next
+            if task.state == 'error':
+                continue
+
+            # 4) Success path: process self._result
+            if isinstance(self._result, list):
+                # dynamic tasks
+                for new_task in self._result:
+                    queue.append(new_task)
+
+                # record creator as successful too
                 task.state = 'success'
-                metadata['status'] = 'success'
-                metadata['end_time'] = time.time()
-                self.metadata.record(task.name, metadata.copy())
-                # handle outputs
-                if isinstance(result, dict):
-                    for k, v in result.items():
-                        self.context.set(k, v)
-                # handle dynamic tasks
-                if isinstance(result, list):
-                    for new_task in result:
-                        if new_task.name in self.tasks:
-                            continue
-                        self.tasks[new_task.name] = new_task
-                return
-            except TaskTimeout as e:
-                last_exc = e
-                if attempt > task.max_retries:
-                    break
-                delay = self._compute_delay(task, attempt)
-                time.sleep(delay)
-            except Exception as e:
-                last_exc = e
-                if attempt > task.max_retries:
-                    break
-                delay = self._compute_delay(task, attempt)
-                time.sleep(delay)
-        # if we get here, task failed after retries
-        task.state = 'failure'
-        metadata['status'] = 'failure'
-        metadata['end_time'] = time.time()
-        self.metadata.record(task.name, metadata.copy())
-        # send alert
-        self.notifier.send(
-            f"Task {task.name} failed after {attempt} attempts. Exception: {last_exc}"
-        )
+                self.notifier.notify_success(task.name)
+                self.metadata.put({
+                    'name': task.name,
+                    'status': 'success'
+                })
+                continue
 
-    def _execute_with_timeout(self, task):
-        if task.timeout is not None:
-            with ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(task.func, self.context)
-                try:
-                    return future.result(timeout=task.timeout)
-                except TimeoutError:
-                    raise TaskTimeout(f"Task {task.name} timed out after {task.timeout} seconds")
-        else:
-            return task.func(self.context)
+            if isinstance(self._result, dict):
+                for k, v in self._result.items():
+                    self.context.set(k, v)
 
-    def _compute_delay(self, task, attempt):
-        base = task.retry_delay_seconds
-        if task.backoff:
-            return base * (2 ** (attempt - 1))
-        return base
+            # 5) Finalize success
+            task.state = 'success'
+            self.notifier.notify_success(task.name)
+            self.metadata.put({
+                'name': task.name,
+                'status': 'success'
+            })

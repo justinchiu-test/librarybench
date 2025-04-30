@@ -1,12 +1,17 @@
-class Notifier:
-    """Abstract Notifier interface."""
-    def send(self, message):
-        raise NotImplementedError("Notifier subclasses must implement send()")
-
-class DummyNotifier(Notifier):
-    """A notifier that collects messages in-memory for tests/inspection."""
+class DummyNotifier:
+    """
+    A simple in-memory notifier for testing: captures successes, retries, and failures.
+    """
     def __init__(self):
-        self.messages = []
+        self.successes = []
+        self.retries = []
+        self.failures = []
 
-    def send(self, message):
-        self.messages.append(message)
+    def notify_success(self, task_name):
+        self.successes.append(task_name)
+
+    def notify_retry(self, task_name, exception, attempt):
+        self.retries.append((task_name, exception, attempt))
+
+    def notify_error(self, task_name, exception):
+        self.failures.append((task_name, exception))

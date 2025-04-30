@@ -1,0 +1,16 @@
+========================================= test session starts ==========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 12 items
+
+test_auth.py ...                                                                                 [ 25%]
+test_dynamic.py 
+
+--------------------------------------------- JSON report ----------------------------------------------
+report saved to: report.json
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/Users/celine/Research/librarybench/workflow_orchestration_Data_Engineer_o4-mini_iterative/pipeline/scheduler.py:32: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+==================================== 3 passed in 1064.64s (0:17:44) ====================================

@@ -6,10 +6,10 @@ plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
 collected 5 items
 
 test_dynamic_tasks.py F                                                                          [ 20%]
-test_error_handling_and_alerting.py .                                                            [ 40%]
-test_pipeline.py .                                                                               [ 60%]
-test_retry_backoff.py .                                                                          [ 80%]
-test_timeout.py .                                                                                [100%]
+test_error_handling_and_alerting.py F                                                            [ 40%]
+test_pipeline.py F                                                                               [ 60%]
+test_retry_backoff.py F                                                                          [ 80%]
+test_timeout.py F                                                                                [100%]
 
 =============================================== FAILURES ===============================================
 _______________________________ test_dynamic_task_creation_and_execution _______________________________
@@ -45,14 +45,170 @@ _______________________________ test_dynamic_task_creation_and_execution _______
     
         # After run, dynamic tasks should have executed
         for i in [1,2,3]:
->           assert ctx.get(f'item_{i}') == i * 2
-E           AssertionError: assert None == (1 * 2)
-E            +  where None = get('item_1')
-E            +    where get = <pipeline.context.ExecutionContext object at 0x105d5f620>.get
+            assert ctx.get(f'item_{i}') == i * 2
+>           rec = meta.get_all(f'proc_{i}')[0]
+E           IndexError: list index out of range
 
-test_dynamic_tasks.py:39: AssertionError
+test_dynamic_tasks.py:40: IndexError
+_______________________________ test_unexpected_exception_triggers_alert _______________________________
+
+    def test_unexpected_exception_triggers_alert():
+        ctx = ExecutionContext()
+        meta = MetadataStorage()
+        notifier = DummyNotifier()
+    
+        def bad_task(context):
+            # raises unexpected error
+            raise KeyError("Oops!")
+    
+        t = Task(
+            name='bad',
+            func=bad_task,
+            max_retries=0,
+            retry_delay_seconds=0,
+            backoff=False
+        )
+        pipeline = Pipeline([t], ctx, meta, notifier)
+        pipeline.run()
+    
+        # Task failed
+>       assert t.state == 'failure'
+E       AssertionError: assert 'error' == 'failure'
+E         
+E         - failure
+E         + error
+
+test_error_handling_and_alerting.py:28: AssertionError
+____________________________ test_basic_pipeline_execution_and_data_passing ____________________________
+
+    def test_basic_pipeline_execution_and_data_passing():
+        ctx = ExecutionContext()
+        meta = MetadataStorage()
+        notifier = DummyNotifier()
+    
+        def task1(context):
+            # produce 'a' = 1
+            return {'a': 1}
+    
+        def task2(context):
+            a = context.get('a')
+            return {'b': a + 1}
+    
+        t1 = Task(name='t1', func=task1, outputs=['a'])
+        t2 = Task(name='t2', func=task2, inputs=['a'], outputs=['b'])
+        pipeline = Pipeline([t1, t2], ctx, meta, notifier)
+        pipeline.run()
+    
+        # Check context values
+        assert ctx.get('a') == 1
+        assert ctx.get('b') == 2
+    
+        # Check states
+        assert t1.state == 'success'
+        assert t2.state == 'success'
+    
+        # Metadata recorded
+        rec1 = meta.get_all('t1')
+        rec2 = meta.get_all('t2')
+>       assert len(rec1) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+test_pipeline.py:37: AssertionError
+_________________________________ test_retry_with_exponential_backoff __________________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x102604c30>
+
+    def test_retry_with_exponential_backoff(monkeypatch):
+        ctx = ExecutionContext()
+        meta = MetadataStorage()
+        notifier = DummyNotifier()
+    
+        # Create a flaky task that fails twice then succeeds
+        attempts = {'count': 0}
+        delays = []
+    
+        def flaky(context):
+            attempts['count'] += 1
+            if attempts['count'] < 3:
+                raise ValueError("Intermittent failure")
+            return {'x': 42}
+    
+        # Monkeypatch time.sleep to record delays without real waiting
+        def fake_sleep(d):
+            delays.append(d)
+        monkeypatch.setattr(time, 'sleep', fake_sleep)
+    
+        t = Task(
+            name='flaky',
+            func=flaky,
+            outputs=['x'],
+            max_retries=4,
+            retry_delay_seconds=1,
+            backoff=True,
+            timeout=None
+        )
+        pipeline = Pipeline([t], ctx, meta, notifier)
+        pipeline.run()
+    
+        # Should have succeeded
+        assert t.state == 'success'
+        assert ctx.get('x') == 42
+        # It should have taken 3 attempts
+>       rec = meta.get_all('flaky')[0]
+E       IndexError: list index out of range
+
+test_retry_backoff.py:45: IndexError
+_____________________________________ test_task_timeout_and_retry ______________________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x102606780>
+
+    def test_task_timeout_and_retry(monkeypatch):
+        ctx = ExecutionContext()
+        meta = MetadataStorage()
+        notifier = DummyNotifier()
+    
+        # A task that sleeps longer than its timeout
+        def slow_task(context):
+            time.sleep(0.1)
+            return {'y': 'done'}
+    
+        # Monkeypatch time.sleep so that slow_task actually runs real sleep,
+        # but pipeline retry waits are no-ops
+        original_sleep = time.sleep
+        def fake_sleep(d):
+            # only fake small waits
+            if d < 0.05:
+                return
+            original_sleep(d)
+        monkeypatch.setattr(time, 'sleep', fake_sleep)
+    
+        t = Task(
+            name='slow',
+            func=slow_task,
+            outputs=['y'],
+            max_retries=1,
+            retry_delay_seconds=0.01,
+            backoff=False,
+            timeout=0.05
+        )
+        pipeline = Pipeline([t], ctx, meta, notifier)
+        pipeline.run()
+    
+        # Task should have failed
+>       assert t.state == 'failure'
+E       AssertionError: assert 'error' == 'failure'
+E         
+E         - failure
+E         + error
+
+test_timeout.py:42: AssertionError
 --------------------------------------------- JSON report ----------------------------------------------
 report saved to: report.json
 ======================================= short test summary info ========================================
-FAILED test_dynamic_tasks.py::test_dynamic_task_creation_and_execution - AssertionError: assert None ...
-===================================== 1 failed, 4 passed in 0.28s ======================================
+FAILED test_dynamic_tasks.py::test_dynamic_task_creation_and_execution - IndexError: list index out o...
+FAILED test_error_handling_and_alerting.py::test_unexpected_exception_triggers_alert - AssertionError...
+FAILED test_pipeline.py::test_basic_pipeline_execution_and_data_passing - assert 0 == 1
+FAILED test_retry_backoff.py::test_retry_with_exponential_backoff - IndexError: list index out of range
+FAILED test_timeout.py::test_task_timeout_and_retry - AssertionError: assert 'error' == 'failure'
+========================================== 5 failed in 0.15s ===========================================

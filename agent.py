@@ -262,7 +262,7 @@ class Agent:
             if os.path.exists(src_file):
                 with open(src_file, "r") as f:
                     content = f.read()
-                    src_code_content += f"\n\n{os.path.basename(src_file)}:\n{content}"
+                    src_code_content += f"\n\n```{os.path.basename(src_file)}:\n{content}```"
                     self.logger.info(
                         f"Loaded source file: {os.path.basename(src_file)} ({len(content)} chars)"
                     )
@@ -274,18 +274,22 @@ class Agent:
             if os.path.exists(file_path):
                 with open(file_path, "r") as f:
                     content = f.read()
-                    test_content += f"\n\n{test_file}:\n{content}"
+                    test_content += f"\n\n```{test_file}\n{content}\n```"
                     self.logger.info(
                         f"Loaded test file: {test_file} ({len(content)} chars)"
                     )
 
-        failed_test_details = "\n\n".join(
-            [
-                f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['call']['longrepr']}"
-                if 'call' in test else f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['setup']['longrepr']}"
-                for test in failed_tests 
-            ]
-        )
+        failed_test_details_list = []
+        for test in failed_tests:
+            if 'call' in test and 'longrepr' in test['call']:
+                failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['call']['longrepr']}")
+            elif 'setup' in test and 'longrepr' in test['setup']['longrepr']:
+                failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['setup']['longrepr']}")
+            elif 'teardown' in test and 'longrepr' in test['teardown']['longrepr']:
+                failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['teardown']['longrepr']}")
+            else: 
+                breakpoint()
+        failed_test_details = "\n\n".join(failed_test_details_list)
         # Add test output if it exists
         test_output = ""
         test_output_path = os.path.join(repo.repo_path, "test_output.txt")

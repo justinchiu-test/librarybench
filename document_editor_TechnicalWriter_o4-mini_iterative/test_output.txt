@@ -1,0 +1,18 @@
+========================================== test session starts ===========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 8 items
+
+tests/test_doc_manager.py ........                                                                 [100%]
+
+============================================ warnings summary ============================================
+document_editor_TechnicalWriter_o4-mini_iterative/tests/test_doc_manager.py: 22 warnings
+  /Users/celine/Research/librarybench/document_editor_TechnicalWriter_o4-mini_iterative/doc_manager.py:11: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.timestamp = datetime.datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+---------------------------------------------- JSON report -----------------------------------------------
+report saved to: report.json
+===================================== 8 passed, 22 warnings in 0.03s =====================================

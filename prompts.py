@@ -44,13 +44,13 @@ Please implement all necessary files to solve this task. For each source code fi
 <file_content>
 ```
 
-For each test file, provide the content in the following format so that it can be run with `pytest`:
+For each test file, provide the content in the same format so that it can be extracted and run with `pytest`:
 
 ```file:<relative_file_path starting with test_>
 <test_file_content>
 ```
 
-Where <relative_file_path> is the relative path to the file and <file_content> is the content of the file.
+Where <relative_file_path> is the relative path to the file and <file_content> is the content of the file. Be sure to output code in the specified format.
 """
 
 fix_implementation_prompt_template = """I need you to fix the implementation of the following code that is failing tests.
@@ -83,7 +83,7 @@ Where <relative_file_path> is the relative path to the file and <file_content> i
 Focus on fixing the specific issues identified in the errors and failed tests while maintaining the overall structure of the code.
 
 IMPORTANT: Make targeted changes to address the specific failing test cases. Make sure your implementation passes all test cases,
-including any edge cases or special conditions mentioned in the tests.
+including any edge cases or special conditions mentioned in the tests. Be sure to output code in the specified format. 
 """
 
 refactoring_prompt_template = """I need you to refactor the following source code to improve its maintainability, readability, and efficiency.
@@ -111,7 +111,7 @@ Specifically, consider these refactoring techniques:
 - Implement better error handling
 - Remove any unused code or imports
 
-For each file, provide the refactored content in the following format:
+For each file, you must provide the refactored content in the following format so that it can be extracted:
 
 ```file:<relative_file_path>
 <file_content>

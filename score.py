@@ -1,3 +1,6 @@
+import asyncio
+import re
+
 import os
 import argparse
 from radon.complexity import cc_visit
@@ -5,6 +8,9 @@ from radon.raw import analyze
 
 import json
 import os
+from tqdm.asyncio import tqdm
+from pathlib import Path
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # ---- Helpers ----
 import ast
@@ -83,131 +89,138 @@ def remove_comments(source: str) -> str:
 
 # ---- Logprobs ----
 
-# Setup Together API
-from together import Together
+from together import AsyncTogether
+client = AsyncTogether(api_key=os.getenv("TOGETHER_API_KEY"))
+semaphore = asyncio.Semaphore(16)
 
-client = Together(api_key=os.getenv("TOGETHER_API_KEY"))
-
-def compute_logprob_together(text, model) -> float:
-    """
-    Compute log probability of text using Together API.
-
-    Args:
-        text (str): The input text to compute logprob for.
-        model (str): The Together.ai model name.
-
-    Returns:
-        float: Average log probability across all tokens.
-    """
-
-    try:
-        response = client.chat.completions.create(
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=10))
+async def compute_logprob_together(text, model):
+    async with semaphore:
+        response = await client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": text}],
-            max_tokens=0,
+            max_tokens=1,
             echo=True,
             logprobs=1,
         )
-        sum_logprobs = sum(response.choices[0].logprobs.token_logprobs)
-        num_toks = len(response.choices[0].logprobs.token_logprobs)
+        logprobs = response.prompt[0].logprobs.token_logprobs[1:]
+        tokens = response.prompt[0].logprobs.tokens[1:]
+        return logprobs, tokens
 
-    except Exception as e:
-        print(f"[ERROR] Failed to compute logprobs: {e}")
-        return float('nan'), float('nan')
-
-    return sum_logprobs, num_toks
     
 # ---- Code Metrics ----
 
-def analyze_file(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        code = f.read()
-
+def compute_code_metrics(code: str):
     raw_metrics = analyze(code)
-
-    cc_blocks = cc_visit(code)
-    cyclomatic_total = sum(block.complexity for block in cc_blocks)
+    complexity_metrics = cc_visit(code)
 
     return {
-        'code': code,
-        'loc': raw_metrics.loc,
-        'sloc': raw_metrics.sloc,
-        'lloc': raw_metrics.lloc,
-        'cyclomatic_complexity': cyclomatic_total,
+        "loc": raw_metrics.loc,     # total lines of code
+        "sloc": raw_metrics.sloc,   # source lines of code (non-blank, non-comment)
+        "lloc": raw_metrics.lloc,   # logical lines (statements, e.g. `if`, `for`, `return`)
+        "comments": raw_metrics.comments,
+        "multi": raw_metrics.multi,
+        "blank": raw_metrics.blank,
+        "cyclomatic": sum(block.complexity for block in complexity_metrics),
     }
 
 # ---- Repo Metrics ----
-def analyze_repo(files, logprob_mode, model):
-    results = {}
-    all_codes = []
 
-    for filepath in files: 
-        if filepath.endswith('.py'):
-            file_metrics = analyze_file(filepath)
-            all_codes.append(file_metrics["code"])
+async def compute_metrics(directory, model):
+    directory = Path(directory)
 
-            # Compute per-file logprob if needed
-            if logprob_mode == "individual":
-                file_metrics["log_prob"], file_metrics["num_toks"] = compute_logprob_together(file_metrics["code"], model)
-                code_lloc = remove_comments(file_metrics["code"])
-                file_metrics["lloc_log_prob"], file_metrics["num_lloc_toks"] = compute_logprob_together(code_lloc, model)
+    total_logprob = 0.0
+    total_tokens = 0
+    failed_files = []
+    logprobs_dict = {}
+    metrics_dict = {}
 
-            results[str(filepath)] = file_metrics
+    tasks = []
+    program_names = []
+    codes = {}
+    for file in directory.glob("**/*.py"):
+        if os.path.basename(file).startswith("test"): continue
+        program_name = file.name.replace(".py", "")
+        program_names.append(program_name)
+        try:
+            with open(file, "r") as f:
+                code = f.read()
+                codes[program_name] = code
+            tasks.append(compute_logprob_together(code, model))
+        except Exception as e:
+            print(f"[ERROR] Failed to process {file.name}: {e}")
+            failed_files.append(file.name)
 
-    # ---- Aggregate metrics ----
-    aggregate = {
-        "loc": 0,
-        "sloc": 0,
-        "lloc": 0,
-        "cyclomatic_complexity": 0,
-        "log_prob": 0.0,
-        "num_toks": 0.0,
-        "lloc_log_prob": 0.0,
-        "num_lloc_toks": 0.0,
-    }
+    results = await tqdm.gather(*tasks)
 
-    for metrics in results.values():
-        aggregate["loc"] += metrics["loc"]
-        aggregate["sloc"] += metrics["sloc"]
-        aggregate["lloc"] += metrics["lloc"]
-        aggregate["cyclomatic_complexity"] += metrics["cyclomatic_complexity"]
+    for program_name, result in zip(program_names, results):
+        logprobs, tokens = result
+        if logprobs is None:
+            failed_files.append(f"{program_name}.py")
+            continue
 
-        if logprob_mode == "individual":
-            aggregate["log_prob"] += metrics["log_prob"]
-            aggregate["num_toks"] += metrics["num_toks"]
-            aggregate["lloc_log_prob"] += metrics["lloc_log_prob"]
-            aggregate["num_lloc_toks"] += metrics["num_lloc_toks"]
+        sum_logprob = sum(logprobs)
+        num_tokens = len(tokens)
+
+        logprobs_dict[program_name] = sum_logprob
+        metrics_dict[program_name] = compute_code_metrics(codes[program_name])
+
+        total_logprob += sum_logprob
+        total_tokens += num_tokens
+
+        print(f"Processed {program_name}: logprob={sum_logprob:.2f}, tokens={num_tokens}")
+
+    print("\n=== Summary ===")
+    print(f"Total Log Probability: {total_logprob:.2f}")
+    print(f"Total Tokens: {total_tokens}")
+    total_lloc = sum(m["lloc"] for m in metrics_dict.values())
+    total_sloc = sum(m["sloc"] for m in metrics_dict.values())
+    total_cyclomatic = sum(m["cyclomatic"] for m in metrics_dict.values())
+
+    print(f"Total Logical LOC (LLOC): {total_lloc}")
+    print(f"Total Source LOC (SLOC): {total_sloc}")
+    print(f"Total Cyclomatic Complexity: {total_cyclomatic}")
+    
+    if failed_files:
+        print(f"Failed files: {failed_files}")
+
+    return logprobs_dict, total_logprob, metrics_dict, total_tokens
+
+def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
+    result = {"total_logprobs": total_lp, "total_tokens": total_tokens}
+    all_programs = set(logprobs) | set(metrics) 
+
+    for program in all_programs:
+        lp = logprobs.get(program, float('nan'))
+
+        result[program] = {
+            "logprobs": lp,
+            "metrics": metrics.get(program, {}),
+        }
+
+    return result
+
+async def main(args):
+    parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)_(.+)', args.directory)
+
+    output_file = f"{parsed_experiment.group(1)}_persona_metrics.json"
+    branch_name = parsed_experiment.group(2)
+
+    logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model)
+
+    existing_metrics = json.load(open(output_file)) if os.path.exists(output_file) else {}
+    existing_metrics[branch_name] = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
+    json.dump(existing_metrics, open(output_file, 'w'), indent=2)
 
 
-    # if concatenated mode
-    if logprob_mode == "concat":
-        full_code = "\n\n".join(all_codes)
-        aggregate["log_prob"], aggregate["num_toks"] = compute_logprob_together(full_code, model)
-        code_lloc = remove_comments(full_code)
-        aggregate["lloc_log_prob"], aggregate["num_lloc_toks"] = compute_logprob_together(code_lloc, model)
-
-
-    return {
-        "per_file": results,
-        "aggregate": aggregate
-    }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
-    parser.add_argument("--files", type=str, nargs='+', help="Paths to .py files")
-    parser.add_argument("--logprob-mode", choices=["individual", "concat"], default="individual",
-                        help="Whether to compute logprobs per file and sum them, or on a single concatenated string")
-    parser.add_argument("--model", type=str, default="Qwen2.5-Instruct", help="Name of the model hosted on vLLM")
-    parser.add_argument("--output_file", type=str, help="Name of file to write to")
-    parser.add_argument("--branch_name", type=str, help="Name of the branch we're on (this isn't automated!)")
+    parser.add_argument("--directory", type=str, help="Paths to .py files")
+    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
     args = parser.parse_args()
     
-    repo_metrics = {}
-    if os.path.exists(args.output_file):
-        repo_metrics = json.load(open(args.output_file))
-    repo_metrics[args.branch_name] = analyze_repo(args.files, logprob_mode=args.logprob_mode, model=args.model)
-    json.dump(repo_metrics, open(args.output_file, 'w'), indent=2)
-
+    asyncio.run(main(args))
 
 # ---- Example usage ----
-# python score.py --files workflow_orchestration_claude_refactor/workflow.py --output_file workflow_orchestration_metrics.json --model deepseek-ai/DeepSeek-V3 --branch_name claude_code
+# python score.py --directory workflow_orchestration_claude_refactor --output_file workflow_orchestration_metrics.json --model deepseek-ai/DeepSeek-V3 --branch_name claude_code

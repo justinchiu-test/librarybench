@@ -1,0 +1,29 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 10 items
+
+test_content_repo.py ...F......                                          [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_detached_checkout ____________________________
+
+repo = <content_repo.ContentRepo object at 0x103d74e90>
+
+    def test_detached_checkout(repo):
+        repo.edit("x", "a", "1")
+        c1 = repo.commit("c1")
+        repo.checkout(c1)
+        assert repo.head_branch is None
+        assert repo.working_copy["x"]["sections"]["a"] == "1"
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+test_content_repo.py:46: Failed
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED test_content_repo.py::test_detached_checkout - Failed: DID NOT RAISE <...
+========================= 1 failed, 9 passed in 0.05s ==========================

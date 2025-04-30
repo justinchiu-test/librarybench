@@ -1,0 +1,58 @@
+========================================= test session starts ==========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 5 items
+
+test_dynamic_tasks.py F                                                                          [ 20%]
+test_error_handling_and_alerting.py .                                                            [ 40%]
+test_pipeline.py .                                                                               [ 60%]
+test_retry_backoff.py .                                                                          [ 80%]
+test_timeout.py .                                                                                [100%]
+
+=============================================== FAILURES ===============================================
+_______________________________ test_dynamic_task_creation_and_execution _______________________________
+
+    def test_dynamic_task_creation_and_execution():
+        ctx = ExecutionContext()
+        meta = MetadataStorage()
+        notifier = DummyNotifier()
+    
+        # Preload a list of items in context
+        ctx.set('items', [1, 2, 3])
+    
+        # Creator task: generates processing tasks for each item
+        def creator(context):
+            items = context.get('items')
+            new_tasks = []
+            for item in items:
+                def make_func(i):
+                    def proc(ctx):
+                        return {f'item_{i}': i * 2}
+                    return proc
+                t = Task(
+                    name=f'proc_{item}',
+                    func=make_func(item),
+                    outputs=[f'item_{item}']
+                )
+                new_tasks.append(t)
+            return new_tasks
+    
+        creator_task = Task(name='creator', func=creator, inputs=['items'])
+        pipeline = Pipeline([creator_task], ctx, meta, notifier)
+        pipeline.run()
+    
+        # After run, dynamic tasks should have executed
+        for i in [1,2,3]:
+>           assert ctx.get(f'item_{i}') == i * 2
+E           AssertionError: assert None == (1 * 2)
+E            +  where None = get('item_1')
+E            +    where get = <pipeline.context.ExecutionContext object at 0x105d5f620>.get
+
+test_dynamic_tasks.py:39: AssertionError
+--------------------------------------------- JSON report ----------------------------------------------
+report saved to: report.json
+======================================= short test summary info ========================================
+FAILED test_dynamic_tasks.py::test_dynamic_task_creation_and_execution - AssertionError: assert None ...
+===================================== 1 failed, 4 passed in 0.28s ======================================

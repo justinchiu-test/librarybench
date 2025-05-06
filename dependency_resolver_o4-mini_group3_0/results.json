@@ -1,0 +1,151 @@
+{
+    "pytest": {
+        "sum": 0.0015038319979794323,
+        "passed": 0.7,
+        "num_passed": 7,
+        "num_tests": 10
+    },
+    "metrics": {
+        "total_logprobs": -3898.5033590227104,
+        "total_tokens": 5982,
+        "Research_Scientist/env_manager.py": {
+            "logprobs": -951.5197946794358,
+            "metrics": {
+                "loc": 219,
+                "sloc": 188,
+                "lloc": 184,
+                "comments": 1,
+                "multi": 0,
+                "blank": 30,
+                "cyclomatic": 66
+            }
+        },
+        "IT_Manager/notifications.py": {
+            "logprobs": -176.72040003905,
+            "metrics": {
+                "loc": 10,
+                "sloc": 5,
+                "lloc": 5,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 2
+            }
+        },
+        "IT_Manager/search.py": {
+            "logprobs": -165.118221622498,
+            "metrics": {
+                "loc": 8,
+                "sloc": 4,
+                "lloc": 5,
+                "comments": 0,
+                "multi": 3,
+                "blank": 1,
+                "cyclomatic": 2
+            }
+        },
+        "IT_Manager/lockfile.py": {
+            "logprobs": -167.852521722095,
+            "metrics": {
+                "loc": 11,
+                "sloc": 5,
+                "lloc": 6,
+                "comments": 0,
+                "multi": 4,
+                "blank": 2,
+                "cyclomatic": 2
+            }
+        },
+        "IT_Manager/manager.py": {
+            "logprobs": -344.85405533905873,
+            "metrics": {
+                "loc": 50,
+                "sloc": 45,
+                "lloc": 47,
+                "comments": 0,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 26
+            }
+        },
+        "IT_Manager/__init__.py": {
+            "logprobs": -91.2631692197,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Research_Scientist/__init__.py": {
+            "logprobs": -91.15376429267,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "utils.py": {
+            "logprobs": -543.2499069471476,
+            "metrics": {
+                "loc": 97,
+                "sloc": 65,
+                "lloc": 78,
+                "comments": 0,
+                "multi": 11,
+                "blank": 12,
+                "cyclomatic": 31
+            }
+        },
+        "IT_Manager/registry.py": {
+            "logprobs": -282.1689418919395,
+            "metrics": {
+                "loc": 94,
+                "sloc": 80,
+                "lloc": 76,
+                "comments": 0,
+                "multi": 0,
+                "blank": 14,
+                "cyclomatic": 49
+            }
+        },
+        "IT_Manager/utils.py": {
+            "logprobs": -542.0320062580095,
+            "metrics": {
+                "loc": 97,
+                "sloc": 65,
+                "lloc": 78,
+                "comments": 0,
+                "multi": 11,
+                "blank": 12,
+                "cyclomatic": 31
+            }
+        },
+        "Research_Scientist/utils.py": {
+            "logprobs": -542.570577011106,
+            "metrics": {
+                "loc": 97,
+                "sloc": 65,
+                "lloc": 78,
+                "comments": 0,
+                "multi": 11,
+                "blank": 12,
+                "cyclomatic": 31
+            }
+        },
+        "total_loc": 685,
+        "total_sloc": 522,
+        "total_lloc": 557,
+        "total_comments": 3,
+        "total_multi": 44,
+        "total_blank": 89,
+        "total_cyclomatic": 240
+    }
+}

@@ -1,0 +1,36 @@
+========================================== test session starts ===========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 17 items
+
+test_lockfile.py .                                                                                 [  5%]
+test_manager.py ..F.                                                                               [ 29%]
+test_notifications.py ..                                                                           [ 41%]
+test_registry.py ......                                                                            [ 76%]
+test_search.py ....                                                                                [100%]
+
+================================================ FAILURES ================================================
+___________________________________________ test_show_metadata ___________________________________________
+
+sample_registry = <registry.Registry object at 0x1067bbed0>
+
+    def test_show_metadata(sample_registry):
+        pm = PackageManager(sample_registry)
+        meta = pm.show_metadata("A", "2.1.0")
+        assert meta["name"] == "A"
+        assert meta["version"] == "2.1.0"
+>       assert {"1.0.0", "2.0.0", "2.1.0"} == set(meta["version_history"])
+E       AssertionError: assert {'1.0.0', '2.0.0', '2.1.0'} == {'2.0.0', '2.1.0'}
+E         
+E         Extra items in the left set:
+E         '1.0.0'
+E         Use -v to get more diff
+
+test_manager.py:38: AssertionError
+---------------------------------------------- JSON report -----------------------------------------------
+report saved to: report.json
+======================================== short test summary info =========================================
+FAILED test_manager.py::test_show_metadata - AssertionError: assert {'1.0.0', '2.0.0', '2.1.0'} == {'2....
+====================================== 1 failed, 16 passed in 0.03s ======================================

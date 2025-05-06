@@ -3,4 +3,3 @@ serializer/config.py
 serializer/lazy.py
 serializer/registry.py
 serializer/serializer.py
-test_serializer.py

@@ -7,7 +7,3 @@ librarybench/__init__.py
 librarybench/compression.py
 librarybench/options.py
 librarybench/streaming.py
-test_compression.py
-test_endianness.py
-test_integration.py
-test_streaming.py

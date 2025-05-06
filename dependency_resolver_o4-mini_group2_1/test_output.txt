@@ -1,0 +1,70 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 25 items / 1 error
+
+Software_Developer/test_env_manager.py .                                                      [  4%]
+Software_Developer/test_repo_manager.py ..                                                    [ 12%]
+Software_Developer/test_solver.py ...                                                         [ 24%]
+Software_Developer/test_cli.py FF                                                             [ 32%]
+DevOps_Engineer/test_env_manager.py ...........                                               [ 76%]
+IT_Admin/test_repository.py .                                                                 [ 80%]
+IT_Admin/test_env_manager.py ..                                                               [ 88%]
+IT_Admin/test_solver.py ...                                                                   [100%]
+
+============================================== ERRORS ===============================================
+____________ ERROR collecting dependency_resolver_o4-mini_group2_1/IT_Admin/test_cli.py _____________
+ImportError while importing test module '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group2_1/IT_Admin/test_cli.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Admin/test_cli.py:5: in <module>
+    import IT_Admin.cli
+IT_Admin/cli.py:3: in <module>
+    from env_manager import EnvironmentManager
+E   ModuleNotFoundError: No module named 'env_manager'
+============================================= FAILURES ==============================================
+_________________________________________ test_env_commands _________________________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-14/test_env_commands0')
+
+    def test_env_commands(tmp_path):
+        # use a fresh env directory
+        envs = tmp_path / "envs"
+        cfg = tmp_path / "e.json"
+        json.dump({"name":"env1"}, open(cfg, "w"))
+        # monkeypatch cwd by running in tmp_path
+        cwd = os.getcwd()
+        os.chdir(str(tmp_path))
+        try:
+            # import
+            code, out, err = run(["env", "import", str(cfg)])
+>           assert code==0
+E           assert 2 == 0
+
+Software_Developer/test_cli.py:26: AssertionError
+________________________________________ test_repo_and_solve ________________________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-14/test_repo_and_solve0')
+
+    def test_repo_and_solve(tmp_path):
+        cwd = os.getcwd()
+        os.chdir(str(tmp_path))
+        try:
+            # add repo
+            packages = {"x":["1.0","2.0"],"y":["0.5"]}
+            code,out,err = run(["repo","add","myr",json.dumps(packages)])
+>           assert code==0
+E           assert 2 == 0
+
+Software_Developer/test_cli.py:49: AssertionError
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+FAILED Software_Developer/test_cli.py::test_env_commands - assert 2 == 0
+FAILED Software_Developer/test_cli.py::test_repo_and_solve - assert 2 == 0
+ERROR IT_Admin/test_cli.py
+=============================== 2 failed, 23 passed, 1 error in 0.38s ===============================

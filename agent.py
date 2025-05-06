@@ -132,6 +132,7 @@ class Agent:
 
 
         new_src_files = []
+        all_new_files = []
 
         for block in file_blocks[1:]:
             lines = block.split("\n")
@@ -165,14 +166,15 @@ class Agent:
                     self.logger.warning(
                         f"Implementation would not change existing file: {file_path}"
                     )
-
-            new_src_files.append(file_path)
+            all_new_files.append(file_path)
+            if not os.path.basename(file_path).startswith("test_"): 
+                new_src_files.append(file_path)
             write_new_file(full_path, file_content, repo)
             self.logger.info(f"Created file: {full_path}")
 
         # Count how many files were created or updated
         newly_created = 0
-        for file_path in new_src_files:
+        for file_path in all_new_files:
             full_path = os.path.join(repo.repo_path, file_path)
             if os.path.exists(full_path):
                 if os.path.basename(full_path) not in repo.test_files + repo.task_files:
@@ -180,7 +182,7 @@ class Agent:
                     newly_created += 1
 
         self.logger.info(
-            f"Implementation created/updated {newly_created} files out of {len(new_src_files)} total processed"
+            f"Implementation created/updated {newly_created} files out of {len(all_new_files)} total processed"
         )
 
         src_files_path = os.path.join(repo.repo_path, "SRC_FILES.txt")
@@ -283,9 +285,9 @@ class Agent:
         for test in failed_tests:
             if 'call' in test and 'longrepr' in test['call']:
                 failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['call']['longrepr']}")
-            elif 'setup' in test and 'longrepr' in test['setup']['longrepr']:
+            elif 'setup' in test and 'longrepr' in test['setup']:
                 failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['setup']['longrepr']}")
-            elif 'teardown' in test and 'longrepr' in test['teardown']['longrepr']:
+            elif 'teardown' in test and 'longrepr' in test['teardown']:
                 failed_test_details_list.append(f"- {test['nodeid'][len(repo.repo_path + '/') :]}: {test['teardown']['longrepr']}")
             else: 
                 breakpoint()
@@ -422,12 +424,13 @@ class Agent:
             except Exception as e:
                 self.logger.error(f"Error reading existing SRC_FILES.txt: {e}")
 
-        # Make sure we only store relative paths, not absolute ones
+        # Make sure we only store relative src code paths
+        modified_src_files = [file_path for file_path in modified_files if not os.path.basename(file_path).startswith("test_")]
         relative_modified_files = [
             file_path
             if not os.path.isabs(file_path)
             else os.path.relpath(file_path, repo.repo_path)
-            for file_path in modified_files
+            for file_path in modified_src_files
         ]
 
         # Combine existing files with modified files
@@ -443,154 +446,167 @@ class Agent:
         return list(all_files), has_content_changes
 
     def refactor_repo(self, repo):
+        """
+        Refactor a repository by identifying common patterns across source files
+        and extracting them into a common utils.py module.
+        
+        Args:
+            repo: A Repo object representing the repository to refactor
+            
+        Returns:
+            List of paths to all refactored and new files
+        """
         # Log starting the refactoring process
         self.logger.info(
-            f"Starting refactoring of repo: {repo.repo_path} with model: {self.model_name}"
+            f"Starting refactoring of repos: {repo.repo_path} with model: {self.model_name}"
         )
-
-        # Store original file checksums for later comparison
-        original_file_checksums = {}
-        for src_file in repo.src_code_files:
-            file_path = os.path.join(repo.repo_path, src_file)
-            if os.path.exists(file_path):
-                try:
-                    with open(file_path, "r") as f:
-                        content = f.read()
-                        # Use simple length as checksum for quick comparison
-                        original_file_checksums[file_path] = len(content)
-                        self.logger.info(
-                            f"Original file size of {src_file}: {len(content)} chars"
-                        )
-                except Exception as e:
-                    self.logger.warning(
-                        f"Could not read file {file_path} for checksum: {e}"
-                    )
 
         # Read source code files
         src_code_content = ""
+        test_content = ""
+        files_read = 0
+        src_file_paths = []
+        # Collect all source file paths for analysis
         for src_file in repo.src_code_files:
             file_path = os.path.join(repo.repo_path, src_file)
             if os.path.exists(file_path):
+                src_file_paths.append(src_file)
+        for test_file in repo.test_files:
+            file_path = os.path.join(repo.repo_path, test_file)
+            try:
                 with open(file_path, "r") as f:
                     content = f.read()
-                    src_code_content += f"\n\n{src_file}:\n{content}"
+                    test_content += f"\n\n```file:{test_file}\n{content}\n```"
+                    files_read += 1
+                    self.logger.info(
+                        f"Loaded source file: {test_file} ({len(content)} chars)"
+                    )
+            except Exception as e:
+                self.logger.error(f"Error reading {test_file}: {e}")
+
+            
+        for src_file in src_file_paths:
+            file_path = os.path.join(repo.repo_path, src_file)
+            try:
+                with open(file_path, "r") as f:
+                    content = f.read()
+                    src_code_content += f"\n\n```file:{src_file}\n{content}\n```"
+                    files_read += 1
                     self.logger.info(
                         f"Loaded source file: {src_file} ({len(content)} chars)"
                     )
+            except Exception as e:
+                self.logger.error(f"Error reading {src_file}: {e}")
 
-        # Read test files
-        test_content = ""
-        for test_file in repo.test_files:
-            file_path = os.path.join(repo.repo_path, test_file)
-            if os.path.exists(file_path):
-                with open(file_path, "r") as f:
-                    content = f.read()
-                    test_content += f"\n\n{test_file}:\n{content}"
-                    self.logger.info(
-                        f"Loaded test file: {test_file} ({len(content)} chars)"
-                    )
-
-        # Create prompt for refactoring
+        
+        # Create prompt for this batch of files
         prompt = refactoring_prompt_template.format(src_code_content=src_code_content, test_content=test_content)
-
+            
         # Generate refactored code
         self.logger.info(f"Generating refactored code using {self.model_name}")
         response = self.generate_code(prompt, {"temperature": 0.2}, task="refactor")
-
+        
         if not response:
-            self.logger.error("Failed to generate refactored code: empty response")
-            return {"error": "Empty response from model"}
-
-        # Extract and write files
+            self.logger.error(f"Failed to generate refactored code: empty response")
+            return
+        
+        # Process the response for this batch
         file_blocks = response.split("```file:")
-        refactored_files = []
-        files_with_actual_changes = 0
-
+        
         self.logger.info(
-            f"Model returned {len(file_blocks) - 1} file blocks to process"
+            f"Model returned {len(file_blocks) - 1} file blocks."
         )
-
+        
+        # Find all subdirectories that contain source files to ensure utils is available everywhere
+        subdirs = set()
+        for src_file in src_file_paths:
+            subdir = os.path.dirname(src_file)
+            if subdir:
+                subdirs.add(subdir)
+        
+        # Process files in the batch
+        refactored_batch_files = []
+        utils_content = None
+        utils_file_path = None
+        
         for block in file_blocks[1:]:
             lines = block.split("\n")
             if not lines:
                 continue
-
+            
             file_path = lines[0].strip()
+            
             content_parts = "\n".join(lines[1:]).split("```")
             if not content_parts:
                 continue
-
             file_content = content_parts[0]
-
-            # Write file to repository
-            full_path = os.path.join(repo.repo_path, file_path)
-
-            # Check if the file content will actually change
-            if os.path.exists(full_path):
-                try:
-                    with open(full_path, "r") as f:
-                        original_content = f.read()
-                    if original_content == file_content:
-                        self.logger.warning(
-                            f"No content changes detected for file: {file_path}"
-                        )
-                        continue
-                    else:
-                        files_with_actual_changes += 1
-                except Exception as e:
-                    self.logger.warning(
-                        f"Could not compare file contents for {file_path}: {e}"
-                    )
-            else:
-                files_with_actual_changes += 1
-
-            write_new_file(full_path, file_content, repo)
-            self.logger.info(f"Refactored file: {full_path}")
-            refactored_files.append(full_path)
-
+            
+            if file_path.endswith("utils.py"):
+                # Save utils content for later installation
+                utils_content = file_content
+                # Write the utils file to the repository root
+                utils_file_path = os.path.join(repo.repo_path, "utils.py")
+                write_new_file(utils_file_path, file_content, repo)
+                self.logger.info(f"Created centralized utils file: {utils_file_path}")
+                continue 
+            
+            # Write file to repository (modify original files)
+            for src_file in src_file_paths:
+                if os.path.basename(file_path) == os.path.basename(src_file):
+                    full_path = os.path.join(repo.repo_path, src_file)
+                    write_new_file(full_path, file_content, repo)
+                    self.logger.info(f"Refactored file: {full_path}")
+                    refactored_batch_files.append(src_file)
+                    break
+        
+        # If we have utils content, place the utils.py file in each subdirectory to support imports
+        if utils_content:
+            self.logger.info(f"Installing utils.py in {len(subdirs)} subdirectories for import support")
+            
+            for subdir in subdirs:
+                subdir_utils_path = os.path.join(repo.repo_path, subdir, "utils.py")
+                write_new_file(subdir_utils_path, utils_content, repo)
+                self.logger.info(f"Created local utils file: {subdir_utils_path}")
+                
+                # Create empty __init__.py in subdirectories to make imports work properly
+                init_path = os.path.join(repo.repo_path, subdir, "__init__.py")
+                if not os.path.exists(init_path):
+                    write_new_file(init_path, "", repo)
+                    self.logger.info(f"Created __init__.py: {init_path}")
+        
         self.logger.info(
-            f"Successfully processed {len(refactored_files)} files with {files_with_actual_changes} containing actual changes"
+            f"Successfully processed {len(refactored_batch_files)} files."
         )
-
-        # Verify changes were actually made
-        changed_files = []
-        for file_path, original_checksum in original_file_checksums.items():
-            if os.path.exists(file_path):
-                try:
-                    with open(file_path, "r") as f:
-                        new_content = f.read()
-                        new_checksum = len(new_content)
-                        if new_checksum != original_checksum:
-                            rel_path = os.path.relpath(file_path, repo.repo_path)
-                            changed_files.append(rel_path)
-                            self.logger.info(
-                                f"Verified changes in file: {rel_path} (size changed: {original_checksum} -> {new_checksum})"
-                            )
-                        else:
-                            self.logger.warning(
-                                f"No changes detected in file: {os.path.relpath(file_path, repo.repo_path)}"
-                            )
-                except Exception as e:
-                    self.logger.warning(f"Could not verify changes in {file_path}: {e}")
-
-        self.logger.info(
-            f"Verified changes in {len(changed_files)} files based on content size"
-        )
-
+    
+        # If we don't have any source code, exit early
+        if not src_code_content:
+            self.logger.error("No source code was read, cannot proceed with refactoring")
+            return []
+        
+        # Collect all the refactored files
+        refactored_files = []
+        for src_file in repo.src_code_files:
+            if os.path.exists(os.path.join(repo.repo_path, src_file)):
+                refactored_files.append(src_file)
+        
+        # Add the utils file to the list
+        if utils_file_path and os.path.exists(utils_file_path):
+            refactored_files.append(utils_file_path[len(repo.repo_path)+1:])
+            
+            # # Add the subdirectory utils files too
+            # for subdir in subdirs:
+            #     subdir_utils_path = os.path.join(repo.repo_path, subdir, "utils.py")
+            #     if os.path.exists(subdir_utils_path):
+            #         refactored_files.append(subdir_utils_path)
+                
+            #     # Add __init__.py files
+            #     init_path = os.path.join(repo.repo_path, subdir, "__init__.py")
+            #     if os.path.exists(init_path):
+            #         refactored_files.append(init_path)
+        
         # Update SRC_FILES.txt with refactored files
-        src_files_path = os.path.join(repo.repo_path, "SRC_FILES.txt")
-
-        # If SRC_FILES.txt already exists, read its content
-        existing_files = set()
-        if os.path.exists(src_files_path):
-            try:
-                with open(src_files_path, "r") as rf:
-                    existing_files = set(
-                        line.strip() for line in rf.readlines() if line.strip()
-                    )
-            except Exception as e:
-                self.logger.error(f"Error reading existing SRC_FILES.txt: {e}")
-
+        # src_files_path = os.path.join(repo.repo_path, "SRC_FILES.txt")
+        
         # Make sure we only store relative paths, not absolute ones
         relative_refactored_files = [
             file_path
@@ -598,18 +614,15 @@ class Agent:
             else os.path.relpath(file_path, repo.repo_path)
             for file_path in refactored_files
         ]
-
-        # Combine existing files with refactored files
-        all_files = existing_files.union(set(relative_refactored_files))
-
-        # Write the combined list back to SRC_FILES.txt
-        with open(src_files_path, "w") as wf:
-            wf.write("\n".join(sorted(all_files)))
-            self.logger.info(
-                f"Updated SRC_FILES.txt with {len(relative_refactored_files)} refactored source files"
-            )
-
-        return list(all_files)
+        
+        # Update the repo's source files list
+        repo.update_src_files(relative_refactored_files)
+        
+        self.logger.info(
+            f"Successfully refactored repository with {len(relative_refactored_files)} files."
+        )
+        
+        return relative_refactored_files
 
 
 class OpenAIAgent(Agent):

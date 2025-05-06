@@ -1,0 +1,151 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 15 items / 6 errors
+
+Product_Manager/tests/test_manager.py FFFFFF                                                  [ 40%]
+Data_Scientist/tests/test_task.py ....                                                        [ 66%]
+Data_Scientist/tests/test_workflow.py ..                                                      [ 80%]
+Data_Engineer/test_auth.py ..                                                                 [ 93%]
+Data_Engineer/test_scheduler.py .                                                             [100%]
+
+============================================== ERRORS ===============================================
+____ ERROR collecting workflow_orchestration_o4-mini_group0_2/Product_Manager/tests/test_api.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Product_Manager/tests/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Product_Manager/tests/test_api.py:3: in <module>
+    from Product_Manager.task_manager.api import app, manager
+Product_Manager/task_manager/api.py:1: in <module>
+    from fastapi import FastAPI
+E   ModuleNotFoundError: No module named 'fastapi'
+_____ ERROR collecting workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_api.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Data_Scientist/tests/test_api.py:2: in <module>
+    from Data_Scientist.api import app
+Data_Scientist/api.py:1: in <module>
+    from flask import Flask, request, jsonify
+E   ModuleNotFoundError: No module named 'flask'
+_______ ERROR collecting workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_utils.py ________
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_utils.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Data_Engineer/test_utils.py:2: in <module>
+    from Data_Engineer.workflow.utils import exponential_backoff
+Data_Engineer/workflow/utils.py:1: in <module>
+    from fastapi import HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+________ ERROR collecting workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_task.py ________
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_task.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Data_Engineer/test_task.py:3: in <module>
+    from Data_Engineer.workflow.task import Task, TaskState
+Data_Engineer/workflow/task.py:7: in <module>
+    from .utils import exponential_backoff
+Data_Engineer/workflow/utils.py:1: in <module>
+    from fastapi import HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+_________ ERROR collecting workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_ui.py _________
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_ui.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Data_Engineer/test_ui.py:3: in <module>
+    import Data_Engineer.workflow.ui as ui
+Data_Engineer/workflow/ui.py:5: in <module>
+    from .manager import WorkflowManager
+Data_Engineer/workflow/manager.py:7: in <module>
+    from .task import Task, TaskState
+Data_Engineer/workflow/task.py:7: in <module>
+    from .utils import exponential_backoff
+Data_Engineer/workflow/utils.py:1: in <module>
+    from fastapi import HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+______ ERROR collecting workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_manager.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Engineer/test_manager.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Data_Engineer/test_manager.py:2: in <module>
+    from Data_Engineer.workflow.manager import WorkflowManager
+Data_Engineer/workflow/manager.py:7: in <module>
+    from .task import Task, TaskState
+Data_Engineer/workflow/task.py:7: in <module>
+    from .utils import exponential_backoff
+Data_Engineer/workflow/utils.py:1: in <module>
+    from fastapi import HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+============================================= FAILURES ==============================================
+______________________________________ test_queue_task_success ______________________________________
+
+    def test_queue_task_success():
+>       tm = TaskManager(max_workers=2)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:6: TypeError
+__________________________________ test_retry_failed_then_success ___________________________________
+
+    def test_retry_failed_then_success():
+>       tm = TaskManager(max_workers=1)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:18: TypeError
+_________________________________ test_retry_exhausted_sends_alert __________________________________
+
+    def test_retry_exhausted_sends_alert():
+>       tm = TaskManager(max_workers=1)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:33: TypeError
+___________________________________________ test_timeout ____________________________________________
+
+    def test_timeout():
+>       tm = TaskManager(max_workers=1)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:47: TypeError
+_________________________________________ test_cancel_task __________________________________________
+
+    def test_cancel_task():
+>       tm = TaskManager(max_workers=1)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:58: TypeError
+________________________________________ test_schedule_tasks ________________________________________
+
+    def test_schedule_tasks():
+>       tm = TaskManager(max_workers=1)
+E       TypeError: TaskManager.__init__() got an unexpected keyword argument 'max_workers'
+
+Product_Manager/tests/test_manager.py:71: TypeError
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+FAILED Product_Manager/tests/test_manager.py::test_queue_task_success - TypeError: TaskManager.__i...
+FAILED Product_Manager/tests/test_manager.py::test_retry_failed_then_success - TypeError: TaskMana...
+FAILED Product_Manager/tests/test_manager.py::test_retry_exhausted_sends_alert - TypeError: TaskMa...
+FAILED Product_Manager/tests/test_manager.py::test_timeout - TypeError: TaskManager.__init__() got...
+FAILED Product_Manager/tests/test_manager.py::test_cancel_task - TypeError: TaskManager.__init__()...
+FAILED Product_Manager/tests/test_manager.py::test_schedule_tasks - TypeError: TaskManager.__init_...
+ERROR Product_Manager/tests/test_api.py
+ERROR Data_Scientist/tests/test_api.py
+ERROR Data_Engineer/test_utils.py
+ERROR Data_Engineer/test_task.py
+ERROR Data_Engineer/test_ui.py
+ERROR Data_Engineer/test_manager.py
+=============================== 6 failed, 9 passed, 6 errors in 2.63s ===============================

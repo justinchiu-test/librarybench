@@ -1,2 +1,1 @@
 doc_manager.py
-test_doc_manager.py

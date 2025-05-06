@@ -1,3 +1,2 @@
 serializer.py
 tests/conftest.py
-tests/test_serializer.py

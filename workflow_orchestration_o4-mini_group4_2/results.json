@@ -1,0 +1,9 @@
+{
+    "pytest": {
+        "sum": 0.00045354101166594774,
+        "passed": 0.375,
+        "num_passed": 3,
+        "num_tests": 8
+    },
+    "metrics": {}
+}

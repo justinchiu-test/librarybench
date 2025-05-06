@@ -1,0 +1,211 @@
+{
+    "pytest": {
+        "sum": 0.06347808605642058,
+        "passed": 0.8333333333333334,
+        "num_passed": 20,
+        "num_tests": 24
+    },
+    "metrics": {
+        "total_logprobs": -4708.415865012226,
+        "total_tokens": 7261,
+        "utils.py": {
+            "logprobs": -232.1522503022346,
+            "metrics": {
+                "loc": 33,
+                "sloc": 22,
+                "lloc": 27,
+                "comments": 1,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 11
+            }
+        },
+        "IT_Admin/cli.py": {
+            "logprobs": -422.8047640104666,
+            "metrics": {
+                "loc": 89,
+                "sloc": 76,
+                "lloc": 74,
+                "comments": 4,
+                "multi": 0,
+                "blank": 9,
+                "cyclomatic": 15
+            }
+        },
+        "DevOps_Engineer/utils.py": {
+            "logprobs": -230.12783751677512,
+            "metrics": {
+                "loc": 33,
+                "sloc": 22,
+                "lloc": 27,
+                "comments": 1,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 11
+            }
+        },
+        "Software_Developer/cli.py": {
+            "logprobs": -320.49223272341027,
+            "metrics": {
+                "loc": 69,
+                "sloc": 55,
+                "lloc": 58,
+                "comments": 3,
+                "multi": 0,
+                "blank": 11,
+                "cyclomatic": 10
+            }
+        },
+        "IT_Admin/__init__.py": {
+            "logprobs": -91.2917766854,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Software_Developer/repo_manager.py": {
+            "logprobs": -236.3297284808217,
+            "metrics": {
+                "loc": 40,
+                "sloc": 34,
+                "lloc": 34,
+                "comments": 0,
+                "multi": 0,
+                "blank": 6,
+                "cyclomatic": 17
+            }
+        },
+        "IT_Admin/solver.py": {
+            "logprobs": -405.04172258430367,
+            "metrics": {
+                "loc": 66,
+                "sloc": 48,
+                "lloc": 46,
+                "comments": 5,
+                "multi": 8,
+                "blank": 4,
+                "cyclomatic": 25
+            }
+        },
+        "Software_Developer/solver.py": {
+            "logprobs": -364.8019786657519,
+            "metrics": {
+                "loc": 61,
+                "sloc": 55,
+                "lloc": 51,
+                "comments": 0,
+                "multi": 0,
+                "blank": 6,
+                "cyclomatic": 32
+            }
+        },
+        "Software_Developer/utils.py": {
+            "logprobs": -235.1253537236896,
+            "metrics": {
+                "loc": 33,
+                "sloc": 22,
+                "lloc": 27,
+                "comments": 1,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 11
+            }
+        },
+        "Software_Developer/__init__.py": {
+            "logprobs": -91.0552651507,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "DevOps_Engineer/env_manager.py": {
+            "logprobs": -1049.7389588360127,
+            "metrics": {
+                "loc": 258,
+                "sloc": 198,
+                "lloc": 200,
+                "comments": 10,
+                "multi": 23,
+                "blank": 29,
+                "cyclomatic": 97
+            }
+        },
+        "IT_Admin/utils.py": {
+            "logprobs": -229.62062919706958,
+            "metrics": {
+                "loc": 33,
+                "sloc": 22,
+                "lloc": 27,
+                "comments": 1,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 11
+            }
+        },
+        "DevOps_Engineer/__init__.py": {
+            "logprobs": -91.9721327458,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "IT_Admin/repository.py": {
+            "logprobs": -232.31307538546804,
+            "metrics": {
+                "loc": 45,
+                "sloc": 34,
+                "lloc": 35,
+                "comments": 0,
+                "multi": 0,
+                "blank": 7,
+                "cyclomatic": 13
+            }
+        },
+        "Software_Developer/env_manager.py": {
+            "logprobs": -236.871341852804,
+            "metrics": {
+                "loc": 33,
+                "sloc": 28,
+                "lloc": 26,
+                "comments": 0,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 10
+            }
+        },
+        "IT_Admin/env_manager.py": {
+            "logprobs": -238.67681715151835,
+            "metrics": {
+                "loc": 55,
+                "sloc": 44,
+                "lloc": 46,
+                "comments": 0,
+                "multi": 0,
+                "blank": 6,
+                "cyclomatic": 16
+            }
+        },
+        "total_loc": 851,
+        "total_sloc": 660,
+        "total_lloc": 678,
+        "total_comments": 29,
+        "total_multi": 31,
+        "total_blank": 103,
+        "total_cyclomatic": 279
+    }
+}

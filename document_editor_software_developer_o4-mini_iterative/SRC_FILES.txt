@@ -1,3 +1,2 @@
 doc_manager.py
 pytest.ini
-test_doc_manager.py

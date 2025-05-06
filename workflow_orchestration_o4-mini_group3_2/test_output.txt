@@ -1,0 +1,163 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 14 items / 8 errors
+
+DevOps_Engineer/tests/test_scheduler.py sssss                                                 [ 35%]
+DevOps_Engineer/tests/test_workflow_versioning.py F                                           [ 42%]
+Business_Analyst/test_retry.py ..                                                             [ 57%]
+Business_Analyst/test_notifier.py .                                                           [ 64%]
+Business_Analyst/test_scheduler.py .                                                          [ 71%]
+Business_Analyst/test_prioritization.py .                                                     [ 78%]
+Business_Analyst/test_conditional_execution.py .                                              [ 85%]
+Business_Analyst/test_integration.py .                                                        [ 92%]
+Business_Analyst/test_logger.py .                                                             [100%]
+
+============================================== ERRORS ===============================================
+_______ ERROR collecting workflow_orchestration_o4-mini_group3_2/Project_Manager/test_task.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Project_Manager/test_task.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Project_Manager/test_task.py:3: in <module>
+    from Project_Manager.core.task import Task, TaskStatus
+Project_Manager/core/task.py:2: in <module>
+    from core.logger import logger
+E   ModuleNotFoundError: No module named 'core'
+____ ERROR collecting workflow_orchestration_o4-mini_group3_2/Project_Manager/test_scheduler.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Project_Manager/test_scheduler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Project_Manager/test_scheduler.py:2: in <module>
+    from Project_Manager.core.scheduler import Scheduler
+Project_Manager/core/scheduler.py:3: in <module>
+    from core.logger import logger
+E   ModuleNotFoundError: No module named 'core'
+_____ ERROR collecting workflow_orchestration_o4-mini_group3_2/Project_Manager/test_workflow.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Project_Manager/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Project_Manager/test_workflow.py:2: in <module>
+    from Project_Manager.core.task import Task, TaskStatus
+Project_Manager/core/task.py:2: in <module>
+    from core.logger import logger
+E   ModuleNotFoundError: No module named 'core'
+______ ERROR collecting workflow_orchestration_o4-mini_group3_2/Project_Manager/test_queue.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Project_Manager/test_queue.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Project_Manager/test_queue.py:2: in <module>
+    from Project_Manager.core.queue import TaskQueue
+Project_Manager/core/queue.py:4: in <module>
+    from core.logger import logger
+E   ModuleNotFoundError: No module named 'core'
+_______ ERROR collecting workflow_orchestration_o4-mini_group3_2/Project_Manager/test_api.py ________
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Project_Manager/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Project_Manager/test_api.py:2: in <module>
+    from Project_Manager.api.app import app, workflows
+Project_Manager/api/app.py:1: in <module>
+    from flask import Flask, jsonify, request
+E   ModuleNotFoundError: No module named 'flask'
+____ ERROR collecting workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_api.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+DevOps_Engineer/tests/test_api.py:5: in <module>
+    from DevOps_Engineer.src.api import app, wf_manager, task_queue
+DevOps_Engineer/src/api.py:1: in <module>
+    from fastapi import FastAPI, HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+____ ERROR collecting workflow_orchestration_o4-mini_group3_2/Business_Analyst/test_security.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Business_Analyst/test_security.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Business_Analyst/test_security.py:2: in <module>
+    from Business_Analyst.automation.security import SecurityManager, PermissionError, User
+E   ImportError: cannot import name 'PermissionError' from 'Business_Analyst.automation.security' (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Business_Analyst/automation/security.py)
+______ ERROR collecting workflow_orchestration_o4-mini_group3_2/Business_Analyst/test_core.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Business_Analyst/test_core.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+Business_Analyst/test_core.py:5: in <module>
+    from Business_Analyst.automation.security import SecurityManager, PermissionError
+E   ImportError: cannot import name 'PermissionError' from 'Business_Analyst.automation.security' (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/Business_Analyst/automation/security.py)
+============================================= FAILURES ==============================================
+___________________________________ test_versioning_and_rollback ____________________________________
+
+    def test_versioning_and_rollback():
+>       t1 = Task(name="T", func=dummy)
+E       TypeError: Task.__init__() got an unexpected keyword argument 'name'
+
+DevOps_Engineer/tests/test_workflow_versioning.py:9: TypeError
+========================================= warnings summary ==========================================
+DevOps_Engineer/tests/test_scheduler.py:7
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py:7: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+DevOps_Engineer/tests/test_scheduler.py:27
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py:27: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+DevOps_Engineer/tests/test_scheduler.py:38
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py:38: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+DevOps_Engineer/tests/test_scheduler.py:60
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py:60: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+DevOps_Engineer/tests/test_scheduler.py:84
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py:84: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+DevOps_Engineer/fastapi/testclient.py:16
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/fastapi/testclient.py:16: PytestCollectionWarning: cannot collect test class 'TestClient' because it has a __init__ constructor (from: workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/fastapi/testclient.py)
+    class TestClient:
+
+workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py::test_task_success
+workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py::test_task_timeout_and_no_retry
+workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py::test_task_retries_and_backoff
+workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py::test_dependency_order
+workflow_orchestration_o4-mini_group3_2/DevOps_Engineer/tests/test_scheduler.py::test_workflow_scheduling_once
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:148: PytestUnhandledCoroutineWarning: async def functions are not natively supported and have been skipped.
+  You need to install a suitable plugin for your async framework, for example:
+    - anyio
+    - pytest-asyncio
+    - pytest-tornasync
+    - pytest-trio
+    - pytest-twisted
+    warnings.warn(PytestUnhandledCoroutineWarning(msg.format(nodeid)))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+FAILED DevOps_Engineer/tests/test_workflow_versioning.py::test_versioning_and_rollback - TypeError...
+ERROR Project_Manager/test_task.py
+ERROR Project_Manager/test_scheduler.py
+ERROR Project_Manager/test_workflow.py
+ERROR Project_Manager/test_queue.py
+ERROR Project_Manager/test_api.py
+ERROR DevOps_Engineer/tests/test_api.py
+ERROR Business_Analyst/test_security.py
+ERROR Business_Analyst/test_core.py
+=================== 1 failed, 8 passed, 5 skipped, 11 warnings, 8 errors in 0.42s ===================

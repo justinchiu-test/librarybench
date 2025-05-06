@@ -1,0 +1,73 @@
+2025-05-06 14:04:15,270 - task_manager - INFO - Task t1: attempt 1 started
+2025-05-06 14:04:15,271 - task_manager - INFO - Task t1: succeeded in 0.00s
+2025-05-06 14:04:15,271 - task_manager - INFO - Task t2: attempt 1 started
+2025-05-06 14:04:15,275 - task_manager - ERROR - Task t2: failed in 0.00s: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_task.py", line 21, in f
+    raise ValueError("oops")
+ValueError: oops
+2025-05-06 14:04:15,275 - task_manager - INFO - Task t2: retrying after 0.00s
+2025-05-06 14:04:15,275 - task_manager - INFO - Task t2: attempt 2 started
+2025-05-06 14:04:15,275 - task_manager - ERROR - Task t2: failed in 0.00s: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_task.py", line 21, in f
+    raise ValueError("oops")
+ValueError: oops
+2025-05-06 14:04:15,275 - task_manager - INFO - Task t2: retrying after 0.00s
+2025-05-06 14:04:15,275 - task_manager - INFO - Task t2: attempt 3 started
+2025-05-06 14:04:15,276 - task_manager - ERROR - Task t2: failed in 0.00s: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_task.py", line 21, in f
+    raise ValueError("oops")
+ValueError: oops
+2025-05-06 14:04:15,276 - task_manager - ERROR - Task t2: exceeded max retries (2)
+2025-05-06 14:04:15,276 - task_manager - INFO - Task t3: attempt 1 started
+2025-05-06 14:04:16,277 - task_manager - ERROR - Task t3: failed in 1.00s: Timeout after 1s
+2025-05-06 14:04:16,277 - task_manager - ERROR - Task t3: exceeded max retries (0)
+2025-05-06 14:04:16,279 - task_manager - INFO - Task t4: attempt 1 started
+2025-05-06 14:04:16,281 - task_manager - ERROR - Task t4: failed in 0.00s: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_task.py", line 43, in f
+    raise RuntimeError("fail")
+RuntimeError: fail
+2025-05-06 14:04:16,281 - task_manager - INFO - Task t4: retrying after 1.00s
+2025-05-06 14:04:17,286 - task_manager - INFO - Task t4: attempt 2 started
+2025-05-06 14:04:17,287 - task_manager - INFO - Task t4: succeeded in 0.00s
+2025-05-06 14:04:17,291 - task_manager - INFO - Registered workflow 'wf1' (ID: fac4af70-584b-4ba0-90ce-912169006ffe)
+2025-05-06 14:04:17,291 - task_manager - INFO - Added task 'a' to workflow 'fac4af70-584b-4ba0-90ce-912169006ffe'
+2025-05-06 14:04:17,291 - task_manager - INFO - Added task 'b' to workflow 'fac4af70-584b-4ba0-90ce-912169006ffe'
+2025-05-06 14:04:17,292 - task_manager - INFO - Added task 'c' to workflow 'fac4af70-584b-4ba0-90ce-912169006ffe'
+2025-05-06 14:04:17,292 - task_manager - INFO - Starting workflow 'fac4af70-584b-4ba0-90ce-912169006ffe' (v1)
+2025-05-06 14:04:17,292 - task_manager - INFO - Task a: attempt 1 started
+2025-05-06 14:04:17,292 - task_manager - INFO - Task a: succeeded in 0.00s
+2025-05-06 14:04:17,293 - task_manager - INFO - Task b: attempt 1 started
+2025-05-06 14:04:17,293 - task_manager - INFO - Task b: succeeded in 0.00s
+2025-05-06 14:04:17,293 - task_manager - INFO - Task c: attempt 1 started
+2025-05-06 14:04:17,293 - task_manager - INFO - Task c: succeeded in 0.00s
+2025-05-06 14:04:17,293 - task_manager - INFO - Workflow 'fac4af70-584b-4ba0-90ce-912169006ffe' completed successfully
+2025-05-06 14:04:17,295 - task_manager - INFO - Registered workflow 'wf2' (ID: 82213065-8f4f-4e74-b97e-23df3926d61a)
+2025-05-06 14:04:17,295 - task_manager - INFO - Added task 'a' to workflow '82213065-8f4f-4e74-b97e-23df3926d61a'
+2025-05-06 14:04:17,295 - task_manager - INFO - Added task 'b' to workflow '82213065-8f4f-4e74-b97e-23df3926d61a'
+2025-05-06 14:04:17,295 - task_manager - INFO - Added task 'c' to workflow '82213065-8f4f-4e74-b97e-23df3926d61a'
+2025-05-06 14:04:17,295 - task_manager - INFO - Starting workflow '82213065-8f4f-4e74-b97e-23df3926d61a' (v1)
+2025-05-06 14:04:17,295 - task_manager - INFO - Task a: attempt 1 started
+2025-05-06 14:04:17,296 - task_manager - INFO - Task a: succeeded in 0.00s
+2025-05-06 14:04:17,296 - task_manager - INFO - Task b: attempt 1 started
+2025-05-06 14:04:17,300 - task_manager - ERROR - Task b: failed in 0.00s: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_workflow.py", line 36, in b
+    raise RuntimeError("fail")
+RuntimeError: fail
+2025-05-06 14:04:17,300 - task_manager - ERROR - Task b: exceeded max retries (0)
+2025-05-06 14:04:17,300 - task_manager - ERROR - Workflow '82213065-8f4f-4e74-b97e-23df3926d61a' failed at task 'b': Task b failed after 1 attempts: Traceback (most recent call last):
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/task_manager.py", line 76, in target
+    res = self.func()
+  File "/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group0_2/Data_Scientist/tests/test_workflow.py", line 36, in b
+    raise RuntimeError("fail")
+RuntimeError: fail
+

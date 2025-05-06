@@ -1,0 +1,464 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 34 items
+
+Full_Stack_Developer/test_env_manager.py .FF......                                            [ 26%]
+Student/tests/test_repo.py FFF                                                                [ 35%]
+Student/tests/test_manager.py FFFFFF                                                          [ 52%]
+Student/tests/test_cli.py FFFFFFF                                                             [ 73%]
+Student/tests/test_cache.py F                                                                 [ 76%]
+IT_Administrator/tests/test_pkgmanager.py EEEEEEEE                                            [100%]
+
+============================================== ERRORS ===============================================
+_______________________ ERROR at setup of test_create_and_delete_environment ________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_create_and_delete_environ0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+_____________________________ ERROR at setup of test_switch_environment _____________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_switch_environment0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+_________________________ ERROR at setup of test_install_and_list_packages __________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_install_and_list_packages0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+_____________________ ERROR at setup of test_generate_and_install_from_lockfile _____________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_generate_and_install_from0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+_______________________________ ERROR at setup of test_remove_package _______________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_remove_package0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+____________________________ ERROR at setup of test_vulnerability_alerts ____________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_vulnerability_alerts1'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+__________________________________ ERROR at setup of test_rollback __________________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_rollback0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+________________________ ERROR at setup of test_version_pinning_and_install _________________________
+
+temp_root = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_version_pinning_and_insta0'
+
+    @pytest.fixture
+    def manager(temp_root):
+>       return pkgmanager.PackageManager(temp_root)
+E       NameError: name 'pkgmanager' is not defined
+
+IT_Administrator/tests/test_pkgmanager.py:16: NameError
+============================================= FAILURES ==============================================
+__________________________________________ test_delete_env __________________________________________
+
+temp_manager = (PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_delete_env0'), <Full_Stack_Developer.env_manager.EnvironmentManager object at 0x104d31f90>)
+
+    def test_delete_env(temp_manager):
+        tmp, mgr = temp_manager
+        mgr.create_env("dev")
+>       mgr.delete_env("dev")
+
+Full_Stack_Developer/test_env_manager.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Full_Stack_Developer.env_manager.EnvironmentManager object at 0x104d31f90>, name = 'dev'
+
+    def delete_env(self, name):
+        env = os.path.join(self.envs_dir, name)
+        if not os.path.isdir(env):
+            raise ValueError(f"Environment {name} does not exist")
+>       shutil.rmtree(env)
+E       NameError: name 'shutil' is not defined. Did you forget to import 'shutil'?
+
+Full_Stack_Developer/env_manager.py:32: NameError
+______________________________ test_delete_current_env_resets_current _______________________________
+
+temp_manager = (PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_delete_current_env_resets0'), <Full_Stack_Developer.env_manager.EnvironmentManager object at 0x104d325d0>)
+
+    def test_delete_current_env_resets_current(temp_manager):
+        tmp, mgr = temp_manager
+        mgr.create_env("dev")
+        mgr.switch_env("dev")
+        assert mgr.get_current_env() == "dev"
+>       mgr.delete_env("dev")
+
+Full_Stack_Developer/test_env_manager.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Full_Stack_Developer.env_manager.EnvironmentManager object at 0x104d325d0>, name = 'dev'
+
+    def delete_env(self, name):
+        env = os.path.join(self.envs_dir, name)
+        if not os.path.isdir(env):
+            raise ValueError(f"Environment {name} does not exist")
+>       shutil.rmtree(env)
+E       NameError: name 'shutil' is not defined. Did you forget to import 'shutil'?
+
+Full_Stack_Developer/env_manager.py:32: NameError
+__________________________________ test_default_repo_contains_ABC ___________________________________
+
+    def test_default_repo_contains_ABC():
+        rm = RepositoryManager()
+        # default repo has A, B, C
+>       assert "A" in rm.list_repos()[0]  # path ends with default_repo.json
+
+Student/tests/test_repo.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Student.env_manager.repository.RepositoryManager object at 0x104d32850>
+
+    def list_repos(self):
+        """
+        Load and return the JSON contents of each repo as a dict.
+        """
+        repos = []
+        for path in self.list_repo_paths():
+>           with open(path, "r") as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group1_1/Student/env_manager/default_repo.json'
+
+Student/env_manager/repository.py:24: FileNotFoundError
+_____________________________________ test_add_and_remove_repo ______________________________________
+
+sample_repo = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_add_and_remove_repo0/repo.json'
+
+    def test_add_and_remove_repo(sample_repo):
+        rm = RepositoryManager()
+>       before = len(rm.list_repos())
+
+Student/tests/test_repo.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Student.env_manager.repository.RepositoryManager object at 0x104d35f30>
+
+    def list_repos(self):
+        """
+        Load and return the JSON contents of each repo as a dict.
+        """
+        repos = []
+        for path in self.list_repo_paths():
+>           with open(path, "r") as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group1_1/Student/env_manager/default_repo.json'
+
+Student/env_manager/repository.py:24: FileNotFoundError
+_________________________________ test_get_package_info_precedence __________________________________
+
+sample_repo = '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_get_package_info_preceden0/repo.json'
+
+    def test_get_package_info_precedence(sample_repo):
+        rm = RepositoryManager()
+        rm.add_repo(sample_repo)
+        # Y is only in sample_repo
+>       assert rm.get_latest_version("Y") == "1.0"
+E       AttributeError: 'RepositoryManager' object has no attribute 'get_latest_version'
+
+Student/tests/test_repo.py:39: AttributeError
+___________________________________________ test_env_crud ___________________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d33750>
+
+    def test_env_crud(mgr):
+        mgr.create_env("test")
+>       assert "test" in mgr.list_envs()
+E       AttributeError: 'EnvManager' object has no attribute 'list_envs'
+
+Student/tests/test_manager.py:16: AttributeError
+____________________________________ test_install_and_existence _____________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d33390>
+
+    def test_install_and_existence(mgr):
+        mgr.create_env("e1")
+>       mgr.install_packages("e1", ["A"])
+
+Student/tests/test_manager.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Student/env_manager/manager.py:21: in install_packages
+    self._install(env_name, pkg)
+Student/env_manager/manager.py:28: in _install
+    for repo in self.repo_manager.list_repos():
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Student.env_manager.repository.RepositoryManager object at 0x104dadae0>
+
+    def list_repos(self):
+        """
+        Load and return the JSON contents of each repo as a dict.
+        """
+        repos = []
+        for path in self.list_repo_paths():
+>           with open(path, "r") as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group1_1/Student/env_manager/default_repo.json'
+
+Student/env_manager/repository.py:24: FileNotFoundError
+________________________________________ test_batch_install _________________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d32e90>
+
+    def test_batch_install(mgr):
+        mgr.create_env("e2")
+>       mgr.install_packages("e2", ["C","B"])
+
+Student/tests/test_manager.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Student/env_manager/manager.py:21: in install_packages
+    self._install(env_name, pkg)
+Student/env_manager/manager.py:28: in _install
+    for repo in self.repo_manager.list_repos():
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Student.env_manager.repository.RepositoryManager object at 0x104dace20>
+
+    def list_repos(self):
+        """
+        Load and return the JSON contents of each repo as a dict.
+        """
+        repos = []
+        for path in self.list_repo_paths():
+>           with open(path, "r") as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group1_1/Student/env_manager/default_repo.json'
+
+Student/env_manager/repository.py:24: FileNotFoundError
+_________________________________ test_lockfile_export_and_install __________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d339d0>
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_lockfile_export_and_insta0')
+
+    def test_lockfile_export_and_install(mgr, tmp_path):
+        mgr.create_env("e3")
+>       mgr.install_packages("e3", ["B"])
+
+Student/tests/test_manager.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+Student/env_manager/manager.py:21: in install_packages
+    self._install(env_name, pkg)
+Student/env_manager/manager.py:28: in _install
+    for repo in self.repo_manager.list_repos():
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <Student.env_manager.repository.RepositoryManager object at 0x104d3eb50>
+
+    def list_repos(self):
+        """
+        Load and return the JSON contents of each repo as a dict.
+        """
+        repos = []
+        for path in self.list_repo_paths():
+>           with open(path, "r") as f:
+E           FileNotFoundError: [Errno 2] No such file or directory: '/Users/celine/Research/librarybench/dependency_resolver_o4-mini_group1_1/Student/env_manager/default_repo.json'
+
+Student/env_manager/repository.py:24: FileNotFoundError
+__________________________________________ test_import_env __________________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d32fd0>
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_import_env0')
+
+    def test_import_env(mgr, tmp_path):
+        mgr.create_env("e5")
+        spec = {"packages": ["C"]}
+        f = tmp_path / "spec.json"
+        f.write_text(json.dumps(spec))
+>       mgr.import_env("e5", str(f))
+E       AttributeError: 'EnvManager' object has no attribute 'import_env'
+
+Student/tests/test_manager.py:63: AttributeError
+_____________________________________ test_update_notifications _____________________________________
+
+mgr = <Student.env_manager.manager.EnvManager object at 0x104d33390>
+
+    def test_update_notifications(mgr):
+        mgr.create_env("e6")
+        # default B latest is 1.1, install B at 1.0 by lockfile hack:
+        # directly call _install_single
+>       mgr._install_single("e6", "B", version="1.0")
+E       AttributeError: 'EnvManager' object has no attribute '_install_single'
+
+Student/tests/test_manager.py:70: AttributeError
+_______________________________________ test_cli_env_commands _______________________________________
+
+runner = <click.testing.CliRunner object at 0x104d2f4d0>
+
+    def test_cli_env_commands(runner):
+        r = runner.invoke(cli, ['env','create','foo'])
+>       assert "Created environment 'foo'." in r.stdout
+E       assert "Created environment 'foo'." in 'Created env foo\n'
+E        +  where 'Created env foo\n' = <Result okay>.stdout
+
+Student/tests/test_cli.py:16: AssertionError
+____________________________________ test_cli_install_and_check _____________________________________
+
+runner = <click.testing.CliRunner object at 0x104d33d90>
+
+    def test_cli_install_and_check(runner):
+        runner.invoke(cli, ['env','create','bar'])
+        r = runner.invoke(cli, ['install','--env','bar','C'])
+>       assert "Installed C into 'bar'." in r.stdout
+E       assert "Installed C into 'bar'." in ''
+E        +  where '' = <Result FileNotFoundError(2, 'No such file or directory')>.stdout
+
+Student/tests/test_cli.py:25: AssertionError
+_________________________________________ test_cli_explain __________________________________________
+
+runner = <click.testing.CliRunner object at 0x104e18550>
+
+    def test_cli_explain(runner):
+        runner.invoke(cli, ['env','create','baz'])
+        runner.invoke(cli, ['install','--env','baz','A'])
+        r = runner.invoke(cli, ['explain','--env','baz','A'])
+>       assert 'A==' in r.stdout
+E       AssertionError: assert 'A==' in 'Package A not installed in env baz\n'
+E        +  where 'Package A not installed in env baz\n' = <Result okay>.stdout
+
+Student/tests/test_cli.py:33: AssertionError
+_________________________________________ test_cli_lockfile _________________________________________
+
+runner = <click.testing.CliRunner object at 0x104d375c0>
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_cli_lockfile0')
+
+    def test_cli_lockfile(runner, tmp_path):
+        runner.invoke(cli, ['env','create','lf1'])
+        runner.invoke(cli, ['install','--env','lf1','B'])
+        lock = tmp_path / "lf.json"
+        r = runner.invoke(cli, ['lockfile','export','--env','lf1','--output',str(lock)])
+>       assert lock.exists()
+E       AssertionError: assert False
+E        +  where False = exists()
+E        +    where exists = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_cli_lockfile0/lf.json').exists
+
+Student/tests/test_cli.py:40: AssertionError
+__________________________________________ test_cli_import __________________________________________
+
+runner = <click.testing.CliRunner object at 0x104d35f30>
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_cli_import0')
+
+    def test_cli_import(runner, tmp_path):
+        runner.invoke(cli, ['env','create','imp1'])
+        spec = {"packages":["C"]}
+        f = tmp_path / "s.json"
+        f.write_text(json.dumps(spec))
+        r = runner.invoke(cli, ['import-env','--env','imp1','--file',str(f)])
+>       assert "Imported environment spec" in r.stdout
+E       assert 'Imported environment spec' in "Usage: cli [OPTIONS] COMMAND [ARGS]...\nTry 'cli --help' for help.\n\nError: No such command 'import-env'.\n"
+E        +  where "Usage: cli [OPTIONS] COMMAND [ARGS]...\nTry 'cli --help' for help.\n\nError: No such command 'import-env'.\n" = <Result SystemExit(2)>.stdout
+
+Student/tests/test_cli.py:51: AssertionError
+__________________________________________ test_cli_repos ___________________________________________
+
+runner = <click.testing.CliRunner object at 0x104d56210>
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_cli_repos0')
+
+    def test_cli_repos(runner, tmp_path):
+        # create a fake repo
+        data = {"Z":{"0.1": []}}
+        repof = tmp_path/"r.json"
+        repof.write_text(json.dumps(data))
+        r1 = runner.invoke(cli, ['repos','add',str(repof)])
+        assert "Added repo" in r1.stdout
+        r2 = runner.invoke(cli, ['repos','list'])
+        assert str(repof) in r2.stdout
+        r3 = runner.invoke(cli, ['repos','remove',str(repof)])
+>       assert "Removed repo" in r3.stdout
+E       assert 'Removed repo' in "Usage: cli repos [OPTIONS] COMMAND [ARGS]...\nTry 'cli repos --help' for help.\n\nError: No such command 'remove'.\n"
+E        +  where "Usage: cli repos [OPTIONS] COMMAND [ARGS]...\nTry 'cli repos --help' for help.\n\nError: No such command 'remove'.\n" = <Result SystemExit(2)>.stdout
+
+Student/tests/test_cli.py:63: AssertionError
+_________________________________________ test_cli_updates __________________________________________
+
+runner = <click.testing.CliRunner object at 0x104dad8c0>
+
+    def test_cli_updates(runner):
+        runner.invoke(cli, ['env','create','u1'])
+        # install B@1.0 manually
+        runner.invoke(cli, ['install','--env','u1','B'])
+        # simulate that default chosen is latest 1.1, so no updates
+        r = runner.invoke(cli, ['updates','--env','u1'])
+>       assert "All packages up-to-date." in r.stdout
+E       assert 'All packages up-to-date.' in "Usage: cli [OPTIONS] COMMAND [ARGS]...\nTry 'cli --help' for help.\n\nError: No such command 'updates'.\n"
+E        +  where "Usage: cli [OPTIONS] COMMAND [ARGS]...\nTry 'cli --help' for help.\n\nError: No such command 'updates'.\n" = <Result SystemExit(2)>.stdout
+
+Student/tests/test_cli.py:71: AssertionError
+_________________________________________ test_cache_fetch __________________________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-12/test_cache_fetch0')
+
+    def test_cache_fetch(tmp_path):
+        cd = tmp_path / "cache"
+>       cm = CacheManager(cache_dir=str(cd))
+E       TypeError: CacheManager.__init__() got an unexpected keyword argument 'cache_dir'
+
+Student/tests/test_cache.py:7: TypeError
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+FAILED Full_Stack_Developer/test_env_manager.py::test_delete_env - NameError: name 'shutil' is not...
+FAILED Full_Stack_Developer/test_env_manager.py::test_delete_current_env_resets_current - NameErro...
+FAILED Student/tests/test_repo.py::test_default_repo_contains_ABC - FileNotFoundError: [Errno 2] N...
+FAILED Student/tests/test_repo.py::test_add_and_remove_repo - FileNotFoundError: [Errno 2] No such...
+FAILED Student/tests/test_repo.py::test_get_package_info_precedence - AttributeError: 'RepositoryM...
+FAILED Student/tests/test_manager.py::test_env_crud - AttributeError: 'EnvManager' object has no a...
+FAILED Student/tests/test_manager.py::test_install_and_existence - FileNotFoundError: [Errno 2] No...
+FAILED Student/tests/test_manager.py::test_batch_install - FileNotFoundError: [Errno 2] No such fi...
+FAILED Student/tests/test_manager.py::test_lockfile_export_and_install - FileNotFoundError: [Errno...
+FAILED Student/tests/test_manager.py::test_import_env - AttributeError: 'EnvManager' object has no...
+FAILED Student/tests/test_manager.py::test_update_notifications - AttributeError: 'EnvManager' obj...
+FAILED Student/tests/test_cli.py::test_cli_env_commands - assert "Created environment 'foo'." in '...
+FAILED Student/tests/test_cli.py::test_cli_install_and_check - assert "Installed C into 'bar'." in ''
+FAILED Student/tests/test_cli.py::test_cli_explain - AssertionError: assert 'A==' in 'Package A no...
+FAILED Student/tests/test_cli.py::test_cli_lockfile - AssertionError: assert False
+FAILED Student/tests/test_cli.py::test_cli_import - assert 'Imported environment spec' in "Usage: ...
+FAILED Student/tests/test_cli.py::test_cli_repos - assert 'Removed repo' in "Usage: cli repos [OPT...
+FAILED Student/tests/test_cli.py::test_cli_updates - assert 'All packages up-to-date.' in "Usage: ...
+FAILED Student/tests/test_cache.py::test_cache_fetch - TypeError: CacheManager.__init__() got an u...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_create_and_delete_environment - NameError: n...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_switch_environment - NameError: name 'pkgman...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_install_and_list_packages - NameError: name ...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_generate_and_install_from_lockfile - NameErr...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_remove_package - NameError: name 'pkgmanager...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_vulnerability_alerts - NameError: name 'pkgm...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_rollback - NameError: name 'pkgmanager' is n...
+ERROR IT_Administrator/tests/test_pkgmanager.py::test_version_pinning_and_install - NameError: nam...
+============================== 19 failed, 7 passed, 8 errors in 0.40s ===============================

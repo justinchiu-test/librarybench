@@ -1,5 +1,1 @@
 nested_codec.py
-test_codec.py
-test_integrity.py
-test_schema.py
-test_sets.py

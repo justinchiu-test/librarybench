@@ -1,51 +1,24 @@
 import pytest
 import time
-from pipeline.task import Task
+from pipeline.task import Task, TaskTimeoutError
 from pipeline.pipeline import Pipeline
-from pipeline.context import ExecutionContext
-from pipeline.metadata import MetadataStorage
-from pipeline.notifier import DummyNotifier
 
-def test_task_timeout_and_retry(monkeypatch):
-    ctx = ExecutionContext()
-    meta = MetadataStorage()
-    notifier = DummyNotifier()
+class SlowTask(Task):
+    def __init__(self, task_id, sleep_time, **kwargs):
+        super().__init__(task_id, **kwargs)
+        self.sleep_time = sleep_time
 
-    # A task that sleeps longer than its timeout
-    def slow_task(context):
-        time.sleep(0.1)
-        return {'y': 'done'}
+    def run(self, context):
+        time.sleep(self.sleep_time)
+        return "finished"
 
-    # Monkeypatch time.sleep so that slow_task actually runs real sleep,
-    # but pipeline retry waits are no-ops
-    original_sleep = time.sleep
-    def fake_sleep(d):
-        # only fake small waits
-        if d < 0.05:
-            return
-        original_sleep(d)
-    monkeypatch.setattr(time, 'sleep', fake_sleep)
-
-    t = Task(
-        name='slow',
-        func=slow_task,
-        outputs=['y'],
-        max_retries=1,
-        retry_delay_seconds=0.01,
-        backoff=False,
-        timeout=0.05
-    )
-    pipeline = Pipeline([t], ctx, meta, notifier)
-    pipeline.run()
-
-    # Task should have failed
-    assert t.state == 'failure'
-    # Metadata: two attempts (initial + one retry)
-    rec = meta.get_all('slow')[0]
-    assert rec['attempts'] == 2
-    assert rec['status'] == 'failure'
-    # No output set
-    assert ctx.get('y') is None
-    # Notifier alerted
-    assert len(notifier.messages) == 1
-    assert 'timed out' in notifier.messages[0]
+def test_task_timeout():
+    task = SlowTask("slow1", sleep_time=0.2, timeout_seconds=0.1)
+    p = Pipeline()
+    p.add_task(task)
+    ctx = p.run()
+    # should have recorded failure state
+    assert task.state == 'failure'
+    # alert was sent
+    assert len(p.alerting.notifications) == 1
+    assert "timed out" in p.alerting.notifications[0]

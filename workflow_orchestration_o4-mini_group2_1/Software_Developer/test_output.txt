@@ -1,0 +1,52 @@
+========================================= test session starts ==========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 9 items / 2 errors
+
+test_backoff.py ..                                                                               [ 22%]
+test_queue.py ..                                                                                 [ 44%]
+test_scheduler.py F                                                                              [ 55%]
+test_task.py ....                                                                                [100%]
+
+================================================ ERRORS ================================================
+_______ ERROR collecting workflow_orchestration_Software_Developer_o4-mini_iterative/test_api.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_Software_Developer_o4-mini_iterative/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_api.py:3: in <module>
+    from task_manager.api import app, workflow_manager, scheduler, task_queue
+task_manager/api.py:1: in <module>
+    from fastapi import FastAPI, HTTPException
+E   ModuleNotFoundError: No module named 'fastapi'
+____ ERROR collecting workflow_orchestration_Software_Developer_o4-mini_iterative/test_workflow.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_Software_Developer_o4-mini_iterative/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_workflow.py:3: in <module>
+    from task_manager.workflow import Workflow, WorkflowManager
+E   ImportError: cannot import name 'WorkflowManager' from 'task_manager.workflow' (/Users/celine/Research/librarybench/workflow_orchestration_Software_Developer_o4-mini_iterative/task_manager/workflow.py)
+=============================================== FAILURES ===============================================
+________________________________________ test_schedule_interval ________________________________________
+
+    def test_schedule_interval():
+        s = Scheduler()
+        ctr = {"n":0}
+        s.schedule(0.2, lambda: ctr.__setitem__("n", ctr["n"]+1))
+        time.sleep(0.7)
+>       s.stop()
+E       AttributeError: 'Scheduler' object has no attribute 'stop'
+
+test_scheduler.py:9: AttributeError
+--------------------------------------------- JSON report ----------------------------------------------
+report saved to: report.json
+======================================= short test summary info ========================================
+FAILED test_scheduler.py::test_schedule_interval - AttributeError: 'Scheduler' object has no attribut...
+ERROR test_api.py
+ERROR test_workflow.py
+================================ 1 failed, 8 passed, 2 errors in 3.49s =================================

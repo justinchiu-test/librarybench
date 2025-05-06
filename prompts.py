@@ -86,38 +86,45 @@ IMPORTANT: Make targeted changes to address the specific failing test cases. Mak
 including any edge cases or special conditions mentioned in the tests. Be sure to output code in the specified format. 
 """
 
-refactoring_prompt_template = """I need you to refactor the following source code to improve its maintainability, readability, and efficiency.
-The refactored code must still pass all the existing tests.
+refactoring_prompt_template = """Please rewrite the following programs by extracting helper functions.
+Start by writing helper functions that can reduce the size of the code.
+Do not add classes. Do not use nonlocal variables.
+The main function should not be extracted into a helper function.
+If the original program contains nonlocal variables, rewrite the algorithm so that nonlocal variables are no longer used.
+Do not create nested helper functions. Instead, write those as separate helper functions which can call other helper functions.
+The refactored code must still pass all existing tests.
 
 # Source Code Files:
 {src_code_content}
 
-# Test Files (for your reference):
+# Test Files:
 {test_content}
 
-Please refactor each source code file, focusing on:
-1. Abstracting out helper functions to reduce complexity
-2. Improving code organization and structure
-3. Enhancing readability while maintaining functionality
-4. Optimizing performance where possible
-5. Applying consistent code styling and documentation
+Your answer must have the headers and codeblocks formatted exactly like the following Markdown examples.
 
-Specifically, consider these refactoring techniques:
-- Extract complex or duplicated logic into helper functions
-- Apply design patterns where appropriate
-- Improve variable and function naming for clarity
-- Add type hints for better code understanding
-- Restructure code to reduce nesting levels
-- Implement better error handling
-- Remove any unused code or imports
+The first code block should contain the helper functions:
 
-For each file, you must provide the refactored content in the following format so that it can be extracted:
+# Extracted helper functions
+```file:utils.py
+# Shared utility functions for all modules
+# IMPORTANT: This file must work when imported by different modules in different directories
 
+def helper_function():
+    ...
+```
+
+The remaining code blocks should contain any re-written files that now use the helper functions:
+
+# Source Code Files:
 ```file:<relative_file_path>
 <file_content>
 ```
 
-IMPORTANT: The refactored files MUST execute to the same results as the original programs and pass all tests.
-Do not change the external API or behavior of the code. Focus on internal improvements while maintaining
-compatibility with existing tests and functionality.
+Try to make the re-written code as short as possible by introducing shared helper functions. Helper function parameters should be as general as possible and helper functions should be informatively named.
+Do not add classes, only add functions.
+Rewrite programs so that they do not contain nonlocal variables.
+Programs MUST NOT CONTAIN NONLOCAL VARIABLES.
+Refactored code must still pass all the existing tests.
+
+IMPORTANT: When updating imports, ensure that the utils module is imported using a relative import statement that will work correctly regardless of the file's location within the project structure (i.e., prefer "from utils import function" over absolute imports).
 """

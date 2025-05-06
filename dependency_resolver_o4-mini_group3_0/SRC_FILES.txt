@@ -1,0 +1,8 @@
+IT_Manager/error
+IT_Manager/lockfile.py
+IT_Manager/manager.py
+IT_Manager/notifications.py
+IT_Manager/registry.py
+IT_Manager/search.py
+Research_Scientist/env_manager.py
+utils.py

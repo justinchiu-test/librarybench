@@ -1,0 +1,72 @@
+========================================= test session starts ==========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 3 items / 5 errors
+
+test_auth.py ...                                                                                 [100%]
+
+================================================ ERRORS ================================================
+_______ ERROR collecting workflow_orchestration_IT_Administrator_o4-mini_iterative/test_alert.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/test_alert.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_alert.py:1: in <module>
+    from it_manager.alert import AlertManager
+it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+E   ImportError: cannot import name 'TaskState' from 'it_manager.tasks' (/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/it_manager/tasks.py)
+_____ ERROR collecting workflow_orchestration_IT_Administrator_o4-mini_iterative/test_scheduler.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/test_scheduler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_scheduler.py:4: in <module>
+    from it_manager.scheduler import Scheduler
+it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+E   ImportError: cannot import name 'TaskState' from 'it_manager.tasks' (/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/it_manager/tasks.py)
+_______ ERROR collecting workflow_orchestration_IT_Administrator_o4-mini_iterative/test_tasks.py _______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/test_tasks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_tasks.py:3: in <module>
+    from it_manager.tasks import Task, TaskState
+E   ImportError: cannot import name 'TaskState' from 'it_manager.tasks' (/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/it_manager/tasks.py)
+______ ERROR collecting workflow_orchestration_IT_Administrator_o4-mini_iterative/test_version.py ______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/test_version.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_version.py:2: in <module>
+    from it_manager.version import VersionedEntity
+it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+E   ImportError: cannot import name 'TaskState' from 'it_manager.tasks' (/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/it_manager/tasks.py)
+_____ ERROR collecting workflow_orchestration_IT_Administrator_o4-mini_iterative/test_workflow.py ______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_workflow.py:2: in <module>
+    from it_manager.workflow import Workflow
+it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+E   ImportError: cannot import name 'TaskState' from 'it_manager.tasks' (/Users/celine/Research/librarybench/workflow_orchestration_IT_Administrator_o4-mini_iterative/it_manager/tasks.py)
+--------------------------------------------- JSON report ----------------------------------------------
+report saved to: report.json
+======================================= short test summary info ========================================
+ERROR test_alert.py
+ERROR test_scheduler.py
+ERROR test_tasks.py
+ERROR test_version.py
+ERROR test_workflow.py
+===================================== 3 passed, 5 errors in 0.04s ======================================

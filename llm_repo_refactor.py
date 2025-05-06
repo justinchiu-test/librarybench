@@ -3,8 +3,10 @@ import json
 import glob
 import re
 import random
+import math
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from collections import Counter
 import logging
@@ -21,12 +23,11 @@ class Repo:
     def __init__(self, repo_path, test_command="pytest"):
         self.logger = logger
         self.repo_path = repo_path
-        test_file_paths = glob.glob(os.path.join(repo_path, "test*.py"))
-        task_file_paths = glob.glob(os.path.join(repo_path, "TASK*.md"))
-        
-        # Store just the filenames, not the full paths
-        self.test_files = [os.path.basename(path) for path in test_file_paths]
-        self.task_files = [os.path.basename(path) for path in task_file_paths]
+        test_file_paths = glob.glob(os.path.join(repo_path, "**", "test*.py"), recursive=True)
+        task_file_paths = glob.glob(os.path.join(repo_path, "**", "TASK*.md"), recursive=True)
+        # Do not store repo_path but store the rest of the relative path
+        self.test_files = [path[len(repo_path)+1:] for path in test_file_paths]
+        self.task_files = [path[len(repo_path)+1:] for path in task_file_paths]
         
         self.test_command = test_command
         self.src_code_files = []
@@ -34,11 +35,21 @@ class Repo:
         if os.path.exists(self.src_files_path):
             try:
                 with open(self.src_files_path, "r") as rf:
-                    self.src_code_files = [
-                        line.strip() for line in rf.readlines() if line.strip()
-                    ]
+                    self.src_code_files.extend([
+                        os.path.join(os.path.dirname(self.src_files_path)[len(repo_path)+1:], line.strip()) for line in rf.readlines() if line.strip()
+                    ])
             except Exception as e:
                 self.logger.error(f"Error reading existing SRC_FILES.txt: {e}")
+        else:
+            for src_files_path in glob.glob(os.path.join(repo_path, "**", "SRC_FILES.txt"), recursive=True):
+                try:
+                    with open(src_files_path, "r") as rf:
+                        self.src_code_files.extend([
+                            os.path.join(os.path.dirname(src_files_path)[len(repo_path)+1:], line.strip()) for line in rf.readlines() if line.strip()
+                        ])
+                except Exception as e:
+                    self.logger.error(f"Error reading existing SRC_FILES.txt: {e}")
+
         self.logger.info(f"New repo implemented with test files {self.test_files} and task files {self.task_files}.")
 
     def update_src_files(self, new_src_files):
@@ -85,24 +96,9 @@ class Repo:
         # make new Repo object and return it
         return Repo(new_repo_location, self.test_command)
 
-    def make_copies_to_refactor(self, agent, refactor_suffixes) -> List['Repo']:
-        results = []
-        for refactor_suffix in refactor_suffixes:
-            new_repo_location = os.path.join(os.path.dirname(self.repo_path), f"{os.path.basename(self.repo_path)}_{agent.model_name}{refactor_suffix}")
-            # if new_repo_location already exists, raise an error
-            if os.path.exists(new_repo_location):
-                continue
-            
-            # make a directory at target_repo_location and copy all files in
-            shutil.copytree(self.repo_path, new_repo_location)
-            
-            # make new Repo object and add to results
-            results.append(Repo(new_repo_location, self.test_command))
-        
-        return results
-
     def evaluate(self):
         test_cmd = f"pytest {' '.join(self.test_files)} --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
+        self.logger.info(f"Running evaluation. test cmd: {test_cmd}")
         result = {}
         try:
             process = subprocess.run(
@@ -144,8 +140,20 @@ class Repo:
                 else:
                     # Old version: assume report is a list and filter tests with "when" equal to "call".
                     test_results = [test for test in report if test.get("when") == "call"]
-                
                 num_tests = len(test_results)
+
+                # Include collector failures
+                collector_failures = [
+                    collector for collector in report.get("collectors", [])
+                    if collector.get("outcome") == "failed"
+                ]
+                # Each failed collector represents a test file that didn't run any tests due to an error
+                num_collector_failures = len(collector_failures)
+                num_tests += num_collector_failures  # treat each as a failed test
+                num_passed = sum(
+                    1 for test in test_results if test.get("outcome") in ("passed", "xfail")
+                )
+
                 if num_tests == 0:
                     return {
                         "sum": 0,
@@ -299,72 +307,199 @@ def implement(agent, args):
         final_repo_results = repo.evaluate()
         print(final_repo_results)
 
+def _update_local_imports(test_file_paths, target_dir, repo_path):
+    # Update relative imports in the test files to account for new directory structure
+    for test_file_path in test_file_paths:
+        target_test_file = os.path.join(target_dir, os.path.relpath(test_file_path, repo_path))
+        if os.path.exists(target_test_file):
+            try:
+                with open(target_test_file, 'r') as f:
+                    content = f.read()
+                
+                # Add __init__.py files to make imports work
+                test_dir = os.path.dirname(target_test_file)
+                init_file = os.path.join(test_dir, "__init__.py")
+                if not os.path.exists(init_file):
+                    with open(init_file, 'w') as f:
+                        f.write("# Auto-generated __init__.py to enable imports\n")
+                    logger.info(f"Created {init_file}")
+                
+                # Find import statements (both regular imports and from imports)
+                import_pattern = re.compile(r'(?m)^(from\s+|import\s+)([.\w]+)')
+                matches = import_pattern.findall(content)
+                
+                # Get the persona name to prepend to imports
+                persona_subdir = os.path.basename(target_dir)
+                
+                modified_content = content
+                for match in matches:
+                    import_type, module_path = match
+                    # Skip standard library and third-party imports
+                    if '.' not in module_path and module_path in sys.builtin_module_names:
+                        continue
+                    
+                    # Skip imports that already include the subdirectory
+                    if persona_subdir in module_path:
+                        continue
+                    
+                    # List of common built-in or 3rd-party modules to avoid modifying
+                    standard_modules = {'os', 'sys', 'json', 'pytest', 'unittest', 're', 
+                                        'datetime', 'time', 'collections', 'pathlib', 'math',
+                                        'logging', 'random', 'shutil', 'glob', 'argparse', 
+                                        'typing', 'io', 'tempfile'}
+                    
+                    if module_path in standard_modules:
+                        continue
+                    
+                    # Check if this is a relative import referring to a local module
+                    module_file = module_path.replace('.', '/') + '.py'
+                    if os.path.exists(os.path.join(target_dir, module_file)):
+                        # This is a local module that needs to be updated
+                        old_import = f"{import_type}{module_path}"
+                        new_import = f"{import_type}{persona_subdir}.{module_path}"
+                        modified_content = modified_content.replace(old_import, new_import)
+                    elif os.path.exists(os.path.join(target_dir, module_path + '.py')):
+                        # Direct file import
+                        old_import = f"{import_type}{module_path}"
+                        new_import = f"{import_type}{persona_subdir}.{module_path}"
+                        modified_content = modified_content.replace(old_import, new_import)
+                    
+                    # Handle local imports without checking if file exists (useful for packages)
+                    if not module_path.startswith('.') and not any(module_path.startswith(std) for std in standard_modules):
+                        # Check if this module exists in the persona directory
+                        if glob.glob(os.path.join(target_dir, "**", f"{module_path.split('.')[0]}.py"), recursive=True):
+                            old_import = f"{import_type}{module_path}"
+                            new_import = f"{import_type}{persona_subdir}.{module_path}"
+                            modified_content = modified_content.replace(old_import, new_import)
+                # Write the updated content back to the file
+                if modified_content != content:
+                    with open(target_test_file, 'w') as f:
+                        f.write(modified_content)
+                    logger.info(f"Updated imports in {target_test_file}")
+            except Exception as e:
+                logger.error(f"Error updating imports in {target_test_file}: {e}")
+
 def refactor(agent, args):
-    orig_repo = Repo(args.starter_repo_path)
-    new_repos = orig_repo.make_copies_to_refactor(agent, args.suffixes)
-    for new_repo in new_repos:
-        agent.refactor_repo(new_repo)
-        # Track success rates over different iterations
-        num_attempts = 0
-        attempt_results = []
-        num_no_changes = 0
+    repos_to_refactor = glob.glob(f"{args.starter_repo_path}_*_{args.model}_iterative")
+    group_idx_to_remaining_suffixes = {group_idx: args.suffixes for group_idx in range(math.ceil(len(repos_to_refactor) / 3.0))}
+
+    for i in range(0, len(repos_to_refactor), 3):
+        group_idx = int(i / 3)
+        central_repo_starter = f"{args.starter_repo_path}_{args.model}_group{group_idx}"
+        for grouped_repo in glob.glob(f"{central_repo_starter}*"):
+            suffix = grouped_repo[len(central_repo_starter):]
+            if suffix in group_idx_to_remaining_suffixes[group_idx]:
+                group_idx_to_remaining_suffixes[group_idx].remove(suffix)
+
+        # Make a new central library that all of these can reference.
+        # Process repos in groups of 3
+        group = repos_to_refactor[i:i+3]
+        logger.info(f"Processing group of repos: {group}")
+
+        persona_names = []
+        for repo_name in group:
+            persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
+            persona_names.append(persona_name)
+        personas = "_".join(sorted(persona_names))
         
-        while new_repo.evaluate()["passed"] < 1:
-            logger.info(f"Fix implementation attempt #{num_attempts + 1}")
-            eval_before = new_repo.evaluate()
-            attempt_results.append({"attempt": num_attempts, "before": eval_before})
+        original_computed = False
+        for suffix in group_idx_to_remaining_suffixes[group_idx]:
+            # Create a new central repo that combines these as subdirectories
+            central_repo_path = f"{central_repo_starter}{suffix}"
             
-            fix_results = agent.fix_implementation(new_repo)
-            if fix_results is None: continue
-            new_src_files, has_changes = fix_results
-            num_attempts += 1
-            new_repo.update_src_files(new_src_files)
+            # If it already exists, ask for confirmation before overwriting
+            if os.path.exists(central_repo_path):
+                do_reimplement = input(f"{central_repo_path} already exists. Re-refactor? [y/]").strip() == "y"
+                if not do_reimplement:
+                    continue
+                shutil.rmtree(central_repo_path)
             
-            # Skip evaluation if no actual code changes occurred
-            if not has_changes:
-                logger.warning("No source code changes detected, skipping unnecessary evaluation")
-                attempt_results[-1]["after"] = eval_before  # Use previous evaluation results
-                attempt_results[-1]["skipped_eval"] = True
-                num_no_changes += 1
-                # If we've had multiple attempts with no changes, we might be stuck
-                if num_no_changes > 2:
-                    logger.warning("Multiple attempts with no changes detected, possible stagnation")
+            # Create the central repo directory
+            os.makedirs(central_repo_path, exist_ok=True)
+            
+            # Copy all repos into the central repo as subdirectories
+            for repo_path in group:
+                repo_name = os.path.basename(repo_path)
+                persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
+                target_dir = os.path.join(central_repo_path, persona_name)
                 
-                # We still count this as an attempt towards the limit
-                if num_attempts > 5:
-                    logger.warning("Reached maximum number of fix attempts (5)")
-                    break
+                # Copy the repo contents
+                shutil.copytree(repo_path, target_dir)
+                # TODO consider removing old eval artifacts e.g. test_output.txt and report.json
                 
-                # Continue to next iteration without evaluating
-                continue
-            num_no_changes = 0
-            # Only evaluate if changes were actually made
-            eval_after = new_repo.evaluate()
-            attempt_results[-1]["after"] = eval_after
+                # Collect source and test files
+                test_file_paths = glob.glob(os.path.join(repo_path, "**", "test*.py"), recursive=True)
+                
+                _update_local_imports(test_file_paths, target_dir, repo_path)
             
-            # Log progress for this attempt
-            logger.info(f"Fix attempt #{num_attempts} results:")
-            logger.info(f"  - Before: {eval_before['num_passed']}/{eval_before['num_tests']} tests passing ({eval_before['passed']*100:.1f}%)")
-            logger.info(f"  - After: {eval_after['num_passed']}/{eval_after['num_tests']} tests passing ({eval_after['passed']*100:.1f}%)")
-            logger.info(f"  - Improvement: {(eval_after['passed'] - eval_before['passed'])*100:.1f}% more tests passing")
+            # Create the central repo object
+            central_repo = Repo(central_repo_path)
             
-            if num_attempts > 5: 
-                logger.warning("Reached maximum number of fix attempts (5)")
-                break
-        final_repo_results = new_repo.evaluate()
-        print(final_repo_results)
+            # Calculate metrics before refactoring
+            if not original_computed:
+                logger.info(f"Computing metrics before refactoring for {central_repo_path}")
+                try:
+                    # Run score.py on the central repo
+                    before_score_cmd = f"python score.py --directory {central_repo_path} --branch_name {personas}_original"
+                    subprocess.run(before_score_cmd, shell=True, check=True)
+                    logger.info(f"Successfully computed metrics before refactoring")
+                    original_computed = True
+                except subprocess.CalledProcessError as e:
+                    logger.error(f"Failed to compute metrics before refactoring: {e}")
+                
+            # Perform the refactoring
+            logger.info(f"Starting refactoring of {central_repo_path}")
+            agent.refactor_repo(central_repo)
+            
+            # Calculate metrics after refactoring
+            logger.info(f"Computing metrics after refactoring for {central_repo_path}")
+            try:
+                # Run score.py on the central repo again
+                after_score_cmd = f"python score.py --directory {central_repo_path} --branch_name {personas}{suffix}"
+                subprocess.run(after_score_cmd, shell=True, check=True)
+                logger.info(f"Successfully computed metrics after refactoring")
+                
+                # Try to load the metrics file to show differences
+                metrics_file = f"{os.path.basename(args.starter_repo_path)}_metrics.json"
+                if os.path.exists(metrics_file):
+                    try:
+                        with open(metrics_file, 'r') as f:
+                            metrics_data = json.load(f)
+                            
+                        # Find before and after metrics if they exist
+                        refactor_metrics = metrics_data.get(f"{personas}{suffix}", {})
+                        
+                        # Log the total metrics
+                        logger.info(f"Refactored Total Log Probability: {refactor_metrics.get('total_logprobs', 'N/A')}")
+                        logger.info(f"Refactored Total Tokens: {refactor_metrics.get('total_tokens', 'N/A')}")
+                        logger.info(f"Refactored Total LOC: {refactor_metrics.get('total_loc', 'N/A')}")
+                        logger.info(f"Refactored Total SLOC: {refactor_metrics.get('total_sloc', 'N/A')}")
+                        logger.info(f"Refactored Total LLOC: {refactor_metrics.get('total_lloc', 'N/A')}")
+                        logger.info(f"Refactored Total Comments: {refactor_metrics.get('total_comments', 'N/A')}")
+                        logger.info(f"Refactored Total Multi: {refactor_metrics.get('total_multi', 'N/A')}")
+                        logger.info(f"Refactored Total Blank: {refactor_metrics.get('total_blank', 'N/A')}")
+                        logger.info(f"Refactored Total CycloComp: {refactor_metrics.get('total_cyclomatic', 'N/A')}")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to analyze metrics: {e}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to compute metrics after refactoring: {e}")
+                refactor_metrics = {}
+            
+            # Run tests to make sure functionality is preserved
+            eval_results = central_repo.evaluate()
+            logger.info(f"Refactored repo test results: {eval_results['num_passed']}/{eval_results['num_tests']} tests passing ({eval_results['passed']*100:.1f}%)")
+            with open(os.path.join(central_repo.repo_path, "results.json"), 'w') as wf:
+                json.dump({"pytest": eval_results, "metrics": refactor_metrics}, wf, indent=4)
 
 def main():
     parser = argparse.ArgumentParser(description="LLM Repository Refactor")
     parser.add_argument("--model", type=str, required=True, help="Model to use for refactoring")
     parser.add_argument("--task", type=str, choices=["make_personas", "implement", "refactor"], required=True, help="Task to perform")
     parser.add_argument("--iterative", action="store_true", help="Whether to perform task until it passes")
-    parser.add_argument("--suffixes", type=str, nargs="*", default=["_0", "_1", "_2", "_3"], help="List of suffixes for task.")
+    parser.add_argument("--suffixes", type=str, nargs="*", default=["_0"], help="List of suffixes for task.")
     parser.add_argument("--starter-repo-path", type=str, required=True, help="Path to starter repository")
-    # TODO make these naturally infer from repo path
-    # parser.add_argument("--src-code-files", type=str, nargs="*", default=[], help="List of source code files (for refactoring)")
-    # parser.add_argument("--test-files", type=str, nargs="*", help="List of test files")
-    # parser.add_argument("--task-files", type=str, nargs="*", help="List of task description files")
+    parser.add_argument("--repos_to_refactor", type=str, nargs="*", help="Path to repositories to factor together. Will group into 3s")
     
     args = parser.parse_args()
     

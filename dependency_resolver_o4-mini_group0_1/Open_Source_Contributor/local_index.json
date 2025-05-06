@@ -1,0 +1,14 @@
+{
+  "packageB": {
+    "1.0": {
+      "dependencies": [],
+      "vulnerabilities": []
+    }
+  },
+  "packageD": {
+    "0.1": {
+      "dependencies": [],
+      "vulnerabilities": []
+    }
+  }
+}

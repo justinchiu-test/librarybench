@@ -140,7 +140,7 @@ async def compute_metrics(directory, model):
     codes = {}
     for file in directory.glob("**/*.py"):
         if os.path.basename(file).startswith("test"): continue
-        program_name = file.name.replace(".py", "")
+        program_name = os.path.join(*file.parts[1:])
         program_names.append(program_name)
         try:
             with open(file, "r") as f:
@@ -190,21 +190,47 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     result = {"total_logprobs": total_lp, "total_tokens": total_tokens}
     all_programs = set(logprobs) | set(metrics) 
 
+    total_loc = 0
+    total_sloc = 0
+    total_lloc = 0
+    total_comments = 0
+    total_multi = 0
+    total_blank = 0
+    total_cyclomatic = 0
+
     for program in all_programs:
         lp = logprobs.get(program, float('nan'))
-
+        program_metrics = metrics.get(program, {})
         result[program] = {
             "logprobs": lp,
-            "metrics": metrics.get(program, {}),
+            "metrics": program_metrics,
         }
+        total_loc += program_metrics["loc"]
+        total_sloc += program_metrics["sloc"]
+        total_lloc += program_metrics["lloc"]
+        total_comments += program_metrics["comments"]
+        total_multi += program_metrics["multi"]
+        total_blank += program_metrics["blank"]
+        total_cyclomatic += program_metrics["cyclomatic"]
+    
+    result["total_loc"] = total_loc
+    result["total_sloc"] = total_sloc
+    result["total_lloc"] = total_lloc
+    result["total_comments"] = total_comments
+    result["total_multi"] = total_multi
+    result["total_blank"] = total_blank
+    result["total_cyclomatic"] = total_cyclomatic
 
     return result
 
 async def main(args):
     parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)_(.+)', args.directory)
 
-    output_file = f"{parsed_experiment.group(1)}_persona_metrics.json"
-    branch_name = parsed_experiment.group(2)
+    output_file = f"{parsed_experiment.group(1)}_metrics.json"
+    if args.branch_name is None:
+        branch_name = parsed_experiment.group(2)
+    else:
+        branch_name = args.branch_name
 
     logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model)
 
@@ -218,6 +244,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
     parser.add_argument("--directory", type=str, help="Paths to .py files")
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
+    parser.add_argument("--branch_name", type=str, default=None, help="What key to log the metrics under")
     args = parser.parse_args()
     
     asyncio.run(main(args))

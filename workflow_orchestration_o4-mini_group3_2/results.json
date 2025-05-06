@@ -1,0 +1,403 @@
+{
+    "pytest": {
+        "sum": 0.08121220699104015,
+        "passed": 0.36363636363636365,
+        "num_passed": 8,
+        "num_tests": 22
+    },
+    "metrics": {
+        "total_logprobs": -8284.000242432538,
+        "total_tokens": 10266,
+        "DevOps_Engineer/utils.py": {
+            "logprobs": -424.3297575142486,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Project_Manager/core/workflow.py": {
+            "logprobs": -301.7762273493229,
+            "metrics": {
+                "loc": 41,
+                "sloc": 37,
+                "lloc": 32,
+                "comments": 1,
+                "multi": 0,
+                "blank": 4,
+                "cyclomatic": 13
+            }
+        },
+        "Business_Analyst/automation/__init__.py": {
+            "logprobs": -92.594408,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Business_Analyst/automation/tasks.py": {
+            "logprobs": -186.7750499095848,
+            "metrics": {
+                "loc": 17,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 3,
+                "multi": 3,
+                "blank": 3,
+                "cyclomatic": 4
+            }
+        },
+        "DevOps_Engineer/__init__.py": {
+            "logprobs": -36.290876,
+            "metrics": {
+                "loc": 0,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 0,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Business_Analyst/automation/utils.py": {
+            "logprobs": -427.8409328879437,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Business_Analyst/automation/notifier.py": {
+            "logprobs": -107.684127374037,
+            "metrics": {
+                "loc": 12,
+                "sloc": 5,
+                "lloc": 7,
+                "comments": 0,
+                "multi": 6,
+                "blank": 1,
+                "cyclomatic": 4
+            }
+        },
+        "Business_Analyst/automation/core.py": {
+            "logprobs": -561.1797952728415,
+            "metrics": {
+                "loc": 109,
+                "sloc": 79,
+                "lloc": 76,
+                "comments": 9,
+                "multi": 17,
+                "blank": 5,
+                "cyclomatic": 29
+            }
+        },
+        "Project_Manager/core/__init__.py": {
+            "logprobs": -72.2752036,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "DevOps_Engineer/src/__init__.py": {
+            "logprobs": -93.350193951,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Project_Manager/core/queue.py": {
+            "logprobs": -190.1570734284692,
+            "metrics": {
+                "loc": 35,
+                "sloc": 30,
+                "lloc": 30,
+                "comments": 0,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 10
+            }
+        },
+        "DevOps_Engineer/fastapi/__init__.py": {
+            "logprobs": -160.12445797063077,
+            "metrics": {
+                "loc": 19,
+                "sloc": 13,
+                "lloc": 14,
+                "comments": 0,
+                "multi": 4,
+                "blank": 2,
+                "cyclomatic": 5
+            }
+        },
+        "Project_Manager/utils.py": {
+            "logprobs": -421.5631807025785,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Project_Manager/core/task.py": {
+            "logprobs": -256.0022957057982,
+            "metrics": {
+                "loc": 47,
+                "sloc": 44,
+                "lloc": 29,
+                "comments": 1,
+                "multi": 0,
+                "blank": 3,
+                "cyclomatic": 9
+            }
+        },
+        "Project_Manager/core/logger.py": {
+            "logprobs": -125.926660116262,
+            "metrics": {
+                "loc": 21,
+                "sloc": 18,
+                "lloc": 18,
+                "comments": 0,
+                "multi": 0,
+                "blank": 3,
+                "cyclomatic": 2
+            }
+        },
+        "DevOps_Engineer/fastapi/utils.py": {
+            "logprobs": -427.05723871341115,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Business_Analyst/automation/interface.py": {
+            "logprobs": -334.32171798303506,
+            "metrics": {
+                "loc": 59,
+                "sloc": 44,
+                "lloc": 28,
+                "comments": 4,
+                "multi": 3,
+                "blank": 8,
+                "cyclomatic": 10
+            }
+        },
+        "Project_Manager/api/utils.py": {
+            "logprobs": -426.8286198947653,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Project_Manager/core/utils.py": {
+            "logprobs": -428.26226288414017,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "Project_Manager/__init__.py": {
+            "logprobs": -90.943963514,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "DevOps_Engineer/src/logger.py": {
+            "logprobs": -130.9506372520534,
+            "metrics": {
+                "loc": 15,
+                "sloc": 10,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 2
+            }
+        },
+        "DevOps_Engineer/src/api.py": {
+            "logprobs": -386.3996576235348,
+            "metrics": {
+                "loc": 70,
+                "sloc": 40,
+                "lloc": 39,
+                "comments": 4,
+                "multi": 16,
+                "blank": 10,
+                "cyclomatic": 11
+            }
+        },
+        "DevOps_Engineer/src/utils.py": {
+            "logprobs": -423.5472993115601,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "DevOps_Engineer/tests/__init__.py": {
+            "logprobs": -91.3030728228,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Project_Manager/core/scheduler.py": {
+            "logprobs": -162.5990743787107,
+            "metrics": {
+                "loc": 24,
+                "sloc": 21,
+                "lloc": 21,
+                "comments": 0,
+                "multi": 0,
+                "blank": 3,
+                "cyclomatic": 8
+            }
+        },
+        "Business_Analyst/automation/security.py": {
+            "logprobs": -191.83411481927843,
+            "metrics": {
+                "loc": 38,
+                "sloc": 21,
+                "lloc": 25,
+                "comments": 0,
+                "multi": 13,
+                "blank": 4,
+                "cyclomatic": 16
+            }
+        },
+        "Project_Manager/api/__init__.py": {
+            "logprobs": -36.26294,
+            "metrics": {
+                "loc": 0,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 0,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Business_Analyst/automation/logger.py": {
+            "logprobs": -122.35418518601999,
+            "metrics": {
+                "loc": 14,
+                "sloc": 6,
+                "lloc": 8,
+                "comments": 0,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 4
+            }
+        },
+        "Business_Analyst/__init__.py": {
+            "logprobs": -90.2950282288,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Project_Manager/api/app.py": {
+            "logprobs": -370.1470172798265,
+            "metrics": {
+                "loc": 52,
+                "sloc": 45,
+                "lloc": 48,
+                "comments": 2,
+                "multi": 0,
+                "blank": 5,
+                "cyclomatic": 7
+            }
+        },
+        "DevOps_Engineer/src/scheduler.py": {
+            "logprobs": -685.807891509559,
+            "metrics": {
+                "loc": 130,
+                "sloc": 74,
+                "lloc": 82,
+                "comments": 15,
+                "multi": 18,
+                "blank": 24,
+                "cyclomatic": 52
+            }
+        },
+        "utils.py": {
+            "logprobs": -427.21528124832577,
+            "metrics": {
+                "loc": 72,
+                "sloc": 61,
+                "lloc": 62,
+                "comments": 1,
+                "multi": 9,
+                "blank": 2,
+                "cyclomatic": 16
+            }
+        },
+        "total_loc": 1285,
+        "total_sloc": 983,
+        "total_lloc": 973,
+        "total_comments": 53,
+        "total_multi": 162,
+        "total_blank": 99,
+        "total_cyclomatic": 314
+    }
+}

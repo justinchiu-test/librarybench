@@ -17,9 +17,11 @@ function usage {
   echo "  -t, --task TASK      Process only specified task"
   echo "  -p, --personas       Generate personas for tasks"
   echo "  -i, --implement      Implement solutions for all personas"
+  echo "  -r, --refactor       Refactor implementations for all personas"
   echo "  --iterative          Implement iteratively until successful (default: true)"
   echo "  --no-iterative       Disable iterative implementation"
-  echo "  --suffixes SUFFIXES  Suffixes for new repo versions (comma-separated list)"
+  echo "  --suffixes SUFFIXES  Suffixes for new repo versions (space-separated list)"
+  echo "  --to_refactor TO_REFACTOR  Repos to group and refactor (space-separated list)"
   echo "  -h, --help           Show this help message"
   exit 1
 }
@@ -27,9 +29,11 @@ function usage {
 # Default options
 GEN_PERSONAS=false
 IMPLEMENT=false
+REFACTOR=false
 ITERATIVE=true
 SPECIFIC_TASK=""
 SUFFIXES="_0"
+TO_REFACTOR=""
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -50,8 +54,11 @@ while [[ $# -gt 0 ]]; do
       IMPLEMENT=true
       shift
       ;;
+    -r|--refactor)
+      REFACTOR=true
+      shift
+      ;;
     --iterative)
-      # No parameter needed since it's a boolean flag
       ITERATIVE=true
       shift
       ;;
@@ -60,8 +67,20 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --suffixes)
-      SUFFIXES="$2"
-      shift 2
+      shift
+      SUFFIXES=()
+      while [[ $# -gt 0 && ! $1 =~ ^- ]]; do
+        SUFFIXES+=("$1")
+        shift
+      done
+      ;;
+    --to_refactor)
+      shift
+      TO_REFACTOR=()
+      while [[ $# -gt 0 && ! $1 =~ ^- ]]; do
+        TO_REFACTOR+=("$1")
+        shift
+      done
       ;;
     -h|--help)
       usage
@@ -72,6 +91,7 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
 
 # Filter tasks if specific task is provided
 if [ ! -z "$SPECIFIC_TASK" ]; then
@@ -120,29 +140,31 @@ for task in "${tasks[@]}"; do
       fi
     done
   fi
+  
+  # Refactor implementations if requested
+  if [ "$REFACTOR" = true ]; then
+    echo "Refactoring for $task..."
+    
+    # Build the python command with suffixes
+    CMD=(python llm_repo_refactor.py --model "$MODEL" --task refactor --suffixes)
+    for suffix in "${SUFFIXES[@]}"; do
+      CMD+=( "$suffix")
+    done
+    CMD+=(--starter-repo-path "$task" --repos_to_refactor)
+    for repo_to_refactor in "${TO_REFACTOR[@]}"; do
+      CMD+=( "$repo_to_refactor")
+    done
+    
+    echo "Running: ${CMD[*]}"
+    "${CMD[@]}"
+  fi
+
 done
 
 echo "All tasks completed!"
 
 
-# The generate.sh script will:
-#   1. Optionally generate personas for each task
-#   2. Find all persona directories for implementation
-#   3. Run one-pass implementation for each persona
-#   4. Optionally run iterative implementation to improve solutions
-
-#   You can now use it like:
-#   # Generate personas and implement for all tasks with default model
-#   ./generate.sh
-
-#   # Generate only personas using Claude
-#   ./generate.sh -p -m "claude-3-7-sonnet-20250219"
 
 #   # Implement solutions only for a specific task
-#   ./generate.sh -i -t document_editor
-
-#   # Full control with custom suffixes and iterative implementation
-#   ./generate.sh -m "o4-mini" -t workflow_orchestration --suffixes "_v1,_v2,_v3" --iterative
-#   
-#   # Disable iterative implementation
-#   ./generate.sh --no-iterative
+#   ./generate.sh -i -t data_encoder --iterative
+#   ./generate.sh -r --suffixes _0 _1 --task document_editor --to_refactor document_editor_technical_writer_o4-mini_iterative document_editor_SoftwareDeveloper_o4-mini_iterative document_editor_project_manager_o4-mini_iterative

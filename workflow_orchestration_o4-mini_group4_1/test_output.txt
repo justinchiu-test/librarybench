@@ -1,0 +1,104 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 3 items / 5 errors
+
+IT_Administrator/test_auth.py ...                                                             [100%]
+
+============================================== ERRORS ===============================================
+_____ ERROR collecting workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_version.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_version.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Administrator/test_version.py:2: in <module>
+    from IT_Administrator.it_manager.version import VersionedEntity
+IT_Administrator/it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+IT_Administrator/it_manager/tasks.py:6: in <module>
+    from utils import run_with_timeout
+utils.py:5: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/alert.py:2: in <module>
+    from utils import format_email, format_message
+E   ImportError: cannot import name 'format_email' from partially initialized module 'utils' (most likely due to a circular import) (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/utils.py)
+____ ERROR collecting workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_scheduler.py ____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_scheduler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Administrator/test_scheduler.py:4: in <module>
+    from IT_Administrator.it_manager.scheduler import Scheduler
+IT_Administrator/it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+IT_Administrator/it_manager/tasks.py:6: in <module>
+    from utils import run_with_timeout
+utils.py:5: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/alert.py:2: in <module>
+    from utils import format_email, format_message
+E   ImportError: cannot import name 'format_email' from partially initialized module 'utils' (most likely due to a circular import) (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/utils.py)
+______ ERROR collecting workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_alert.py ______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_alert.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Administrator/test_alert.py:1: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+IT_Administrator/it_manager/tasks.py:6: in <module>
+    from utils import run_with_timeout
+utils.py:5: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/alert.py:2: in <module>
+    from utils import format_email, format_message
+E   ImportError: cannot import name 'format_email' from partially initialized module 'utils' (most likely due to a circular import) (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/utils.py)
+____ ERROR collecting workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_workflow.py _____
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Administrator/test_workflow.py:2: in <module>
+    from IT_Administrator.it_manager.workflow import Workflow
+IT_Administrator/it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+IT_Administrator/it_manager/tasks.py:6: in <module>
+    from utils import run_with_timeout
+utils.py:5: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/alert.py:2: in <module>
+    from utils import format_email, format_message
+E   ImportError: cannot import name 'format_email' from partially initialized module 'utils' (most likely due to a circular import) (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/utils.py)
+______ ERROR collecting workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_tasks.py ______
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/IT_Administrator/test_tasks.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+IT_Administrator/test_tasks.py:3: in <module>
+    from IT_Administrator.it_manager.tasks import Task, TaskState
+IT_Administrator/it_manager/__init__.py:3: in <module>
+    from .tasks import Task, TaskState
+IT_Administrator/it_manager/tasks.py:6: in <module>
+    from utils import run_with_timeout
+utils.py:5: in <module>
+    from IT_Administrator.it_manager.alert import AlertManager
+IT_Administrator/it_manager/alert.py:2: in <module>
+    from utils import format_email, format_message
+E   ImportError: cannot import name 'format_email' from partially initialized module 'utils' (most likely due to a circular import) (/Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group4_1/utils.py)
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+ERROR IT_Administrator/test_version.py
+ERROR IT_Administrator/test_scheduler.py
+ERROR IT_Administrator/test_alert.py
+ERROR IT_Administrator/test_workflow.py
+ERROR IT_Administrator/test_tasks.py
+==================================== 3 passed, 5 errors in 0.18s ====================================

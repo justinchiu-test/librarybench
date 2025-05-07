@@ -126,7 +126,7 @@ def compute_code_metrics(code: str):
 
 # ---- Repo Metrics ----
 
-async def compute_metrics(directory, model):
+async def compute_metrics(directory, model, codebank_file=None):
     directory = Path(directory)
 
     total_logprob = 0.0
@@ -138,15 +138,33 @@ async def compute_metrics(directory, model):
     tasks = []
     program_names = []
     codes = {}
+    codebank_logprobs, codebank_tokens = 0., []
+    if codebank_file:
+        try:
+            with open(codebank_file, "r") as f:
+                codebank = f.read()
+                codes[codebank_file] = codebank
+            codebank_logprobs, codebank_tokens = compute_logprob_together(code, model)
+        except Exception as e:
+            print(f"[ERROR] Failed to process {codebank_file}: {e}")
+            failed_files.append(codebank_file)
+
     for file in directory.glob("**/*.py"):
         if os.path.basename(file).startswith("test"): continue
         program_name = os.path.join(*file.parts[1:])
         program_names.append(program_name)
+        if program_name == codebank_file:
+            tasks.append((codebank_logprobs, codebank_tokens))
+            continue
         try:
             with open(file, "r") as f:
                 code = f.read()
                 codes[program_name] = code
-            tasks.append(compute_logprob_together(code, model))
+            if codebank_file: 
+                full_code = codes[codebank_file].rstrip() + "\n\n" + code
+            else:
+                full_code = code
+            tasks.append(compute_logprob_together(full_code, model))
         except Exception as e:
             print(f"[ERROR] Failed to process {file.name}: {e}")
             failed_files.append(file.name)
@@ -158,9 +176,13 @@ async def compute_metrics(directory, model):
         if logprobs is None:
             failed_files.append(f"{program_name}.py")
             continue
-
-        sum_logprob = sum(logprobs)
-        num_tokens = len(tokens)
+        
+        if program_name != codebank_file:
+            sum_logprob = sum(logprobs[len(codebank_tokens)+1:])
+            num_tokens = len(tokens[len(codebank_tokens)+1:])
+        else:
+            sum_logprob = sum(logprobs)
+            num_tokens = len(tokens)
 
         logprobs_dict[program_name] = sum_logprob
         metrics_dict[program_name] = compute_code_metrics(codes[program_name])
@@ -171,7 +193,7 @@ async def compute_metrics(directory, model):
         print(f"Processed {program_name}: logprob={sum_logprob:.2f}, tokens={num_tokens}")
 
     print("\n=== Summary ===")
-    print(f"Total Log Probability: {total_logprob:.2f}")
+    print(f"Full Repo Log Probability: {total_logprob:.2f}")
     print(f"Total Tokens: {total_tokens}")
     total_lloc = sum(m["lloc"] for m in metrics_dict.values())
     total_sloc = sum(m["sloc"] for m in metrics_dict.values())
@@ -237,6 +259,14 @@ async def main(args):
     existing_metrics = json.load(open(output_file)) if os.path.exists(output_file) else {}
     existing_metrics[branch_name] = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
     json.dump(existing_metrics, open(output_file, 'w'), indent=2)
+
+    results = {}
+    if os.path.exists(os.path.join(args.directory, "results.json")):
+        results = json.load(open(os.path.join(args.directory, "results.json")))
+    
+    results["metrics"] = existing_metrics[branch_name]
+    with open(os.path.join(args.directory, "results.json"), 'w') as wf:
+        json.dump(results, wf, indent=4)
 
 
 

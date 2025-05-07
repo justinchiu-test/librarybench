@@ -111,18 +111,29 @@ async def compute_logprob_together(text, model):
 # ---- Code Metrics ----
 
 def compute_code_metrics(code: str):
-    raw_metrics = analyze(code)
-    complexity_metrics = cc_visit(code)
+    try:
+        raw_metrics = analyze(code)
+        complexity_metrics = cc_visit(code)
 
-    return {
-        "loc": raw_metrics.loc,     # total lines of code
-        "sloc": raw_metrics.sloc,   # source lines of code (non-blank, non-comment)
-        "lloc": raw_metrics.lloc,   # logical lines (statements, e.g. `if`, `for`, `return`)
-        "comments": raw_metrics.comments,
-        "multi": raw_metrics.multi,
-        "blank": raw_metrics.blank,
-        "cyclomatic": sum(block.complexity for block in complexity_metrics),
-    }
+        return {
+            "loc": raw_metrics.loc,     # total lines of code
+            "sloc": raw_metrics.sloc,   # source lines of code (non-blank, non-comment)
+            "lloc": raw_metrics.lloc,   # logical lines (statements, e.g. `if`, `for`, `return`)
+            "comments": raw_metrics.comments,
+            "multi": raw_metrics.multi,
+            "blank": raw_metrics.blank,
+            "cyclomatic": sum(block.complexity for block in complexity_metrics),
+        }
+    except: 
+        return {
+            "loc": float('nan'),
+            "sloc": float('nan'),
+            "lloc":  float('nan'),
+            "comments": float('nan'),
+            "multi": float('nan'),
+            "blank": float('nan'),
+            "cyclomatic": float('nan'),
+        }
 
 # ---- Repo Metrics ----
 
@@ -294,7 +305,10 @@ async def main(args):
     if os.path.exists(os.path.join(args.directory, "results.json")):
         results = json.load(open(os.path.join(args.directory, "results.json")))
     
-    results["metrics"] = existing_metrics[branch_name]
+    if args.codebank_file:
+        results["metrics_after"] = existing_metrics[branch_name]
+    else:
+        results["metrics_before"] = existing_metrics[branch_name]
     with open(os.path.join(args.directory, "results.json"), 'w') as wf:
         json.dump(results, wf, indent=4)
 

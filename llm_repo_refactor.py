@@ -307,18 +307,18 @@ def implement(agent, args):
         final_repo_results = repo.evaluate()
         print(final_repo_results)
 
-def _update_local_imports(test_file_paths, target_dir, repo_path):
-    # Update relative imports in the test files to account for new directory structure
-    for test_file_path in test_file_paths:
-        target_test_file = os.path.join(target_dir, os.path.relpath(test_file_path, repo_path))
-        if os.path.exists(target_test_file):
+def _update_local_imports(file_paths, target_dir, repo_path):
+    # Update relative imports in the files to account for new directory structure
+    for file_path in file_paths:
+        target_file = os.path.join(target_dir, os.path.relpath(file_path, repo_path))
+        if os.path.exists(target_file):
             try:
-                with open(target_test_file, 'r') as f:
+                with open(target_file, 'r') as f:
                     content = f.read()
                 
                 # Add __init__.py files to make imports work
-                test_dir = os.path.dirname(target_test_file)
-                init_file = os.path.join(test_dir, "__init__.py")
+                file_dir = os.path.dirname(target_file)
+                init_file = os.path.join(file_dir, "__init__.py")
                 if not os.path.exists(init_file):
                     with open(init_file, 'w') as f:
                         f.write("# Auto-generated __init__.py to enable imports\n")
@@ -326,6 +326,7 @@ def _update_local_imports(test_file_paths, target_dir, repo_path):
                 
                 # Find import statements (both regular imports and from imports)
                 import_pattern = re.compile(r'(?m)^(from\s+|import\s+)([.\w]+)')
+                if "core.logger" in content: breakpoint()
                 matches = import_pattern.findall(content)
                 
                 # Get the persona name to prepend to imports
@@ -373,11 +374,71 @@ def _update_local_imports(test_file_paths, target_dir, repo_path):
                             modified_content = modified_content.replace(old_import, new_import)
                 # Write the updated content back to the file
                 if modified_content != content:
-                    with open(target_test_file, 'w') as f:
+                    with open(target_file, 'w') as f:
                         f.write(modified_content)
-                    logger.info(f"Updated imports in {target_test_file}")
+                    logger.info(f"Updated imports in {target_file}")
             except Exception as e:
-                logger.error(f"Error updating imports in {target_test_file}: {e}")
+                logger.error(f"Error updating imports in {target_file}: {e}")
+
+def _create_grouped_repo(central_repo_path, persona_repos, args):
+    
+    persona_names = []
+    for repo_name in persona_repos:
+        persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
+        persona_names.append(persona_name)
+    personas = "_".join(sorted(persona_names))
+    
+    # If it already exists, ask for confirmation before overwriting
+    do_reimplement = True
+    if os.path.exists(central_repo_path):
+        do_reimplement = input(f"{central_repo_path} already exists. Re-refactor? [y/]").strip() == "y"
+        if not do_reimplement:
+            return personas, Repo(central_repo_path)
+        shutil.rmtree(central_repo_path)
+
+    os.makedirs(central_repo_path, exist_ok=True)
+
+    # Copy all repos into the central repo as subdirectories
+    for repo_path in persona_repos:
+        repo_name = os.path.basename(repo_path)
+        persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
+        target_dir = os.path.join(central_repo_path, persona_name)
+        
+        # Copy the repo contents
+        shutil.copytree(repo_path, target_dir)
+        # TODO consider removing old eval artifacts e.g. test_output.txt and report.json
+        
+        # Collect source and test files
+        file_paths = glob.glob(os.path.join(repo_path, "**", "*.py"), recursive=True)
+        _update_local_imports(file_paths, target_dir, repo_path)
+    
+    # Create the central repo object
+    central_repo = Repo(central_repo_path)
+    logger.info(f"Computing metrics before refactoring for {central_repo_path}")
+    try:
+        before_score_cmd = f"python score.py --directory {central_repo_path} --branch_name {personas}_original"
+        subprocess.run(before_score_cmd, shell=True, check=True)
+        logger.info(f"Successfully computed metrics before refactoring")
+        
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Failed to compute metrics before refactoring: {e}")
+
+    # Try to load the metrics file to show differences
+    metrics_file = f"{os.path.basename(args.starter_repo_path)}_metrics.json"
+    original_metrics = {}
+    if os.path.exists(metrics_file):
+        try:
+            with open(metrics_file, 'r') as f:
+                metrics_data = json.load(f)
+            original_metrics = metrics_data.get(f"{personas}_original", {})
+        except: 
+            pass
+    eval_results = central_repo.evaluate()
+    logger.info(f"Originl repo test results: {eval_results['num_passed']}/{eval_results['num_tests']} tests passing ({eval_results['passed']*100:.1f}%)")
+    with open(os.path.join(central_repo.repo_path, "results.json"), 'w') as wf:
+        json.dump({"pytest": eval_results, "metrics_before": original_metrics}, wf, indent=4)
+
+    return personas, central_repo
 
 def refactor(agent, args):
     repos_to_refactor = glob.glob(f"{args.starter_repo_path}_*_{args.model}_iterative")
@@ -395,14 +456,11 @@ def refactor(agent, args):
         # Process repos in groups of 3
         group = repos_to_refactor[i:i+3]
         logger.info(f"Processing group of repos: {group}")
-
-        persona_names = []
-        for repo_name in group:
-            persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
-            persona_names.append(persona_name)
-        personas = "_".join(sorted(persona_names))
         
-        original_computed = False
+        # Compute metrics on original
+        original_central_repo_path = f"{central_repo_starter}_original"
+        personas, central_repo = _create_grouped_repo(original_central_repo_path, group, args)
+
         for suffix in group_idx_to_remaining_suffixes[group_idx]:
             # Create a new central repo that combines these as subdirectories
             central_repo_path = f"{central_repo_starter}{suffix}"
@@ -416,36 +474,10 @@ def refactor(agent, args):
             
             # Create the central repo directory
             os.makedirs(central_repo_path, exist_ok=True)
-            
-            # Copy all repos into the central repo as subdirectories
-            for repo_path in group:
-                repo_name = os.path.basename(repo_path)
-                persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
-                target_dir = os.path.join(central_repo_path, persona_name)
-                
-                # Copy the repo contents
-                shutil.copytree(repo_path, target_dir)
-                # TODO consider removing old eval artifacts e.g. test_output.txt and report.json
-                
-                # Collect source and test files
-                test_file_paths = glob.glob(os.path.join(repo_path, "**", "test*.py"), recursive=True)
-                
-                _update_local_imports(test_file_paths, target_dir, repo_path)
+            shutil.copytree(original_central_repo_path, central_repo_path)
             
             # Create the central repo object
             central_repo = Repo(central_repo_path)
-            
-            # Calculate metrics before refactoring
-            if not original_computed:
-                logger.info(f"Computing metrics before refactoring for {central_repo_path}")
-                try:
-                    # Run score.py on the central repo
-                    before_score_cmd = f"python score.py --directory {central_repo_path} --branch_name {personas}_original"
-                    subprocess.run(before_score_cmd, shell=True, check=True)
-                    logger.info(f"Successfully computed metrics before refactoring")
-                    original_computed = True
-                except subprocess.CalledProcessError as e:
-                    logger.error(f"Failed to compute metrics before refactoring: {e}")
                 
             # Perform the refactoring
             logger.info(f"Starting refactoring of {central_repo_path}")
@@ -454,7 +486,6 @@ def refactor(agent, args):
             # Calculate metrics after refactoring
             logger.info(f"Computing metrics after refactoring for {central_repo_path}")
             try:
-                # Run score.py on the central repo again
                 after_score_cmd = f"python score.py --directory {central_repo_path} --branch_name {personas}{suffix}"
                 subprocess.run(after_score_cmd, shell=True, check=True)
                 logger.info(f"Successfully computed metrics after refactoring")
@@ -468,6 +499,7 @@ def refactor(agent, args):
                             
                         # Find before and after metrics if they exist
                         refactor_metrics = metrics_data.get(f"{personas}{suffix}", {})
+                        original_metrics = metrics_data.get(f"{personas}_original", {})
                         
                         # Log the total metrics
                         logger.info(f"Refactored Total Log Probability: {refactor_metrics.get('total_logprobs', 'N/A')}")
@@ -490,7 +522,7 @@ def refactor(agent, args):
             eval_results = central_repo.evaluate()
             logger.info(f"Refactored repo test results: {eval_results['num_passed']}/{eval_results['num_tests']} tests passing ({eval_results['passed']*100:.1f}%)")
             with open(os.path.join(central_repo.repo_path, "results.json"), 'w') as wf:
-                json.dump({"pytest": eval_results, "metrics": refactor_metrics}, wf, indent=4)
+                json.dump({"pytest": eval_results, "metrics_before": original_metrics, "metrics_after": refactor_metrics}, wf, indent=4)
 
 def main():
     parser = argparse.ArgumentParser(description="LLM Repository Refactor")

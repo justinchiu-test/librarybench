@@ -141,20 +141,36 @@ async def compute_metrics(directory, model, codebank_file=None):
     codebank_logprobs, codebank_tokens = 0., []
     if codebank_file:
         try:
-            with open(codebank_file, "r") as f:
+            with open(os.path.join(directory, codebank_file), "r") as f:
                 codebank = f.read()
                 codes[codebank_file] = codebank
-            codebank_logprobs, codebank_tokens = compute_logprob_together(code, model)
+            # Create task for codebank logprobs to be awaited later
+            codebank_task = compute_logprob_together(codebank, model)
         except Exception as e:
             print(f"[ERROR] Failed to process {codebank_file}: {e}")
             failed_files.append(codebank_file)
+    
 
+    # If we have a codebank file, await its task first to get logprobs and tokens
+    if codebank_file and 'codebank_task' in locals():
+        try:
+            codebank_logprobs, codebank_tokens = await codebank_task
+            print(f"Processed codebank {codebank_file}: logprob={sum(codebank_logprobs):.2f}, tokens={len(codebank_tokens)}")
+        except Exception as e:
+            print(f"[ERROR] Failed to process codebank {codebank_file}: {e}")
+            failed_files.append(codebank_file)
+            codebank_logprobs, codebank_tokens = [], []
+
+    # Store codebank results separately
+    codebank_result = None
+    
     for file in directory.glob("**/*.py"):
         if os.path.basename(file).startswith("test"): continue
         program_name = os.path.join(*file.parts[1:])
         program_names.append(program_name)
         if program_name == codebank_file:
-            tasks.append((codebank_logprobs, codebank_tokens))
+            # Store codebank result separately instead of adding to tasks
+            codebank_result = (codebank_logprobs, codebank_tokens)
             continue
         try:
             with open(file, "r") as f:
@@ -169,17 +185,31 @@ async def compute_metrics(directory, model, codebank_file=None):
             print(f"[ERROR] Failed to process {file.name}: {e}")
             failed_files.append(file.name)
 
-    results = await tqdm.gather(*tasks)
+    # Gather all non-codebank tasks
+    other_results = await tqdm.gather(*tasks) if tasks else []
+    
+    # Combine results, inserting codebank result at the right position
+    results = []
+    task_index = 0
+    for name in program_names:
+        if name == codebank_file:
+            results.append(codebank_result)
+        else:
+            if task_index < len(other_results):
+                results.append(other_results[task_index])
+                task_index += 1
 
     for program_name, result in zip(program_names, results):
         logprobs, tokens = result
-        if logprobs is None:
+        if logprobs is None or len(logprobs) == 0:
             failed_files.append(f"{program_name}.py")
             continue
         
-        if program_name != codebank_file:
-            sum_logprob = sum(logprobs[len(codebank_tokens)+1:])
-            num_tokens = len(tokens[len(codebank_tokens)+1:])
+        if program_name != codebank_file and codebank_file and len(codebank_tokens) > 0:
+            # If we're processing a file that's conditioned on the codebank,
+            # only count the logprobs after the codebank tokens
+            sum_logprob = sum(logprobs[len(codebank_tokens)+1:]) if len(logprobs) > len(codebank_tokens)+1 else 0
+            num_tokens = len(tokens[len(codebank_tokens)+1:]) if len(tokens) > len(codebank_tokens)+1 else 0
         else:
             sum_logprob = sum(logprobs)
             num_tokens = len(tokens)
@@ -254,7 +284,7 @@ async def main(args):
     else:
         branch_name = args.branch_name
 
-    logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model)
+    logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model, args.codebank_file)
 
     existing_metrics = json.load(open(output_file)) if os.path.exists(output_file) else {}
     existing_metrics[branch_name] = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
@@ -275,6 +305,7 @@ if __name__ == "__main__":
     parser.add_argument("--directory", type=str, help="Paths to .py files")
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
     parser.add_argument("--branch_name", type=str, default=None, help="What key to log the metrics under")
+    parser.add_argument("--codebank_file", type=str, default=None, help="Codebank file to condition on")
     args = parser.parse_args()
     
     asyncio.run(main(args))

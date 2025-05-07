@@ -6,34 +6,10 @@
         "num_tests": 21
     },
     "metrics": {
-        "total_logprobs": -5391.486872779626,
-        "total_tokens": 6537,
-        "Data_Scientist/__init__.py": {
-            "logprobs": -164.057675585,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Engineer/workflow/__init__.py": {
-            "logprobs": -103.57976182208,
-            "metrics": {
-                "loc": 2,
-                "sloc": 1,
-                "lloc": 1,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Scientist/tests/utils.py": {
-            "logprobs": -138.5863603785667,
+        "total_logprobs": -4180.047666154788,
+        "total_tokens": 6462,
+        "Data_Engineer/utils.py": {
+            "logprobs": -35.2755306737369,
             "metrics": {
                 "loc": 17,
                 "sloc": 9,
@@ -42,250 +18,10 @@
                 "multi": 6,
                 "blank": 2,
                 "cyclomatic": 4
-            }
-        },
-        "Data_Engineer/workflow/scheduler.py": {
-            "logprobs": -211.9758585223297,
-            "metrics": {
-                "loc": 39,
-                "sloc": 28,
-                "lloc": 30,
-                "comments": 1,
-                "multi": 7,
-                "blank": 4,
-                "cyclomatic": 11
-            }
-        },
-        "Data_Engineer/workflow/utils.py": {
-            "logprobs": -136.068910317368,
-            "metrics": {
-                "loc": 17,
-                "sloc": 9,
-                "lloc": 11,
-                "comments": 0,
-                "multi": 6,
-                "blank": 2,
-                "cyclomatic": 4
-            }
-        },
-        "Product_Manager/task_manager/task_manager.py": {
-            "logprobs": -318.6964488299104,
-            "metrics": {
-                "loc": 49,
-                "sloc": 22,
-                "lloc": 29,
-                "comments": 3,
-                "multi": 19,
-                "blank": 5,
-                "cyclomatic": 9
-            }
-        },
-        "Product_Manager/tests/__init__.py": {
-            "logprobs": -91.5502541893,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Scientist/scheduler.py": {
-            "logprobs": -253.1678707933239,
-            "metrics": {
-                "loc": 53,
-                "sloc": 39,
-                "lloc": 34,
-                "comments": 1,
-                "multi": 8,
-                "blank": 5,
-                "cyclomatic": 14
-            }
-        },
-        "Data_Scientist/logger_config.py": {
-            "logprobs": -160.98776776303993,
-            "metrics": {
-                "loc": 25,
-                "sloc": 16,
-                "lloc": 17,
-                "comments": 2,
-                "multi": 4,
-                "blank": 3,
-                "cyclomatic": 2
-            }
-        },
-        "Data_Engineer/workflow/task.py": {
-            "logprobs": -370.89428699100574,
-            "metrics": {
-                "loc": 79,
-                "sloc": 54,
-                "lloc": 48,
-                "comments": 3,
-                "multi": 17,
-                "blank": 5,
-                "cyclomatic": 14
             }
         },
         "Product_Manager/task_manager/utils.py": {
-            "logprobs": -136.4609623655985,
-            "metrics": {
-                "loc": 17,
-                "sloc": 9,
-                "lloc": 11,
-                "comments": 0,
-                "multi": 6,
-                "blank": 2,
-                "cyclomatic": 4
-            }
-        },
-        "Data_Engineer/__init__.py": {
-            "logprobs": -92.4564856737,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Scientist/tests/__init__.py": {
-            "logprobs": -92.4493002513,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Engineer/ui.py": {
-            "logprobs": -234.08080270501245,
-            "metrics": {
-                "loc": 41,
-                "sloc": 26,
-                "lloc": 30,
-                "comments": 0,
-                "multi": 9,
-                "blank": 5,
-                "cyclomatic": 5
-            }
-        },
-        "Data_Engineer/workflow/manager.py": {
-            "logprobs": -275.7012783322851,
-            "metrics": {
-                "loc": 43,
-                "sloc": 28,
-                "lloc": 34,
-                "comments": 1,
-                "multi": 9,
-                "blank": 5,
-                "cyclomatic": 13
-            }
-        },
-        "Data_Engineer/utils.py": {
-            "logprobs": -138.0528187296265,
-            "metrics": {
-                "loc": 17,
-                "sloc": 9,
-                "lloc": 11,
-                "comments": 0,
-                "multi": 6,
-                "blank": 2,
-                "cyclomatic": 4
-            }
-        },
-        "Data_Scientist/task_manager.py": {
-            "logprobs": -736.8826148860834,
-            "metrics": {
-                "loc": 192,
-                "sloc": 143,
-                "lloc": 147,
-                "comments": 5,
-                "multi": 16,
-                "blank": 30,
-                "cyclomatic": 47
-            }
-        },
-        "Data_Engineer/workflow/auth.py": {
-            "logprobs": -182.9235015421802,
-            "metrics": {
-                "loc": 23,
-                "sloc": 14,
-                "lloc": 15,
-                "comments": 1,
-                "multi": 6,
-                "blank": 2,
-                "cyclomatic": 1
-            }
-        },
-        "Data_Scientist/api.py": {
-            "logprobs": -349.18271390291545,
-            "metrics": {
-                "loc": 75,
-                "sloc": 64,
-                "lloc": 64,
-                "comments": 1,
-                "multi": 0,
-                "blank": 10,
-                "cyclomatic": 15
-            }
-        },
-        "Product_Manager/task_manager/__init__.py": {
-            "logprobs": -78.5190003,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
-        "Data_Engineer/workflow/ui.py": {
-            "logprobs": -394.9950528171624,
-            "metrics": {
-                "loc": 67,
-                "sloc": 52,
-                "lloc": 60,
-                "comments": 1,
-                "multi": 3,
-                "blank": 6,
-                "cyclomatic": 5
-            }
-        },
-        "Data_Scientist/utils.py": {
-            "logprobs": -135.9961405580005,
-            "metrics": {
-                "loc": 17,
-                "sloc": 9,
-                "lloc": 11,
-                "comments": 0,
-                "multi": 6,
-                "blank": 2,
-                "cyclomatic": 4
-            }
-        },
-        "Data_Scientist/tests/conftest.py": {
-            "logprobs": -113.2545843485795,
-            "metrics": {
-                "loc": 7,
-                "sloc": 5,
-                "lloc": 5,
-                "comments": 1,
-                "multi": 0,
-                "blank": 1,
-                "cyclomatic": 0
-            }
-        },
-        "utils.py": {
-            "logprobs": -136.9158320902995,
+            "logprobs": -36.1847335159681,
             "metrics": {
                 "loc": 17,
                 "sloc": 9,
@@ -297,7 +33,7 @@
             }
         },
         "Data_Scientist/task_queue.py": {
-            "logprobs": -105.7825637600403,
+            "logprobs": -62.6767792541416,
             "metrics": {
                 "loc": 17,
                 "sloc": 10,
@@ -308,8 +44,68 @@
                 "cyclomatic": 6
             }
         },
+        "Data_Scientist/utils.py": {
+            "logprobs": -35.4307525332295,
+            "metrics": {
+                "loc": 17,
+                "sloc": 9,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 4
+            }
+        },
+        "Data_Engineer/workflow/__init__.py": {
+            "logprobs": -72.753853005377,
+            "metrics": {
+                "loc": 2,
+                "sloc": 1,
+                "lloc": 1,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Data_Engineer/workflow/auth.py": {
+            "logprobs": -151.5460001561691,
+            "metrics": {
+                "loc": 23,
+                "sloc": 14,
+                "lloc": 15,
+                "comments": 1,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 1
+            }
+        },
+        "Data_Scientist/api.py": {
+            "logprobs": -321.3207646177267,
+            "metrics": {
+                "loc": 75,
+                "sloc": 64,
+                "lloc": 64,
+                "comments": 1,
+                "multi": 0,
+                "blank": 10,
+                "cyclomatic": 15
+            }
+        },
+        "Data_Scientist/__init__.py": {
+            "logprobs": -137.985586097,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
         "Product_Manager/task_manager/api.py": {
-            "logprobs": -238.2680253249182,
+            "logprobs": -176.10148530151315,
             "metrics": {
                 "loc": 50,
                 "sloc": 23,
@@ -318,6 +114,210 @@
                 "multi": 16,
                 "blank": 11,
                 "cyclomatic": 5
+            }
+        },
+        "Data_Engineer/workflow/task.py": {
+            "logprobs": -344.71254358977524,
+            "metrics": {
+                "loc": 79,
+                "sloc": 54,
+                "lloc": 48,
+                "comments": 3,
+                "multi": 17,
+                "blank": 5,
+                "cyclomatic": 14
+            }
+        },
+        "Data_Scientist/logger_config.py": {
+            "logprobs": -123.42755438497612,
+            "metrics": {
+                "loc": 25,
+                "sloc": 16,
+                "lloc": 17,
+                "comments": 2,
+                "multi": 4,
+                "blank": 3,
+                "cyclomatic": 2
+            }
+        },
+        "Data_Scientist/task_manager.py": {
+            "logprobs": -705.2431531651292,
+            "metrics": {
+                "loc": 192,
+                "sloc": 143,
+                "lloc": 147,
+                "comments": 5,
+                "multi": 16,
+                "blank": 30,
+                "cyclomatic": 47
+            }
+        },
+        "Data_Engineer/__init__.py": {
+            "logprobs": -60.3272866806,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Product_Manager/task_manager/task_manager.py": {
+            "logprobs": -265.8362176338429,
+            "metrics": {
+                "loc": 49,
+                "sloc": 22,
+                "lloc": 29,
+                "comments": 3,
+                "multi": 19,
+                "blank": 5,
+                "cyclomatic": 9
+            }
+        },
+        "Data_Scientist/tests/utils.py": {
+            "logprobs": -35.8019747879103,
+            "metrics": {
+                "loc": 17,
+                "sloc": 9,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 4
+            }
+        },
+        "utils.py": {
+            "logprobs": -139.2735877233603,
+            "metrics": {
+                "loc": 17,
+                "sloc": 9,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 4
+            }
+        },
+        "Data_Scientist/tests/__init__.py": {
+            "logprobs": -59.0940838307,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Data_Engineer/workflow/utils.py": {
+            "logprobs": -35.2438961562527,
+            "metrics": {
+                "loc": 17,
+                "sloc": 9,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 6,
+                "blank": 2,
+                "cyclomatic": 4
+            }
+        },
+        "Data_Scientist/tests/conftest.py": {
+            "logprobs": -76.7965884247869,
+            "metrics": {
+                "loc": 7,
+                "sloc": 5,
+                "lloc": 5,
+                "comments": 1,
+                "multi": 0,
+                "blank": 1,
+                "cyclomatic": 0
+            }
+        },
+        "Data_Engineer/workflow/ui.py": {
+            "logprobs": -355.7906764822103,
+            "metrics": {
+                "loc": 67,
+                "sloc": 52,
+                "lloc": 60,
+                "comments": 1,
+                "multi": 3,
+                "blank": 6,
+                "cyclomatic": 5
+            }
+        },
+        "Product_Manager/tests/__init__.py": {
+            "logprobs": -59.914740193,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Product_Manager/task_manager/__init__.py": {
+            "logprobs": -43.6854091,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Data_Engineer/ui.py": {
+            "logprobs": -203.4863009730399,
+            "metrics": {
+                "loc": 41,
+                "sloc": 26,
+                "lloc": 30,
+                "comments": 0,
+                "multi": 9,
+                "blank": 5,
+                "cyclomatic": 5
+            }
+        },
+        "Data_Scientist/scheduler.py": {
+            "logprobs": -219.31950784739584,
+            "metrics": {
+                "loc": 53,
+                "sloc": 39,
+                "lloc": 34,
+                "comments": 1,
+                "multi": 8,
+                "blank": 5,
+                "cyclomatic": 14
+            }
+        },
+        "Data_Engineer/workflow/scheduler.py": {
+            "logprobs": -176.5135397096599,
+            "metrics": {
+                "loc": 39,
+                "sloc": 28,
+                "lloc": 30,
+                "comments": 1,
+                "multi": 7,
+                "blank": 4,
+                "cyclomatic": 11
+            }
+        },
+        "Data_Engineer/workflow/manager.py": {
+            "logprobs": -246.30512031728608,
+            "metrics": {
+                "loc": 43,
+                "sloc": 28,
+                "lloc": 34,
+                "comments": 1,
+                "multi": 9,
+                "blank": 5,
+                "cyclomatic": 13
             }
         },
         "total_loc": 869,

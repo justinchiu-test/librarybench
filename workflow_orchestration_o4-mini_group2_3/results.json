@@ -5,5 +5,423 @@
         "num_passed": 34,
         "num_tests": 38
     },
-    "metrics": {}
+    "metrics": {
+        "total_logprobs": -4927.975908493209,
+        "total_tokens": 6009,
+        "Software_Developer/task_manager/workflow_manager.py": {
+            "logprobs": -235.7598400343437,
+            "metrics": {
+                "loc": 28,
+                "sloc": 15,
+                "lloc": 17,
+                "comments": 3,
+                "multi": 6,
+                "blank": 4,
+                "cyclomatic": 13
+            }
+        },
+        "Research_Scientist/librarybench/__init__.py": {
+            "logprobs": 0,
+            "metrics": {
+                "loc": 0,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 0,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Software_Developer/task_manager/logger.py": {
+            "logprobs": -65.2848494921089,
+            "metrics": {
+                "loc": 11,
+                "sloc": 10,
+                "lloc": 8,
+                "comments": 0,
+                "multi": 0,
+                "blank": 1,
+                "cyclomatic": 0
+            }
+        },
+        "Software_Developer/__init__.py": {
+            "logprobs": -62.068263296,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "DevOpsEngineer/tasks/core.py": {
+            "logprobs": -103.9217178788253,
+            "metrics": {
+                "loc": 40,
+                "sloc": 33,
+                "lloc": 27,
+                "comments": 0,
+                "multi": 0,
+                "blank": 7,
+                "cyclomatic": 13
+            }
+        },
+        "Research_Scientist/workflow/cli.py": {
+            "logprobs": -211.39824363289614,
+            "metrics": {
+                "loc": 47,
+                "sloc": 31,
+                "lloc": 23,
+                "comments": 0,
+                "multi": 12,
+                "blank": 4,
+                "cyclomatic": 7
+            }
+        },
+        "Software_Developer/task_manager/queue.py": {
+            "logprobs": -160.58793731029544,
+            "metrics": {
+                "loc": 41,
+                "sloc": 34,
+                "lloc": 35,
+                "comments": 0,
+                "multi": 3,
+                "blank": 4,
+                "cyclomatic": 13
+            }
+        },
+        "Research_Scientist/librarybench/utils.py": {
+            "logprobs": -32.498440389889204,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "Software_Developer/task_manager/scheduler.py": {
+            "logprobs": -166.6201022873813,
+            "metrics": {
+                "loc": 35,
+                "sloc": 22,
+                "lloc": 24,
+                "comments": 2,
+                "multi": 6,
+                "blank": 5,
+                "cyclomatic": 6
+            }
+        },
+        "Research_Scientist/librarybench/manager.py": {
+            "logprobs": -307.33011375751715,
+            "metrics": {
+                "loc": 53,
+                "sloc": 37,
+                "lloc": 39,
+                "comments": 4,
+                "multi": 8,
+                "blank": 5,
+                "cyclomatic": 13
+            }
+        },
+        "DevOpsEngineer/__init__.py": {
+            "logprobs": -60.619406497,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Software_Developer/task_manager/utils.py": {
+            "logprobs": -32.3927188615654,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "DevOpsEngineer/tasks/__init__.py": {
+            "logprobs": -50.785383149999994,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Research_Scientist/workflow/scheduler.py": {
+            "logprobs": -218.0651248886798,
+            "metrics": {
+                "loc": 38,
+                "sloc": 26,
+                "lloc": 25,
+                "comments": 1,
+                "multi": 9,
+                "blank": 3,
+                "cyclomatic": 9
+            }
+        },
+        "Software_Developer/task_manager/__init__.py": {
+            "logprobs": -57.4743288,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Research_Scientist/manager.py": {
+            "logprobs": -442.7962081505941,
+            "metrics": {
+                "loc": 61,
+                "sloc": 32,
+                "lloc": 35,
+                "comments": 9,
+                "multi": 12,
+                "blank": 8,
+                "cyclomatic": 16
+            }
+        },
+        "DevOpsEngineer/tasks/retry.py": {
+            "logprobs": -89.2506591972256,
+            "metrics": {
+                "loc": 9,
+                "sloc": 4,
+                "lloc": 5,
+                "comments": 0,
+                "multi": 5,
+                "blank": 0,
+                "cyclomatic": 2
+            }
+        },
+        "Research_Scientist/workflow/models.py": {
+            "logprobs": -182.76059501603402,
+            "metrics": {
+                "loc": 27,
+                "sloc": 23,
+                "lloc": 34,
+                "comments": 1,
+                "multi": 0,
+                "blank": 3,
+                "cyclomatic": 3
+            }
+        },
+        "Software_Developer/task_manager/api.py": {
+            "logprobs": -157.4525526605365,
+            "metrics": {
+                "loc": 40,
+                "sloc": 32,
+                "lloc": 37,
+                "comments": 0,
+                "multi": 0,
+                "blank": 8,
+                "cyclomatic": 9
+            }
+        },
+        "Software_Developer/task_manager/backoff.py": {
+            "logprobs": -90.45627096156818,
+            "metrics": {
+                "loc": 9,
+                "sloc": 5,
+                "lloc": 6,
+                "comments": 0,
+                "multi": 4,
+                "blank": 0,
+                "cyclomatic": 2
+            }
+        },
+        "DevOpsEngineer/tasks/alerting.py": {
+            "logprobs": -94.161450544379,
+            "metrics": {
+                "loc": 13,
+                "sloc": 9,
+                "lloc": 11,
+                "comments": 0,
+                "multi": 0,
+                "blank": 2,
+                "cyclomatic": 7
+            }
+        },
+        "Software_Developer/task_manager/task.py": {
+            "logprobs": -253.6520028189882,
+            "metrics": {
+                "loc": 50,
+                "sloc": 34,
+                "lloc": 33,
+                "comments": 3,
+                "multi": 8,
+                "blank": 5,
+                "cyclomatic": 12
+            }
+        },
+        "Research_Scientist/workflow/auth.py": {
+            "logprobs": -146.49191665171725,
+            "metrics": {
+                "loc": 31,
+                "sloc": 19,
+                "lloc": 22,
+                "comments": 0,
+                "multi": 7,
+                "blank": 4,
+                "cyclomatic": 8
+            }
+        },
+        "DevOpsEngineer/tasks/exceptions.py": {
+            "logprobs": -75.96750262458,
+            "metrics": {
+                "loc": 11,
+                "sloc": 6,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 0,
+                "blank": 2,
+                "cyclomatic": 3
+            }
+        },
+        "Software_Developer/task_manager/versioning.py": {
+            "logprobs": -92.80130118,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "Research_Scientist/workflow/manager.py": {
+            "logprobs": -330.9568245306286,
+            "metrics": {
+                "loc": 54,
+                "sloc": 37,
+                "lloc": 39,
+                "comments": 5,
+                "multi": 8,
+                "blank": 5,
+                "cyclomatic": 13
+            }
+        },
+        "Research_Scientist/utils.py": {
+            "logprobs": -32.1993345095696,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "Research_Scientist/workflow/__init__.py": {
+            "logprobs": -57.066876,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "utils.py": {
+            "logprobs": -139.844023417627,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "DevOpsEngineer/tasks/utils.py": {
+            "logprobs": -31.598021422041,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "DevOpsEngineer/tasks/manager.py": {
+            "logprobs": -627.0130520119202,
+            "metrics": {
+                "loc": 113,
+                "sloc": 83,
+                "lloc": 72,
+                "comments": 7,
+                "multi": 11,
+                "blank": 12,
+                "cyclomatic": 25
+            }
+        },
+        "Software_Developer/task_manager/workflow.py": {
+            "logprobs": -225.8754680319365,
+            "metrics": {
+                "loc": 35,
+                "sloc": 20,
+                "lloc": 22,
+                "comments": 4,
+                "multi": 7,
+                "blank": 5,
+                "cyclomatic": 6
+            }
+        },
+        "Research_Scientist/workflow/utils.py": {
+            "logprobs": -32.4798977923619,
+            "metrics": {
+                "loc": 13,
+                "sloc": 8,
+                "lloc": 9,
+                "comments": 0,
+                "multi": 4,
+                "blank": 1,
+                "cyclomatic": 3
+            }
+        },
+        "Research_Scientist/__init__.py": {
+            "logprobs": -60.345480695000006,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "total_loc": 831,
+        "total_sloc": 560,
+        "total_lloc": 577,
+        "total_comments": 46,
+        "total_multi": 130,
+        "total_blank": 93,
+        "total_cyclomatic": 198
+    }
 }

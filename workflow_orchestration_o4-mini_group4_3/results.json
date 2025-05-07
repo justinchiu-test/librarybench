@@ -6,10 +6,58 @@
         "num_tests": 14
     },
     "metrics": {
-        "total_logprobs": -2596.5996198824505,
-        "total_tokens": 2909,
+        "total_logprobs": -1868.06193904553,
+        "total_tokens": 2879,
+        "IT_Administrator/it_manager/__init__.py": {
+            "logprobs": -156.241180262,
+            "metrics": {
+                "loc": 8,
+                "sloc": 7,
+                "lloc": 7,
+                "comments": 1,
+                "multi": 0,
+                "blank": 0,
+                "cyclomatic": 0
+            }
+        },
+        "IT_Administrator/it_manager/workflow.py": {
+            "logprobs": -255.5756484742807,
+            "metrics": {
+                "loc": 38,
+                "sloc": 27,
+                "lloc": 28,
+                "comments": 1,
+                "multi": 6,
+                "blank": 4,
+                "cyclomatic": 11
+            }
+        },
+        "IT_Administrator/it_manager/utils.py": {
+            "logprobs": -33.504653878229405,
+            "metrics": {
+                "loc": 40,
+                "sloc": 26,
+                "lloc": 29,
+                "comments": 0,
+                "multi": 11,
+                "blank": 3,
+                "cyclomatic": 11
+            }
+        },
+        "IT_Administrator/it_manager/scheduler.py": {
+            "logprobs": -325.5884973684626,
+            "metrics": {
+                "loc": 98,
+                "sloc": 83,
+                "lloc": 72,
+                "comments": 1,
+                "multi": 6,
+                "blank": 9,
+                "cyclomatic": 27
+            }
+        },
         "IT_Administrator/it_manager/alert.py": {
-            "logprobs": -200.89261754552913,
+            "logprobs": -127.53718497927314,
             "metrics": {
                 "loc": 26,
                 "sloc": 18,
@@ -20,8 +68,8 @@
                 "cyclomatic": 6
             }
         },
-        "IT_Administrator/it_manager/utils.py": {
-            "logprobs": -302.9623137712449,
+        "utils.py": {
+            "logprobs": -300.4463636310219,
             "metrics": {
                 "loc": 40,
                 "sloc": 26,
@@ -33,7 +81,7 @@
             }
         },
         "IT_Administrator/it_manager/auth.py": {
-            "logprobs": -219.9423623124385,
+            "logprobs": -181.5289665124507,
             "metrics": {
                 "loc": 65,
                 "sloc": 46,
@@ -44,68 +92,8 @@
                 "cyclomatic": 14
             }
         },
-        "IT_Administrator/it_manager/workflow.py": {
-            "logprobs": -285.1683757328958,
-            "metrics": {
-                "loc": 38,
-                "sloc": 27,
-                "lloc": 28,
-                "comments": 1,
-                "multi": 6,
-                "blank": 4,
-                "cyclomatic": 11
-            }
-        },
-        "IT_Administrator/it_manager/tasks.py": {
-            "logprobs": -269.7360206934945,
-            "metrics": {
-                "loc": 45,
-                "sloc": 32,
-                "lloc": 32,
-                "comments": 1,
-                "multi": 9,
-                "blank": 3,
-                "cyclomatic": 10
-            }
-        },
-        "IT_Administrator/it_manager/scheduler.py": {
-            "logprobs": -401.6196171961642,
-            "metrics": {
-                "loc": 98,
-                "sloc": 83,
-                "lloc": 72,
-                "comments": 1,
-                "multi": 6,
-                "blank": 9,
-                "cyclomatic": 27
-            }
-        },
-        "IT_Administrator/it_manager/version.py": {
-            "logprobs": -218.8887312576139,
-            "metrics": {
-                "loc": 32,
-                "sloc": 22,
-                "lloc": 24,
-                "comments": 2,
-                "multi": 3,
-                "blank": 6,
-                "cyclomatic": 9
-            }
-        },
-        "IT_Administrator/__init__.py": {
-            "logprobs": -91.5582434424,
-            "metrics": {
-                "loc": 1,
-                "sloc": 0,
-                "lloc": 0,
-                "comments": 1,
-                "multi": 0,
-                "blank": 0,
-                "cyclomatic": 0
-            }
-        },
         "IT_Administrator/it_manager/exceptions.py": {
-            "logprobs": -103.1776780628,
+            "logprobs": -68.25625031529,
             "metrics": {
                 "loc": 10,
                 "sloc": 6,
@@ -116,28 +104,40 @@
                 "cyclomatic": 3
             }
         },
-        "IT_Administrator/it_manager/__init__.py": {
-            "logprobs": -202.96203095819,
+        "IT_Administrator/it_manager/tasks.py": {
+            "logprobs": -204.5955528859437,
             "metrics": {
-                "loc": 8,
-                "sloc": 7,
-                "lloc": 7,
+                "loc": 45,
+                "sloc": 32,
+                "lloc": 32,
+                "comments": 1,
+                "multi": 9,
+                "blank": 3,
+                "cyclomatic": 10
+            }
+        },
+        "IT_Administrator/__init__.py": {
+            "logprobs": -51.035884096,
+            "metrics": {
+                "loc": 1,
+                "sloc": 0,
+                "lloc": 0,
                 "comments": 1,
                 "multi": 0,
                 "blank": 0,
                 "cyclomatic": 0
             }
         },
-        "utils.py": {
-            "logprobs": -299.6916289096801,
+        "IT_Administrator/it_manager/version.py": {
+            "logprobs": -163.7517566425775,
             "metrics": {
-                "loc": 40,
-                "sloc": 26,
-                "lloc": 29,
-                "comments": 0,
-                "multi": 11,
-                "blank": 3,
-                "cyclomatic": 11
+                "loc": 32,
+                "sloc": 22,
+                "lloc": 24,
+                "comments": 2,
+                "multi": 3,
+                "blank": 6,
+                "cyclomatic": 9
             }
         },
         "total_loc": 403,

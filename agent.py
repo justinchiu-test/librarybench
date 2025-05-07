@@ -540,7 +540,6 @@ class Agent:
             full_path = os.path.join(repo.repo_path, file_path)
             write_new_file(full_path, file_content, repo)
             refactored_batch_files.append(full_path)
-            breakpoint()
         
         # # If we have utils content, place the utils.py file in each subdirectory to support imports
         # if utils_content:

@@ -1,0 +1,29 @@
+=========================================== test session starts ===========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 10 items / 1 error
+
+test_queue.py .                                                                                     [ 10%]
+test_scheduler.py .                                                                                 [ 20%]
+test_task.py ....                                                                                   [ 60%]
+test_workflow.py ....                                                                               [100%]
+
+================================================= ERRORS ==================================================
+__________ ERROR collecting workflow_orchestration_Project_Manager_o4-mini_iterative/test_api.py __________
+ImportError while importing test module '/Users/celine/Research/librarybench/workflow_orchestration_Project_Manager_o4-mini_iterative/test_api.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+test_api.py:2: in <module>
+    from api.app import app, workflows
+api/app.py:1: in <module>
+    from flask import Flask, jsonify, request
+E   ModuleNotFoundError: No module named 'flask'
+----------------------------------------------- JSON report -----------------------------------------------
+report saved to: report.json
+========================================= short test summary info =========================================
+ERROR test_api.py
+======================================= 10 passed, 1 error in 1.71s =======================================

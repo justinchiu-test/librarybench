@@ -1,0 +1,210 @@
+======================================== test session starts ========================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 21 items
+
+SoftwareDeveloper/test_task_success.py .                                                      [  4%]
+SoftwareDeveloper/test_backoff_strategy.py .                                                  [  9%]
+SoftwareDeveloper/test_timeout.py F                                                           [ 14%]
+SoftwareDeveloper/test_metadata_and_alerting.py .                                             [ 19%]
+SoftwareDeveloper/test_task_retry.py .F                                                       [ 28%]
+SoftwareDeveloper/test_dynamic_task_creation.py .                                             [ 33%]
+DataScientist/test_retry_and_backoff.py ..                                                    [ 42%]
+DataScientist/test_alerting_and_error_handling.py .                                           [ 47%]
+DataScientist/test_timeout.py .                                                               [ 52%]
+DataScientist/test_metadata_storage.py .                                                      [ 57%]
+DataScientist/test_dynamic_task_creation.py .                                                 [ 61%]
+DataScientist/test_task_states.py .                                                           [ 66%]
+ProjectManager/tests/test_basic.py FF                                                         [ 76%]
+ProjectManager/tests/test_retry_and_backoff.py FF                                             [ 85%]
+ProjectManager/tests/test_timeout.py F                                                        [ 90%]
+ProjectManager/tests/test_inputs_outputs.py F                                                 [ 95%]
+ProjectManager/tests/test_dynamic.py F                                                        [100%]
+
+============================================= FAILURES ==============================================
+______________________________________ test_timeout_and_retry _______________________________________
+
+    def test_timeout_and_retry():
+        # sleep beyond timeout
+        def sleeper(ctx):
+            time.sleep(0.05)
+            return {"done": True}
+    
+        # no retries, timeout=0.01
+        executor = TaskExecutor()
+        t = Task(name="slow",
+                 func=sleeper,
+                 input_keys=[],
+                 output_keys=['done'],
+                 max_retries=0,
+                 retry_delay_seconds=0,
+                 timeout=0.01)
+        executor.register_task(t)
+    
+        with pytest.raises(TaskExecutionError) as ei:
+            executor.execute("slow")
+        # original exception is FutureTimeoutError
+>       assert "timeout" in str(ei.value.original_exception).lower()
+E       assert 'timeout' in ''
+E        +  where '' = <built-in method lower of str object at 0x104853d58>()
+E        +    where <built-in method lower of str object at 0x104853d58> = ''.lower
+E        +      where '' = str(TimeoutError())
+E        +        where TimeoutError() = TaskExecutionError("Task 'slow' failed after retries: ").original_exception
+E        +          where TaskExecutionError("Task 'slow' failed after retries: ") = <ExceptionInfo TaskExecutionError("Task 'slow' failed after retries: ") tblen=2>.value
+
+SoftwareDeveloper/test_timeout.py:26: AssertionError
+____________________________________ test_always_fail_and_alert _____________________________________
+
+    def test_always_fail_and_alert():
+        def always_fail(ctx):
+            raise RuntimeError("bad")
+    
+>       from tasks.alerting import AlertingService
+E       ModuleNotFoundError: No module named 'tasks'
+
+SoftwareDeveloper/test_task_retry.py:42: ModuleNotFoundError
+________________________________________ test_simple_success ________________________________________
+
+    def test_simple_success():
+        runner = TaskRunner()
+        def work(ctx):
+            ctx.set("val", 42)
+            return "done"
+        t = Task("t1", work)
+>       runner.add_task(t)
+E       AttributeError: 'TaskRunner' object has no attribute 'add_task'
+
+ProjectManager/tests/test_basic.py:11: AttributeError
+_______________________________________ test_failure_no_retry _______________________________________
+
+    def test_failure_no_retry():
+        runner = TaskRunner()
+        def fail(ctx):
+            raise RuntimeError("oops")
+>       t = Task("t2", fail, max_retries=0)
+E       TypeError: Task.__init__() got an unexpected keyword argument 'max_retries'
+
+ProjectManager/tests/test_basic.py:25: TypeError
+________________________________________ test_retry_backoff _________________________________________
+
+    def test_retry_backoff():
+        sleeper = Sleeper()
+>       runner = TaskRunner(sleep_fn=sleeper)
+E       TypeError: TaskRunner.__init__() got an unexpected keyword argument 'sleep_fn'
+
+ProjectManager/tests/test_retry_and_backoff.py:15: TypeError
+____________________________________ test_retry_without_backoff _____________________________________
+
+    def test_retry_without_backoff():
+        sleeper = Sleeper()
+>       runner = TaskRunner(sleep_fn=sleeper)
+E       TypeError: TaskRunner.__init__() got an unexpected keyword argument 'sleep_fn'
+
+ProjectManager/tests/test_retry_and_backoff.py:35: TypeError
+_________________________________________ test_task_timeout _________________________________________
+
+    def test_task_timeout():
+        # real sleep will block test, override sleep_fn for runner, but timeout enforced on future
+        def long_task(ctx):
+            time.sleep(0.2)
+            return "done"
+        runner = TaskRunner()
+>       t = Task("slow", long_task, timeout_seconds=0.05)
+E       TypeError: Task.__init__() got an unexpected keyword argument 'timeout_seconds'
+
+ProjectManager/tests/test_timeout.py:13: TypeError
+_____________________________________ test_inputs_outputs_chain _____________________________________
+
+    def test_inputs_outputs_chain():
+        runner = TaskRunner()
+        def t1(ctx):
+            return 100
+        def t2(ctx):
+            prev = ctx.get("output:t1")
+            return prev + 23
+        t1_task = Task("t1", t1)
+        t2_task = Task("t2", t2)
+>       runner.add_task(t1_task)
+E       AttributeError: 'TaskRunner' object has no attribute 'add_task'
+
+ProjectManager/tests/test_inputs_outputs.py:14: AttributeError
+____________________________________ test_dynamic_task_creation _____________________________________
+
+    def test_dynamic_task_creation():
+        runner = TaskRunner()
+        def parent(ctx):
+            # create a child task
+            def child(c):
+                return "child-result"
+            child_task = Task("child", child)
+            ctx.add_task(child_task)
+            return "parent-done"
+        p = Task("parent", parent)
+>       runner.add_task(p)
+E       AttributeError: 'TaskRunner' object has no attribute 'add_task'
+
+ProjectManager/tests/test_dynamic.py:15: AttributeError
+========================================= warnings summary ==========================================
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_success
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_alerting_and_error_handling.py::test_alert_on_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_timeout.py::test_task_timeout
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_metadata_storage.py::test_metadata_records
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_task_states.py::test_task_state_transitions
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group1_original/DataScientist/pipeline/pipeline.py:21: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    start = datetime.utcnow()
+
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py: 6 warnings
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_alerting_and_error_handling.py: 1 warning
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_timeout.py: 1 warning
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_metadata_storage.py: 1 warning
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py: 2 warnings
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_task_states.py: 1 warning
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group1_original/DataScientist/pipeline/task.py:44: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    start = datetime.utcnow()
+
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_success
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_success
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_alerting_and_error_handling.py::test_alert_on_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_timeout.py::test_task_timeout
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group1_original/DataScientist/pipeline/task.py:61: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end = datetime.utcnow()
+
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_success
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_metadata_storage.py::test_metadata_records
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_task_states.py::test_task_state_transitions
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group1_original/DataScientist/pipeline/task.py:54: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end = datetime.utcnow()
+
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_retry_and_backoff.py::test_retry_success
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_alerting_and_error_handling.py::test_alert_on_failure
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_timeout.py::test_task_timeout
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_metadata_storage.py::test_metadata_records
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_dynamic_task_creation.py::test_dynamic_creation
+workflow_orchestration_o4-mini_group1_original/DataScientist/test_task_states.py::test_task_state_transitions
+  /Users/celine/Research/librarybench/workflow_orchestration_o4-mini_group1_original/DataScientist/pipeline/pipeline.py:32: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------- JSON report --------------------------------------------
+report saved to: report.json
+====================================== short test summary info ======================================
+FAILED SoftwareDeveloper/test_timeout.py::test_timeout_and_retry - assert 'timeout' in ''
+FAILED SoftwareDeveloper/test_task_retry.py::test_always_fail_and_alert - ModuleNotFoundError: No ...
+FAILED ProjectManager/tests/test_basic.py::test_simple_success - AttributeError: 'TaskRunner' obje...
+FAILED ProjectManager/tests/test_basic.py::test_failure_no_retry - TypeError: Task.__init__() got ...
+FAILED ProjectManager/tests/test_retry_and_backoff.py::test_retry_backoff - TypeError: TaskRunner....
+FAILED ProjectManager/tests/test_retry_and_backoff.py::test_retry_without_backoff - TypeError: Tas...
+FAILED ProjectManager/tests/test_timeout.py::test_task_timeout - TypeError: Task.__init__() got an...
+FAILED ProjectManager/tests/test_inputs_outputs.py::test_inputs_outputs_chain - AttributeError: 'T...
+FAILED ProjectManager/tests/test_dynamic.py::test_dynamic_task_creation - AttributeError: 'TaskRun...
+============================= 9 failed, 12 passed, 38 warnings in 0.48s =============================

@@ -552,13 +552,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# example usage: 
-# make personas 
-# python llm_repo_refactor.py --model gpt-4o --task make_personas --starter-repo-path document_editor
-# implement repo one attempt
-# python llm_repo_refactor.py --model o4-mini --task implement --suffixes _0 _1 _2 _3 --starter-repo-path workflow_orchestration --test-files tests.py --task-files TASK.md TASK_v2.md
-# implement repo
-# python llm_repo_refactor.py --model o4-mini --task implement --iterative --starter-repo-path workflow_orchestration --test-files tests.py --task-files TASK.md TASK_v2.md
-# refactor repo
-# python llm_repo_refactor.py --model claude --task refactor --iterative --starter-repo-path workflow_orchestration_o4-mini --test-files tests.py --task-files TASK.md TASK_v2.md

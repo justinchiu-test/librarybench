@@ -526,53 +526,36 @@ class Agent:
         
         # Process files in the batch
         refactored_batch_files = []
-        utils_content = None
-        utils_file_path = None
-        
         for block in file_blocks[1:]:
             lines = block.split("\n")
             if not lines:
                 continue
-            
             file_path = lines[0].strip()
             
             content_parts = "\n".join(lines[1:]).split("```")
             if not content_parts:
                 continue
             file_content = content_parts[0]
-            
-            if file_path.endswith("utils.py"):
-                # Save utils content for later installation
-                utils_content = file_content
-                # Write the utils file to the repository root
-                utils_file_path = os.path.join(repo.repo_path, "utils.py")
-                write_new_file(utils_file_path, file_content, repo)
-                self.logger.info(f"Created centralized utils file: {utils_file_path}")
-                continue 
-            
-            # Write file to repository (modify original files)
-            for src_file in src_file_paths:
-                if os.path.basename(file_path) == os.path.basename(src_file):
-                    full_path = os.path.join(repo.repo_path, src_file)
-                    write_new_file(full_path, file_content, repo)
-                    self.logger.info(f"Refactored file: {full_path}")
-                    refactored_batch_files.append(src_file)
-                    break
+
+            full_path = os.path.join(repo.repo_path, file_path)
+            write_new_file(full_path, file_content, repo)
+            refactored_batch_files.append(full_path)
+            breakpoint()
         
-        # If we have utils content, place the utils.py file in each subdirectory to support imports
-        if utils_content:
-            self.logger.info(f"Installing utils.py in {len(subdirs)} subdirectories for import support")
+        # # If we have utils content, place the utils.py file in each subdirectory to support imports
+        # if utils_content:
+        #     self.logger.info(f"Installing utils.py in {len(subdirs)} subdirectories for import support")
             
-            for subdir in subdirs:
-                subdir_utils_path = os.path.join(repo.repo_path, subdir, "utils.py")
-                write_new_file(subdir_utils_path, utils_content, repo)
-                self.logger.info(f"Created local utils file: {subdir_utils_path}")
+        #     for subdir in subdirs:
+        #         subdir_utils_path = os.path.join(repo.repo_path, subdir, "utils.py")
+        #         write_new_file(subdir_utils_path, utils_content, repo)
+        #         self.logger.info(f"Created local utils file: {subdir_utils_path}")
                 
-                # Create empty __init__.py in subdirectories to make imports work properly
-                init_path = os.path.join(repo.repo_path, subdir, "__init__.py")
-                if not os.path.exists(init_path):
-                    write_new_file(init_path, "", repo)
-                    self.logger.info(f"Created __init__.py: {init_path}")
+        #         # Create empty __init__.py in subdirectories to make imports work properly
+        #         init_path = os.path.join(repo.repo_path, subdir, "__init__.py")
+        #         if not os.path.exists(init_path):
+        #             write_new_file(init_path, "", repo)
+        #             self.logger.info(f"Created __init__.py: {init_path}")
         
         self.logger.info(
             f"Successfully processed {len(refactored_batch_files)} files."
@@ -583,15 +566,14 @@ class Agent:
             self.logger.error("No source code was read, cannot proceed with refactoring")
             return []
         
-        # Collect all the refactored files
-        refactored_files = []
-        for src_file in repo.src_code_files:
-            if os.path.exists(os.path.join(repo.repo_path, src_file)):
-                refactored_files.append(src_file)
+        # # Collect all the refactored files
+        # refactored_files = []
+        # for src_file in repo.src_code_files:
+        #     if os.path.exists(os.path.join(repo.repo_path, src_file)):
+        #         refactored_files.append(src_file)
         
         # Add the utils file to the list
-        if utils_file_path and os.path.exists(utils_file_path):
-            refactored_files.append(utils_file_path[len(repo.repo_path)+1:])
+        # if utils_file_path and os.path.exists(utils_file_path):
             
             # # Add the subdirectory utils files too
             # for subdir in subdirs:
@@ -605,14 +587,13 @@ class Agent:
             #         refactored_files.append(init_path)
         
         # Update SRC_FILES.txt with refactored files
-        # src_files_path = os.path.join(repo.repo_path, "SRC_FILES.txt")
         
         # Make sure we only store relative paths, not absolute ones
         relative_refactored_files = [
             file_path
             if not os.path.isabs(file_path)
             else os.path.relpath(file_path, repo.repo_path)
-            for file_path in refactored_files
+            for file_path in refactored_batch_files
         ]
         
         # Update the repo's source files list

@@ -381,7 +381,6 @@ def _update_local_imports(file_paths, target_dir, repo_path):
                 logger.error(f"Error updating imports in {target_file}: {e}")
 
 def _create_grouped_repo(central_repo_path, persona_repos, args):
-    
     persona_names = []
     for repo_name in persona_repos:
         persona_name = re.search(rf'{args.starter_repo_path}_(.+)_{args.model}', repo_name).group(1)
@@ -391,7 +390,7 @@ def _create_grouped_repo(central_repo_path, persona_repos, args):
     # If it already exists, ask for confirmation before overwriting
     do_reimplement = True
     if os.path.exists(central_repo_path):
-        do_reimplement = input(f"{central_repo_path} already exists. Re-refactor? [y/]").strip() == "y"
+        do_reimplement = input(f"{central_repo_path} already exists. Re-create? [y/]").strip() == "y"
         if not do_reimplement:
             return personas, Repo(central_repo_path)
         shutil.rmtree(central_repo_path)
@@ -473,7 +472,6 @@ def refactor(agent, args):
                 shutil.rmtree(central_repo_path)
             
             # Create the central repo directory
-            os.makedirs(central_repo_path, exist_ok=True)
             shutil.copytree(original_central_repo_path, central_repo_path)
             
             # Create the central repo object

@@ -1,8 +1,0 @@
-pipeline/__init__.py
-pipeline/alerting.py
-pipeline/backoff.py
-pipeline/context.py
-pipeline/exceptions.py
-pipeline/metadata.py
-pipeline/pipeline.py
-pipeline/task.py

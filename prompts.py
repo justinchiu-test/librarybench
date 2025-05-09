@@ -1,3 +1,34 @@
+library_ask_prompt = """I need ideas for Python libraries that can be implemented by language models. These libraries should:
+
+1. Be implementable using only Python's standard library - no external dependencies
+2. Have enough complexity to demonstrate sophisticated code design (10-20 functions/methods)
+3. Include room for interpretation, so that different implementations can be unique while sharing core functionality
+4. Have clear, practical utility that solves a real programming need
+5. Be realistically implementable by an intelligent LLM
+6. Be testable with pytest
+7. Include opportunities for different design approaches (functional vs OOP, etc.)
+
+For each library, provide a description that outlines:
+- The problem domain and core purpose
+- Key required functionality (without being too prescriptive about implementation details)
+- Potential use cases that demonstrate practical applications
+- Suggested extension points where implementers could add their creative spin
+
+Please generate several proposals in markdown, following this format:
+
+```file:<library_name>/DESCRIPTION.md
+# <Library Name>
+
+## Purpose and Motivation
+<3-5 sentences on what problem this library solves and why it's useful>
+
+## Core Functionality
+<Description of 4-6 high-level key features/capabilities without specifying exact implementation>
+```
+
+Be creative! Focus on domains where standard Python libraries provide enough building blocks but where a well-designed abstraction layer would add significant value.
+"""
+
 feature_ask_prompt_template = """Consider a code repository designed to support the following task description:
 ```
 {task_content}
@@ -18,7 +49,7 @@ persona_prompt_template = """Consider the following features of a code repositor
 {listed_features}
 
 Think about several possibilities for what kind of person might use this code repository and what they might use it for. Please write several brief descriptions for the code repository in first person, formatted in markdown as follows:
-```file:TASK_<persona_name>.md
+```file:{library_name}/<persona_name>/TASK.md
 # The Task
 
 I am a <...> I want to be able to <...> This code repository <...>

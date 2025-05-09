@@ -1,3 +1,0 @@
-env_manager.py
-gui_manager.py
-vulnerabilities.json

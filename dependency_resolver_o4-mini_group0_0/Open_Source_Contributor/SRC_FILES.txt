@@ -1,3 +1,0 @@
-local_index.json
-package_index.json
-package_manager.py

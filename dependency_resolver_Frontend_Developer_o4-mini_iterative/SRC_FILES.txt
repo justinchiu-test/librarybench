@@ -1,4 +1,0 @@
-gui.py
-package_manager/manager.py
-package_manager/models.py
-package_manager/registry.py

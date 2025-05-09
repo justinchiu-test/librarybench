@@ -1,6 +1,0 @@
-error
-lockfile.py
-manager.py
-notifications.py
-registry.py
-search.py

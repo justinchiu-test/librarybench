@@ -1,2 +1,0 @@
-doc_manager.py
-tests/conftest.py

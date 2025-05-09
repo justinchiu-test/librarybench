@@ -1,8 +1,0 @@
-it_manager/__init__.py
-it_manager/alert.py
-it_manager/auth.py
-it_manager/exceptions.py
-it_manager/scheduler.py
-it_manager/tasks.py
-it_manager/version.py
-it_manager/workflow.py

@@ -1,4 +1,0 @@
-document_editor_SoftwareDeveloper_o4-mini_iterative/__init__.py
-document_editor_SoftwareDeveloper_o4-mini_iterative/tests/conftest.py
-document_editor_SoftwareDeveloper_o4-mini_iterative/version_control.py
-version_control.py

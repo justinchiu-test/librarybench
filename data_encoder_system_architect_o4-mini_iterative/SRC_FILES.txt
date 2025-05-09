@@ -1,5 +1,0 @@
-conftest.py
-encoding_configuration.py
-endianness_handling.py
-schema_versioning.py
-streaming_support.py

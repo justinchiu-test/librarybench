@@ -1,2 +1,0 @@
-env_manager.py
-vulnerability_db.json

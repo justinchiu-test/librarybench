@@ -1,6 +1,0 @@
-data_tools/__init__.py
-data_tools/decoder.py
-data_tools/documenter.py
-data_tools/encoder.py
-data_tools/utils.py
-data_tools/validator.py

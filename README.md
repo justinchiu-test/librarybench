@@ -11,17 +11,10 @@ LibraryBench provides a pipeline for:
 3. Generating solutions for those tasks
 
 ## Installation
+1. Install claude code and codex
 
-```bash
-# Install the package and dependencies using uv
-uv sync
-
-# Or install in development mode
-uv pip install -e .
-
-# Install development dependencies
-uv pip install -e ".[dev]"
-```
+## Usage
+### Synthesizing base repositories
 
 ## Environment Setup
 

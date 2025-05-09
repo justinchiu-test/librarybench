@@ -1,0 +1,38 @@
+# Personal Knowledge Management
+
+## Requester Identity
+A professor and researcher who struggles with organizing their academic notes, papers, and ideas across multiple projects. They need a systematic way to connect their thoughts and retrieve information quickly without depending on cloud services.
+
+## Project Title
+BrainCache - A Personal Knowledge Management System
+
+## Core Functionality and Purpose
+BrainCache is a comprehensive personal knowledge management system that helps users organize, connect, and retrieve information using a networked note-taking approach. It enables bidirectional linking between notes, automatic relationship discovery, and powerful search capabilities while maintaining all data locally in plain text files.
+
+## Key Features
+1. Markdown-based note editor with bidirectional linking and tag support
+2. Automated discovery of relationships between notes using text similarity
+3. Powerful search with boolean operators, tag filtering, and full-text indexing
+4. Visual graph representation of note connections using ASCII/Unicode art
+5. Spaced repetition system for learning and reviewing important information
+
+## Implementation with Standard Library
+This system leverages `pathlib` and `os` for file management, `re` for pattern matching, `difflib` for text similarity, `sqlite3` for the search index, `json` for data serialization, `collections` for efficient data structures, `datetime` for timestamping, `heapq` for priority queues in spaced repetition, `asyncio` for background indexing, and `textwrap` for text formatting. The graph visualization uses `curses` for interactive terminal display.
+
+## Target Users
+Academics, researchers, students, writers, knowledge workers, and anyone who needs to manage complex information networks and retrieve insights efficiently.
+
+## Programming Concepts and Patterns
+The project demonstrates observer pattern for note updates, repository pattern for data access, strategy pattern for different search algorithms, and composite pattern for knowledge organization. It showcases text processing techniques, information retrieval algorithms, basic natural language processing, and memory-efficient data structures for large note collections.
+
+## Possible Extensions or Variations
+1. Zettelkasten method implementation with structured note identifiers
+2. Automatic citation management and academic paper integration
+3. Timeline views for temporally organizing information
+4. Concept extraction and auto-tagging suggestions
+5. Integration with reference managers like BibTeX
+6. Kanban boards for project planning within the knowledge base
+7. Templates system for different note types (literature, meeting, project)
+8. Web-based viewer for sharing portions of the knowledge base
+9. Version history and note evolution tracking
+10. Mind mapping tools for visual brainstorming

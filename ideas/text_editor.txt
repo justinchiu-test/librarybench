@@ -1,0 +1,38 @@
+# Text Editor
+
+## Requester Identity
+A computer science student specializing in software engineering who wants to deeply understand how text editors work under the hood. They are passionate about user interfaces and data structures that enable efficient text manipulation.
+
+## Project Title
+PyEdit - A Customizable Terminal-Based Text Editor
+
+## Core Functionality and Purpose
+PyEdit is a terminal-based text editor with a focus on extensibility and efficient text manipulation. The editor provides a modal interface similar to Vim, syntax highlighting for common programming languages, and a plugin system for extending functionality, all while maintaining fast performance even with large files.
+
+## Key Features
+1. Modal editing with customizable key bindings for efficient text manipulation
+2. Syntax highlighting for multiple programming languages using regular expressions
+3. Efficient piece table or rope data structure for handling large files
+4. Multiple buffer management with split views and tabs
+5. Macro recording and playback for automating repetitive tasks
+
+## Implementation with Standard Library
+This project can be implemented using Python's standard library: `curses` for the terminal interface, `re` for regular expressions used in syntax highlighting and search, `os` and `io` for file operations, `difflib` for comparing file versions, `collections` for efficient data structures, `threading` for background tasks like file autosaving, `argparse` for command-line options, and `json` for configuration files. Custom data structures like piece tables or ropes can be implemented from scratch for efficient text manipulation.
+
+## Target Users
+Programmers, system administrators, writers who prefer keyboard-driven interfaces, and students learning about text editor implementation and data structures.
+
+## Programming Concepts and Patterns
+The project showcases complex data structures (piece tables or ropes), command pattern for operations, observer pattern for events, strategy pattern for different editing modes, advanced state management, memory-efficient algorithms for text manipulation, and event-driven architecture.
+
+## Possible Extensions or Variations
+1. Implementation of different text storage algorithms (gap buffer, piece table, rope) with performance comparisons
+2. Multiple cursor support for simultaneous editing in multiple locations
+3. Integrated terminal emulator for running commands without leaving the editor
+4. Minimap view for navigating large files visually
+5. Remote file editing over SSH or FTP
+6. Version control integration with Git
+7. Auto-completion and code intelligence features
+8. Split-screen and multiple window support
+9. Snippet management system with template variables
+10. Integrated debugging capabilities for supported languages

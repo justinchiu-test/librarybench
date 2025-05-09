@@ -1,0 +1,26 @@
+Generate ideas for Python repositories that demonstrate strong programming skills while primarily using Python's standard library
+(avoiding external dependencies). Each project should be substantial yet manageable, approximately 1000-2000 lines of code, with a
+strong emphasis on testability. For each idea:
+
+1. Describe the identity of the person requesting this project in 2 sentences
+2. Provide a clear project title
+3. Describe the core functionality and purpose in 2-3 sentences
+4. List 3-5 key features that would make this project interesting and useful
+5. Explain how the project can be implemented using primarily Python's standard library modules
+6. Identify who might benefit from using this project
+7. Note any particular programming concepts or patterns it would showcase
+8. Include 10 possible extensions or variations that could be added to the base project
+
+Focus on projects that:
+- Solve a real problem or fulfill a practical need
+- Demonstrate intermediate to advanced Python skills
+- Can be built entirely or primarily with Python's standard library
+- Showcase creative uses of built-in modules (e.g., re, json, csv, asyncio, etc.)
+- Could be reasonably completed by an individual developer
+- Would be presentable in a portfolio and highlight algorithmic thinking
+- Require minimal to no external dependencies for core functionality
+
+Please provide 10 diverse project ideas spanning different domains (e.g., command-line tools, file systems, workflow management,
+text editors, in-memory databases) that can be accomplished with the standard library.
+
+Output these ideas in `ideas/{project_name}.txt`

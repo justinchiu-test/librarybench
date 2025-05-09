@@ -1,0 +1,38 @@
+# In-Memory Database
+
+## Requester Identity
+A backend engineer at a high-traffic web service who needs a lightweight, fast data storage solution for caching frequently accessed data. They require something more flexible than simple key-value stores but less complex than full relational databases.
+
+## Project Title
+PyRAM - Python In-Memory Relational Database with Simple Query Language
+
+## Core Functionality and Purpose
+PyRAM is a lightweight in-memory relational database implemented purely in Python, offering table creation, basic SQL-like querying, and transaction support. It provides a balance between flexibility and performance for applications that need structured data storage without the overhead of traditional database systems.
+
+## Key Features
+1. Schema definition with support for various data types and constraints
+2. SQL-like query language supporting joins, aggregations, and complex filtering
+3. ACID transaction support with commit and rollback capabilities
+4. Indexing mechanisms for optimized query performance
+5. Export/import functionality to persist data between sessions
+
+## Implementation with Standard Library
+This project can be built using Python's standard library: `collections.OrderedDict` for maintaining insertion order, `bisect` for efficient sorted collections, `re` for parsing queries, `json` for data serialization, `pickle` for advanced object serialization, `copy` for object duplication during transactions, `threading` for concurrency control with locks, `io` for streaming data during import/export, and `functools` for optimizing repeated operations with caching decorators. The query engine can be implemented using a recursive descent parser.
+
+## Target Users
+Backend developers, small-scale application developers, data scientists prototyping applications, and educators teaching database concepts without requiring external database installation.
+
+## Programming Concepts and Patterns
+The project demonstrates design patterns like repository, factory, command, and observer. It showcases parsing and lexical analysis, transaction isolation levels, index data structures, query planning and optimization, and concurrent data access control mechanisms.
+
+## Possible Extensions or Variations
+1. Support for more advanced SQL features like subqueries and window functions
+2. Implementation of different storage engines (B-tree, hash-based)
+3. Memory management with configurable caching strategies
+4. Query optimizer with execution plan visualization
+5. Network interface for client-server architecture
+6. Support for user-defined functions and stored procedures
+7. Replication and clustering capabilities for distributed scenarios
+8. Event triggers on data changes
+9. Time-travel querying to access historical states
+10. Column-oriented storage option for analytical workloads

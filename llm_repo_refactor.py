@@ -29,7 +29,7 @@ class Repo:
     def __init__(self, repo_path, test_command="pytest"):
         self.logger = logger
         self.repo_path = repo_path
-        
+
     def evaluate(self):
         test_files = [test_file_path[len(self.repo_path)+1:] for test_file_path in glob.glob(os.path.join(self.repo_path, "test_*.py"))]
         test_cmd = f"pytest {' '.join(test_files)} --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
@@ -162,7 +162,6 @@ def propose_libraries(agent, args):
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "w") as wf:
                 wf.write(file_content)
-            os.makedirs(os.path.join(os.path.dirname(file_path), 'unified'), exist_ok=True)
             new_libraries.add(os.path.dirname(file_path))
     return new_libraries
 
@@ -286,15 +285,53 @@ def implement(agent, args):
             print(eval_result)
 
 
+def setup_for_refactor(args):
+    """Move all test_*.py files into a unified test directory structure.
+
+    This function takes test files scattered throughout the repository and
+    moves them into a unified test directory at args.starter_repo_path/unified/tests/
+    preserving their test names but organizing them consistently.
+    """
+    if not args.starter_repo_path:
+        raise ValueError("No starter repo path provided")
+
+    # Create unified test directory if it doesn't exist
+    unified_test_dir = os.path.join(args.starter_repo_path, "unified", "tests")
+    os.makedirs(unified_test_dir, exist_ok=True)
+
+    # Find all test files in the repository (excluding those already in unified/tests)
+    logger.info(f"Looking for test files in {args.starter_repo_path}")
+    test_files = []
+    for root, _, files in os.walk(args.starter_repo_path):
+        if "unified/tests" in root:
+            continue  # Skip files already in unified/tests
+        persona_name = root[len(args.starter_repo_path)+1:]
+        for file in files:
+            if file.startswith("test_") and file.endswith(".py"):
+                mod_filename = f"test_{persona_name}_{os.path.basename(file)[len('test_'):]}"
+                test_files.append((os.path.join(root, file), os.path.join(unified_test_dir, mod_filename)))
+
+    logger.info(f"Found {len(test_files)} test files to move")
+
+    # Move each test file to the unified test directory with appropriate naming
+    for test_file_orig, test_file_dest in test_files:
+
+        # Move the file 
+        logger.info(f"Moving {test_file_orig} to {test_file_dest}")
+        shutil.move(test_file_orig, test_file_dest)
+
+    logger.info(f"Successfully moved {len(test_files)} test files to {unified_test_dir}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="LLM Repository Refactor")
     parser.add_argument(
-        "--model", type=str, required=True, help="Model to use for refactoring"
+        "--model", type=str, default=None, help="Model to use for refactoring"
     )
     parser.add_argument(
         "--task",
         type=str,
-        choices=["propose_libraries", "make_personas", "implement", "refactor"],
+        choices=["propose_libraries", "make_personas", "implement", "setup_for_refactor"],
         required=True,
         help="Task to perform",
     )
@@ -331,8 +368,8 @@ def main():
         make_personas(agent, args)
     elif args.task == "implement":
         implement(agent, args)
-    # elif args.task == "refactor":
-    #     refactor(agent, args)
+    elif args.task == "setup_for_refactor":
+        setup_for_refactor(args)
 
 
 if __name__ == "__main__":

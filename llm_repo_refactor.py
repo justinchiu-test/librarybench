@@ -284,6 +284,52 @@ def implement(agent, args):
 
             print(eval_result)
 
+def _update_local_imports(new_test_file_path, persona_name, starter_repo_path):
+    with open(new_test_file_path, 'r') as f:
+        content = f.read()
+    # Find import statements (both regular imports and from imports)
+    import_pattern = re.compile(r'(from\s+|import\s+)([.\w]+)')
+    matches = import_pattern.findall(content)
+
+    modified_content = content
+    for match in matches:
+        import_type, module_path = match
+        if '.' not in module_path and module_path in sys.builtin_module_names:
+            continue
+                    
+        # Skip imports that already include the subdirectory
+        if persona_name in module_path:
+            continue
+
+        # Check if this is a relative import referring to a local module
+        module_file = module_path.replace('.', '/') + '.py'
+        if os.path.exists(os.path.join(starter_repo_path, persona_name, module_file)):
+            # This is a local module that needs to be updated
+            old_import = f"{import_type}{module_path}"
+            new_import = f"{import_type}{persona_name}.{module_path}"
+            modified_content = modified_content.replace(old_import, new_import)
+
+    # Write the updated content back to the file
+    if modified_content != content:
+        with open(new_test_file_path, 'w') as f:
+            f.write(modified_content)
+        logger.info(f"Updated imports in {new_test_file_path}")
+
+
+def _place_inits(repo_path):
+    init_file = os.path.join(repo_path, "unified", "__init__.py")
+    with open(init_file, 'w') as f:
+        f.write("")
+    init_file = os.path.join(repo_path, "unified", "tests", "__init__.py")
+    with open(init_file, 'w') as f:
+        f.write("")
+    
+    for persona_subdir in glob.glob(repo_path):
+        if not os.path.isdir(persona_subdir): continue
+        init_file = os.path.join(persona_subdir, "__init__.py")
+        with open(init_file, 'w') as f:
+            f.write("")
+
 
 def setup_for_refactor(args):
     """Move all test_*.py files into a unified test directory structure.
@@ -309,16 +355,22 @@ def setup_for_refactor(args):
         for file in files:
             if file.startswith("test_") and file.endswith(".py"):
                 mod_filename = f"test_{persona_name}_{os.path.basename(file)[len('test_'):]}"
-                test_files.append((os.path.join(root, file), os.path.join(unified_test_dir, mod_filename)))
+                test_files.append((os.path.join(root, file), os.path.join(unified_test_dir, mod_filename), persona_name))
 
     logger.info(f"Found {len(test_files)} test files to move")
 
     # Move each test file to the unified test directory with appropriate naming
-    for test_file_orig, test_file_dest in test_files:
+    for (test_file_orig, test_file_dest, persona_name) in test_files:
 
         # Move the file 
         logger.info(f"Moving {test_file_orig} to {test_file_dest}")
         shutil.move(test_file_orig, test_file_dest)
+
+        # Update local import paths in the moved file
+        _update_local_imports(test_file_dest, persona_name, args.starter_repo_path)
+
+        # place __init__.py everywhere needed
+        _place_inits(args.starter_repo_path)
 
     logger.info(f"Successfully moved {len(test_files)} test files to {unified_test_dir}")
 

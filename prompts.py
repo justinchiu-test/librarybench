@@ -63,25 +63,52 @@ I am a <...> I want to be able to <...> This code repository <...>
 Be creative! Write the task description in the style of the proposed persona. Be as exhaustive as possible in including the listed features in the task description's requirements.
 """
 
-implementation_prompt_template = """I need you to implement a solution and COMPREHENSIVE suite of tests based on the following task files. 
+implementation_prompt_template = """I need you to implement a solution and COMPREHENSIVE suite of tests based on the following task files.
 Your code must pass the tests provided.
 
-# Task Details:
 {task_content}
 
-Please implement all necessary files to solve this task. For each source code file, provide the content in the following format:
+CRITICAL FORMATTING INSTRUCTIONS:
+1. You MUST format ALL code files exactly as shown below - no exceptions
+2. Start each file with the markdown codeblock marker, followed by "file:" and the relative path
+3. End each file with the closing markdown codeblock marker
+4. Do not use any other format or markdown variations
+5. For test files, do not put them in a subdirectory-- keep them in the outermost level.
+
+For each source code file:
 
 ```file:<relative_file_path>
 <file_content>
 ```
 
-For each test file, provide the content in the same format so that it can be extracted and run with `pytest`:
+For each test file:
 
 ```file:<relative_file_path starting with test_>
 <test_file_content>
 ```
 
-Where <relative_file_path> is the relative path to the file and <file_content> is the content of the file. Be sure to output code in the specified format.
+IMPORTANT:
+- The opening format must be exactly: ```file:path/to/file.py
+- Do not add language indicators like ```python
+- Do not add explanations between files
+- Each file must be contained within its own codeblock with the precise format shown above
+- The system parsing your response requires this exact format to function properly
+
+EXAMPLE OUTPUT FORMAT:
+```file:mymodule/mymodule.py
+def example_function():
+    return "This is a sample function"
+```
+
+```file:test_utils.py
+import pytest
+from mymodule.mymodule import example_function
+
+def test_example_function():
+    assert example_function() == "This is a sample function"
+```
+
+Begin your implementation now, following these formatting rules precisely.
 """
 
 fix_implementation_prompt_template = """I need you to fix the implementation of the following code that is failing tests.

@@ -29,57 +29,10 @@ class Repo:
     def __init__(self, repo_path, test_command="pytest"):
         self.logger = logger
         self.repo_path = repo_path
-        test_file_paths = glob.glob(
-            os.path.join(repo_path, "**", "test_*.py"), recursive=True
-        )
-        task_file_paths = glob.glob(
-            os.path.join(repo_path, "**", "TASK*.md"), recursive=True
-        )
-        # Do not store repo_path but store the rest of the relative path
-        self.test_files = [path[len(repo_path) + 1 :] for path in test_file_paths]
-        self.task_files = [path[len(repo_path) + 1 :] for path in task_file_paths]
-
-        self.test_command = test_command
-        self.src_code_files = []
-        for src_file_path in glob.glob(
-            os.path.join(repo_path, "**", "*.py"), recursive=True
-        ):
-            if re.search(r"test_.*\.py", os.path.basename(src_file_path)) or re.search(
-                r"TASK.*\.md", os.path.basename(src_file_path)
-            ):
-                continue
-            self.src_code_files.append(
-                os.path.dirname(src_file_path)[len(repo_path) + 1 :]
-            )
-        self.logger.info(
-            f"New repo implemented with test files {self.test_files} and task files {self.task_files}."
-        )
-
-    def update_src_files(self, new_src_files):
-        # Make sure we only store relative paths, not absolute ones
-        relative_src_files = [
-            file_path
-            if not os.path.isabs(file_path)
-            else os.path.relpath(file_path, self.repo_path)
-            for file_path in new_src_files
-        ]
-        # Update the in-memory list
-        self.src_code_files = sorted(
-            set(self.src_code_files).union(set(relative_src_files))
-        )
-
-    def update_test_files(self, new_test_files):
-        relative_test_files = [
-            file_path
-            if not os.path.isabs(file_path)
-            else os.path.relpath(file_path, self.repo_path)
-            for file_path in new_test_files
-        ]
-        # Update the in-memory list
-        self.test_files = sorted(set(self.test_files).union(set(relative_test_files)))
-
+        
     def evaluate(self):
-        test_cmd = f"pytest {' '.join(self.test_files)} --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
+        test_files = [test_file_path[len(self.repo_path)+1:] for test_file_path in glob.glob(os.path.join(self.repo_path, "test_*.py"))]
+        test_cmd = f"pytest {' '.join(test_files)} --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
         self.logger.info(f"Running evaluation. test cmd: {test_cmd}")
         result = {}
         try:
@@ -292,6 +245,7 @@ def implement(agent, args):
             )
             if not do_reimplement:
                 continue
+            shutil.rmtree(new_repo_location)
         shutil.copytree(args.starter_repo_path, new_repo_location)
 
         # Implement each persona in the subdir
@@ -303,35 +257,33 @@ def implement(agent, args):
             # Track success rates over different iterations
             num_attempts = 0
             attempt_results = []
-            while repo.evaluate()["passed"] < 1:
+            eval_result = repo.evaluate()
+            while eval_result["passed"] < 1:
                 if num_attempts > 5:
                     logger.warning("Reached maximum number of fix attempts (5)")
                     break
                 logger.info(f"Fix implementation attempt #{num_attempts + 1}")
-                eval_before = repo.evaluate()
-                attempt_results.append({"attempt": num_attempts, "before": eval_before})
+                attempt_results.append({"attempt": num_attempts, "before": eval_result})
 
-                new_src_files, new_test_files = agent.fix_implementation(repo)
-                repo.update_src_files(new_src_files)
-                repo.update_test_files(new_test_files)
+                agent.fix_implementation(repo)
                 num_attempts += 1
-                eval_after = repo.evaluate()
-                attempt_results[-1]["after"] = eval_after
+                new_eval = repo.evaluate()
+                attempt_results[-1]["after"] = new_eval
 
                 # Log progress for this attempt
                 logger.info(f"Fix attempt #{num_attempts} results:")
                 logger.info(
-                    f"  - Before: {eval_before['num_passed']}/{eval_before['num_tests']} tests passing ({eval_before['passed']*100:.1f}%)"
+                    f"  - Before: {eval_result['num_passed']}/{eval_result['num_tests']} tests passing ({eval_result['passed']*100:.1f}%)"
                 )
                 logger.info(
-                    f"  - After: {eval_after['num_passed']}/{eval_after['num_tests']} tests passing ({eval_after['passed']*100:.1f}%)"
+                    f"  - After: {new_eval['num_passed']}/{new_eval['num_tests']} tests passing ({new_eval['passed']*100:.1f}%)"
                 )
                 logger.info(
-                    f"  - Improvement: {(eval_after['passed'] - eval_before['passed'])*100:.1f}% more tests passing"
+                    f"  - Improvement: {(new_eval['passed'] - eval_result['passed'])*100:.1f}% more tests passing"
                 )
+                eval_result = new_eval
 
-            final_repo_results = repo.evaluate()
-            print(final_repo_results)
+            print(eval_result)
 
 
 def main():

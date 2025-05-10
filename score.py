@@ -1,3 +1,7 @@
+# TODO:
+# fix parallelization
+# do not write to shared metrics file!!
+
 import asyncio
 import re
 
@@ -320,7 +324,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
     parser.add_argument("--directory", type=str, help="Paths to .py files")
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
-    parser.add_argument("--branch_name", type=str, default=None, help="What key to log the metrics under")
+    # parser.add_argument("--branch_name", type=str, default=None, help="What key to log the metrics under")
     parser.add_argument("--codebank_file", type=str, default=None, help="Codebank file to condition on")
     args = parser.parse_args()
     

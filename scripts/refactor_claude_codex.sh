@@ -14,23 +14,28 @@ if [ ! -d "$directory" ]; then
     exit 1
 fi
 
+# remember where we started
+base_dir="$PWD"
+
 echo "Starting refactoring for $directory..."
 
-# Push into the directory
-pushd "$directory"
+# Push into the target directory
+pushd "$directory" >/dev/null
 
-echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
+echo "Following the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md..."
 
 echo "Running claude planner"
 # Claude plan
-time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
+time claude --dangerously-skip-permissions \
+  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
 
 echo "Running codex impl"
 # Codex implement
-CODEX_QUIET_MODE=1 time codex --approval-mode full-auto "Read the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
+CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
+  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
 
-# Pop back to the original directory
-popd
+# Return to original directory
+popd >/dev/null
 
 # Run scoring script
 echo "Running scoring script..."

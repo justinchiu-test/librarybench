@@ -287,7 +287,9 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     return result
 
 async def main(args):
-    parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)_(.+)', args.directory)
+    #parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)_(.+)', args.directory)
+    # CELINE: updated new paths, should be right
+    parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)/(.+)', args.directory)
 
     output_file = f"{parsed_experiment.group(1)}_metrics.json"
     if args.branch_name is None:

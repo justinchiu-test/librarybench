@@ -14,7 +14,11 @@ LibraryBench provides a pipeline for:
 1. Install claude code and codex
 
 ## Usage
-### Synthesizing base repositories
+```
+bash scripts/synth_ideas.sh
+bash scripts/synth_personas.sh
+bash scripts/synth_instructions_tests.sh
+```
 
 ## Environment Setup
 

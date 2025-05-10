@@ -1,0 +1,82 @@
+For each project idea and its corresponding personas:
+
+1. Read the project idea from ideas/{project_name}.txt to understand the core concept, features, and implementation details.
+
+2. Read the personas from personas/{project_name}_personas.txt to understand the 10 different user types and their unique feature requirements.
+
+3. For each persona of the project:
+
+   a. Create a directory structure at projects/{project_name}/{project_name}_{persona_identifier} where {persona_identifier} is a short, slug-friendly name derived from the persona (e.g., "professor", "sysadmin", "writer", etc.).
+   
+   b. Create an INSTRUCTIONS.md file in this directory that provides detailed implementation guidance for building the project specifically tailored to this persona's needs.
+   
+   c. Create a tests/ directory within the project directory containing comprehensive pytest tests that verify all the requirements for this persona's implementation. These tests should be well-structured, follow pytest best practices, and include appropriate fixtures and parametrizations.
+
+4. The INSTRUCTIONS.md file should include:
+
+   IMPORTANT OVERALL REQUIREMENTS:
+   - Implementation must be in Python
+   - All functionality must be testable via pytest
+   - There should be NO user interface components
+   - Design code as libraries and APIs rather than applications with UIs
+   - Each implementation should be focused solely on the specific persona's requirements
+   
+   Additionally, the tests directory should:
+   - Contain comprehensive pytest tests for all requirements
+   - Include a test_requirements.py file that specifically tests each of the 5 key requirements
+   - Provide appropriate fixtures and mocks in conftest.py
+   - Utilize test parametrization where appropriate
+   - Include both positive tests and negative tests (error handling)
+   - Test edge cases and performance requirements
+
+   - # Project Title
+     A persona-specific variation of the original project title
+   
+   - ## Overview
+     A concise description of the project variant that focuses on the specific persona's needs
+   
+   - ## Persona Description
+     The full 2-sentence description of the persona from the personas file
+   
+   - ## Key Requirements
+     The 5 specific features requested by this persona, with additional context explaining why each feature is critical for this user
+   
+   - ## Technical Requirements
+     Define the key technical requirements for implementing this project with special attention to the persona's needs, including:
+     - Testability requirements
+     - Performance expectations
+     - Integration points
+     - Key constraints
+     
+     IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+   
+   - ## Core Functionality
+     A clear description of the core functionality that needs to be implemented for this persona-specific version of the project
+   
+   - ## Testing Requirements
+     Define the testing requirements and acceptance criteria that would validate a successful implementation, including:
+     - Key functionalities that must be verified
+     - Critical user scenarios that should be tested
+     - Performance benchmarks that must be met
+     - Edge cases and error conditions that must be handled properly
+     - Required test coverage metrics
+     
+     IMPORTANT: 
+     - ALL functionality must be testable via pytest without any manual intervention
+     - Tests should verify behavior against requirements, not implementation details
+     - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+     - Tests should be comprehensive enough to verify all aspects of the requirements
+     - Tests should not assume or dictate specific implementation approaches
+   
+   - ## Success Criteria
+     Clear metrics and outcomes that would indicate the implementation successfully meets this persona's needs
+
+5. The instructions should focus on WHAT needs to be built rather than HOW to build it. Define requirements clearly but leave implementation details to the developer.
+
+6. Focus on clearly describing the problem space, use cases, and evaluation criteria rather than dictating specific technical solutions.
+
+7. Ensure that the implementation plan addresses all unique features requested by the persona. The implementation should be completely tailored to this specific persona without trying to accommodate other potential users.
+
+8. Maintain a consistent structure across all instruction files while customizing the content specifically for each project-persona combination.
+
+Output your instructions into projects/{project_name}/{project_name}_{persona_identifier}/INSTRUCTIONS.md and create the tests in projects/{project_name}_{persona_identifier}/tests/.

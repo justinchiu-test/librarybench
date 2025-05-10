@@ -16,11 +16,12 @@ for idea_file in ideas/*.txt; do
     echo "Processing project: $project_name"
     
     # Run claude in background
-    claude --dangerously-skip-permissions -p "Follow the instructions in prompts/instructions.txt, only for project ${project_name}." &
+    claude --dangerously-skip-permissions -p "Follow the instructions in prompts/instructions.txt, for any incomplete personas in project ${project_name}." &
 done
 
 # Wait for all remaining processes to complete
 echo "Waiting for all processes to complete..."
 wait
 
+claude --dangerously-skip-permissions -p "Follow the instructions in prompts/instructions.txt for any projects that have not completed."
 echo "All projects processed."

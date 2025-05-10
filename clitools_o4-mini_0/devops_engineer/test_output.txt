@@ -1,0 +1,27 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 16 items
+
+test_config_loader.py .                                                                                     [  6%]
+test_init_package.py ..                                                                                     [ 18%]
+test_docs.py .                                                                                              [ 25%]
+test_signal_handler.py .                                                                                    [ 31%]
+test_hooks.py .                                                                                             [ 37%]
+test_bump.py .                                                                                              [ 43%]
+test_secrets.py ..                                                                                          [ 56%]
+test_compute_default_and_retry_and_validate.py ....                                                         [ 81%]
+test_publish.py ..                                                                                          [ 93%]
+test_env_override.py .                                                                                      [100%]
+
+================================================ warnings summary =================================================
+clitools_o4-mini_0/devops_engineer/test_compute_default_and_retry_and_validate.py::test_compute_default
+  /Users/celine/Research/librarybench/clitools_o4-mini_0/devops_engineer/devops_cli/utils.py:11: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return datetime.utcnow().isoformat() + "Z"
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+========================================== 16 passed, 1 warning in 0.09s ==========================================

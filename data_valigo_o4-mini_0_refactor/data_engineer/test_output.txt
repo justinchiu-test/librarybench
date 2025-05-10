@@ -1,0 +1,62 @@
+=============================================== test session starts ================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 14 items
+
+test_secure_field_masking.py .                                                                               [  7%]
+test_plugins.py .                                                                                            [ 14%]
+test_error_localization.py ..                                                                                [ 28%]
+test_profile.py .                                                                                            [ 35%]
+test_diff_tool.py .                                                                                          [ 42%]
+test_versioning.py ..                                                                                        [ 57%]
+test_async_validation.py .F                                                                                  [ 71%]
+test_inheritance.py .                                                                                        [ 78%]
+test_transformation.py .                                                                                     [ 85%]
+test_datetime_validation.py ..                                                                               [100%]
+
+===================================================== FAILURES =====================================================
+_________________________________________________ test_async_rule __________________________________________________
+
+__func = <function test_async_rule at 0x104d040e0>, args = (), kwargs = {}
+
+    def _run_coroutine(*args, __func=func, **kwargs):
+>       return asyncio.get_event_loop().run_until_complete(__func(*args, **kwargs))
+
+conftest.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../miniconda3/envs/library/lib/python3.13/asyncio/base_events.py:725: in run_until_complete
+    return future.result()
+test_async_validation.py:23: in test_async_rule
+    assert not rule.validate('no')
+dataschema/validation.py:22: in validate
+    return new_loop.run_until_complete(self.func(*args, **kwargs))
+../../../../miniconda3/envs/library/lib/python3.13/asyncio/base_events.py:701: in run_until_complete
+    self._check_running()
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_UnixSelectorEventLoop running=False closed=True debug=False>
+
+    def _check_running(self):
+        if self.is_running():
+            raise RuntimeError('This event loop is already running')
+        if events._get_running_loop() is not None:
+>           raise RuntimeError(
+                'Cannot run the event loop while another loop is running')
+E           RuntimeError: Cannot run the event loop while another loop is running
+
+../../../../miniconda3/envs/library/lib/python3.13/asyncio/base_events.py:639: RuntimeError
+================================================= warnings summary =================================================
+data_valigo_o4-mini_0/data_engineer/test_async_validation.py::test_sync_rule
+  /Users/celine/Research/librarybench/data_valigo_o4-mini_0/data_engineer/test_async_validation.py:11: DeprecationWarning: There is no current event loop
+    result = asyncio.get_event_loop().run_until_complete(rule.validate_async(10))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------------------------- JSON report ----------------------------------------------------
+report saved to: report.json
+============================================= short test summary info ==============================================
+FAILED test_async_validation.py::test_async_rule - RuntimeError: Cannot run the event loop while another loop is ...
+===================================== 1 failed, 13 passed, 1 warning in 0.14s ======================================
+<sys>:0: RuntimeWarning: coroutine 'test_async_rule.<locals>.check' was never awaited
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback

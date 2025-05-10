@@ -16,81 +16,6 @@ from tqdm.asyncio import tqdm
 from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-# ---- Helpers ----
-import ast
-
-def remove_comments(source: str) -> str:
-    """
-    Remove comments and docstrings from Python source code by parsing and unparsing
-    the AST. Note: Comments are not present in the AST, so this effectively removes
-    both comments and docstrings (since docstrings appear as literal expressions in the AST).
-
-    Args:
-        source (str): The original Python source code.
-
-    Returns:
-        str: The source code with comments and docstrings removed.
-    """
-    # Parse the source into an AST.
-    try:
-        tree = ast.parse(source)
-    except SyntaxError as se:
-        raise ValueError("Invalid Python code provided") from se
-
-    # Define a NodeTransformer that will remove docstrings.
-    class DocstringRemover(ast.NodeTransformer):
-        def visit_FunctionDef(self, node):
-            self.generic_visit(node)
-            if (node.body and isinstance(node.body[0], ast.Expr) and 
-                isinstance(node.body[0].value, ast.Constant) and 
-                isinstance(node.body[0].value.value, str)):
-                # Remove function docstring.
-                node.body.pop(0)
-            return node
-
-        def visit_AsyncFunctionDef(self, node):
-            self.generic_visit(node)
-            if (node.body and isinstance(node.body[0], ast.Expr) and 
-                isinstance(node.body[0].value, ast.Constant) and 
-                isinstance(node.body[0].value.value, str)):
-                # Remove async function docstring.
-                node.body.pop(0)
-            return node
-
-        def visit_ClassDef(self, node):
-            self.generic_visit(node)
-            if (node.body and isinstance(node.body[0], ast.Expr) and 
-                isinstance(node.body[0].value, ast.Constant) and 
-                isinstance(node.body[0].value.value, str)):
-                # Remove class docstring.
-                node.body.pop(0)
-            return node
-
-        def visit_Module(self, node):
-            self.generic_visit(node)
-            if (node.body and isinstance(node.body[0], ast.Expr) and 
-                isinstance(node.body[0].value, ast.Constant) and 
-                isinstance(node.body[0].value.value, str)):
-                # Remove module-level docstring.
-                node.body.pop(0)
-            return node
-
-    # Remove docstrings by transforming the AST.
-    tree = DocstringRemover().visit(tree)
-    ast.fix_missing_locations(tree)
-
-    try:
-        # Python 3.9+ provides ast.unparse.
-        new_source = ast.unparse(tree)
-    except AttributeError:
-        # For earlier versions of Python, you might use the astor package:
-        #   pip install astor
-        import astor
-        new_source = astor.to_source(tree)
-
-    return new_source
-
-
 # ---- Logprobs ----
 
 from together import AsyncTogether
@@ -291,44 +216,31 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     return result
 
 async def main(args):
-    #parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)_(.+)', args.directory)
-    # CELINE: updated new paths, should be right
-    parsed_experiment = re.search(r'(workflow_orchestration|document_editor|dependency_resolver|data_encoder)/(.+)', args.directory)
-
-    output_file = f"{parsed_experiment.group(1)}_metrics.json"
-    if args.branch_name is None:
-        branch_name = parsed_experiment.group(2)
-    else:
-        branch_name = args.branch_name
-
+    
     logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model, args.codebank_file)
-
-    existing_metrics = json.load(open(output_file)) if os.path.exists(output_file) else {}
-    existing_metrics[branch_name] = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
-    json.dump(existing_metrics, open(output_file, 'w'), indent=2)
-
+    output_file = os.path.join(args.directory, "LIBRARYBENCH_metrics.json")
     results = {}
-    if os.path.exists(os.path.join(args.directory, "results.json")):
-        results = json.load(open(os.path.join(args.directory, "results.json")))
+    if os.path.exists(output_file):
+        results = json.load(open(output_file))
+
+    metrics = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
     
     if args.codebank_file:
-        results["metrics_after"] = existing_metrics[branch_name]
+        results["metrics_after"] = metrics
     else:
-        results["metrics_before"] = existing_metrics[branch_name]
-    with open(os.path.join(args.directory, "results.json"), 'w') as wf:
+        results["metrics_before"] = metrics
+    with open(output_file, 'w') as wf:
         json.dump(results, wf, indent=4)
-
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
     parser.add_argument("--directory", type=str, help="Paths to .py files")
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
-    # parser.add_argument("--branch_name", type=str, default=None, help="What key to log the metrics under")
     parser.add_argument("--codebank_file", type=str, default=None, help="Codebank file to condition on")
     args = parser.parse_args()
     
     asyncio.run(main(args))
 
 # ---- Example usage ----
-# python score.py --directory workflow_orchestration_claude_refactor --output_file workflow_orchestration_metrics.json --model deepseek-ai/DeepSeek-V3 --branch_name claude_code
+# python score.py --directory workflow_orchestration/unified --model deepseek-ai/DeepSeek-V3

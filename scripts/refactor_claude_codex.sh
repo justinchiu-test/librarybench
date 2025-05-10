@@ -17,10 +17,14 @@ fi
 # remember where we started
 base_dir="$PWD"
 
-echo "Starting refactoring for $directory..."
+# make a copy to refactor
+new_directory="${directory}_refactor" 
+cp -r $directory $new_directory
+
+echo "Starting refactoring for $directory in $new_directory..."
 
 # Push into the target directory
-pushd "$directory" >/dev/null
+pushd "$new_directory" >/dev/null
 
 echo "Following the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md..."
 
@@ -32,13 +36,13 @@ time claude --dangerously-skip-permissions \
 echo "Running codex impl"
 # Codex implement
 CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
-  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md."
+  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md. Do exactly as the plan says, creating and modifying files only in unified/ and nowhere else."
 
 # Return to original directory
 popd >/dev/null
 
 # Run scoring script
 echo "Running scoring script..."
-python score.py --directory "$directory/unified"
+python score.py --directory "$new_directory/unified"
 
 echo "Done!"

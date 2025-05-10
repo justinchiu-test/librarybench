@@ -1,0 +1,19 @@
+=============================================== test session starts ================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 16 items
+
+test_plugin_manager.py ..                                                                                    [ 12%]
+test_validation.py ..                                                                                        [ 25%]
+test_schema_diff_tool.py .                                                                                   [ 31%]
+test_error_localization.py ..                                                                                [ 43%]
+test_masking.py ..                                                                                           [ 56%]
+test_schema.py .                                                                                             [ 62%]
+test_transformation.py .                                                                                     [ 68%]
+test_datetime_validation.py .....                                                                            [100%]
+
+--------------------------------------------------- JSON report ----------------------------------------------------
+report saved to: report.json
+================================================ 16 passed in 0.11s ================================================

@@ -1,23 +1,48 @@
-# Unified Implementation Task
+# Unified Implementation Refactoring Guide
 
 ## Task Overview
-Your task is to create a unified implementation that addresses the requirements from each directory.
+Your task is to refactor multiple related implementations into a single, unified codebase that satisfies all requirements while eliminating redundancy and improving maintainability.
 
 ## Steps
 
-1. Read and analyze the TASK.md files in each directory: `*/TASK.md`
+### 1. Analysis Phase
+- Read all `TASK.md` files in each subdirectory to understand the specific requirements
+- Examine existing implementations to identify:
+  - Common functionality and patterns
+  - Shared data structures and interfaces
+  - Domain-specific requirements
+  - Test coverage and expected behaviors
 
-2. Analyze the common functionality, data structures, and interfaces across all implementations.
+### 2. Architecture Design
+- Create `unified/PLAN.md` detailing your architectural approach:
+  - Component breakdown with clear responsibilities
+  - Interface definitions between components
+  - Dependency management strategy
+  - Extension points for domain-specific functionality
 
-3. Design a unified architecture that satisfies all requirements from all use cases in `unified/PLAN.md`.
+### 3. Implementation Rules
+- **Directory Structure**: Place all new code in `unified/src/`
+- **Import Updates**: Modify import paths in test files to reference your new unified implementation
+- **Test Compatibility**: Ensure all tests in `unified/tests/` pass with the new implementation
+- **NO modifications** to any code outside the `unified/` directory
 
-4. Implement the unified solution in the `unified` directory with an appropriate file structure that:
-   - Includes all necessary modules and packages
-   - Maintains compatibility with all test cases
-   - Addresses the specific requirements from each TASK.md file
-   - Uses consistent naming conventions and coding standards
-   - Minimizes code duplication by consolidating similar functionality
+### 4. Coding Standards
+- Use consistent naming conventions throughout the codebase
+- Implement proper error handling and validation
+- Maintain compatability with all test cases
+- Minimize code duplication by consolidating similar functionality
 
-5. Ensure that the unified implementation passes all tests copied from the use cases.
+### 5. Testing
+- Run all tests to ensure the unified implementation passes existing test cases
+- Consider adding integration tests for cross-component functionality
+- Verify edge cases are properly handled
 
-6. Document the architecture, key components, and how the solution addresses each use case's requirements.
+### 6. Documentation
+- Provide documentation in code and README files
+- Explain how the unified solution addresses each original use case
+- Document the architecture, key components, and design decisions
+
+### 6. Final Review
+- Ensure the implementation is complete and satisfies all requirements
+- Verify no functionality has been lost during refactoring
+- Check for any remaining code duplication or inconsistencies

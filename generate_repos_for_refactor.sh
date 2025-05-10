@@ -2,8 +2,8 @@
 set -euo pipefail
 
 MODEL="o4-mini"
-LIBRARY_GEN_COUNT=2
-PERSONA_GEN_COUNT=3
+LIBRARY_GEN_COUNT=3
+PERSONA_GEN_COUNT=10
 
 # 1. Snapshot existing top-level dirs
 pre_dirs=()

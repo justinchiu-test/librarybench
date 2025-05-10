@@ -27,12 +27,12 @@ echo "Following the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md..."
 echo "Running claude planner"
 # Claude plan
 time claude --dangerously-skip-permissions \
-  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
+  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only write unified/PLAN.md. Give the file structure. Do not implement any code."
 
 echo "Running codex impl"
 # Codex implement
 CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
-  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
+  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md."
 
 # Return to original directory
 popd >/dev/null

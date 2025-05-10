@@ -17,7 +17,8 @@ LibraryBench provides a pipeline for:
 ```
 bash scripts/synth_ideas.sh
 bash scripts/synth_personas.sh
-bash scripts/synth_instructions_tests.sh
+bash scripts/synth_instructions.sh
+bash scripts/synth_code_tests.sh
 ```
 
 ## Environment Setup

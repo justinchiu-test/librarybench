@@ -40,9 +40,9 @@ The tests should:
 # VERIFICATION REQUIREMENT
 Before considering the task complete:
 1. Run all tests using pytest and ensure they pass
-2. REQUIRED: Run pytest with uv and generate a JSON report as proof:
+2. REQUIRED: Run pytest and generate a JSON report as proof:
    ```
-   uv run pytest --json-report --json-report-file=pytest_results.json
+   pytest --json-report --json-report-file=pytest_results.json
    ```
 3. Verify your implementation meets all requirements specified in INSTRUCTIONS.md
 4. Check that the code adheres to the coding standards
@@ -52,12 +52,12 @@ Before considering the task complete:
 # PYTEST JSON REPORT SETUP
 Before running tests, install the pytest-json-report plugin:
 ```
-uv add pytest-json-report
+pip install pytest-json-report
 ```
 
 After adding the plugin, always use the following command to run tests and generate the JSON report:
 ```
-uv run pytest --json-report --json-report-file=pytest_results.json
+pytest --json-report --json-report-file=pytest_results.json
 ```
 
 This JSON report is MANDATORY and serves as proof that your implementation passes all tests.

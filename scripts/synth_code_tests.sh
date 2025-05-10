@@ -66,6 +66,9 @@ process_instruction() {
     pushd "$project_dir" > /dev/null
     
     echo "Working in directory: $(pwd)"
+
+    uv venv
+    source .venv/bin/activate
     
     # Run claude to implement the solution and tests
     claude --dangerously-skip-permissions -p "Follow the instructions in ${ORIGINAL_DIR}/prompts/code_tests.txt.
@@ -78,6 +81,8 @@ process_instruction() {
     Implement the solution and tests according to the instructions.
     
     Make sure to work in the current directory: $(pwd)"
+
+    deactivate
     
     # Return to the original directory
     popd > /dev/null

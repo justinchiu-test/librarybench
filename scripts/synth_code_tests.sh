@@ -80,7 +80,7 @@ process_instruction() {
     
     Implement the solution and tests according to the instructions.
     
-    Make sure to work in the current directory: $(pwd)"
+    Make sure to work in the current directory: $(pwd). The virtual environment has been activated and will be deactivated for you."
 
     deactivate
     

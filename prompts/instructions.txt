@@ -9,8 +9,6 @@ For each project idea and its corresponding personas:
    a. Create a directory structure at projects/{project_name}/{project_name}_{persona_identifier} where {persona_identifier} is a short, slug-friendly name derived from the persona (e.g., "professor", "sysadmin", "writer", etc.).
    
    b. Create an INSTRUCTIONS.md file in this directory that provides detailed implementation guidance for building the project specifically tailored to this persona's needs.
-   
-   c. Create a tests/ directory within the project directory containing comprehensive pytest tests that verify all the requirements for this persona's implementation. These tests should be well-structured, follow pytest best practices, and include appropriate fixtures and parametrizations.
 
 4. The INSTRUCTIONS.md file should include:
 
@@ -21,13 +19,13 @@ For each project idea and its corresponding personas:
    - Design code as libraries and APIs rather than applications with UIs
    - Each implementation should be focused solely on the specific persona's requirements
    
-   Additionally, the tests directory should:
-   - Contain comprehensive pytest tests for all requirements
-   - Include a test_requirements.py file that specifically tests each of the 5 key requirements
-   - Provide appropriate fixtures and mocks in conftest.py
-   - Utilize test parametrization where appropriate
-   - Include both positive tests and negative tests (error handling)
-   - Test edge cases and performance requirements
+   The implementation should include functionality that can be tested as follows:
+   - Comprehensive pytest tests for all requirements
+   - Tests for each of the 5 key requirements
+   - Support for fixtures and mocks
+   - Support for test parametrization where appropriate
+   - Support for both positive tests and negative tests (error handling)
+   - Support for testing edge cases and performance requirements
 
    - # Project Title
      A persona-specific variation of the original project title
@@ -79,4 +77,5 @@ For each project idea and its corresponding personas:
 
 8. Maintain a consistent structure across all instruction files while customizing the content specifically for each project-persona combination.
 
-Output your instructions into projects/{project_name}/{project_name}_{persona_identifier}/INSTRUCTIONS.md and create the tests in projects/{project_name}_{persona_identifier}/tests/.
+Output your instructions into projects/{project_name}/{project_name}_{persona_identifier}/INSTRUCTIONS.md.
+Do not generate tests.

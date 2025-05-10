@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Union, cast
 from uuid import UUID
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from product_insight.models import (
     MetricTypeEnum,
@@ -34,12 +34,14 @@ class ObjectiveProgress(BaseModel):
     priority: PriorityEnum
     child_progress: List["ObjectiveProgress"] = []
     
-    @validator("progress_percentage", always=True)
-    def calculate_progress(cls, v: Optional[float], values: Dict) -> Optional[float]:
+    @field_validator("progress_percentage", mode="before")
+    @classmethod
+    def calculate_progress(cls, v: Optional[float], info) -> Optional[float]:
         """Calculate progress percentage if not provided."""
+        values = info.data
         if v is not None:
             return v
-        
+
         if (
             values.get("metric_target") is not None and 
             values.get("metric_current") is not None and

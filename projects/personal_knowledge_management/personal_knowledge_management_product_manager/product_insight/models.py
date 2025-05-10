@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class BaseEntity(BaseModel):
@@ -153,12 +153,12 @@ class FeedbackCluster(BaseEntity):
     summary: Optional[str] = None
     confidence: float = 0.5
 
-    @validator("volume", always=True)
-    def set_volume(cls, v: int, values: Dict) -> int:
+    @model_validator(mode="after")
+    def set_volume(self) -> "FeedbackCluster":
         """Set the volume based on the number of feedback items."""
-        if "feedback_ids" in values:
-            return len(values["feedback_ids"])
-        return v
+        if self.feedback_ids:
+            self.volume = len(self.feedback_ids)
+        return self
 
 
 class StrategicObjective(BaseEntity):
@@ -258,7 +258,7 @@ class Decision(BaseEntity):
 
 class Stakeholder(BaseEntity):
     """Represents a stakeholder with influence and perspective."""
-    
+
     name: str
     role: StakeholderRoleEnum
     organization: Optional[str] = None
@@ -272,10 +272,27 @@ class Stakeholder(BaseEntity):
     engagement_history: List[str] = Field(default_factory=list)
     notes: Optional[str] = None
 
+    def model_dump(self, **kwargs):
+        """Override the model_dump method to convert UUID keys to strings."""
+        result = super().model_dump(**kwargs)
+
+        # Convert UUID keys to strings in dictionaries
+        if "feature_preferences" in result and result["feature_preferences"]:
+            result["feature_preferences"] = {
+                str(k): v for k, v in result["feature_preferences"].items()
+            }
+
+        if "objective_alignment" in result and result["objective_alignment"]:
+            result["objective_alignment"] = {
+                str(k): v for k, v in result["objective_alignment"].items()
+            }
+
+        return result
+
 
 class StakeholderPerspective(BaseEntity):
     """Represents a stakeholder's perspective on a specific issue."""
-    
+
     stakeholder_id: UUID
     topic: str
     perspective: str
@@ -284,6 +301,14 @@ class StakeholderPerspective(BaseEntity):
     context: Optional[str] = None
     related_feature_ids: List[UUID] = Field(default_factory=list)
     related_objective_ids: List[UUID] = Field(default_factory=list)
+
+    @property
+    def name(self) -> str:
+        """Get a display name for the perspective.
+
+        This is needed for compatibility with other entities that have names.
+        """
+        return f"Perspective on {self.topic}"
 
 
 class SearchQuery(BaseModel):

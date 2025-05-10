@@ -95,7 +95,9 @@ class FileStorage(StorageInterface[T]):
         if self.format == "json":
             return json.dumps(entity_dict, default=self._json_serializer, indent=2)
         elif self.format == "yaml":
-            return yaml.dump(entity_dict, default_flow_style=False)
+            # Convert UUIDs to strings in the dict
+            self._convert_uuids_to_str(entity_dict)
+            return yaml.dump(entity_dict, default_flow_style=False, Dumper=yaml.SafeDumper)
         else:  # markdown
             md_content = f"# {entity_dict.get('name', '') or entity_dict.get('title', '')}\n\n"
             md_content += f"ID: {entity_dict.get('id')}\n\n"
@@ -143,6 +145,21 @@ class FileStorage(StorageInterface[T]):
         if isinstance(obj, datetime):
             return obj.isoformat()
         return str(obj)
+
+    def _convert_uuids_to_str(self, data: Any) -> None:
+        """Recursively convert UUIDs to strings in a data structure."""
+        if isinstance(data, dict):
+            for key, value in list(data.items()):
+                if isinstance(value, UUID):
+                    data[key] = str(value)
+                elif isinstance(value, (dict, list)):
+                    self._convert_uuids_to_str(value)
+        elif isinstance(data, list):
+            for i, item in enumerate(data):
+                if isinstance(item, UUID):
+                    data[i] = str(item)
+                elif isinstance(item, (dict, list)):
+                    self._convert_uuids_to_str(item)
     
     def save(self, entity: T) -> T:
         """Save an entity to a file."""

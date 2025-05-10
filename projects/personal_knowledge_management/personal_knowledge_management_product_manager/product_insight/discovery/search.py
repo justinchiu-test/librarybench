@@ -878,7 +878,9 @@ class SearchEngine:
             
             # Add feedback associated with this feature
             for feedback_id, feedback in self.index.feedback_data.items():
-                if entity_id in feedback.feedback_cluster_ids or entity_id in feedback.feedback_ids:
+                # Check if the feature ID is in the FeedbackItem's feedback_ids
+                # FeedbackItem doesn't have feedback_cluster_ids, so we skip that check
+                if hasattr(feedback, 'feedback_ids') and entity_id in feedback.feedback_ids:
                     result = SearchResult(
                         entity_id=feedback_id,
                         entity_type="feedback",
@@ -888,7 +890,7 @@ class SearchEngine:
                         date=feedback.created_at,
                         tags=feedback.tags
                     )
-                    
+
                     related_entities["feedback"].append(result)
             
             # Add dependent features

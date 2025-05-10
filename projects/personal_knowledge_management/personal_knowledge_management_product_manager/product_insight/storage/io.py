@@ -7,6 +7,7 @@ This module provides functionality for importing and exporting data in various f
 import csv
 import json
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from uuid import UUID
@@ -14,6 +15,25 @@ from uuid import UUID
 import pandas as pd
 import yaml
 from pydantic import BaseModel, ValidationError
+
+# Add custom YAML serializer and deserializer for UUID and Enum
+def uuid_representer(dumper, data):
+    """Custom YAML representer for UUID objects."""
+    return dumper.represent_scalar('tag:yaml.org,2002:str', str(data))
+
+def uuid_constructor(loader, node):
+    """Custom YAML constructor for UUID objects."""
+    value = loader.construct_scalar(node)
+    return UUID(value)
+
+def enum_representer(dumper, data):
+    """Custom YAML representer for Enum objects."""
+    return dumper.represent_scalar('tag:yaml.org,2002:str', str(data.value))
+
+# Register the UUID and Enum handlers with PyYAML
+yaml.SafeDumper.add_representer(UUID, uuid_representer)
+yaml.SafeDumper.add_multi_representer(Enum, enum_representer)
+yaml.SafeLoader.add_constructor('tag:yaml.org,2002:str', yaml.constructor.SafeConstructor.construct_scalar)
 
 from product_insight.models import BaseEntity
 from product_insight.storage.base import StorageInterface
@@ -105,10 +125,10 @@ class DataImporter(Generic[T]):
     def import_from_yaml(self, file_path: Union[str, Path]) -> List[T]:
         """Import entities from a YAML file."""
         path = Path(file_path)
-        
+
         try:
             with open(path, "r", encoding="utf-8") as f:
-                data = yaml.safe_load(f)
+                data = yaml.load(f, Loader=yaml.SafeLoader)
         except Exception as e:
             raise DataError(f"Failed to read YAML file: {str(e)}")
         
@@ -227,15 +247,35 @@ class DataExporter(Generic[T]):
     def export_to_yaml(self, file_path: Union[str, Path], entities: List[T]) -> None:
         """Export entities to a YAML file."""
         path = Path(file_path)
-        
+
         try:
-            # Convert entities to dictionaries
-            data = [entity.model_dump() for entity in entities]
-            
+            # Convert entities to dictionaries with custom serialization
+            data = []
+            for entity in entities:
+                # Convert to dict and convert UUIDs to strings
+                entity_dict = entity.model_dump()
+                self._convert_uuids_to_str(entity_dict)
+                data.append(entity_dict)
+
             with open(path, "w", encoding="utf-8") as f:
-                yaml.dump(data, f, default_flow_style=False)
+                yaml.dump(data, f, default_flow_style=False, Dumper=yaml.SafeDumper)
         except Exception as e:
             raise DataError(f"Failed to write YAML file: {str(e)}")
+
+    def _convert_uuids_to_str(self, data: Any) -> None:
+        """Recursively convert UUIDs to strings in a data structure."""
+        if isinstance(data, dict):
+            for key, value in list(data.items()):
+                if isinstance(value, UUID):
+                    data[key] = str(value)
+                elif isinstance(value, (dict, list)):
+                    self._convert_uuids_to_str(value)
+        elif isinstance(data, list):
+            for i, item in enumerate(data):
+                if isinstance(item, UUID):
+                    data[i] = str(item)
+                elif isinstance(item, (dict, list)):
+                    self._convert_uuids_to_str(item)
     
     def export_to_csv(self, file_path: Union[str, Path], entities: List[T]) -> None:
         """Export entities to a CSV file."""
@@ -315,23 +355,24 @@ class ReportGenerator:
             reverse=True
         )
         
-        html = """
+        current_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        html = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <title>Feature Prioritization Report</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #ddd; padding: 8px; }
-                th { background-color: #f2f2f2; text-align: left; }
-                tr:nth-child(even) { background-color: #f9f9f9; }
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                table {{ border-collapse: collapse; width: 100%; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; }}
+                th {{ background-color: #f2f2f2; text-align: left; }}
+                tr:nth-child(even) {{ background-color: #f9f9f9; }}
             </style>
         </head>
         <body>
             <h1>Feature Prioritization Report</h1>
-            <p>Generated on: {date}</p>
-            
+            <p>Generated on: {current_date}</p>
+
             <h2>Features by Priority</h2>
             <table>
                 <tr>
@@ -342,7 +383,7 @@ class ReportGenerator:
                     <th>Effort</th>
                     <th>Description</th>
                 </tr>
-        """.format(date=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        """
         
         for feature in sorted_features:
             priority = f"{feature.priority_score:.2f}" if feature.priority_score is not None else "N/A"

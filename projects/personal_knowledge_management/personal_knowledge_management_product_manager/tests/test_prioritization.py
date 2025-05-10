@@ -18,6 +18,7 @@ from product_insight.prioritization import (
     FeaturePrioritizer,
     FeatureScorer,
     KanoCategory,
+    KanoScorer,
     PrioritizationCriteria,
     PrioritizationMethod,
     RiceScorer,

@@ -17,6 +17,7 @@ from product_insight.prioritization import (
     FeaturePrioritizer,
     PrioritizationMethod,
 )
+from tests.fixtures.generators import MockDataGenerator
 
 from tests.fixtures.fixtures import (
     mock_data_generator,
@@ -33,9 +34,9 @@ class TestPerformanceBenchmarks:
         # Create a feedback manager
         manager = FeedbackManager(storage_dir=temp_dir)
         
-        # Create mock data generator
-        generator = mock_data_generator
-        
+        # Create mock data generator - instantiate it directly
+        generator = MockDataGenerator(seed=42)
+
         # Generate 1000+ feedback items
         num_items = 1000
         feedback_items = generator.generate_feedback_items(num_items)
@@ -76,9 +77,9 @@ class TestPerformanceBenchmarks:
         # Create a feature prioritizer
         prioritizer = FeaturePrioritizer(storage_dir=temp_dir)
         
-        # Create mock data generator
-        generator = mock_data_generator
-        
+        # Create mock data generator - instantiate it directly
+        generator = MockDataGenerator(seed=42)
+
         # Generate 200+ features
         num_features = 200
         features = generator.generate_features(num_features)

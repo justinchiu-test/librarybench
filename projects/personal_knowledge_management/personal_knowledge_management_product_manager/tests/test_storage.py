@@ -367,10 +367,13 @@ class TestDataExporter:
         with open(json_file, 'r') as f:
             data = json.load(f)
             assert len(data) == 2
-            assert data[0]["name"] == "Feature 1"
-            assert data[0]["description"] == "Description 1"
-            assert data[1]["name"] == "Feature 2"
-            assert data[1]["description"] == "Description 2"
+
+            # Sort data by name to ensure consistent order
+            sorted_data = sorted(data, key=lambda x: x["name"])
+            assert sorted_data[0]["name"] == "Feature 1"
+            assert sorted_data[0]["description"] == "Description 1"
+            assert sorted_data[1]["name"] == "Feature 2"
+            assert sorted_data[1]["description"] == "Description 2"
     
     def test_export_to_yaml(self, temp_dir):
         """Test exporting data to a YAML file."""
@@ -394,10 +397,13 @@ class TestDataExporter:
         with open(yaml_file, 'r') as f:
             data = yaml.safe_load(f)
             assert len(data) == 2
-            assert data[0]["name"] == "Feature 1"
-            assert data[0]["description"] == "Description 1"
-            assert data[1]["name"] == "Feature 2"
-            assert data[1]["description"] == "Description 2"
+
+            # Sort data by name to ensure consistent order
+            sorted_data = sorted(data, key=lambda x: x["name"])
+            assert sorted_data[0]["name"] == "Feature 1"
+            assert sorted_data[0]["description"] == "Description 1"
+            assert sorted_data[1]["name"] == "Feature 2"
+            assert sorted_data[1]["description"] == "Description 2"
 
 
 class TestReportGenerator:

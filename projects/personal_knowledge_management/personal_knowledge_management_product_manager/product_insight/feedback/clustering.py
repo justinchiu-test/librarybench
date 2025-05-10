@@ -472,7 +472,16 @@ class FeedbackClusterer:
         try:
             # Vectorize all content
             contents = [target_feedback.content] + [item.content for item in candidates]
-            vectors = self.vectorizer.fit_transform(contents)
+
+            # Fit and transform or just transform depending on state
+            if not hasattr(self.vectorizer, 'vocabulary_'):
+                vectors = self.vectorizer.fit_transform(contents)
+            else:
+                # Try to transform, if it fails, re-fit and transform
+                try:
+                    vectors = self.vectorizer.transform(contents)
+                except Exception:
+                    vectors = self.vectorizer.fit_transform(contents)
 
             # Calculate similarity between target and each candidate
             target_vector = vectors[0:1]  # First row is the target
@@ -524,7 +533,16 @@ class FeedbackClusterer:
 
                 # Calculate average similarity to items in cluster
                 contents = [item.content] + [ci.content for ci in cluster_items]
-                vectors = self.vectorizer.transform(contents)
+
+                # Fit and transform if vectorizer is not fitted yet
+                if not hasattr(self.vectorizer, 'vocabulary_'):
+                    vectors = self.vectorizer.fit_transform(contents)
+                else:
+                    # Try to transform, if it fails, re-fit and transform
+                    try:
+                        vectors = self.vectorizer.transform(contents)
+                    except Exception:
+                        vectors = self.vectorizer.fit_transform(contents)
 
                 # Check similarity of new item to each cluster item
                 similarities = []
@@ -562,11 +580,16 @@ class FeedbackClusterer:
         updated_clusters = existing_clusters.copy()
         unclustered_items = []
 
+        # Update all_items to include new items
+        all_items_updated = all_items.copy()
+        for item in new_items:
+            all_items_updated[item.id] = item
+
         for item in new_items:
             assigned = False
 
             # Try to assign to existing clusters
-            assigned_clusters = self.assign_to_clusters(item, existing_clusters, all_items, similarity_threshold)
+            assigned_clusters = self.assign_to_clusters(item, existing_clusters, all_items_updated, similarity_threshold)
 
             if assigned_clusters:
                 # Add to assigned clusters
@@ -581,8 +604,8 @@ class FeedbackClusterer:
 
         # Re-enrich clusters with new items
         for cluster in updated_clusters:
-            cluster_items = [all_items[item_id] for item_id in cluster.feedback_ids
-                          if item_id in all_items]
+            cluster_items = [all_items_updated[item_id] for item_id in cluster.feedback_ids
+                          if item_id in all_items_updated]
             self._enrich_cluster(cluster, cluster_items)
 
         return updated_clusters, unclustered_items

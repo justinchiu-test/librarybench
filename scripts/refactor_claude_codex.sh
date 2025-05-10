@@ -21,11 +21,13 @@ pushd "$directory"
 
 echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
 
+echo "Running claude planner"
 # Claude plan
-claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
+time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
 
+echo "Running codex impl"
 # Codex implement
-CODEX_QUIET_MODE=1 codex --approval-mode full-auto "Read the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
+CODEX_QUIET_MODE=1 time codex --approval-mode full-auto "Read the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
 
 # Pop back to the original directory
 popd

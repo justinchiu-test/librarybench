@@ -21,7 +21,7 @@ pushd "$directory"
 
 echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
 # Run codex and tell it to follow instructions
-CODEX_QUIET_MODE=1 codex --approval-mode full-auto "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md"
+CODEX_QUIET_MODE=1 time codex --approval-mode full-auto "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md"
 
 # Pop back to the original directory
 popd

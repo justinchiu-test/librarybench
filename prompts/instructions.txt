@@ -77,7 +77,7 @@ For each project idea and its corresponding personas:
 
 8. Maintain a consistent structure across all instruction files while customizing the content specifically for each project-persona combination.
 
-9. Instruct the agent to use `uv init --lib` to setup virtual environments and `pyproject.toml`.
+9. Instruct the agent to use `uv venv` to setup virtual environments. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
 
 Output your instructions into projects/{project_name}/{project_name}_{persona_identifier}/INSTRUCTIONS.md.
 Do not generate tests.

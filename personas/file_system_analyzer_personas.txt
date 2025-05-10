@@ -1,0 +1,99 @@
+# Persona 1: Enterprise Systems Administrator
+Alex is a senior systems administrator managing storage infrastructure for a multinational corporation with hundreds of servers. His primary goal is to proactively identify storage trends and prevent capacity-related outages before they impact business operations.
+
+Key Features:
+1. Automated scheduled scanning with configurable retention policies for historical data
+2. Cross-server aggregation dashboard showing holistic storage metrics across the entire infrastructure
+3. Integration with enterprise monitoring platforms (Nagios, Prometheus, Grafana) for unified alerting
+4. Role-based access controls allowing junior admins view-only access to reports without modification privileges
+5. Predictive analytics forecasting storage needs based on growth patterns to inform hardware procurement cycles
+
+# Persona 2: Security Auditor
+Priya works as an information security specialist conducting regular audits for regulatory compliance. She needs to identify potentially sensitive files stored in unauthorized locations and verify that data retention policies are being properly enforced.
+
+Key Features:
+1. Pattern-based scanning to detect personally identifiable information (PII) and other sensitive data based on content signatures
+2. Comprehensive audit logging of all scan operations with immutable records for compliance evidence
+3. Customizable compliance report templates mapped to specific regulatory frameworks (GDPR, HIPAA, SOX)
+4. Differential scanning highlighting newly added sensitive content since previous audit
+5. Chain-of-custody tracking for exported reports with cryptographic verification
+
+# Persona 3: DevOps Engineer
+Marcus is a DevOps engineer responsible for optimizing CI/CD pipelines and build environments. He needs to understand how source code organization and build artifacts impact storage requirements and performance.
+
+Key Features:
+1. Integration with code repositories to correlate storage patterns with specific commits and branches
+2. Build artifact analysis identifying redundant or unnecessarily large compilation outputs
+3. Docker and container image optimization recommendations highlighting inefficient layer storage
+4. Cache effectiveness metrics showing hit/miss ratios and storage impact of various caching strategies
+5. Pipeline-specific visualizations showing storage impact of each stage in the CI/CD workflow
+
+# Persona 4: Research Data Scientist
+Dr. Zhang manages large datasets for a research institution, working with terabytes of experimental results and simulation outputs. She needs to efficiently organize and archive research data while maintaining accessibility for ongoing analysis.
+
+Key Features:
+1. Specialized scientific file format recognition and analysis (HDF5, FITS, NetCDF, etc.)
+2. Dataset provenance tracking linking derivative data products to their original sources
+3. Compute-to-storage ratio optimization recommendations for high-performance computing environments
+4. Collaboration patterns visualization showing which datasets are accessed by multiple research teams
+5. Data lifecycle management with automated archival recommendations for rarely accessed datasets
+
+# Persona 5: Media Production Manager
+Carlos oversees digital assets for a media production company working with large video, audio, and image files. His goal is to optimize storage workflows and ensure efficient organization of media projects.
+
+Key Features:
+1. Media-specific metadata extraction and cataloging (resolution, bitrate, codec, color profile)
+2. Project-based analysis grouping files by production timeline and identifying orphaned assets
+3. Render farm storage efficiency metrics correlating output quality settings with storage requirements
+4. Bandwidth analysis ensuring storage subsystems match media playback and editing requirements
+5. Content-aware deduplication detection specifically designed for slight variations in media files
+
+# Persona 6: Legal Discovery Specialist
+Jessica works for a law firm handling e-discovery requests that require searching through massive corporate archives. She needs to efficiently identify and export relevant documents while maintaining chain of custody.
+
+Key Features:
+1. Advanced query language for complex file selection criteria combining metadata and content patterns
+2. Legally defensible export functionality with complete chain of custody documentation
+3. Duplicate detection specifically designed to identify near-identical documents with minor variations
+4. Timeline visualization of document creation, modification, and access patterns relevant to case timeframes
+5. Integration with legal document management systems for seamless workflow
+
+# Persona 7: Open Source Project Maintainer
+Raj maintains several popular open source projects and needs to ensure the repositories remain efficient and well-organized. His goal is to understand how the project structure impacts new contributors and identify areas for optimization.
+
+Key Features:
+1. Contributor impact analysis showing how different developers affect repository size and organization
+2. Cross-repository comparison highlighting structural differences between similar projects
+3. License compliance scanning detecting incompatible or missing license information
+4. Dependency tree visualization showing storage impact of included libraries and frameworks
+5. Newcomer experience metrics identifying areas of the codebase that might confuse new contributors due to organization
+
+# Persona 8: Database Administrator
+Elena manages large database deployments and needs to analyze how storage is used by database files, logs, and backups. Her goal is to optimize performance and minimize storage costs while ensuring data integrity.
+
+Key Features:
+1. Database-specific file pattern recognition for major database engines (MySQL, PostgreSQL, MongoDB, etc.)
+2. Transaction log analysis correlating log growth with database operations
+3. Index efficiency metrics highlighting storage overhead versus query performance benefits
+4. Tablespace fragmentation visualization and optimization recommendations
+5. Backup compression efficiency reporting comparing various algorithms and strategies
+
+# Persona 9: Education IT Coordinator
+Miguel manages IT resources for a university department with limited budget but diverse computing needs. He needs to efficiently allocate storage resources across faculty, research, and student needs.
+
+Key Features:
+1. User quota analysis and recommendation engine based on historical usage patterns
+2. Educational content identification separating course materials from personal files
+3. Semester-based usage patterns visualization showing demand fluctuations throughout academic year
+4. Shared resource optimization identifying opportunities for consolidated storage services
+5. Simple graphical reports designed for presenting to non-technical department administrators
+
+# Persona 10: Cloud Migration Specialist
+Aisha helps organizations migrate on-premises infrastructure to cloud platforms. She needs to analyze existing storage usage to plan efficient and cost-effective cloud deployments.
+
+Key Features:
+1. Cloud cost projection tools comparing on-premises storage with equivalent cloud storage tiers
+2. Migration complexity scoring identifying data that may be challenging to transfer due to size or structure
+3. Hybrid environment analysis for phased migrations with data dependencies between cloud and on-premises
+4. Application-specific storage pattern detection to match appropriate cloud storage services (block, object, file)
+5. Data gravity analysis identifying which datasets attract the most access and processing requirements

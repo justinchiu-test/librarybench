@@ -1,0 +1,99 @@
+# Persona 1: Professional Photographer
+Isabella is a commercial photographer who shoots thousands of images monthly for different clients across various industries. She needs to efficiently catalog, search, and deliver photos to clients while maintaining a consistent organization system for her growing archives.
+
+Key Features:
+1. Client-project hierarchy automation that creates standardized folder structures from shoot metadata
+2. Deliverable preparation tools generating client-ready files with appropriate metadata and watermarking
+3. Usage rights tracking flagging images with specific licensing restrictions or expiration dates
+4. Equipment-specific metadata extraction identifying which gear produces the best results
+5. Client portal integration generating secure sharing links with customized metadata visibility
+
+# Persona 2: Historical Archive Curator
+Dr. Chen manages a university's historical photograph collection spanning over a century of images with inconsistent or missing metadata. He needs to establish standardized cataloging practices and enhance existing metadata to make the collection academically valuable.
+
+Key Features:
+1. Period-appropriate taxonomies implementing historically accurate categorization schemes
+2. Handwritten notation extraction attempting to digitize notes from physical photographs
+3. Historical geocoding matching outdated place names with their modern equivalents
+4. Provenance tracking documenting acquisition source and chain of ownership
+5. Academic citation generator creating properly formatted references for scholarly use
+
+# Persona 3: Video Production Manager
+Sophia oversees post-production for a documentary film studio managing terabytes of interview footage, B-roll, and archival material. She needs to organize raw footage and track the relationships between source material and final edited sequences.
+
+Key Features:
+1. Interview transcription linking with automatic speaker identification and timecode mapping
+2. Production status tracking showing which clips have been reviewed, selected, or included in edits
+3. Licensing status monitoring flagging footage with pending or expired usage rights
+4. Edit decision list integration showing which source clips appear in final productions
+5. Content sensitivity flagging identifying footage with potential legal or ethical concerns
+
+# Persona 4: Family Memory Keeper
+Miguel is digitizing and organizing decades of family photos, videos, and audio recordings spanning multiple generations. He wants to create a comprehensive family archive that preserves memories and makes them accessible to relatives.
+
+Key Features:
+1. Family relationship tagging creating connections between individuals across different media
+2. Generational timeline visualization showing family history through multimedia elements
+3. Voice recognition helping identify family members in audio recordings and oral histories
+4. Collaborative annotation allowing remote family members to contribute identifications
+5. Family event correlation connecting media to significant dates in family history
+
+# Persona 5: Music Collection Curator
+Aisha manages a vast personal music library spanning multiple formats from vinyl rips to streaming purchases. She needs to standardize inconsistent metadata across sources to create a unified listening experience.
+
+Key Features:
+1. Audio fingerprinting to identify untitled or mislabeled tracks through acoustic signatures
+2. Music-specific taxonomies implementing genre, mood, and theme classification
+3. Discography completion detecting missing tracks or albums within artist collections
+4. Performance role distinction differentiating primary artists from featured guests and session musicians
+5. Listening history integration tracking personal ratings and play counts across platforms
+
+# Persona 6: Digital Evidence Technician
+Officer Rodriguez processes digital media evidence for law enforcement cases. He needs to maintain strict chain of custody while organizing case-related media in a way that's presentable in court proceedings.
+
+Key Features:
+1. Tamper-evident metadata verification ensuring no modifications since acquisition
+2. Chain of custody logging documenting every access and modification with officer credentials
+3. Case hierarchy organization linking evidence to specific cases, charges, and legal statutes
+4. Automatic PII detection identifying and protecting personally identifiable information
+5. Court exhibit preparation generating properly redacted and formatted files for legal proceedings
+
+# Persona 7: Scientific Researcher
+Dr. Patel conducts marine biology research generating thousands of underwater photographs and videos. She needs to organize research media with scientific metadata that connects to her study protocols and findings.
+
+Key Features:
+1. Scientific taxonomy integration using standardized species classification systems
+2. Research protocol linking connecting media to specific experiments and methodologies
+3. Geospatial habitat mapping placing observations within ecological contexts
+4. Specimen tracking associating multiple observations of the same individual organism
+5. Publication preparation extracting appropriate media and metadata for journal submissions
+
+# Persona 8: Social Media Content Creator
+Jamal produces content across multiple platforms and needs to track which photos and videos have been used, where they've been published, and how they've performed. He wants to repurpose content efficiently while avoiding duplication.
+
+Key Features:
+1. Platform usage tracking showing where and when each asset has been published
+2. Engagement metrics association connecting content performance data with specific media
+3. Hashtag and keyword management for consistent cross-platform tagging strategies
+4. Content calendar integration scheduling media for future publishing dates
+5. Trend analysis identifying visual or thematic elements that drive higher engagement
+
+# Persona 9: Museum Digital Collections Manager
+Elena is responsible for digitizing and cataloging artifacts across multiple museum departments. She needs to implement institutional metadata standards while making the collections accessible to researchers and the public.
+
+Key Features:
+1. Institutional authority control enforcing standardized terminology across departments
+2. Exhibition history tracking showing when and where physical items have been displayed
+3. Multi-object relationship mapping connecting related artifacts across collections
+4. Conservation documentation linking condition reports with visual documentation
+5. Public access filtering determining which metadata fields are visible to different user groups
+
+# Persona 10: Drone Survey Operator
+Kwame captures aerial imagery for land surveys, construction monitoring, and agricultural assessment. He needs to organize thousands of geotagged images and maintain their precise spatial metadata for technical analysis.
+
+Key Features:
+1. Flight mission organization grouping images by specific survey operations and parameters
+2. Temporal sequence visualization showing changes to the same location over multiple surveys
+3. Sensor calibration metadata tracking ensuring measurement accuracy across equipment
+4. Client deliverable packaging preparing data in formats specific to different industries
+5. Coordinate system transformation supporting multiple geographic reference standards

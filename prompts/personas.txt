@@ -1,0 +1,29 @@
+For each project idea in the ideas/ directory:
+
+1. Come up with 10 distinct personas who would use this software but require very different features from one another. These personas should represent diverse user types with distinct needs, goals, and use patterns.
+
+2. For each persona:
+   - Write a 2-sentence description that captures who they are and their primary goal with the software
+   - List 5 specific features that are uniquely important to this persona and don't overlap with features requested by other personas
+
+3. Save this information in personas/{project_name}_personas.txt with clear formatting that separates each persona and their required features.
+
+The personas should be realistic, diverse, and represent genuinely different use cases that would lead to different feature priorities and implementation approaches.
+
+Example format for personas/{project_name}_personas.txt:
+```
+# Persona 1: [Name/Title]
+[Two-sentence description of who they are and their primary goal]
+
+Key Features:
+1. [Feature 1 specific to this persona]
+2. [Feature 2 specific to this persona]
+3. [Feature 3 specific to this persona]
+4. [Feature 4 specific to this persona]
+5. [Feature 5 specific to this persona]
+
+# Persona 2: [Name/Title]
+...
+```
+
+Ensure that the features across different personas do not overlap and represent truly different approaches to using the same core software.

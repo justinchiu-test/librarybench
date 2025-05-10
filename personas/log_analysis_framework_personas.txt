@@ -1,0 +1,99 @@
+# Persona 1: Cloud Infrastructure Engineer
+Amit manages a multi-cloud infrastructure spanning thousands of servers and microservices. He needs to centralize and analyze logs from diverse cloud platforms to ensure system reliability and quickly diagnose issues across complex service dependencies.
+
+Key Features:
+1. Cloud provider integration with specialized parsers for AWS CloudWatch, Azure Monitor, and Google Cloud Logging
+2. Infrastructure-as-Code correlation linking log events to specific deployment changes
+3. Service dependency visualization highlighting cascading failures across the infrastructure
+4. Auto-scaling event detection identifying resource provisioning patterns and bottlenecks
+5. Cost attribution tagging connecting high-volume logging with specific services for optimization
+
+# Persona 2: E-commerce Security Analyst
+Sophia monitors security logs for a high-traffic e-commerce platform processing sensitive payment data. She needs to identify potential security breaches and compliance issues across transaction processing systems in real-time.
+
+Key Features:
+1. PCI DSS compliance reporting with automatic detection of regulated data appearing in logs
+2. Attack pattern recognition using MITRE ATT&CK framework classifications
+3. User session correlation linking activities across multiple services to individual customers
+4. Fraud pattern detection with anomaly scoring based on historical transaction patterns
+5. Geographic access visualization highlighting unusual login locations and traffic sources
+
+# Persona 3: Mobile App Developer
+Miguel is responsible for a consumer mobile application with millions of users. He needs to understand app crash patterns, performance issues, and user behavior to prioritize bug fixes and improvements.
+
+Key Features:
+1. Crash stack deduplication grouping similar errors to identify the most impactful issues
+2. User journey reconstruction showing exact steps leading up to app failures
+3. Device and OS version correlation identifying platform-specific problems
+4. Performance regression detection comparing metrics before and after releases
+5. Feature adoption tracking showing usage patterns of new app capabilities
+
+# Persona 4: Database Administrator
+Dr. Chen manages large-scale database clusters supporting critical business applications. She needs to monitor query performance, resource utilization, and identify optimization opportunities across different database technologies.
+
+Key Features:
+1. Query performance analysis with execution plan extraction and bottleneck identification
+2. Lock contention visualization showing transaction blocking patterns and deadlocks
+3. Index usage statistics highlighting underutilized or missing indexes
+4. Storage growth prediction based on historical patterns by table and schema
+5. Replication lag monitoring with automated root cause analysis for synchronization issues
+
+# Persona 5: Healthcare Compliance Officer
+Robert ensures that healthcare systems meet strict regulatory requirements for patient data handling. He needs to verify proper access controls and audit trails while monitoring for potential HIPAA violations.
+
+Key Features:
+1. Protected health information (PHI) access monitoring with role-based authorization verification
+2. Regulatory violation alerting with contextual reference to specific compliance rules
+3. Chain of custody documentation for audit trails suitable for regulatory inspections
+4. Access pattern comparison identifying unusual data retrieval compared to clinical workflows
+5. De-identification verification ensuring logs themselves don't contain protected information
+
+# Persona 6: Site Reliability Engineer
+Priya maintains service level objectives (SLOs) for a critical SaaS platform. She needs to correlate logs with system metrics to identify reliability issues before they impact customers and automate remediation responses.
+
+Key Features:
+1. SLO impact analysis automatically correlating log events with service level objective violations
+2. Error budget tracking showing reliability metric consumption over time with forecasting
+3. Automated remediation rule creation based on historical successful resolution patterns
+4. Incident response timeline reconstruction for postmortem analysis
+5. On-call rotation integration directing alerts to the appropriate team member with context
+
+# Persona 7: IoT Fleet Manager
+Carlos oversees a network of industrial IoT devices deployed across manufacturing facilities. He needs to monitor device health, update status, and troubleshoot connectivity issues across a diverse hardware ecosystem.
+
+Key Features:
+1. Device lifecycle tracking showing firmware versions and update history across the fleet
+2. Connectivity pattern analysis identifying environmental factors affecting reliability
+3. Power consumption anomaly detection highlighting potential hardware failures
+4. Sensor calibration drift monitoring comparing readings against expected baselines
+5. Geospatial deployment visualization mapping device status across physical locations
+
+# Persona 8: Game Analytics Specialist
+Zoe analyzes player behavior logs from online multiplayer games. She needs to understand player experiences, identify game balance issues, and detect potential cheating or abuse patterns.
+
+Key Features:
+1. Player progression analysis tracking advancement rates compared to designed experience curves
+2. Economic activity monitoring for in-game currency and item exchanges
+3. Session length distribution highlighting engagement patterns across player segments
+4. Anti-cheat pattern detection identifying statistical anomalies in player performance
+5. Social interaction mapping showing communication and team formation patterns
+
+# Persona 9: Continuous Integration Engineer
+Hassan manages build and test infrastructure for a large development organization. He needs to analyze CI/CD pipeline logs to optimize build times, reduce failures, and improve developer productivity.
+
+Key Features:
+1. Build failure classification automatically categorizing errors by root cause and ownership
+2. Resource utilization tracking identifying bottlenecks in the CI/CD infrastructure
+3. Test flakiness detection highlighting unreliable tests that slow development
+4. Dependency analysis showing impact of shared components on build metrics
+5. Developer experience metrics correlating build performance with team productivity
+
+# Persona 10: Technical Support Manager
+Elena leads a customer support team handling technical issues for enterprise software. She needs to connect customer-reported problems with system logs to speed up resolution and identify recurring issues affecting multiple customers.
+
+Key Features:
+1. Customer impact correlation linking internal errors to specific customer accounts
+2. Knowledge base suggestion generating support documentation from recurring error patterns
+3. Resolution time prediction estimating ticket complexity based on log signatures
+4. Error frequency trending to prioritize engineering fixes based on customer impact
+5. Support ticket integration connecting log events directly to customer communication history

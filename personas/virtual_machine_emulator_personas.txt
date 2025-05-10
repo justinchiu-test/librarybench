@@ -1,0 +1,99 @@
+# Persona 1: Computer Architecture Professor
+Dr. Rodriguez teaches undergraduate computer architecture courses and needs to help students understand CPU operation principles without the complexity of modern processor designs. She wants a transparent virtual machine that clearly demonstrates fundamental concepts like fetch-decode-execute cycles and memory management.
+
+Key Features:
+1. Pipeline visualization showing each instruction passing through fetch-decode-execute stages
+2. Microarchitecture simulation revealing how high-level instructions decompose into micro-operations
+3. Cycle-accurate timing model demonstrating performance impacts of different instruction sequences
+4. Customizable architecture allowing modification of instruction set and memory model for comparison
+5. Lecture mode with annotation capabilities for highlighting specific concepts during classroom demonstrations
+
+# Persona 2: Programming Language Design Student
+Miguel is creating his own programming language as a capstone project and needs a target virtual machine to generate code for. He requires a well-documented runtime that helps him understand compiler backend design and code generation strategies.
+
+Key Features:
+1. Intermediate representation visualization showing the transformation from high-level code to bytecode
+2. Optimization framework for implementing and testing various code improvement techniques
+3. Custom instruction extension mechanism for adding language-specific operations
+4. Symbol table management for implementing variable scoping and name resolution
+5. Runtime performance metrics identifying bottlenecks in generated code
+
+# Persona 3: Operating Systems Teaching Assistant
+Sophia conducts lab sessions for an operating systems course and needs to demonstrate concepts like process scheduling, memory allocation, and system calls. She wants a simplified environment that isolates these concepts from the complexity of real operating systems.
+
+Key Features:
+1. Process and thread simulation with various scheduling algorithms (round-robin, priority-based)
+2. Memory management visualization showing segmentation, paging, and address translation
+3. System call interface demonstrating the boundary between user code and kernel operations
+4. Resource contention scenarios illustrating deadlocks and race conditions
+5. Virtual device drivers showing hardware abstraction and I/O operations
+
+# Persona 4: Security Researcher
+Dr. Chen studies low-level security vulnerabilities and exploitation techniques. He needs a controlled environment to demonstrate memory corruption, code injection, and other attack vectors without real-world consequences.
+
+Key Features:
+1. Memory protection simulation with configurable enforcement
+2. Exploitation playground for safely demonstrating buffer overflows and code injection
+3. Permission and privilege level modeling to illustrate access control mechanisms
+4. Control flow integrity visualization showing normal and compromised execution paths
+5. Isolation breach detection identifying when virtualization boundaries are compromised
+
+# Persona 5: Embedded Systems Engineer
+Priya develops firmware for resource-constrained devices and uses a virtual machine to test algorithms before deploying to actual hardware. She needs an emulator that accurately represents the limitations of embedded environments.
+
+Key Features:
+1. Resource constraint simulation with configurable memory and processing limitations
+2. Interrupt handling framework modeling hardware-triggered events
+3. Real-time operation modeling with strict timing requirements
+4. Power consumption estimation based on instruction execution patterns
+5. Peripheral device simulation for sensors, actuators, and communication interfaces
+
+# Persona 6: Retrocomputing Enthusiast
+Marcus has a passion for historical computing systems and wants to understand and recreate vintage computer architectures. He needs a flexible emulator framework that can be configured to match the behavior of classic machines.
+
+Key Features:
+1. Historical architecture modeling with period-accurate limitations and quirks
+2. Vintage programming environment emulating historical development tools
+3. Cycle-accurate timing reproducing the exact behavior of original hardware
+4. Visual representation of blinkenlights and front panel interfaces
+5. Media conversion tools for working with historical file and storage formats
+
+# Persona 7: Compiler Implementation Student
+Aisha is learning compiler design and needs to understand target code generation. She wants to see how high-level language constructs translate to low-level operations within a controlled environment.
+
+Key Features:
+1. Language construct mapping showing how features like loops and conditionals translate to bytecode
+2. Symbol table visualization displaying variable storage and access patterns
+3. Static vs. dynamic analysis tools for examining code properties before and during execution
+4. Optimization comparison showing code before and after various compiler improvements
+5. Abstract syntax tree to bytecode transformation visualization
+
+# Persona 8: Parallel Computing Researcher
+Dr. Patel studies parallel algorithm design and needs to visualize concurrent execution patterns. He requires a virtual machine that can demonstrate multi-threaded behavior and synchronization mechanisms.
+
+Key Features:
+1. Multi-core simulation showing truly parallel instruction execution
+2. Race condition demonstration with reproducible concurrent access patterns
+3. Synchronization primitive implementation (locks, semaphores, barriers)
+4. Thread scheduling visualization showing context switches and core allocation
+5. Memory coherence modeling illustrating cache consistency protocols
+
+# Persona 9: Game Development Instructor
+Elena teaches game development fundamentals and wants students to understand how game engines work at a low level. She needs a virtual machine that demonstrates the core principles of game loops, state management, and resource utilization.
+
+Key Features:
+1. Game loop implementation showing update-render cycles and timing management
+2. Asset loading simulation demonstrating resource initialization and management
+3. Entity component system modeling for game object representation
+4. Simplified graphics pipeline showing transformation from game state to visual output
+5. Input handling framework demonstrating event processing and response
+
+# Persona 10: Amateur Computer Builder
+Jamal is interested in building his own physical computer from basic electronic components. He uses the virtual machine as a blueprint to understand the minimal required components and their interactions before investing in hardware.
+
+Key Features:
+1. Hardware component mapping showing how virtual elements correspond to physical parts
+2. Signal timing visualization illustrating clock cycles and electrical signals
+3. Minimal instruction set computer design focusing on essential operations
+4. Progressive complexity allowing incremental understanding from basic to advanced concepts
+5. Hardware description language integration for transition to actual circuit design

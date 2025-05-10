@@ -1,0 +1,99 @@
+# Persona 1: Research Data Scientist
+Dr. Zhang analyzes complex environmental datasets involving satellite imagery, sensor measurements, and field observations. She needs to perform sophisticated queries across heterogeneous data formats without moving everything into a formal database system each time a new analysis question arises.
+
+Key Features:
+1. Scientific notation support with units awareness in numerical comparisons
+2. Geospatial query operators for coordinate-based filtering and distance calculations
+3. Time series specific functions for temporal pattern detection and resampling
+4. Query result visualization hooks generating basic plots directly from query output
+5. Scientific workflow integration capturing query provenance for research reproducibility
+
+# Persona 2: Small Business Analyst
+Marcus manages analytics for a growing e-commerce business without dedicated database infrastructure. He needs to query sales data, customer information, and inventory across multiple CSV exports from different business systems.
+
+Key Features:
+1. Business metrics library with pre-defined calculations for common retail KPIs
+2. Scheduled query execution generating automated reports at regular intervals
+3. Excel-compatible formula translation allowing spreadsheet users to write familiar expressions
+4. Anomaly highlighting automatically flagging unusual patterns in business data
+5. Multi-currency support with automatic conversion based on transaction dates
+
+# Persona 3: Log Analysis Engineer
+Sophia troubleshoots cloud application issues by analyzing distributed system logs in various formats. She needs to perform complex queries across log files without transferring them to a centralized database.
+
+Key Features:
+1. Regular expression pattern matching optimized for log file formats
+2. Event sequence detection identifying specific patterns of events across time
+3. Log level filtering with context preservation showing surrounding entries
+4. Session reconstruction grouping related operations by request ID or user session
+5. Distributed query execution processing logs directly on multiple remote servers
+
+# Persona 4: Data Privacy Officer
+Raj ensures compliance with data protection regulations across company systems. He needs to query data repositories to identify personal information without centralizing sensitive data in additional systems.
+
+Key Features:
+1. PII (Personally Identifiable Information) detection using pattern matching and validation
+2. Data minimization filtering showing only essential fields for compliance reviews
+3. Access logging creating immutable records of all queries against sensitive data
+4. Policy-based query restrictions preventing unauthorized data combinations
+5. Anonymization functions automatically masking sensitive fields in query results
+
+# Persona 5: Bioinformatics Researcher
+Dr. Chen studies genomic data and needs to query across genome sequences, protein databases, and experimental results. She requires specialized operators for biological data types without forcing everything into traditional database structures.
+
+Key Features:
+1. Sequence alignment operators for DNA/RNA/protein comparison queries
+2. Biological metadata integration combining sequence and experimental data
+3. Species taxonomy awareness enabling hierarchical biological classification queries
+4. Chemical property calculators for protein and small molecule analysis
+5. Genome coordinate system mappings between different reference assemblies
+
+# Persona 6: IoT Systems Developer
+Jamal builds IoT applications that process sensor data from thousands of distributed devices. He needs to query time-series measurements and device status information at the edge and in central systems.
+
+Key Features:
+1. Time window operations optimized for continuous sensor data streams
+2. Downsampling functions balancing query performance against result precision
+3. Anomaly filters separating unusual readings from normal sensor variations
+4. Device hierarchy traversal enabling queries across groups of related sensors
+5. Intermittent connectivity handling with partial result management and completion
+
+# Persona 7: Historical Archive Curator
+Eleanor digitizes and organizes historical documents, photographs, and artifacts with complex metadata. She needs to query across heterogeneous collections with varying attributes and incomplete information.
+
+Key Features:
+1. Fuzzy matching operators tolerant of historical spelling variations and transcription errors
+2. Temporal uncertainty handling for items with estimated or range-based dates
+3. Provenance chain querying showing acquisition history and authentication evidence
+4. Cross-collection joins connecting items related by historical figures or events
+5. Confidence scoring indicating reliability of result matches based on metadata quality
+
+# Persona 8: Operational Dashboard Developer
+Miguel creates real-time monitoring displays for manufacturing processes. He needs to query live production data, historical trends, and alert conditions without impacting operational systems.
+
+Key Features:
+1. Sliding time window computations showing recent metrics with configurable history
+2. Threshold monitoring expressions generating alerts based on query results
+3. Equipment hierarchy traversal enabling drill-down from plant to specific sensors
+4. Statistical process control functions detecting manufacturing variations
+5. Production schedule integration correlating measurements with planned operations
+
+# Persona 9: Educational Data Researcher
+Dr. Patel studies student performance patterns across different learning interventions. She needs to query anonymized educational records with complex relationships while preserving student privacy.
+
+Key Features:
+1. Cohort comparison operators highlighting differences between student groups
+2. Educational measurement standardization across different assessment systems
+3. Longitudinal tracking following student progress through multiple academic periods
+4. Intervention effectiveness scoring correlating outcomes with specific programs
+5. Demographic data protection with automatic statistical aggregation for small groups
+
+# Persona 10: Legal Discovery Specialist
+Carlos searches through large corporate document collections for litigation-relevant materials. He needs powerful query capabilities that can identify complex patterns across emails, contracts, and internal documents.
+
+Key Features:
+1. Legal term ontology integration mapping common concepts to specialized terminology
+2. Proximity search finding terms appearing near each other within documents
+3. Communication pattern analysis identifying exchanges between specific parties
+4. Temporal filtering with awareness of legal timeframes and statutory deadlines
+5. Privilege detection flagging potentially attorney-client protected materials

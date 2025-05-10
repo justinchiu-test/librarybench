@@ -1,0 +1,99 @@
+# Persona 1: Independent Real Estate Agent Sofia
+Sofia manages listings and client communications for her independent real estate business, handling dozens of property inquiries daily. Her primary goal is to promptly respond to potential buyers and sellers with personalized information while automatically organizing communications by property and client status.
+
+Key Features:
+1. Property listing templates with dynamic field insertion for different property types
+2. Client follow-up sequences triggered by specific timeframes and interaction history
+3. Client categorization system (buyer/seller, price range, neighborhood preference)
+4. Listing-specific email organization with attachment management for property photos
+5. Inquiry source tracking to measure marketing channel effectiveness
+
+# Persona 2: Freelance Web Developer Marcus
+Marcus runs a one-person web development business and manages project communications with multiple clients simultaneously. His primary goal is to maintain consistent client communication while automatically handling routine project updates and support requests based on their urgency and project phase.
+
+Key Features:
+1. Project milestone notification templates with automated progress updates
+2. Support request triage based on urgency keywords and client tier
+3. Invoice and payment tracking with automated reminders
+4. Code snippet and technical specification formatting for email responses
+5. Meeting scheduler with availability templates and timezone management
+
+# Persona 3: Non-Profit Volunteer Coordinator Jamal
+Jamal coordinates volunteers for community events at a non-profit organization with limited administrative support. His primary goal is to efficiently manage volunteer schedules and communications while tracking participation and sending personalized appreciation messages.
+
+Key Features:
+1. Event-based email segmentation with volunteer role-specific details
+2. Attendance confirmation tracking with automated reminder sequences
+3. Volunteer skill and interest database integrated with opportunity matching
+4. Recognition message templates based on service milestones
+5. Post-event feedback collection with response aggregation
+
+# Persona 4: Online Course Instructor Dr. Chen
+Dr. Chen teaches multiple online courses and needs to manage student communications, assignment submissions, and course announcements. Her primary goal is to provide timely, personalized responses to student questions while automatically handling routine course administration emails.
+
+Key Features:
+1. Course-specific email categorization with assignment submission tracking
+2. Common question detection with templated answer suggestions
+3. Grade notification automation with personalized feedback insertion
+4. Course milestone scheduling with timed announcement sequences
+5. Student participation analytics identifying engagement patterns
+
+# Persona 5: Small Retail Shop Owner Priya
+Priya runs a boutique retail store and handles customer inquiries, order confirmations, and supplier communications. Her primary goal is to maintain excellent customer service through prompt, personalized emails while efficiently managing inventory-related communications with suppliers.
+
+Key Features:
+1. Order status tracking with automated shipping and delivery updates
+2. Customer purchase history integration for personalized recommendations
+3. Inventory threshold alerts triggering supplier reorder templates
+4. Customer feedback collection with sentiment categorization
+5. Promotion campaign scheduling with customer segment targeting
+
+# Persona 6: Independent Legal Consultant Carlos
+Carlos provides legal consulting services to small businesses and must maintain detailed client communications while ensuring timely follow-ups on legal matters. His primary goal is to manage case-related emails with appropriate confidentiality while tracking billable communications and deadlines.
+
+Key Features:
+1. Case-based email organization with confidentiality classification
+2. Legal deadline tracking with escalating reminder sequences
+3. Billable time tracking for client communications
+4. Document request templates with secure attachment handling
+5. Client portal notification system for secure document sharing
+
+# Persona 7: Event Photographer Elena
+Elena photographs weddings and events, managing inquiries, bookings, and client galleries through email. Her primary goal is to streamline her booking process and client communications while ensuring timely delivery of photos and following up on sales opportunities.
+
+Key Features:
+1. Booking inquiry management with availability checking and package details
+2. Event countdown sequences with pre-event questionnaire collection
+3. Photo gallery delivery automation with access tracking
+4. Print order opportunity follow-ups based on gallery engagement
+5. Seasonal promotion scheduling for booking slow periods
+
+# Persona 8: Independent Recruiter Alex
+Alex works as a recruitment consultant connecting candidates with companies and managing the entire hiring process via email. His primary goal is to track candidate and client communications throughout the hiring pipeline while sending timely updates to all parties.
+
+Key Features:
+1. Candidate tracking with resume attachment organization and skill tagging
+2. Interview scheduling coordination with automatic follow-up reminders
+3. Position-based email threading linking candidates to specific openings
+4. Client update templates with customizable candidate presentation formats
+5. Hiring stage automation with milestone-triggered communication sequences
+
+# Persona 9: Small Accounting Firm Owner Maya
+Maya runs a small accounting practice managing tax preparation and financial advisory services for dozens of clients. Her primary goal is to securely handle financial document exchanges while maintaining a structured communication calendar for tax deadlines and regulatory updates.
+
+Key Features:
+1. Secure document request templates with encrypted attachment handling
+2. Tax deadline calendar with client-specific reminder sequences
+3. Client categorization by service type and fiscal year timing
+4. Financial document organization with automatic tagging and filing
+5. Regulatory update distribution with industry-specific segmentation
+
+# Persona 10: Local Tour Operator Raj
+Raj operates a local tour company handling bookings, inquiries, and guest communications for various tour packages. His primary goal is to convert inquiries into bookings through timely, informative responses while managing pre-tour communications and post-tour follow-ups.
+
+Key Features:
+1. Tour package inquiry sorting with automated availability responses
+2. Booking confirmation sequences with weather updates and preparation tips
+3. Group management tools for communicating with multiple guests per tour
+4. Post-tour feedback collection with review request automation
+5. Seasonal promotion scheduling based on booking pattern analytics

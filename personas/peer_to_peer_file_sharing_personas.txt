@@ -1,0 +1,99 @@
+# Persona 1: Computer Science Educator
+Dr. Rodriguez teaches distributed systems courses at a university and needs a practical demonstration tool for peer-to-peer concepts. She wants students to visualize and experiment with distributed networking principles through hands-on assignments that illustrate theoretical concepts.
+
+Key Features:
+1. Network topology visualization showing real-time peer connections and data flows
+2. Configurable failure simulation introducing various network problems for resilience testing
+3. Protocol inspection tools revealing the underlying message exchange between peers
+4. Distributed algorithm visualization showing DHT operations and routing decisions
+5. Performance measurement framework for comparing different peer discovery strategies
+
+# Persona 2: Remote Field Researcher
+Marco conducts environmental research in remote areas with limited internet connectivity. He needs to share large datasets with colleagues at base camp and headquarters without relying on stable internet connections or central servers.
+
+Key Features:
+1. Intermittent connectivity optimization using store-and-forward techniques when peers reconnect
+2. Bandwidth-aware synchronization prioritizing critical data when connections are limited
+3. Mesh networking support for creating local sharing networks without internet access
+4. Data collection device integration supporting direct transfer from scientific instruments
+5. Differential sync for efficiently updating previously shared datasets with new readings
+
+# Persona 3: Digital Rights Advocate
+Sophia promotes information freedom and censorship resistance through decentralized technologies. She needs secure, anonymous file sharing capabilities that can operate even in restrictive network environments.
+
+Key Features:
+1. Traffic obfuscation making P2P communication appear as regular web browsing
+2. Onion routing integration providing anonymity for participating peers
+3. Censorship-resistant peer discovery using multiple fallback mechanisms
+4. Dead drop functionality allowing scheduled pickup of shared files without direct contact
+5. Plausible deniability in file storage with encrypted headers and content separation
+
+# Persona 4: Independent Game Developer
+Hiroshi creates indie games with a small, globally distributed team of collaborators. He needs to share large asset files and builds without the costs of cloud storage or the complexity of setting up centralized servers.
+
+Key Features:
+1. Creative workflow integration with version tagging for different asset iterations
+2. Selective synchronization filtering by file type to share only relevant game resources
+3. Bandwidth scheduling for large transfers during off-hours to avoid disrupting work
+4. Preview generation for quick assessment of assets before full download
+5. Build distribution with integrity verification ensuring all team members test identical versions
+
+# Persona 5: Community Mesh Network Organizer
+Amara builds community-owned internet infrastructure in neighborhoods without reliable broadband access. She needs local file sharing capabilities that can operate independently of external internet connections.
+
+Key Features:
+1. Local-first discovery prioritizing peers on the same physical network segment
+2. Shared cache coordination avoiding redundant external downloads across the community
+3. Bandwidth fairness ensuring equitable resource allocation among community members
+4. Public resource designation allowing specific content to be widely shared within the community
+5. Usage analytics helping demonstrate the value of the mesh network to potential participants
+
+# Persona 6: Small Business Owner
+Carlos runs a small architectural firm collaborating on large design files with contractors and clients. He needs secure file sharing without expensive enterprise file servers or cloud storage with complicated access controls.
+
+Key Features:
+1. Access control lists restricting file visibility to specific peer groups or individuals
+2. Client-friendly sharing links allowing limited participation without full software installation
+3. Automated synchronization of project directories with selective inclusion rules
+4. Audit logging tracking all file access and transfer activities for project records
+5. Visual directory comparison highlighting differences between shared folder versions
+
+# Persona 7: Disaster Response Coordinator
+Priya organizes emergency response teams during natural disasters when communication infrastructure is compromised. She needs to establish ad-hoc file sharing networks for distributing maps, situation reports, and resource allocations.
+
+Key Features:
+1. Rapid network bootstrapping requiring minimal configuration in emergency situations
+2. Prioritized message distribution ensuring critical information propagates first
+3. Low-power operation extending battery life of devices in the field
+4. Offline map support for geographical organization of shared resources
+5. Cross-platform compatibility working across whatever devices are available in the field
+
+# Persona 8: Open Source Software Distributor
+Wei maintains alternative distribution channels for large open source software packages. He needs efficient ways to share these packages while reducing bandwidth costs and improving download speeds.
+
+Key Features:
+1. Torrent-like swarm downloading optimizing transfer speeds from multiple sources
+2. Seeding incentives encouraging users to continue sharing after completing downloads
+3. Integrity verification ensuring downloaded software matches original signatures
+4. Update diffing downloading only changed portions of software packages
+5. Mirror integration fallback to traditional HTTP downloads when P2P is limited
+
+# Persona 9: Digital Archivist
+Dr. Patel preserves digital cultural heritage by creating distributed archives of important materials. She needs redundant, resilient storage across multiple independent locations to ensure long-term preservation.
+
+Key Features:
+1. Replication management ensuring sufficient copies exist across the network
+2. Geographic diversity optimization spreading data across different physical locations
+3. Integrity checking with scheduled verification of stored artifacts against checksums
+4. Catalog synchronization maintaining consistent metadata across all archive nodes
+5. Preservation-specific formats with built-in provenance and authenticity information
+
+# Persona 10: Privacy-Conscious Family Member
+Miguel wants to share photos and videos with family members without uploading personal memories to commercial cloud services. He needs an easy-to-use, private sharing network accessible to non-technical relatives.
+
+Key Features:
+1. Simple user interface hiding technical complexity from casual users
+2. Automatic device discovery finding family members on the same network
+3. Closed network operation restricting sharing to explicitly trusted devices
+4. Media-specific optimizations like automatic transcoding for different devices
+5. Album organization preserving familiar ways of browsing family memories

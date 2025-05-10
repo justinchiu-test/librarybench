@@ -1,0 +1,99 @@
+# Persona 1: Quantitative Trading Developer Maya
+Maya designs algorithmic trading systems that need to process market data feeds with microsecond precision to identify trading opportunities. Her primary goal is to minimize latency in the data pipeline while ensuring no market signals are missed during high-volatility trading periods.
+
+Key Features:
+1. Low-latency optimization with processing time guarantees
+2. Priority-based message processing for critical market events
+3. Custom memory management to avoid garbage collection pauses
+4. Parallel pattern matching across multiple security feeds
+5. Circuit breaker patterns for handling market volatility events
+
+# Persona 2: IoT Platform Architect Carlos
+Carlos designs systems that ingest data from millions of connected industrial sensors for a manufacturing analytics platform. His primary goal is to scale the data processing horizontally while ensuring efficient resource utilization across his cloud infrastructure.
+
+Key Features:
+1. Dynamic worker allocation based on sensor activation patterns
+2. Time-series compression for efficient storage of periodic signals
+3. Device-specific protocol adapters with plug-in architecture
+4. Batch/stream hybrid processing for different data velocity requirements
+5. Sensor health monitoring with anomalous transmission detection
+
+# Persona 3: Real-time Fraud Analyst Priya
+Priya develops fraud detection systems that analyze payment transactions as they occur to identify suspicious patterns. Her primary goal is to correlate events across multiple data streams and quickly flag potentially fraudulent activities with minimal false positives.
+
+Key Features:
+1. Multi-stream correlation with flexible joining conditions
+2. Adaptive rule engine that learns from analyst feedback
+3. Risk scoring framework with explainable decision factors
+4. Historical context integration for establishing behavioral baselines
+5. Case management system for tracking investigation outcomes
+
+# Persona 4: Distributed Systems Engineer Tomas
+Tomas builds data processing infrastructure that spans multiple data centers to provide global availability and disaster recovery. His primary goal is to ensure data consistency across geographic regions while maintaining processing continuity during network partitions.
+
+Key Features:
+1. Multi-region state synchronization with conflict resolution
+2. Exactly-once processing guarantees across distributed nodes
+3. Pipeline segment migration for dynamic load balancing
+4. Backpressure propagation across network boundaries
+5. Regional processing isolation with global aggregation
+
+# Persona 5: Telecommunications Data Scientist Emma
+Emma analyzes call detail records and network traffic data to optimize telecommunications infrastructure and detect service anomalies. Her primary goal is to perform complex statistical analysis on high-volume data streams while identifying network issues in real-time.
+
+Key Features:
+1. Sliding window analysis with configurable decay functions
+2. Topology-aware data routing matching network structure
+3. Anomaly detection algorithms with self-tuning thresholds
+4. Multi-dimensional data cube construction for interactive analysis
+5. Service quality metric extraction with SLA threshold monitoring
+
+# Persona 6: Social Media Analytics Lead Jamal
+Jamal develops systems to monitor social media engagement and sentiment across various platforms for brand management. His primary goal is to process unstructured text data at scale while identifying trending topics and sentiment shifts in real-time.
+
+Key Features:
+1. Natural language processing pipeline for sentiment extraction
+2. Trend detection algorithms with configurable significance thresholds
+3. Platform-specific data enrichment with API rate limiting
+4. Entity recognition and relationship mapping across posts
+5. Engagement spike detection with automated alert thresholds
+
+# Persona 7: Autonomous Vehicle Data Engineer Liu
+Liu processes sensor data streams from test vehicles to improve autonomous driving algorithms and ensure safety. His primary goal is to synchronize and correlate multi-modal sensor data (video, lidar, radar) while identifying environmental edge cases that require algorithm refinement.
+
+Key Features:
+1. Time-synchronized sensor fusion with clock drift compensation
+2. Scene segmentation and classification for environment modeling
+3. Driving event detection with categorical tagging
+4. Hardware-accelerated processing for computer vision workloads
+5. Scenario extraction for simulation and regression testing
+
+# Persona 8: Healthcare Monitoring Specialist Sophia
+Sophia develops patient monitoring systems that process vital sign data from medical devices in both hospital and remote settings. Her primary goal is to ensure reliable delivery of critical patient data while detecting medically significant events that require intervention.
+
+Key Features:
+1. Medical device protocol support with standards compliance
+2. Patient-specific baseline calibration and alert thresholds
+3. Signal quality assessment with artifact rejection
+4. Medical event pattern recognition with severity classification
+5. Compliance-focused audit logging with privacy controls
+
+# Persona 9: Energy Grid Optimization Engineer Marcus
+Marcus monitors power distribution networks using sensor data from smart grid infrastructure to balance load and integrate renewable sources. His primary goal is to forecast energy demand and supply patterns while optimizing grid operations in response to changing conditions.
+
+Key Features:
+1. Predictive analytics for demand forecasting with weather integration
+2. Grid topology modeling with flow analysis
+3. Renewable source intermittency handling with battery storage optimization
+4. Load shedding prioritization during constraint periods
+5. Supply/demand balancing with price signal optimization
+
+# Persona 10: Online Gaming Platform Architect Elena
+Elena builds infrastructure for a massively multiplayer online game that processes player actions and game events to create responsive, persistent game worlds. Her primary goal is to provide low-latency event processing while maintaining game state consistency across a distributed architecture.
+
+Key Features:
+1. Action prioritization based on player interaction physics
+2. Spatial partitioning for localized event processing
+3. State replication with conflict resolution for player interactions
+4. Cheat detection through behavioral and statistical analysis
+5. Dynamic world event orchestration based on player density

@@ -1,0 +1,99 @@
+# Persona 1: E-commerce Platform Architect Sophia
+Sophia leads architecture for a mid-sized online retailer transitioning from a monolithic application to microservices. Her primary goal is to design a resilient event-driven architecture that allows for incremental migration without disrupting the customer shopping experience during the transition.
+
+Key Features:
+1. Hybrid architecture support with bridge patterns between monolith and microservices
+2. Incremental migration tooling with event replay capabilities
+3. Order processing saga management with compensation transactions
+4. Transaction boundary visualization showing service dependencies
+5. A/B deployment capability for validating new service implementations
+
+# Persona 2: FinTech Engineering Director Marcus
+Marcus oversees development at a financial technology company processing thousands of transactions per second. His primary goal is to implement a microservices architecture that maintains strict data consistency while providing the regulatory audit trail required in financial systems.
+
+Key Features:
+1. Exactly-once event delivery guarantees with transaction idempotence
+2. Comprehensive event logging with immutable audit capabilities
+3. Circuit breaker patterns with progressive service degradation
+4. Event sourcing with compliant storage regulations for financial data
+5. Service authorization mechanisms with fine-grained access control
+
+# Persona 3: Retail IoT Solutions Developer Priya
+Priya builds retail store systems connecting point-of-sale, inventory, and customer analytics using IoT devices. Her primary goal is to create a lightweight framework that can run on edge devices with limited resources while maintaining seamless coordination with cloud services.
+
+Key Features:
+1. Edge-compatible event processing with offline operation modes
+2. Bandwidth-efficient event batching and compression
+3. Device capability discovery with dynamic service registration
+4. Store-level event partitioning with regional aggregation
+5. Power-aware processing prioritization for battery-operated devices
+
+# Persona 4: SaaS Platform Lead Jamal
+Jamal manages a multi-tenant SaaS application serving thousands of business customers with varying usage patterns. His primary goal is to implement a microservices architecture that enables tenant isolation while efficiently sharing infrastructure and scaling individual components based on tenant-specific demands.
+
+Key Features:
+1. Tenant-aware event routing with data isolation guarantees
+2. Per-tenant rate limiting and quota enforcement
+3. Tenant-specific configuration with dynamic service composition
+4. Tenant usage analytics with service-level cost attribution
+5. Multi-tenancy patterns with service instance pooling strategies
+
+# Persona 5: Healthcare Systems Integrator Dr. Chen
+Dr. Chen coordinates integration between various healthcare systems in a hospital network where patient data must flow securely between services. Her primary goal is to implement a compliant microservices framework that ensures patient data privacy while enabling critical information sharing between departments and systems.
+
+Key Features:
+1. PHI (Protected Health Information) data handling with field-level encryption
+2. Consent-based information sharing with patient-specific routing rules
+3. Emergency override patterns with security audit logging
+4. Regulatory compliance validation for healthcare data exchange
+5. System of record designation with authoritative data sourcing
+
+# Persona 6: Gaming Platform Engineer Carlos
+Carlos develops backend services for an online gaming platform handling real-time player interactions across multiple game worlds. His primary goal is to create a low-latency event system that maintains game state consistency while supporting massive concurrent player actions across distributed game servers.
+
+Key Features:
+1. Real-time event propagation with latency-based routing
+2. Game state consistency patterns with conflict resolution
+3. Session affinity maintaining player connection continuity
+4. Spectator mode event filtering for optimized observer patterns
+5. Anti-cheat verification through distributed event validation
+
+# Persona 7: Supply Chain Integration Specialist Leila
+Leila designs integration solutions connecting multiple companies in a manufacturing supply chain. Her primary goal is to implement a microservices framework that enables secure, standardized communication between organizations with different technology stacks while maintaining each company's data sovereignty.
+
+Key Features:
+1. Multi-organization event schema standardization with mapping
+2. Cross-company authentication with limited trust boundaries
+3. Contractual event delivery with non-repudiation guarantees
+4. Supply chain visibility controls with selective event sharing
+5. Integration adapter patterns for legacy system compatibility
+
+# Persona 8: DevOps Team Lead Alex
+Alex manages infrastructure for a rapidly growing startup that needs to scale services quickly without compromising reliability. His primary goal is to implement a microservices platform with robust operational characteristics that supports automated deployment, monitoring, and recovery to minimize operational overhead.
+
+Key Features:
+1. Service health monitoring with automated recovery mechanisms
+2. Deployment orchestration with zero-downtime updates
+3. Chaos testing integration for resilience verification
+4. Resource utilization optimization with dynamic scaling
+5. Comprehensive tracing and logging infrastructure
+
+# Persona 9: Media Streaming Architect Olivia
+Olivia designs backend systems for a video streaming service handling millions of concurrent viewers. Her primary goal is to create a microservices framework that efficiently manages content delivery, user preferences, and viewing statistics while maintaining a seamless viewing experience during usage spikes.
+
+Key Features:
+1. Backpressure handling with graceful degradation patterns
+2. Content metadata synchronization across service boundaries
+3. Viewer experience prioritization with tiered service levels
+4. Caching strategies with invalidation event propagation
+5. Analytics event batching with real-time and historical processing paths
+
+# Persona 10: Smart City Infrastructure Engineer Raj
+Raj develops systems connecting various municipal services for a smart city initiative spanning transportation, utilities, and public safety. His primary goal is to implement a microservices architecture that enables different city departments to share critical information while maintaining independent operation and specialized functionality.
+
+Key Features:
+1. Geospatial event routing based on city zones and jurisdictions
+2. Cross-department event subscription with authorization policies
+3. Emergency broadcast patterns with priority message handling
+4. Long-term data archiving with selective event persistence
+5. Public/private information barriers with citizen privacy controls

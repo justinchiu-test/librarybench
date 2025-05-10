@@ -1,0 +1,99 @@
+# Persona 1: Financial Compliance Analyst Maria
+Maria works for a major bank where strict security policies limit installation of third-party software, yet she needs to create detailed financial visualizations for regulatory reports. Her primary goal is to generate consistent, professional-quality charts that accurately represent risk metrics while working within the bank's locked-down environment.
+
+Key Features:
+1. Specialized financial chart types (waterfall, candlestick, volatility cones)
+2. Regulatory report templates with standardized formatting
+3. Data validation visualization highlighting outliers and anomalies
+4. Multi-level drill-down capabilities for auditable data exploration
+5. Automated redaction of sensitive information in exported visuals
+
+# Persona 2: Scientific Researcher Dr. Chen
+Dr. Chen conducts environmental research at a government facility where administrative access is restricted, but needs publication-quality visualizations for academic papers. His primary goal is to create precise scientific plots that adhere to journal standards while enabling reproducible research workflows.
+
+Key Features:
+1. Publication-ready vector output with journal-specific templates
+2. Statistical annotation tools (p-values, confidence intervals, error bars)
+3. Specialized scientific plot types (box plots, violin plots, dendrograms)
+4. Dynamic equation rendering within visualizations
+5. Dataset provenance tracking for reproducible figure generation
+
+# Persona 3: High School Computer Science Teacher Alisha
+Alisha teaches programming and data concepts to high school students and needs a visualization tool that works on school computers without admin rights. Her primary goal is to demonstrate data visualization principles using a tool that's accessible to beginners while still creating engaging, visually appealing results.
+
+Key Features:
+1. Step-by-step visualization construction for educational purposes
+2. Code-to-visualization playground with immediate feedback
+3. Simplified API designed for teaching core concepts
+4. Visual explanation mode showing coordinate systems and transformations
+5. Challenge templates for student visualization assignments
+
+# Persona 4: Business Intelligence Developer Marcus
+Marcus creates embedded dashboards for company intranet sites and needs visualizations that work across all employee browsers without plugins. His primary goal is to build interactive business intelligence tools that integrate with internal systems while maintaining consistent performance across various enterprise environments.
+
+Key Features:
+1. Corporate design system integration with company color palettes and fonts
+2. Conditional formatting based on business KPI thresholds
+3. Scheduled screenshot generation for automated reports
+4. Cross-filtering capabilities between related visualizations
+5. Embedded analytics for integration into existing intranet applications
+
+# Persona 5: DevOps Engineer Priya
+Priya monitors cloud infrastructure and needs to visualize system performance metrics in restricted production environments. Her primary goal is to create real-time visualizations of system health that can be generated server-side and viewed securely without introducing external dependencies.
+
+Key Features:
+1. Time-series streaming for real-time monitoring displays
+2. Infrastructure topology visualization with status indicators
+3. Anomaly highlighting based on threshold rules
+4. Resource utilization heat maps for capacity planning
+5. Alert condition visualization with historical context
+
+# Persona 6: Data Journalist Carlos
+Carlos creates data stories for a digital news outlet and needs to produce interactive visualizations that work reliably across all reader devices. His primary goal is to craft engaging, accessible data narratives that load quickly and function consistently even on mobile devices with limited bandwidth.
+
+Key Features:
+1. Responsive design that adapts to different screen sizes
+2. Accessibility compliance with screen reader support
+3. Progressive enhancement for different device capabilities
+4. Annotation layers for narrative storytelling elements
+5. Social media sharing with visualization thumbnails
+
+# Persona 7: Field Researcher Dr. Okafor
+Dr. Okafor collects ecological data in remote locations with limited internet connectivity and needs to visualize findings during fieldwork. Her primary goal is to explore and validate data directly on her laptop while in the field, without requiring cloud services or specialized software installations.
+
+Key Features:
+1. Offline operation with no external dependencies
+2. Geographic data plotting with custom coordinate systems
+3. Battery-efficient rendering for extended field use
+4. Field note annotation system integrated with visuals
+5. Data quality visualization tools for field validation
+
+# Persona 8: Healthcare Data Analyst Sophia
+Sophia works with patient data in a hospital environment where health information privacy is paramount and security restrictions are strict. Her primary goal is to create clinical quality visualizations that help identify care improvement opportunities while ensuring patient data never leaves secure systems.
+
+Key Features:
+1. De-identification options for shared visualizations
+2. Clinical metric visualization following healthcare standards
+3. Patient cohort comparison with statistical significance
+4. Care pathway visualization with outcome highlighting
+5. HIPAA-compliant export options with audit logging
+
+# Persona 9: Industrial Systems Engineer Jamal
+Jamal works with manufacturing equipment data in factory environments with air-gapped systems due to security requirements. His primary goal is to visualize production metrics and equipment performance without requiring internet connectivity or specialized visualization workstations.
+
+Key Features:
+1. Industrial equipment schematic integration with performance overlays
+2. Process flow visualization with bottleneck identification
+3. Quality control charting with specification limit visualization
+4. Shift pattern analysis with worker anonymization
+5. Maintenance scheduling visualization based on performance indicators
+
+# Persona 10: Ethics Compliance Officer Elena
+Elena reviews algorithmic decisions and needs to explain AI system behaviors to non-technical stakeholders using clear visualizations. Her primary goal is to create transparent representations of complex models that highlight fairness metrics and potential bias in a way that's understandable to diverse audiences.
+
+Key Features:
+1. Decision tree visualization with outcome highlighting
+2. Feature importance comparisons across demographic groups
+3. Bias metric visualization following industry standards
+4. Explanation layers for non-technical audiences
+5. Scenario comparison views for fairness analysis

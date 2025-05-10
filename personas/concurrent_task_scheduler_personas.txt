@@ -1,0 +1,99 @@
+# Persona 1: Data Science Leader Dr. Elisa
+Dr. Elisa manages a team of data scientists who run complex machine learning pipelines that combine data preprocessing, model training, and evaluation steps. Her primary goal is to optimize computational resource usage across multiple team projects while ensuring critical research deadlines are met.
+
+Key Features:
+1. Research project prioritization that automatically adjusts team resource allocation
+2. Computational budget enforcement with resource caps per project/user
+3. Experiment checkpointing with automatic resumption after failures
+4. GPU/specialized hardware allocation with training job optimization
+5. Pipeline visualization showing actual vs. expected completion times
+
+# Persona 2: DevOps Engineer Raj
+Raj designs CI/CD pipelines for a large software organization with hundreds of microservices. His primary goal is to coordinate build, test, and deployment tasks across services while efficiently utilizing the company's build farm infrastructure.
+
+Key Features:
+1. Infrastructure-aware scheduling that matches tasks to optimal execution environments
+2. Build artifact caching with dependency-based invalidation
+3. Dynamic parallelism adjustment based on system load and priority
+4. Cross-service build dependency resolution with minimal blocking
+5. Execution forecast modeling that predicts pipeline completion times
+
+# Persona 3: Bioinformatics Researcher Dr. Zhang
+Dr. Zhang processes genomic sequencing data through complex analytical pipelines with strict accuracy requirements. His primary goal is to ensure data integrity throughout processing while maximizing throughput on expensive sequencing equipment.
+
+Key Features:
+1. Data provenance tracking across all processing stages
+2. Pipeline validation with pre-execution integrity checks
+3. Error-handling strategies customized for different analysis stages
+4. Priority adjustments based on sample degradation timelines
+5. Equipment utilization optimization with predictive maintenance integration
+
+# Persona 4: Financial Analytics Developer Sophia
+Sophia builds high-frequency trading systems that must process market data and execute trading algorithms with minimal latency. Her primary goal is to ensure critical tasks meet strict timing guarantees while maximizing overall system throughput.
+
+Key Features:
+1. Latency-focused scheduling with nanosecond precision timing
+2. Critical path prioritization with automatic task reordering
+3. Hardware affinity controls for processor/memory optimization
+4. Real-time performance anomaly detection and mitigation
+5. Low-latency logging with minimal execution impact
+
+# Persona 5: Media Rendering Farm Manager Carlos
+Carlos oversees a 3D rendering operation that processes animation and visual effects for film studios. His primary goal is to balance rendering jobs across hundreds of machines while adapting to changing project priorities and deadlines.
+
+Key Features:
+1. Deadline-driven scheduling with dynamic priority adjustment
+2. Client-specific resource partitioning with guaranteed minimums
+3. Render node specialization based on job characteristics
+4. Progressive result generation for early feedback
+5. Power/cost optimization modes for overnight processing
+
+# Persona 6: IoT Platform Architect Amara
+Amara designs backend systems for an IoT platform processing data from millions of connected devices. Her primary goal is to handle unpredictable bursts of incoming data while ensuring time-sensitive analytics are completed reliably.
+
+Key Features:
+1. Elastic scaling based on incoming data volume patterns
+2. Prioritized data processing for premium device tiers
+3. Regional processing optimization that minimizes data transfer
+4. Anomaly detection workflows that can preempt routine processing
+5. Resource reservation for scheduled maintenance operations
+
+# Persona 7: University Computing Cluster Administrator Marcus
+Marcus manages a shared computing cluster used by multiple academic departments with diverse computational needs. His primary goal is to fairly allocate computing resources while allowing priority overrides for urgent research and teaching needs.
+
+Key Features:
+1. Department quota management with unused resource reallocation
+2. Course schedule integration for teaching resource reservation
+3. Research deadline awareness with targeted capacity allocation
+4. Fairness monitoring with automatic intervention for resource hogging
+5. Specialized hardware (GPU/FPGA) time-sharing optimization
+
+# Persona 8: Game Backend Developer Leila
+Leila develops multiplayer game server infrastructure that must handle thousands of concurrent player sessions with real-time interaction. Her primary goal is to ensure smooth player experience by prioritizing game state updates while handling background tasks efficiently.
+
+Key Features:
+1. Player experience prioritization that adjusts based on session factors
+2. Physics calculation optimization with spatial partitioning
+3. AI processing throttling during peak player activity
+4. Server instance load balancing with session affinity
+5. Microtransaction processing with guaranteed execution
+
+# Persona 9: Scientific Computing Specialist Dr. Jackson
+Dr. Jackson runs large-scale climate simulations requiring months of continuous computing across hundreds of nodes. His primary goal is to maximize research output by efficiently scheduling simulation tasks with checkpointing and fault tolerance.
+
+Key Features:
+1. Long-running job management with preemption protection
+2. Simulation dependency tracking with automated stage transitions
+3. Equipment failure resilience with minimal recalculation
+4. Resource usage forecasting for grant reporting and planning
+5. Scenario priority management based on preliminary result promise
+
+# Persona 10: Streaming Video Platform Engineer Mateo
+Mateo works on a video streaming platform that processes thousands of video uploads while generating multiple encoding formats. His primary goal is to optimize the encoding pipeline for different content types while ensuring premium content gets priority treatment.
+
+Key Features:
+1. Content value-based prioritization with dynamic tier adjustment
+2. Encoding recipe specialization based on content characteristics
+3. Predictive resource allocation based on incoming content analysis
+4. Processing deadline guarantees with automatic quality adjustment
+5. Multi-stage pipeline optimization with format-specific parallelism

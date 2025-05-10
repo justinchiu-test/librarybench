@@ -1,0 +1,99 @@
+# Persona 1: Security Incident Responder
+Elena works on a cybersecurity incident response team handling active network intrusions. She needs to quickly analyze suspicious network traffic patterns to identify attack vectors, contain breaches, and gather forensic evidence for investigations.
+
+Key Features:
+1. Attack pattern recognition matching traffic against known exploit signatures and tactics
+2. Forensic timeline reconstruction showing the progression of suspicious network activities
+3. Malware command-and-control detection identifying beaconing and exfiltration patterns
+4. IoC (Indicators of Compromise) extraction generating shareable threat intelligence
+5. Incident containment assistance with targeted blocking recommendations for specific traffic
+
+# Persona 2: IoT Device Developer
+Raj develops firmware for Internet of Things devices with severe bandwidth and power constraints. He needs to optimize network communications by analyzing protocol efficiency and identifying unnecessary overhead in device communications.
+
+Key Features:
+1. Protocol efficiency scoring comparing different implementation options against bandwidth usage
+2. Power consumption estimation correlating network activities with energy requirements
+3. Packet fragmentation analysis identifying issues with MTU sizing and reassembly
+4. Timing visualization showing communication delays and synchronization issues
+5. Custom lightweight protocol validation ensuring compliance with self-defined specifications
+
+# Persona 3: Enterprise Network Administrator
+Michael manages network infrastructure for a large corporation with complex connectivity requirements. He needs to troubleshoot performance bottlenecks, identify misconfigured services, and ensure proper segmentation between network zones.
+
+Key Features:
+1. VLAN boundary analysis verifying traffic segregation between network segments
+2. Service dependency mapping showing which systems communicate with each other
+3. Bandwidth utilization breakdown by application, protocol, and user groups
+4. Configuration validation identifying mismatched network settings between devices
+5. QoS (Quality of Service) verification ensuring priority traffic receives appropriate handling
+
+# Persona 4: API Performance Engineer
+Sophia optimizes web APIs for a high-traffic e-commerce platform. She needs to analyze HTTP/HTTPS traffic patterns to identify performance bottlenecks, inefficient requests, and opportunities for optimization in API implementations.
+
+Key Features:
+1. API call aggregation grouping similar endpoints and measuring their performance characteristics
+2. Payload efficiency analysis identifying redundant data in requests and responses
+3. Cache effectiveness measurement showing hit/miss ratios and potential optimizations
+4. Session flow visualization mapping typical user interaction sequences
+5. Microservice dependency tracking showing cross-service communication patterns and bottlenecks
+
+# Persona 5: Cybersecurity Educator
+Professor Wong teaches network security courses and needs to provide students with hands-on experience analyzing network protocols and security vulnerabilities. He requires a tool that clearly illustrates protocol structures and common attack vectors for educational purposes.
+
+Key Features:
+1. Protocol breakdown visualization showing each field and its purpose in packet headers
+2. Attack simulation sandboxing demonstrating common exploits in a controlled environment
+3. Progressive complexity modes revealing different levels of detail based on student experience
+4. Collaborative analysis allowing students to share and discuss findings within the tool
+5. Challenge scenarios with guided discovery of specific protocol vulnerabilities
+
+# Persona 6: Industrial Control Systems Specialist
+Hannah monitors network traffic for industrial control systems (ICS) and SCADA environments. She needs to ensure these critical systems remain secure while identifying potential safety issues in their communication patterns.
+
+Key Features:
+1. Industrial protocol decoders for specialized formats (Modbus, DNP3, BACnet, etc.)
+2. Safety boundary monitoring ensuring critical commands stay within operational limits
+3. Timing anomaly detection identifying potential disruptions to real-time operations
+4. Air-gap verification confirming isolation between IT and OT networks
+5. Baseline deviation alerting when industrial systems communicate in unusual patterns
+
+# Persona 7: Gaming Network Developer
+Jamal optimizes network code for multiplayer online games requiring low-latency communication. He needs to analyze custom game protocols and improve player experience by reducing lag and synchronization issues.
+
+Key Features:
+1. Latency spike correlation identifying network conditions affecting gameplay
+2. Packet loss analysis showing the impact on game state synchronization
+3. Bandwidth optimization suggestions for more efficient game state updates
+4. Cheating pattern detection identifying manipulation of network communications
+5. Region-based performance comparison across different server deployments
+
+# Persona 8: Legal Compliance Officer
+Dr. Chen ensures corporate networks comply with data protection regulations and privacy laws. She needs to verify that sensitive information is properly secured and not transmitted in violation of compliance requirements.
+
+Key Features:
+1. Sensitive data detection identifying personally identifiable information in network traffic
+2. Compliance boundary verification ensuring regulated data stays within approved systems
+3. Encryption verification confirming appropriate protocols are used for sensitive communications
+4. Data transfer geographical mapping showing cross-border information flows
+5. Regulatory reporting assistance generating documentation for compliance audits
+
+# Persona 9: Wireless Network Specialist
+Omar troubleshoots complex Wi-Fi deployments in challenging environments like hospitals and manufacturing facilities. He needs to analyze wireless protocol behavior and interference patterns affecting network performance.
+
+Key Features:
+1. Wireless handoff analysis showing client roaming behavior between access points
+2. Signal quality correlation linking packet errors with wireless interference
+3. Frame subtype analysis showing control, management, and data frame distributions
+4. Channel utilization visualization identifying congestion across frequency bands
+5. Client capability negotiation showing connection parameter selection and limitations
+
+# Persona 10: Network Automation Engineer
+Priya develops automation systems for large network infrastructures. She needs to understand and verify the behavior of automated network configuration changes and ensure they produce the expected traffic patterns.
+
+Key Features:
+1. Before/after comparison visualizing network behavior changes following automated updates
+2. Configuration change validation correlating network device changes with traffic patterns
+3. Intent verification confirming automation achieves desired network behavior
+4. Failure scenario simulation predicting traffic impact of potential automation errors
+5. API-driven analysis integration with network automation pipelines for continuous monitoring

@@ -1,0 +1,99 @@
+# Persona 1: Complex Systems Researcher Dr. Anya
+Dr. Anya studies emergent behaviors in large-scale biological systems requiring simulation of millions of interacting agents. Her primary goal is to run massive-scale simulations that reveal emergent patterns while allowing her to dynamically adjust parameters as interesting behaviors appear.
+
+Key Features:
+1. Interactive parameter adjustment during running simulations
+2. Pattern detection algorithms that identify emergent behaviors
+3. Hierarchical simulation decomposition based on agent proximity
+4. Specialized visualization for multi-scale phenomena
+5. Scientific workflow integration with experiment tracking
+
+# Persona 2: Urban Transportation Planner Miguel
+Miguel models city transportation networks to evaluate the impact of new infrastructure and policy changes. His primary goal is to simulate traffic patterns across entire metropolitan areas with realistic driver behavior models while efficiently distributing computation across department resources.
+
+Key Features:
+1. Geographic partitioning with boundary synchronization
+2. Scenario comparison tools for policy evaluation
+3. Stochastic event injection (accidents, weather) with propagation effects
+4. Behavioral model library for different agent types
+5. Infrastructure cost-benefit analysis with simulation validation
+
+# Persona 3: Game Developer Studio Lead Priya
+Priya oversees multiplayer game development requiring extensive simulation of game worlds before launch to identify balance issues and emergent strategies. Her primary goal is to simulate thousands of AI players with diverse play styles interacting in the game environment to ensure engaging, balanced gameplay.
+
+Key Features:
+1. Replay system capturing key simulation decision points
+2. AI player diversity with customizable strategy profiles
+3. Resource economy analysis with balance visualization
+4. Parallel universe testing (A/B testing game mechanics)
+5. Strategy optimization detection to identify dominant tactics
+
+# Persona 4: Climate Scientist Dr. Zhang
+Dr. Zhang models regional climate systems to predict environmental changes and evaluate mitigation strategies. His primary goal is to run high-resolution climate simulations that integrate atmospheric, oceanic, and land components while maximizing computational efficiency.
+
+Key Features:
+1. Multi-physics domain integration with different timescales
+2. Uncertainty quantification through ensemble simulations
+3. Downscaling capabilities for regional impact assessment
+4. Long-running simulation management with incremental results
+5. Computation distribution optimized for heterogeneous clusters
+
+# Persona 5: Manufacturing Process Engineer Fatima
+Fatima optimizes industrial manufacturing processes by simulating complex assembly lines with robotic components. Her primary goal is to identify bottlenecks and test layout changes in virtual environments before implementing costly physical modifications to the factory floor.
+
+Key Features:
+1. Digital twin synchronization with real-time factory data
+2. Process variation modeling with statistical distribution
+3. Equipment failure simulation with maintenance scheduling
+4. Component-level simulation with physics-based interactions
+5. Optimization algorithms for layout and scheduling improvements
+
+# Persona 6: Epidemiological Researcher Dr. Okafor
+Dr. Okafor models disease spread through populations to evaluate intervention strategies and resource allocation. His primary goal is to simulate pandemic scenarios across diverse geographic and demographic contexts while incorporating realistic human behavior patterns.
+
+Key Features:
+1. Multi-region simulation with travel and contact patterns
+2. Intervention strategy testing with timing optimization
+3. Healthcare resource utilization forecasting
+4. Behavioral adaptation models for population response
+5. Policy effectiveness comparison with confidence intervals
+
+# Persona 7: Financial Risk Analyst Sophia
+Sophia evaluates investment portfolios by simulating market conditions and economic scenarios. Her primary goal is to run Monte Carlo simulations across diverse economic scenarios to quantify risk exposure and optimize hedging strategies.
+
+Key Features:
+1. Distributed Monte Carlo engine with stratified sampling
+2. Correlation preservation across simulated market factors
+3. Extreme event modeling with realistic tail distributions
+4. Portfolio optimization based on simulation outcomes
+5. Regulatory compliance reporting with risk quantification
+
+# Persona 8: Autonomous Vehicle Engineer Carlos
+Carlos develops self-driving systems that require extensive simulation before road testing. His primary goal is to create realistic virtual environments to test autonomous driving algorithms against thousands of edge cases and traffic scenarios that would be dangerous or impossible to test on real roads.
+
+Key Features:
+1. Sensor simulation with realistic physics and noise models
+2. Edge case generation with combinatorial scenario creation
+3. Distributed testing across parameter space
+4. Failure mode identification and categorization
+5. Hardware-in-the-loop integration for control systems
+
+# Persona 9: Supply Chain Manager Leila
+Leila manages global supply chain operations requiring optimization across manufacturing, warehousing, and transportation. Her primary goal is to simulate end-to-end supply chains under various disruption scenarios to develop resilient logistics strategies and contingency plans.
+
+Key Features:
+1. Multi-echelon inventory optimization
+2. Disruption scenario modeling with recovery simulation
+3. Transportation network optimization with cost modeling
+4. Supplier reliability simulation with alternative sourcing
+5. Just-in-time vs buffer stock strategy evaluation
+
+# Persona 10: Military Tactical Trainer Major Chen
+Major Chen develops training simulations for military personnel to practice decision-making in complex scenarios. His primary goal is to create realistic combat simulations with intelligent adversaries that adapt to trainee decisions while efficiently utilizing limited computing resources.
+
+Key Features:
+1. Adversarial AI with adaptive tactical behavior
+2. Terrain-aware partitioning for distributed computation
+3. Realistic command and control simulation with fog of war
+4. Decision point analysis for after-action review
+5. Scenario authoring tools for instructor customization

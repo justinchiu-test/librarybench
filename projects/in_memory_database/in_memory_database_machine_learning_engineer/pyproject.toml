@@ -1,13 +1,52 @@
 [project]
-name = "in-memory-database-machine-learning-engineer"
+name = "feature-store"
 version = "0.1.0"
-description = "Add your description here"
+description = "A specialized in-memory database optimized for machine learning workflows"
 readme = "README.md"
 authors = [
     { name = "justinchiu-cohere", email = "justinchiu@cohere.com" }
 ]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "numpy>=1.22.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.0.0",
+    "pandas>=1.5.0",
+    "pydantic>=2.0.0",
+    "typing-extensions>=4.0.0",
+    "faiss-cpu>=1.7.4",
+    "xxhash>=3.0.0",
+    "joblib>=1.2.0"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-cov>=4.0.0",
+    "hypothesis>=6.0.0"
+]
+dev = [
+    "ruff>=0.0.262",
+    "pyright>=0.0.13"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = ["__pycache__", "*.egg-info"]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"
+reportMissingTypeStubs = "warning"
+reportUnknownMemberType = "warning"
 
 [build-system]
 requires = ["hatchling"]

@@ -238,7 +238,7 @@ class Competitor(BaseEntity):
 
 class Decision(BaseEntity):
     """Represents a product decision with context and rationale."""
-    
+
     title: str
     description: str
     context: str
@@ -246,7 +246,7 @@ class Decision(BaseEntity):
     alternatives: List[str] = Field(default_factory=list)
     decision_date: datetime = Field(default_factory=datetime.now)
     decided_by: List[UUID] = Field(default_factory=list)
-    stakeholder_input: Dict[UUID, str] = Field(default_factory=dict)
+    stakeholder_input: Dict[str, str] = Field(default_factory=dict)  # Use string keys for UUID
     feature_ids: List[UUID] = Field(default_factory=list)
     objective_ids: List[UUID] = Field(default_factory=list)
     supporting_data: List[str] = Field(default_factory=list)

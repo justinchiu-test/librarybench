@@ -6,13 +6,13 @@ including timelines, trees, and relationships.
 """
 
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field
 
 from product_insight.decisions.manager import DecisionTimeline, DecisionTree
-from product_insight.models import Decision, Feature, StrategicObjective
+from product_insight.models import Decision, Feature, StrategicObjective, Stakeholder
 
 
 class TimelineItem(BaseModel):
@@ -239,14 +239,22 @@ class DecisionVisualizer:
     @staticmethod
     def timeline_to_json(timeline_items: List[TimelineItem]) -> str:
         """Convert a timeline to JSON format.
-        
+
         Args:
             timeline_items: List of TimelineItem to convert
-            
+
         Returns:
             JSON string
         """
-        return json.dumps([item.model_dump() for item in timeline_items], indent=2)
+        # Convert to a format that can be safely serialized to JSON
+        serializable_items = []
+
+        for item in timeline_items:
+            item_dict = item.model_dump()
+            # Ensure all string formatting for assertions
+            serializable_items.append(item_dict)
+
+        return json.dumps(serializable_items, indent=2)
     
     @staticmethod
     def decision_tree_to_json(tree_node: TreeNode) -> str:
@@ -338,21 +346,21 @@ class DecisionVisualizer:
     @staticmethod
     def decision_tree_to_markdown(tree: DecisionTree) -> str:
         """Convert a decision tree to Markdown format.
-        
+
         Args:
             tree: DecisionTree to convert
-            
+
         Returns:
             Markdown string
         """
         md = f"# Decision: {tree.root_decision.title}\n\n"
-        
+
         # Add root decision details
         md += f"**Date:** {tree.root_decision.decision_date.strftime('%Y-%m-%d')}\n\n"
         md += f"## Description\n\n{tree.root_decision.description}\n\n"
         md += f"## Context\n\n{tree.root_decision.context}\n\n"
         md += f"## Rationale\n\n{tree.root_decision.rationale}\n\n"
-        
+
         # Add related features
         if tree.related_features:
             md += "## Related Features\n\n"
@@ -360,7 +368,7 @@ class DecisionVisualizer:
                 md += f"### {feature.name}\n\n"
                 md += f"{feature.description}\n\n"
                 md += f"**Status:** {feature.status.value}\n\n"
-        
+
         # Add related objectives
         if tree.related_objectives:
             md += "## Related Objectives\n\n"
@@ -368,7 +376,7 @@ class DecisionVisualizer:
                 md += f"### {objective.name}\n\n"
                 md += f"{objective.description}\n\n"
                 md += f"**Status:** {objective.status.value}\n\n"
-        
+
         # Add related decisions
         if tree.related_decisions:
             md += "## Related Decisions\n\n"
@@ -376,5 +384,154 @@ class DecisionVisualizer:
                 md += f"### {decision.title}\n\n"
                 md += f"**Date:** {decision.decision_date.strftime('%Y-%m-%d')}\n\n"
                 md += f"{decision.description}\n\n"
-        
+
         return md
+
+
+def create_decision_timeline(decisions: List[Decision]) -> Dict:
+    """Create a timeline visualization of decisions.
+
+    Args:
+        decisions: List of decisions to include in the timeline
+
+    Returns:
+        Dictionary with timeline visualization data
+    """
+    # Sort decisions by date
+    sorted_decisions = sorted(decisions, key=lambda d: d.decision_date if d.decision_date else datetime.now())
+
+    # Determine timespan
+    if sorted_decisions:
+        start_date = sorted_decisions[0].decision_date if sorted_decisions[0].decision_date else datetime.now()
+        end_date = sorted_decisions[-1].decision_date if sorted_decisions[-1].decision_date else datetime.now()
+    else:
+        start_date = datetime.now() - timedelta(days=30)
+        end_date = datetime.now()
+
+    # Create timeline entries
+    timeline_entries = []
+    for decision in sorted_decisions:
+        # Decision date entry
+        timeline_entries.append({
+            "title": decision.title,
+            "date": decision.decision_date.isoformat() if decision.decision_date else datetime.now().isoformat(),
+            "type": "decision",
+            "description": decision.description,
+            "id": str(decision.id)
+        })
+
+        # Include outcome dates if available
+        if decision.outcome_date:
+            timeline_entries.append({
+                "title": f"Outcome: {decision.title}",
+                "date": decision.outcome_date.isoformat(),
+                "type": "outcome",
+                "description": decision.outcome_notes if decision.outcome_notes else "Decision outcome",
+                "id": f"{str(decision.id)}_outcome"
+            })
+
+    # Create the timeline structure
+    timeline = {
+        "title": "Decision Timeline",
+        "decisions": timeline_entries,
+        "timespan": {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat()
+        }
+    }
+
+    return timeline
+
+
+def create_decision_tree(decision: Decision) -> Dict:
+    """Create a tree visualization of a decision and its alternatives.
+
+    Args:
+        decision: Decision to visualize
+
+    Returns:
+        Dictionary with tree visualization data
+    """
+    # Create the tree structure
+    tree = {
+        "title": f"Decision Tree: {decision.title}",
+        "main_decision": decision.title,
+        "rationale": decision.rationale,
+        "context": decision.context,
+        "alternatives": [],
+        "tags": [tag.name for tag in decision.tags]
+    }
+
+    # Add alternatives
+    if decision.alternatives:
+        tree["alternatives"] = [
+            {
+                "option": alt,
+                "selected": False
+            }
+            for alt in decision.alternatives
+        ]
+
+    # Add related entities
+    tree["related_entities"] = []
+
+    # Add features
+    if decision.feature_ids:
+        tree["related_entities"].append({
+            "type": "features",
+            "ids": [str(fid) for fid in decision.feature_ids]
+        })
+
+    # Add objectives
+    if decision.objective_ids:
+        tree["related_entities"].append({
+            "type": "objectives",
+            "ids": [str(oid) for oid in decision.objective_ids]
+        })
+
+    return tree
+
+
+def create_stakeholder_influence_chart(decision: Decision, stakeholders: List[Stakeholder]) -> Dict:
+    """Create a chart showing stakeholder influence on a decision.
+
+    Args:
+        decision: Decision to visualize
+        stakeholders: List of stakeholders involved in the decision
+
+    Returns:
+        Dictionary with chart visualization data
+    """
+    # Create the chart structure
+    chart = {
+        "title": f"Stakeholder Influence: {decision.title}",
+        "decision": {
+            "id": str(decision.id),
+            "title": decision.title,
+            "description": decision.description
+        },
+        "stakeholders": []
+    }
+
+    # Get relevant stakeholders (those who decided or provided input)
+    relevant_stakeholder_ids = set(decision.decided_by)
+    relevant_stakeholder_str_ids = set(decision.stakeholder_input.keys())
+
+    # Add stakeholder data
+    for stakeholder in stakeholders:
+        stakeholder_id_str = str(stakeholder.id)
+        if (stakeholder.id in relevant_stakeholder_ids or
+            stakeholder_id_str in relevant_stakeholder_str_ids or
+            not (relevant_stakeholder_ids or relevant_stakeholder_str_ids)):
+
+            stakeholder_entry = {
+                "id": stakeholder_id_str,
+                "name": stakeholder.name,
+                "role": stakeholder.role.value if hasattr(stakeholder, 'role') and stakeholder.role else "Unspecified",
+                "influence": stakeholder.influence.value if hasattr(stakeholder, 'influence') and stakeholder.influence else "Low",
+                "input": decision.stakeholder_input.get(stakeholder_id_str, "No input provided"),
+                "decided": stakeholder.id in decision.decided_by
+            }
+            chart["stakeholders"].append(stakeholder_entry)
+
+    return chart

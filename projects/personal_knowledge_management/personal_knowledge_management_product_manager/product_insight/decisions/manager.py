@@ -124,15 +124,23 @@ class DecisionManager:
     
     def delete_decision(self, decision_id: UUID) -> bool:
         """Delete a decision.
-        
+
         Args:
             decision_id: ID of the decision to delete
-            
+
         Returns:
             True if the decision was deleted, False otherwise
         """
         return self.decision_storage.delete(decision_id)
-    
+
+    def list_decisions(self) -> List[Decision]:
+        """List all decisions.
+
+        Returns:
+            List of all decisions
+        """
+        return self.decision_storage.list()
+
     def search_decisions(self, query: DecisionQuery) -> List[Decision]:
         """Search for decisions matching the query.
         
@@ -355,23 +363,24 @@ class DecisionManager:
     
     def find_decisions_by_stakeholder(self, stakeholder_id: UUID) -> List[Decision]:
         """Find decisions involving a specific stakeholder.
-        
+
         Args:
             stakeholder_id: Stakeholder ID to search for
-            
+
         Returns:
             List of related decisions
         """
         all_decisions = self.decision_storage.list()
-        
+        stakeholder_id_str = str(stakeholder_id)
+
         related_decisions = [
             decision for decision in all_decisions
-            if stakeholder_id in decision.decided_by or stakeholder_id in decision.stakeholder_input
+            if (stakeholder_id in decision.decided_by or stakeholder_id_str in decision.stakeholder_input)
         ]
-        
+
         # Sort by date (newest first)
         related_decisions.sort(key=lambda d: d.decision_date, reverse=True)
-        
+
         return related_decisions
     
     def generate_decision_report(

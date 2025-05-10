@@ -859,7 +859,7 @@ class MockDataGenerator:
             for _ in range(num_inputs):
                 stakeholder_id = uuid4()
                 input_text = f"I {random.choice(['support', 'have concerns about', 'am neutral about'])} this decision because of its impact on {random.choice(self.aspects)}."
-                stakeholder_input[stakeholder_id] = input_text
+                stakeholder_input[str(stakeholder_id)] = input_text
         
         # Generate feature IDs (60% chance)
         feature_ids = []

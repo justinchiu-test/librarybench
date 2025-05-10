@@ -20,8 +20,12 @@ echo "Starting refactoring for $directory..."
 pushd "$directory"
 
 echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
-# Run codex and tell it to follow instructions
-CODEX_QUIET_MODE=1 codex --approval-mode full-auto "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md"
+
+# Claude plan
+claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Only implement PLAN.md. Give the file structure. Do not implement any code."
+
+# Codex implement
+CODEX_QUIET_MODE=1 codex --approval-mode full-auto "Read the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in PLAN.md."
 
 # Pop back to the original directory
 popd

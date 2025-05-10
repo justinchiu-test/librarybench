@@ -19,6 +19,7 @@ echo "Starting refactoring for $directory..."
 # Push into the directory
 pushd "$directory"
 
+echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
 # Run Claude Code and tell it to follow instructions
 claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md"
 

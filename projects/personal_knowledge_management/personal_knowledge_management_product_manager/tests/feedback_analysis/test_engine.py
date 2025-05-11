@@ -3,7 +3,7 @@ Tests for the Feedback Analysis Engine.
 """
 import os
 import pytest
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from productmind.feedback_analysis.engine import FeedbackAnalysisEngine
 from productmind.models import Feedback, FeedbackCluster, Sentiment, SourceType, Theme
@@ -198,7 +198,7 @@ class TestFeedbackAnalysisEngine:
         for i, feedback in enumerate(feedback_samples):
             # Set different creation dates to test timeframes
             days_ago = i % 3  # 0, 1, 2 days ago in a cycle
-            feedback.created_at = datetime.now() - datetime.timedelta(days=days_ago)
+            feedback.created_at = datetime.now() - timedelta(days=days_ago)
             
             # Add some themes for trend detection
             if i % 3 == 0:

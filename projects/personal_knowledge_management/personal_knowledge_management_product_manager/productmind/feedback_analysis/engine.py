@@ -185,10 +185,11 @@ class FeedbackAnalysisEngine:
             "good", "great", "excellent", "amazing", "love", "like", "helpful",
             "awesome", "fantastic", "best", "perfect", "easy", "pleased", "happy"
         }
-        
+
         negative_words = {
             "bad", "poor", "terrible", "awful", "hate", "dislike", "difficult",
-            "confusing", "frustrating", "worst", "buggy", "slow", "issue", "problem"
+            "confusing", "frustrating", "worst", "buggy", "slow", "issue", "problem",
+            "broken", "can't", "cannot"
         }
         
         for item in feedback:
@@ -269,12 +270,13 @@ class FeedbackAnalysisEngine:
             # Compute similarity matrix
             similarity_matrix = cosine_similarity(tfidf_matrix)
             dbscan = DBSCAN(
-                eps=0.3, 
-                min_samples=self.min_cluster_size, 
+                eps=0.3,
+                min_samples=self.min_cluster_size,
                 metric="precomputed"
             )
             # DBSCAN expects distances, not similarities
-            distances = 1 - similarity_matrix
+            # Ensure values are non-negative by using absolute values and clipping
+            distances = np.clip(1 - similarity_matrix, 0, 2)
             cluster_labels = dbscan.fit_predict(distances)
             
             # Compute centroids for each cluster

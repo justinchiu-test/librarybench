@@ -176,10 +176,15 @@ def connected_client_server(sync_client, sync_server):
     """Create a connected client-server pair for testing."""
     # Set up the client to connect to the server
     sync_client.server_url = "mock://server"
+    # Instead of sharing a sync engine, we just use the server's sync engine
+    # for communication but maintain separate databases
     sync_client.sync_engine = sync_server.sync_engine
     sync_client.server_connected = True
-    
+
+    # Make sure the server's sync engine has the proper database reference
+    sync_server.sync_engine.database = sync_server.database
+
     # Register the client with the server
     sync_server.register_client(sync_client.client_id)
-    
+
     return sync_client, sync_server

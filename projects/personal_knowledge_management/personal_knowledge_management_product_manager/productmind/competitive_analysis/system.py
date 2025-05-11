@@ -580,7 +580,9 @@ class CompetitiveAnalysisSystem:
             competitor_percentage = implementations / len(competitors)
             
             # Calculate opportunity score
-            opportunity_score = feature.importance * (1 - competitor_percentage) * 10
+            # Make sure there's some minimum opportunity score even when all competitors have the feature
+            competitor_factor = max(0.1, 1 - competitor_percentage)
+            opportunity_score = feature.importance * competitor_factor * 10
         
         # Create market gap
         gap = MarketGap(

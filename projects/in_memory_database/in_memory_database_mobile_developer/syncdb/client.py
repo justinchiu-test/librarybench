@@ -402,7 +402,40 @@ class SyncClient:
 
                 # In a real implementation, this would send the request to the server
                 # and receive a response
-                response_json = self.sync_engine.process_sync_request(request_json)
+                # We need to simulate client-server communication more accurately
+
+                # Simulate request going through network
+                if self.sync_engine.network:
+                    network_request_json = self.sync_engine.network.send(request_json)
+
+                    # If the request was "lost" due to network issues
+                    if network_request_json is None:
+                        return False
+
+                    # Use the network-modified request
+                    request_json = network_request_json
+
+                if self.server_url == "mock://server" and hasattr(self, "sync_engine") and self.sync_engine:
+                    # This is a test environment where we're using a mock server connection
+                    # Process through the server's _handle_sync_request method directly
+                    request_dict = json.loads(request_json)
+                    request = SyncRequest.from_dict(request_dict)
+
+                    # Process the request directly on the server
+                    response = self.sync_engine._handle_sync_request(request)
+
+                    # Convert the response to JSON
+                    response_json = json.dumps(response.to_dict())
+
+                    # Simulate response going through network
+                    if self.sync_engine.network:
+                        network_response_json = self.sync_engine.network.send(response_json)
+                        if network_response_json is None:
+                            return False
+                        response_json = network_response_json
+                else:
+                    # Normal processing using a network simulator
+                    response_json = self.sync_engine.process_sync_request(request_json)
 
                 if response_json is None:
                     return False
@@ -509,13 +542,13 @@ class SyncServer:
         # Set up core components
         self.database = Database(schema)
         self.change_tracker = ChangeTracker()
-        
+
         # Set up sync components
         self.sync_engine = SyncEngine(self.database, self.change_tracker)
-        
+
         # Set up compression
         self.compressor = PayloadCompressor()
-        
+
         # Set up schema management
         self.schema_version_manager = SchemaVersionManager()
         self.schema_version_manager.register_schema(schema.version, schema)
@@ -523,16 +556,19 @@ class SyncServer:
         self.schema_synchronizer = SchemaSynchronizer(
             self.schema_version_manager, self.schema_migrator
         )
-        
+
         # Set up conflict management
         self.conflict_audit_log = ConflictAuditLog()
         self.conflict_manager = ConflictManager(self.conflict_audit_log)
-        
+
         # Set default conflict resolver
         self.conflict_manager.set_default_resolver(LastWriteWinsResolver())
-        
+
         # Client connections
         self.connected_clients: Dict[str, Dict[str, Any]] = {}
+
+        # Ensure the sync engine has a reference to the conflict resolver
+        self.sync_engine.conflict_resolver = self.conflict_manager.resolve_conflict
     
     def register_client(self, client_id: str) -> None:
         """
@@ -550,32 +586,38 @@ class SyncServer:
     def handle_sync_request(self, request_json: str) -> str:
         """
         Handle a sync request from a client.
-        
+
         Args:
             request_json: JSON string containing the sync request
-            
+
         Returns:
             JSON string containing the sync response
         """
         # Deserialize the request
         request_dict = json.loads(request_json)
         request = SyncRequest.from_dict(request_dict)
-        
+
         # Register the client if not already registered
         client_id = request.client_id
         if client_id not in self.connected_clients:
             self.register_client(client_id)
-        
+
         # Update client info
         self.connected_clients[client_id]["last_sync_time"] = time.time()
         self.connected_clients[client_id]["sync_count"] += 1
-        
+
+        # Ensure sync engine has the right database reference
+        self.sync_engine.database = self.database
+
+        # Ensure sync engine uses our conflict resolver
+        self.sync_engine.conflict_resolver = self.conflict_manager.resolve_conflict
+
         # Process the request using the sync engine
         response = self.sync_engine._handle_sync_request(request)
-        
+
         # Convert response to JSON
         response_json = json.dumps(response.to_dict())
-        
+
         return response_json
     
     def register_conflict_resolver(self, 

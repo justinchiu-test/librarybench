@@ -317,54 +317,238 @@ These findings suggest that targeted cognitive training can induce measurable ch
                 {
                     "node_id": str(sample_document),
                     "content": "The introduction could be strengthened with a clearer theoretical framework.",
-                    "position": "Introduction"
+                    "position": "Introduction",
+                    "status": "open"
                 },
                 {
                     "node_id": str(sample_document),
                     "content": "Consider adding a power analysis to the methods section.",
-                    "position": "Methods"
+                    "position": "Methods",
+                    "status": "open"
                 },
                 {
                     "node_id": str(sample_document),
                     "content": "The results would benefit from a supplementary table with full statistical details.",
-                    "position": "Results"
+                    "position": "Results",
+                    "status": "open"
                 }
             ]
             json.dump(annotations, temp_file)
             annotations_file = Path(temp_file.name)
-        
+
         try:
             # Import annotations for a collaborator
             imported_count = brain.import_collaborator_annotations(
                 collaborator_id=sample_collaborators["collaborator"],
                 annotations_file=annotations_file
             )
-            
+
             # Verify all annotations were imported
             assert imported_count == 3
-            
+
             # Get all annotations for the document
             annotations = brain.get_annotations_for_node(sample_document)
-            
+
             # Filter for only this collaborator's annotations
             collab_annotations = [a for a in annotations if a.collaborator_id == sample_collaborators["collaborator"]]
-            
+
             # Verify we have all three annotations
             assert len(collab_annotations) == 3
-            
+
             # Check content and positions
             positions = [a.position for a in collab_annotations]
             assert "Introduction" in positions
             assert "Methods" in positions
             assert "Results" in positions
-            
+
             contents = [a.content for a in collab_annotations]
             assert any("theoretical framework" in content for content in contents)
             assert any("power analysis" in content for content in contents)
             assert any("supplementary table" in content for content in contents)
-            
+
+            # Verify all annotations have the correct status
+            for annotation in collab_annotations:
+                assert annotation.status == "open"
+
+            # Check that the collaborator has the document in their notes list
+            collaborator = brain.storage.get(Collaborator, sample_collaborators["collaborator"])
+            assert sample_document in collaborator.notes
+
+            # Verify the knowledge graph has been updated correctly
+            for annotation in collab_annotations:
+                assert brain._knowledge_graph.has_node(str(annotation.id))
+                assert brain._knowledge_graph.has_edge(str(annotation.id), str(sample_document))
+                assert brain._knowledge_graph.has_edge(str(sample_collaborators["collaborator"]), str(annotation.id))
+
         finally:
             # Clean up the temporary file
+            os.unlink(annotations_file)
+
+    def test_import_collaborator_annotations_with_replies(self, brain, sample_document, sample_collaborators):
+        """Test importing annotations with reply relationships."""
+        # First, create a parent annotation
+        parent_annotation_id = brain.add_annotation(
+            node_id=sample_document,
+            collaborator_id=sample_collaborators["pi"],
+            content="Consider reorganizing this section for clarity.",
+            position="Methods"
+        )
+
+        # Create a temporary JSON file with annotations including a reply
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+            annotations = [
+                {
+                    "node_id": str(sample_document),
+                    "content": "I agree, but I would suggest focusing on the experimental design first.",
+                    "position": "Methods",
+                    "parent_id": str(parent_annotation_id)  # This is a reply to the PI's annotation
+                },
+                {
+                    "node_id": str(sample_document),
+                    "content": "Another annotation without a parent.",
+                    "position": "Results"
+                }
+            ]
+            json.dump(annotations, temp_file)
+            annotations_file = Path(temp_file.name)
+
+        try:
+            # Import annotations for a collaborator
+            imported_count = brain.import_collaborator_annotations(
+                collaborator_id=sample_collaborators["collaborator"],
+                annotations_file=annotations_file
+            )
+
+            # Verify both annotations were imported
+            assert imported_count == 2
+
+            # Get all annotations for the document
+            annotations = brain.get_annotations_for_node(sample_document)
+
+            # Get the original parent annotation and verify it has been updated with the reply
+            parent_annotation = brain.storage.get(Annotation, parent_annotation_id)
+            assert len(parent_annotation.replies) == 1
+
+            # Find the reply annotation
+            reply_annotation = None
+            for annotation in annotations:
+                if annotation.parent_id == parent_annotation_id:
+                    reply_annotation = annotation
+                    break
+
+            assert reply_annotation is not None
+            assert reply_annotation.parent_id == parent_annotation_id
+            assert "I agree" in reply_annotation.content
+            assert reply_annotation.collaborator_id == sample_collaborators["collaborator"]
+
+            # Verify the knowledge graph structure for the reply relationship
+            assert brain._knowledge_graph.has_edge(str(reply_annotation.id), str(parent_annotation_id), type='replies_to')
+
+        finally:
+            # Clean up the temporary file
+            os.unlink(annotations_file)
+
+    def test_import_collaborator_annotations_with_invalid_data(self, brain, sample_document, sample_collaborators):
+        """Test importing annotations with various invalid data formats."""
+        # Create a temporary JSON file with various invalid annotation formats
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+            annotations = [
+                # Missing node_id
+                {
+                    "content": "Missing node ID",
+                    "position": "Introduction"
+                },
+                # Empty content
+                {
+                    "node_id": str(sample_document),
+                    "content": "",
+                    "position": "Methods"
+                },
+                # Invalid node_id format
+                {
+                    "node_id": "not-a-uuid",
+                    "content": "Invalid UUID format",
+                    "position": "Results"
+                },
+                # Non-existent node_id
+                {
+                    "node_id": str(uuid4()),  # Random UUID that doesn't exist
+                    "content": "Non-existent node",
+                    "position": "Discussion"
+                },
+                # Invalid parent_id format
+                {
+                    "node_id": str(sample_document),
+                    "content": "Valid annotation with invalid parent",
+                    "position": "Conclusion",
+                    "parent_id": "not-a-uuid"
+                },
+                # Valid annotation (should be imported)
+                {
+                    "node_id": str(sample_document),
+                    "content": "This is a valid annotation that should be imported.",
+                    "position": "Abstract"
+                }
+            ]
+            json.dump(annotations, temp_file)
+            annotations_file = Path(temp_file.name)
+
+        try:
+            # Import annotations for a collaborator
+            imported_count = brain.import_collaborator_annotations(
+                collaborator_id=sample_collaborators["collaborator"],
+                annotations_file=annotations_file
+            )
+
+            # Only one valid annotation should be imported
+            assert imported_count == 1
+
+            # Get all annotations for the document
+            annotations = brain.get_annotations_for_node(sample_document)
+
+            # Filter for only this collaborator's annotations
+            collab_annotations = [a for a in annotations if a.collaborator_id == sample_collaborators["collaborator"]]
+
+            # Find the valid annotation
+            valid_annotation = None
+            for annotation in collab_annotations:
+                if "valid annotation that should be imported" in annotation.content:
+                    valid_annotation = annotation
+                    break
+
+            assert valid_annotation is not None
+            assert valid_annotation.position == "Abstract"
+
+            # Test importing from a malformed JSON file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as bad_file:
+                bad_file.write("This is not valid JSON")
+                bad_json_file = Path(bad_file.name)
+
+            # Should return 0 for malformed JSON
+            imported_count = brain.import_collaborator_annotations(
+                collaborator_id=sample_collaborators["collaborator"],
+                annotations_file=bad_json_file
+            )
+            assert imported_count == 0
+
+            # Test importing from a non-list JSON file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as dict_file:
+                json.dump({"node_id": str(sample_document), "content": "Not a list"}, dict_file)
+                dict_json_file = Path(dict_file.name)
+
+            # Should return 0 for non-list JSON
+            imported_count = brain.import_collaborator_annotations(
+                collaborator_id=sample_collaborators["collaborator"],
+                annotations_file=dict_json_file
+            )
+            assert imported_count == 0
+
+            # Clean up the additional test files
+            os.unlink(bad_json_file)
+            os.unlink(dict_json_file)
+
+        finally:
+            # Clean up the main temporary file
             os.unlink(annotations_file)
     
     def test_import_invalid_annotations(self, brain, sample_collaborators):

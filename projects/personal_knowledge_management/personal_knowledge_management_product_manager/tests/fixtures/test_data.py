@@ -4,6 +4,7 @@ Test data fixtures for ProductMind tests.
 import datetime
 import os
 from uuid import uuid4
+from collections import defaultdict
 
 import pytest
 
@@ -1040,8 +1041,8 @@ def perspective_samples(stakeholder_samples):
     stakeholder_perspectives = defaultdict(list)
     for perspective in perspectives:
         sid = str(perspective.stakeholder_id)
-        stakeholder_perspectives[sid].append(str(perspective.id))
-    
+        stakeholder_perspectives[sid].append(perspective.id)
+
     for stakeholder in stakeholders:
         sid = str(stakeholder.id)
         if sid in stakeholder_perspectives:

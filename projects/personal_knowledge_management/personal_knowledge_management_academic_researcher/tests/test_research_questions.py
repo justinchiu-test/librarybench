@@ -390,28 +390,28 @@ class TestResearchQuestions:
             question="What are the neural correlates of consciousness?",
             priority=9
         )
-        
+
         sub_question1_id = brain.create_research_question(
             question="How does anesthesia affect consciousness?",
             priority=8
         )
-        
+
         sub_question2_id = brain.create_research_question(
             question="What distinguishes conscious from unconscious processing?",
             priority=8
         )
-        
+
         # Create notes that bridge these questions
         bridge_note1_id = brain.create_note(
             title="Consciousness and Anesthesia",
             content="Examining how anesthesia disrupts neural correlates of consciousness."
         )
-        
+
         bridge_note2_id = brain.create_note(
             title="Conscious vs. Unconscious Processing",
             content="Review of differences between conscious and unconscious neural processing."
         )
-        
+
         # Add the bridge notes as evidence for multiple questions
         brain.add_evidence_to_question(
             question_id=main_question_id,
@@ -420,7 +420,7 @@ class TestResearchQuestions:
             strength=EvidenceStrength.MODERATE,
             description="Connection to anesthesia research"
         )
-        
+
         brain.add_evidence_to_question(
             question_id=sub_question1_id,
             note_id=bridge_note1_id,
@@ -428,7 +428,7 @@ class TestResearchQuestions:
             strength=EvidenceStrength.STRONG,
             description="Direct relevance to anesthesia effects"
         )
-        
+
         brain.add_evidence_to_question(
             question_id=main_question_id,
             note_id=bridge_note2_id,
@@ -436,7 +436,7 @@ class TestResearchQuestions:
             strength=EvidenceStrength.MODERATE,
             description="Connection to unconscious processing"
         )
-        
+
         brain.add_evidence_to_question(
             question_id=sub_question2_id,
             note_id=bridge_note2_id,
@@ -444,28 +444,179 @@ class TestResearchQuestions:
             strength=EvidenceStrength.STRONG,
             description="Direct relevance to consciousness distinctions"
         )
-        
+
         # Verify the connections in the knowledge graph
         # Check if we can navigate between related questions through shared notes
-        
+
         # Get notes connected to the main question
         main_related = brain.get_related_nodes(main_question_id)
         assert "evidence" in main_related
         main_evidence_notes = [n.id for n in main_related["evidence"]]
-        
+
         # Get questions connected to the first bridge note
         bridge1_related = brain.get_related_nodes(bridge_note1_id)
         assert "incoming_evidence" in bridge1_related
         questions_with_bridge1 = [q.id for q in bridge1_related["incoming_evidence"]]
-        
+
         # Verify that both the main question and sub-question 1 are connected to bridge note 1
         assert main_question_id in questions_with_bridge1
         assert sub_question1_id in questions_with_bridge1
-        
+
         # Similarly for bridge note 2
         bridge2_related = brain.get_related_nodes(bridge_note2_id)
         assert "incoming_evidence" in bridge2_related
         questions_with_bridge2 = [q.id for q in bridge2_related["incoming_evidence"]]
-        
+
         assert main_question_id in questions_with_bridge2
         assert sub_question2_id in questions_with_bridge2
+
+        # Now establish direct relationships between the questions
+        res1 = brain.relate_research_questions(main_question_id, sub_question1_id)
+        res2 = brain.relate_research_questions(main_question_id, sub_question2_id)
+
+        assert res1 is True
+        assert res2 is True
+
+        # Verify direct relationships
+        main_question = brain.storage.get(ResearchQuestion, main_question_id)
+        assert sub_question1_id in main_question.related_questions
+        assert sub_question2_id in main_question.related_questions
+
+        # Verify bidirectional relationships
+        sub_question1 = brain.storage.get(ResearchQuestion, sub_question1_id)
+        sub_question2 = brain.storage.get(ResearchQuestion, sub_question2_id)
+
+        assert main_question_id in sub_question1.related_questions
+        assert main_question_id in sub_question2.related_questions
+
+        # Check knowledge graph edges
+        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question1_id), type='related_to')
+        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question2_id), type='related_to')
+        assert brain._knowledge_graph.has_edge(str(sub_question1_id), str(main_question_id), type='related_to')
+        assert brain._knowledge_graph.has_edge(str(sub_question2_id), str(main_question_id), type='related_to')
+
+    def test_identifying_knowledge_gaps(self, brain):
+        """Test identifying knowledge gaps in research questions."""
+        # Create a research question with knowledge gaps
+        question_id = brain.create_research_question(
+            question="How do environmental factors interact with genetic predispositions in mental health?",
+            description="Understanding gene-environment interactions in psychiatric disorders.",
+            priority=9,
+            knowledge_gaps=[
+                "Specific molecular pathways affected by environmental stress",
+                "Temporal windows of vulnerability to environmental factors",
+                "Reversibility of environmentally-induced epigenetic changes"
+            ]
+        )
+
+        # Add some evidence that addresses some gaps but not others
+        note1_id = brain.create_note(
+            title="Stress-Induced Epigenetic Changes",
+            content="Review of how stress alters DNA methylation patterns in neurodevelopment."
+        )
+
+        note2_id = brain.create_note(
+            title="Critical Periods in Development",
+            content="Evidence for sensitive periods when environmental factors have strongest impact."
+        )
+
+        # Create citations
+        citation1_id = brain.create_citation(
+            title="Epigenetic Mechanisms in Stress Response",
+            authors=["Researcher, A.", "Scientist, B."],
+            year=2021
+        )
+
+        citation2_id = brain.create_citation(
+            title="Critical Periods in Neurodevelopment",
+            authors=["Expert, C.", "Authority, D."],
+            year=2022
+        )
+
+        # Link notes to citations
+        brain.link_note_to_paper(note1_id, citation1_id)
+        brain.link_note_to_paper(note2_id, citation2_id)
+
+        # Add evidence to research question
+        brain.add_evidence_to_question(
+            question_id=question_id,
+            note_id=note1_id,
+            evidence_type=EvidenceType.SUPPORTING,
+            strength=EvidenceStrength.STRONG,
+            description="Identifies specific molecular pathways affected by stress",
+            citation_ids=[citation1_id]
+        )
+
+        brain.add_evidence_to_question(
+            question_id=question_id,
+            note_id=note2_id,
+            evidence_type=EvidenceType.SUPPORTING,
+            strength=EvidenceStrength.MODERATE,
+            description="Describes critical periods of vulnerability",
+            citation_ids=[citation2_id]
+        )
+
+        # Update the question to reflect the addressed knowledge gaps
+        # We'll implement this if there's a method for it, otherwise assume manual update
+        question = brain.storage.get(ResearchQuestion, question_id)
+        question.knowledge_gaps = ["Reversibility of environmentally-induced epigenetic changes"]
+        question.update()
+        brain.storage.save(question)
+
+        # Get the research progress summary
+        progress_summary = brain.get_research_progress(question_id)
+
+        # Verify the summary contains key information
+        assert "How do environmental factors interact with genetic predispositions in mental health?" in progress_summary["question"]
+        assert progress_summary["total_evidence_items"] == 2
+        assert "experiments" in progress_summary
+        assert "notes" in progress_summary
+
+        # Verify notes are included in the progress
+        note_ids = [note["id"] for note in progress_summary["notes"]]
+        assert str(note1_id) in note_ids
+        assert str(note2_id) in note_ids
+
+        # Verify remaining knowledge gaps are tracked
+        question = brain.storage.get(ResearchQuestion, question_id)
+        assert len(question.knowledge_gaps) == 1
+        assert "Reversibility of environmentally-induced epigenetic changes" in question.knowledge_gaps
+
+        # Add a new note addressing the remaining gap
+        note3_id = brain.create_note(
+            title="Reversing Epigenetic Changes",
+            content="New research on pharmacological approaches to reverse stress-induced epigenetic changes."
+        )
+
+        citation3_id = brain.create_citation(
+            title="Pharmacological Reversal of Stress-Induced Epigenetic Modifications",
+            authors=["Innovator, E.", "Pioneer, F."],
+            year=2023
+        )
+
+        brain.link_note_to_paper(note3_id, citation3_id)
+
+        brain.add_evidence_to_question(
+            question_id=question_id,
+            note_id=note3_id,
+            evidence_type=EvidenceType.SUPPORTING,
+            strength=EvidenceStrength.MODERATE,
+            description="Demonstrates methods to reverse epigenetic changes",
+            citation_ids=[citation3_id]
+        )
+
+        # Clear all knowledge gaps
+        question = brain.storage.get(ResearchQuestion, question_id)
+        question.knowledge_gaps = []
+        question.update()
+        brain.storage.save(question)
+
+        # Get the updated progress summary
+        updated_progress = brain.get_research_progress(question_id)
+
+        # Verify the evidence count increased
+        assert updated_progress["total_evidence_items"] == 3
+
+        # Verify all knowledge gaps are now addressed
+        question = brain.storage.get(ResearchQuestion, question_id)
+        assert len(question.knowledge_gaps) == 0

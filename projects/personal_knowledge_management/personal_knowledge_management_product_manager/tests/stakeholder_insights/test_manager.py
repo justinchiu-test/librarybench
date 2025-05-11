@@ -68,7 +68,8 @@ class TestStakeholderInsightManager:
         
         # Verify stakeholder was updated with perspective ID
         stakeholder = manager.get_stakeholder(str(single_perspective.stakeholder_id))
-        assert str(single_perspective.id) in stakeholder.perspectives
+        # Check if the UUID object is in the perspectives list
+        assert single_perspective.id in stakeholder.perspectives
         
         # Test adding multiple perspectives
         multiple_perspectives = perspective_samples[1:3]

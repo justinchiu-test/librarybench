@@ -459,7 +459,7 @@ class DecisionRegistry:
                 "risk": risk,
                 "pros_count": len(alt.pros),
                 "cons_count": len(alt.cons),
-                "is_chosen": str(alt.id) == decision.chosen_alternative
+                "is_chosen": str(alt.id) == str(decision.chosen_alternative)
             })
         
         # Handle edge case of only one alternative

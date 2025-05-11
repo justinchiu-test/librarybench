@@ -340,3 +340,77 @@ class TestBidirectionalLinking:
 
         # Navigate to Note 3 and verify it connects back to the citation
         assert brain._knowledge_graph.has_edge(str(note3_id), str(citation_id))
+
+    def test_section_references(self, brain):
+        """Test section-specific references to citations."""
+        # Create a citation
+        citation_id = brain.create_citation(
+            title="Comprehensive Review of Neural Networks",
+            authors=["Smith, J.", "Johnson, K."],
+            year=2023,
+            journal="Neural Computing Review"
+        )
+
+        # Create a note with section-specific references
+        note_id = brain.create_note(
+            title="Notes on Neural Network Architecture",
+            content="My thoughts on different neural network architectures described in Smith & Johnson's paper."
+        )
+
+        # Add section-specific references
+        section1 = "Introduction"
+        content1 = "The authors provide a great overview of the historical development of neural networks."
+        added1 = brain.add_section_reference(note_id, citation_id, section1, content1)
+
+        section2 = "Methods"
+        content2 = "The comparison methodology between different architectures is particularly rigorous."
+        added2 = brain.add_section_reference(note_id, citation_id, section2, content2)
+
+        section3 = "Results"
+        content3 = "Their performance comparison between CNNs and Transformers shows interesting trade-offs."
+        added3 = brain.add_section_reference(note_id, citation_id, section3, content3)
+
+        # Verify all section references were added
+        assert added1 is True
+        assert added2 is True
+        assert added3 is True
+
+        # Retrieve the note and check section references
+        note = brain.get_note(note_id)
+
+        assert section1 in note.section_references
+        assert note.section_references[section1] == content1
+
+        assert section2 in note.section_references
+        assert note.section_references[section2] == content2
+
+        assert section3 in note.section_references
+        assert note.section_references[section3] == content3
+
+        # Verify knowledge graph has section reference edges
+        for section in [section1, section2, section3]:
+            edges = brain._knowledge_graph.get_edge_data(str(note_id), str(citation_id))
+            # There could be multiple edges between the same nodes, so we need to check all of them
+            section_reference_edge_found = False
+            for edge_key, edge_data in edges.items():
+                if edge_data.get('type') == 'section_reference' and edge_data.get('section') == section:
+                    section_reference_edge_found = True
+                    break
+            assert section_reference_edge_found
+
+        # Test retrieving notes by section
+        section_notes = brain.get_notes_by_section(citation_id, section2)
+
+        assert len(section_notes) == 1
+        assert section_notes[0]['note_id'] == note_id
+        assert section_notes[0]['section'] == section2
+        assert section_notes[0]['content'] == content2
+
+        # Test retrieving all sections
+        all_section_notes = brain.get_notes_by_section(citation_id)
+
+        assert len(all_section_notes) == 3
+        sections = [note['section'] for note in all_section_notes]
+        assert section1 in sections
+        assert section2 in sections
+        assert section3 in sections

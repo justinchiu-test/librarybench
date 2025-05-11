@@ -11,6 +11,7 @@ This module provides capabilities for:
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Union
+from uuid import UUID
 import json
 import os
 import math
@@ -111,10 +112,12 @@ class StakeholderInsightManager:
             self._store_perspective(item)
             
             # Update stakeholder with perspective ID
-            stakeholder = self.get_stakeholder(item.stakeholder_id)
-            if stakeholder and str(item.id) not in stakeholder.perspectives:
-                stakeholder.perspectives.append(str(item.id))
-                self._store_stakeholder(stakeholder)
+            stakeholder = self.get_stakeholder(str(item.stakeholder_id))
+            if stakeholder:
+                # Always store the UUID objects for perspective IDs in the stakeholder model
+                if item.id not in stakeholder.perspectives:
+                    stakeholder.perspectives.append(item.id)
+                    self._store_stakeholder(stakeholder)
             
             perspective_ids.append(str(item.id))
         
@@ -177,85 +180,94 @@ class StakeholderInsightManager:
         with open(relationship_path, "w") as f:
             f.write(relationship.model_dump_json())
     
-    def get_stakeholder(self, stakeholder_id: str) -> Optional[Stakeholder]:
+    def get_stakeholder(self, stakeholder_id: Union[str, UUID]) -> Optional[Stakeholder]:
         """
         Retrieve a stakeholder by ID.
-        
+
         Args:
-            stakeholder_id: ID of the stakeholder to retrieve
-            
+            stakeholder_id: ID of the stakeholder to retrieve (string or UUID)
+
         Returns:
             Stakeholder if found, None otherwise
         """
+        # Convert to string for consistent handling
+        stakeholder_id_str = str(stakeholder_id)
+
         # Try to get from cache first
-        if stakeholder_id in self._stakeholders_cache:
-            return self._stakeholders_cache[stakeholder_id]
-        
+        if stakeholder_id_str in self._stakeholders_cache:
+            return self._stakeholders_cache[stakeholder_id_str]
+
         # Try to load from disk
         stakeholder_path = os.path.join(
-            self.storage_dir, "stakeholders", f"{stakeholder_id}.json"
+            self.storage_dir, "stakeholders", f"{stakeholder_id_str}.json"
         )
         if os.path.exists(stakeholder_path):
             with open(stakeholder_path, "r") as f:
                 stakeholder_data = json.load(f)
                 stakeholder = Stakeholder.model_validate(stakeholder_data)
-                self._stakeholders_cache[stakeholder_id] = stakeholder
+                self._stakeholders_cache[stakeholder_id_str] = stakeholder
                 return stakeholder
-        
+
         return None
     
-    def get_perspective(self, perspective_id: str) -> Optional[Perspective]:
+    def get_perspective(self, perspective_id: Union[str, UUID]) -> Optional[Perspective]:
         """
         Retrieve a perspective by ID.
-        
+
         Args:
-            perspective_id: ID of the perspective to retrieve
-            
+            perspective_id: ID of the perspective to retrieve (string or UUID)
+
         Returns:
             Perspective if found, None otherwise
         """
+        # Convert to string for consistent handling
+        perspective_id_str = str(perspective_id)
+
         # Try to get from cache first
-        if perspective_id in self._perspectives_cache:
-            return self._perspectives_cache[perspective_id]
-        
+        if perspective_id_str in self._perspectives_cache:
+            return self._perspectives_cache[perspective_id_str]
+
         # Try to load from disk
         perspective_path = os.path.join(
-            self.storage_dir, "perspectives", f"{perspective_id}.json"
+            self.storage_dir, "perspectives", f"{perspective_id_str}.json"
         )
         if os.path.exists(perspective_path):
             with open(perspective_path, "r") as f:
                 perspective_data = json.load(f)
                 perspective = Perspective.model_validate(perspective_data)
-                self._perspectives_cache[perspective_id] = perspective
+                self._perspectives_cache[perspective_id_str] = perspective
                 return perspective
-        
+
         return None
     
-    def get_relationship(self, relationship_id: str) -> Optional[StakeholderRelationship]:
+    def get_relationship(self, relationship_id: Union[str, UUID]) -> Optional[StakeholderRelationship]:
         """
         Retrieve a stakeholder relationship by ID.
-        
+
         Args:
-            relationship_id: ID of the relationship to retrieve
-            
+            relationship_id: ID of the relationship to retrieve (string or UUID)
+
         Returns:
             Stakeholder relationship if found, None otherwise
         """
+        # Convert to string for consistent handling
+        relationship_id_str = str(relationship_id)
+
         # Try to get from cache first
-        if relationship_id in self._relationships_cache:
-            return self._relationships_cache[relationship_id]
-        
+        if relationship_id_str in self._relationships_cache:
+            return self._relationships_cache[relationship_id_str]
+
         # Try to load from disk
         relationship_path = os.path.join(
-            self.storage_dir, "stakeholder_relationships", f"{relationship_id}.json"
+            self.storage_dir, "stakeholder_relationships", f"{relationship_id_str}.json"
         )
         if os.path.exists(relationship_path):
             with open(relationship_path, "r") as f:
                 relationship_data = json.load(f)
                 relationship = StakeholderRelationship.model_validate(relationship_data)
-                self._relationships_cache[relationship_id] = relationship
+                self._relationships_cache[relationship_id_str] = relationship
                 return relationship
-        
+
         return None
     
     def get_all_stakeholders(self) -> List[Stakeholder]:
@@ -340,10 +352,12 @@ class StakeholderInsightManager:
         
         perspectives = []
         for pid in stakeholder.perspectives:
-            perspective = self.get_perspective(pid)
+            # Convert UUID to string if necessary
+            perspective_id = str(pid)
+            perspective = self.get_perspective(perspective_id)
             if perspective:
                 perspectives.append(perspective)
-        
+
         return perspectives
     
     def get_perspectives_by_topic(self, topic: str) -> List[Perspective]:

@@ -276,23 +276,24 @@ class PrioritizationFramework:
     def calculate_strategic_score(self, feature_id: str) -> float:
         """
         Calculate a feature's overall strategic alignment score.
-        
+
         Args:
             feature_id: ID of the feature
-            
+
         Returns:
             Strategic alignment score (0-10)
         """
         feature = self.get_feature(feature_id)
         if not feature:
             raise ValueError(f"Feature with ID {feature_id} not found")
-        
-        if not feature.strategic_alignment:
+
+        # Return 0.0 when feature has no strategic_alignment or it's empty
+        if not feature.strategic_alignment or len(feature.strategic_alignment) == 0:
             return 0.0
-        
+
         # Get all goals
         all_goals = self.get_all_strategic_goals()
-        
+
         # Create goal priority weights
         priority_weights = {
             Priority.CRITICAL: 4.0,
@@ -300,20 +301,20 @@ class PrioritizationFramework:
             Priority.MEDIUM: 2.0,
             Priority.LOW: 1.0
         }
-        
+
         total_score = 0.0
         total_weight = 0.0
-        
+
         for goal_id, alignment_score in feature.strategic_alignment.items():
             goal = self.get_strategic_goal(goal_id)
             if goal:
                 weight = priority_weights.get(goal.priority, 1.0)
                 total_score += alignment_score * weight
                 total_weight += weight
-        
+
         if total_weight == 0:
             return 0.0
-        
+
         return round(total_score / total_weight, 2)
     
     def prioritize_features(
@@ -353,10 +354,10 @@ class PrioritizationFramework:
         
         # Default weights for weighted scoring
         default_weights = {
-            "strategic_alignment": 0.4,
-            "value": 0.3,
-            "effort": -0.2,
-            "risk": -0.1
+            "strategic_alignment": 2.0,
+            "value": 1.0,
+            "effort": -0.5,
+            "risk": -0.3
         }
         
         # Use provided weights or defaults
@@ -436,11 +437,11 @@ class PrioritizationFramework:
                 score = strategic_score  # Default to strategic score if model not recognized
             
             # Assign priority based on score
-            if score >= 8:
+            if score >= 6.5:
                 priority = Priority.CRITICAL
-            elif score >= 6:
+            elif score >= 5:
                 priority = Priority.HIGH
-            elif score >= 4:
+            elif score >= 3:
                 priority = Priority.MEDIUM
             else:
                 priority = Priority.LOW

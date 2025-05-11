@@ -288,8 +288,8 @@ class TestExperimentTemplates:
         """Test creating and using a custom experiment template."""
         # Create a custom template
         custom_template = {
-            "name": "Sleep Study",
-            "description": "Template for sleep research studies",
+            "name": "Longitudinal Aging Study",
+            "description": "Template for longitudinal studies of aging populations",
             "fields": [
                 {
                     "name": "title",
@@ -304,78 +304,162 @@ class TestExperimentTemplates:
                     "required": True
                 },
                 {
-                    "name": "sleep_measurement",
+                    "name": "cohort",
                     "type": "string",
-                    "description": "Method of sleep measurement",
+                    "description": "Participant cohort details",
                     "required": True
                 },
                 {
-                    "name": "duration",
+                    "name": "follow_up_period",
                     "type": "string",
-                    "description": "Study duration",
+                    "description": "Follow-up period and frequency",
                     "required": True
                 },
                 {
-                    "name": "participants",
+                    "name": "measures",
                     "type": "string",
-                    "description": "Study participants",
+                    "description": "Key outcome measures",
                     "required": True
+                },
+                {
+                    "name": "analysis_approach",
+                    "type": "string",
+                    "description": "Statistical analysis approach",
+                    "required": False,
+                    "default": "Mixed-effects modeling for longitudinal data"
                 }
             ],
             "output_format": {
                 "title": "{{ title }}",
                 "hypothesis": "{{ hypothesis }}",
-                "methodology": """# Sleep Study Protocol
-                
-## Measurement Method
-{{ sleep_measurement }}
+                "methodology": """# Longitudinal Aging Study Protocol
 
-## Study Duration
-{{ duration }}
+## Participant Cohort
+{{ cohort }}
 
-## Participants
-{{ participants }}
+## Follow-up Protocol
+{{ follow_up_period }}
+
+## Outcome Measures
+{{ measures }}
+
+## Analysis Approach
+{{ analysis_approach }}
                 """,
                 "variables": {
-                    "sleep_measurement": "{{ sleep_measurement }}",
-                    "duration": "{{ duration }}",
-                    "participants": "{{ participants }}"
+                    "cohort": "{{ cohort }}",
+                    "follow_up": "{{ follow_up_period }}",
+                    "measures": "{{ measures }}",
+                    "analysis": "{{ analysis_approach }}"
                 },
                 "status": "planned"
             }
         }
-        
+
         # Create the custom template
-        created = create_template("sleep_study", custom_template)
+        created = create_template("longitudinal_aging_study", custom_template)
         assert created is True
-        
+
         # Verify template was created and is retrievable
+        template = get_template("longitudinal_aging_study")
+        assert template is not None
+        assert template["name"] == "Longitudinal Aging Study"
+
+        # Use the custom template to create an experiment
+        experiment_id = brain.create_experiment_from_template(
+            template_name="longitudinal_aging_study",
+            title="Cognitive Reserve in Aging Study",
+            hypothesis="Higher cognitive reserve predicts slower cognitive decline in aging",
+            cohort="500 adults aged 65+ stratified by education and occupation complexity",
+            follow_up_period="5 years with annual cognitive assessments",
+            measures="Neuropsychological test battery, structural MRI, functional assessment"
+            # Using default for analysis_approach
+        )
+
+        # Verify the experiment was created with custom template
+        experiment = brain.storage.get(Experiment, experiment_id)
+
+        assert experiment is not None
+        assert experiment.title == "Cognitive Reserve in Aging Study"
+        assert "# Longitudinal Aging Study Protocol" in experiment.methodology
+        assert "## Participant Cohort" in experiment.methodology
+        assert "500 adults aged 65+ stratified by education" in experiment.methodology
+        assert "## Follow-up Protocol" in experiment.methodology
+        assert "5 years with annual cognitive assessments" in experiment.methodology
+        assert "## Outcome Measures" in experiment.methodology
+        assert "Neuropsychological test battery, structural MRI" in experiment.methodology
+        assert "## Analysis Approach" in experiment.methodology
+        assert "Mixed-effects modeling for longitudinal data" in experiment.methodology
+
+        # Verify variables were stored
+        assert "cohort" in experiment.variables
+        assert experiment.variables["cohort"] == "500 adults aged 65+ stratified by education and occupation complexity"
+        assert "follow_up" in experiment.variables
+        assert experiment.variables["follow_up"] == "5 years with annual cognitive assessments"
+        assert "measures" in experiment.variables
+        assert experiment.variables["measures"] == "Neuropsychological test battery, structural MRI, functional assessment"
+        assert "analysis" in experiment.variables
+        assert experiment.variables["analysis"] == "Mixed-effects modeling for longitudinal data"
+
+    def test_sleep_study_template(self, brain):
+        """Test using the sleep study template."""
+        # Verify the sleep study template exists
         template = get_template("sleep_study")
         assert template is not None
         assert template["name"] == "Sleep Study"
-        
-        # Use the custom template to create an experiment
+
+        # Use the sleep study template with all fields including optional ones
         experiment_id = brain.create_experiment_from_template(
             template_name="sleep_study",
-            title="Circadian Rhythm Disruption Study",
-            hypothesis="Circadian rhythm disruption negatively impacts memory consolidation",
-            sleep_measurement="Polysomnography (PSG) with EEG, EOG, and EMG",
-            duration="2 weeks (1 baseline week, 1 disruption week)",
-            participants="30 healthy adults (18-30 years) with regular sleep schedules"
+            title="Sleep Deprivation and Cognitive Performance",
+            hypothesis="Sleep deprivation of 24 hours will impair working memory performance",
+            sleep_measurement="Polysomnography and wrist actigraphy",
+            duration="3 days (1 baseline, 1 sleep deprivation, 1 recovery)",
+            participants="40 healthy adults aged 18-30 with good sleep habits",
+            analysis_plan="Mixed ANOVA with sleep condition as within-subjects factor"
         )
-        
-        # Verify the experiment was created with custom template
+
+        # Verify the experiment was created correctly
         experiment = brain.storage.get(Experiment, experiment_id)
-        
+
         assert experiment is not None
-        assert experiment.title == "Circadian Rhythm Disruption Study"
-        assert "# Sleep Study Protocol" in experiment.methodology
-        assert "## Measurement Method" in experiment.methodology
-        assert "Polysomnography (PSG) with EEG, EOG, and EMG" in experiment.methodology
-        assert "## Study Duration" in experiment.methodology
-        assert "2 weeks (1 baseline week, 1 disruption week)" in experiment.methodology
-        assert "## Participants" in experiment.methodology
-        assert "30 healthy adults (18-30 years) with regular sleep schedules" in experiment.methodology
+        assert experiment.title == "Sleep Deprivation and Cognitive Performance"
+        assert experiment.hypothesis == "Sleep deprivation of 24 hours will impair working memory performance"
+        assert "Polysomnography and wrist actigraphy" in experiment.methodology
+        assert "3 days (1 baseline, 1 sleep deprivation, 1 recovery)" in experiment.methodology
+        assert "40 healthy adults aged 18-30 with good sleep habits" in experiment.methodology
+
+        # Verify variables were stored correctly
+        assert "sleep_measurement" in experiment.variables
+        assert experiment.variables["sleep_measurement"] == "Polysomnography and wrist actigraphy"
+        assert "duration" in experiment.variables
+        assert experiment.variables["duration"] == "3 days (1 baseline, 1 sleep deprivation, 1 recovery)"
+        assert "participants" in experiment.variables
+        assert experiment.variables["participants"] == "40 healthy adults aged 18-30 with good sleep habits"
+
+        # If analysis_plan is included in the template's output_format, verify it's in the methodology
+        if "Analysis Plan" in experiment.methodology:
+            assert "Mixed ANOVA with sleep condition as within-subjects factor" in experiment.methodology
+
+        # Try using the sleep study template with minimal required fields
+        minimal_experiment_id = brain.create_experiment_from_template(
+            template_name="sleep_study",
+            title="Basic Sleep Study",
+            hypothesis="Sleep quality impacts daytime cognitive function",
+            sleep_measurement="Actigraphy only",
+            duration="1 week",
+            participants="20 participants"
+            # Omit optional fields
+        )
+
+        # Verify the minimal experiment was created correctly
+        minimal_experiment = brain.storage.get(Experiment, minimal_experiment_id)
+
+        assert minimal_experiment is not None
+        assert minimal_experiment.title == "Basic Sleep Study"
+        assert "Actigraphy only" in minimal_experiment.methodology
+        assert "1 week" in minimal_experiment.methodology
+        assert "20 participants" in minimal_experiment.methodology
     
     def test_experiment_linking_to_research_question(self, brain):
         """Test linking an experiment created from a template to a research question."""

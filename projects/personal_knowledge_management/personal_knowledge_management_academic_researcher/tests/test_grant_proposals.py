@@ -354,7 +354,7 @@ class TestGrantProposals:
             status=GrantStatus.DRAFTING,
             amount=750000.0
         )
-        
+
         # Add items to the grant workspace
         brain.add_to_grant_workspace(
             grant_id=grant_id,
@@ -362,52 +362,265 @@ class TestGrantProposals:
             experiment_ids=sample_proposal_data["experiments"],
             question_ids=sample_proposal_data["questions"]
         )
-        
+
         # Export to YAML
         export_path = Path(tempfile.mkdtemp()) / "grant_proposal.yaml"
         exported = brain.export_grant_proposal(grant_id, export_path)
-        
+
         assert exported is True
         assert export_path.exists()
-        
+
         # Read the exported YAML file
         with open(export_path, "r") as f:
             data = yaml.safe_load(f)
-        
+
         # Verify structure and content
         assert data["title"] == "Neural Activity and Myelination in Development"
         assert data["funding_agency"] == "National Institutes of Health"
         assert data["amount"] == 750000.0
         assert "deadline" in data
-        
+
         # Check for items
         assert "notes_data" in data
         assert len(data["notes_data"]) == 4
-        
+
         assert "experiments_data" in data
         assert len(data["experiments_data"]) == 2
-        
+
         assert "questions_data" in data
         assert len(data["questions_data"]) == 2
-        
+
         # Check specific content
         experiment_titles = [exp["title"] for exp in data["experiments_data"]]
         assert "Pilot Study: Optogenetic Stimulation and Myelination" in experiment_titles
         assert "Proposed Study: Molecular Mechanisms" in experiment_titles
-        
+
         question_texts = [q["question"] for q in data["questions_data"]]
         assert "How does neuronal activity influence myelination in the developing brain?" in question_texts
         assert "What signaling pathways mediate activity-dependent myelination?" in question_texts
-        
+
         note_titles = [note["title"] for note in data["notes_data"]]
         assert "Background Literature" in note_titles
         assert "Preliminary Data" in note_titles
-        
+
         # Verify metadata
         assert "export_metadata" in data
         assert "generated_at" in data["export_metadata"]
         assert data["export_metadata"]["format_version"] == "1.0"
-        
+
+        # Clean up
+        os.unlink(export_path)
+
+    def test_grant_proposal_version_history(self, brain, sample_proposal_data):
+        """Test tracking version history of grant proposals."""
+        # Create a grant proposal
+        grant_id = brain.create_grant_proposal(
+            title="Neuroplasticity Across the Lifespan",
+            funding_agency="National Science Foundation",
+            description="Initial proposal for neuroplasticity research",
+            deadline=datetime.now() + timedelta(days=90),
+            status=GrantStatus.DRAFTING,
+            amount=1200000.0
+        )
+
+        # Add initial items to the grant workspace
+        brain.add_to_grant_workspace(
+            grant_id=grant_id,
+            note_ids=sample_proposal_data["notes"][:2],  # Add only first two notes initially
+            experiment_ids=[sample_proposal_data["experiments"][0]],  # Add only first experiment initially
+            question_ids=[sample_proposal_data["questions"][0]]  # Add only first question initially
+        )
+
+        # Export the initial version
+        version1_path = Path(tempfile.mkdtemp()) / "grant_v1.yaml"
+        exported1 = brain.export_grant_proposal(grant_id, version1_path)
+        assert exported1 is True
+
+        # Read the initial version file to capture export timestamp
+        with open(version1_path, "r") as f:
+            v1_data = yaml.safe_load(f)
+        v1_timestamp = v1_data["export_metadata"]["generated_at"]
+
+        # Update the grant proposal (e.g., change status and add more items)
+        grant = brain.storage.get(GrantProposal, grant_id)
+        grant.status = GrantStatus.UNDER_REVIEW
+        grant.description = "Revised proposal for neuroplasticity research with additional experiments"
+        grant.update()
+        brain.storage.save(grant)
+
+        # Add more items to create a new version
+        brain.add_to_grant_workspace(
+            grant_id=grant_id,
+            note_ids=sample_proposal_data["notes"][2:],  # Add remaining notes
+            experiment_ids=[sample_proposal_data["experiments"][1]],  # Add second experiment
+            question_ids=[sample_proposal_data["questions"][1]]  # Add second question
+        )
+
+        # Export the updated version
+        version2_path = Path(tempfile.mkdtemp()) / "grant_v2.yaml"
+        exported2 = brain.export_grant_proposal(grant_id, version2_path)
+        assert exported2 is True
+
+        # Track the export in the grant's export history
+        grant = brain.storage.get(GrantProposal, grant_id)
+        if not hasattr(grant, 'export_history') or grant.export_history is None:
+            grant.export_history = []
+
+        # Add export records to the history
+        grant.export_history.append({
+            "version": "1.0",
+            "timestamp": v1_timestamp,
+            "status": "DRAFTING",
+            "filename": "grant_v1.yaml"
+        })
+
+        grant.export_history.append({
+            "version": "2.0",
+            "timestamp": datetime.now().isoformat(),
+            "status": "UNDER_REVIEW",
+            "filename": "grant_v2.yaml"
+        })
+
+        grant.update()
+        brain.storage.save(grant)
+
+        # Verify the export history is tracked
+        updated_grant = brain.storage.get(GrantProposal, grant_id)
+        assert len(updated_grant.export_history) == 2
+        assert updated_grant.export_history[0]["version"] == "1.0"
+        assert updated_grant.export_history[0]["status"] == "DRAFTING"
+        assert updated_grant.export_history[1]["version"] == "2.0"
+        assert updated_grant.export_history[1]["status"] == "UNDER_REVIEW"
+
+        # Compare the exported versions to verify they're different
+        with open(version1_path, "r") as f1, open(version2_path, "r") as f2:
+            version1_data = yaml.safe_load(f1)
+            version2_data = yaml.safe_load(f2)
+
+        # Check that version 2 has more items
+        assert len(version1_data["notes_data"]) < len(version2_data["notes_data"])
+        assert len(version1_data["experiments_data"]) < len(version2_data["experiments_data"])
+        assert len(version1_data["questions_data"]) < len(version2_data["questions_data"])
+
+        # Verify status change
+        assert version1_data["status"] == "drafting"
+        assert version2_data["status"] == "under_review"
+
+        # Verify description change
+        assert "Initial proposal" in version1_data["description"]
+        assert "Revised proposal" in version2_data["description"]
+
+        # Clean up
+        os.unlink(version1_path)
+        os.unlink(version2_path)
+
+    def test_budget_and_timeline_management(self, brain):
+        """Test managing budget items and project timeline in grant proposals."""
+        # Create a grant proposal
+        grant_id = brain.create_grant_proposal(
+            title="Neural Circuit Development Study",
+            funding_agency="Brain Research Foundation",
+            description="Investigating developmental trajectories of neural circuits",
+            deadline=datetime.now() + timedelta(days=45),
+            status=GrantStatus.DRAFTING,
+            amount=850000.0
+        )
+
+        # Get the grant
+        grant = brain.storage.get(GrantProposal, grant_id)
+
+        # Add budget items
+        budget_items = {
+            "personnel": {
+                "PI": 150000.0,
+                "Postdoc": 75000.0,
+                "Graduate Students (2)": 120000.0,
+                "Research Assistant": 60000.0
+            },
+            "equipment": {
+                "Microscope": 200000.0,
+                "Computing Cluster": 50000.0,
+                "Lab Supplies": 75000.0
+            },
+            "travel": {
+                "Conferences": 15000.0,
+                "Collaborative Visits": 10000.0
+            },
+            "indirect_costs": {
+                "Facilities & Admin": 95000.0
+            }
+        }
+
+        # Add timeline milestones
+        timeline = {
+            "year1": {
+                "q1": "Setup equipment and hire personnel",
+                "q2": "Begin preliminary experiments",
+                "q3": "Complete first set of experiments",
+                "q4": "Data analysis and preliminary report"
+            },
+            "year2": {
+                "q1": "Begin main experimental series",
+                "q2": "Continue experiments and begin data analysis",
+                "q3": "Final experiments and complete data collection",
+                "q4": "Analysis, paper writing, and final report"
+            }
+        }
+
+        # Update the grant with budget and timeline information
+        grant.budget_items = budget_items
+        grant.timeline = timeline
+        grant.update()
+        brain.storage.save(grant)
+
+        # Retrieve the updated grant
+        updated_grant = brain.storage.get(GrantProposal, grant_id)
+
+        # Verify budget items were saved
+        assert updated_grant.budget_items is not None
+        assert len(updated_grant.budget_items) == 4
+        assert "personnel" in updated_grant.budget_items
+        assert "equipment" in updated_grant.budget_items
+        assert "travel" in updated_grant.budget_items
+        assert "indirect_costs" in updated_grant.budget_items
+
+        # Verify specific budget amounts
+        assert updated_grant.budget_items["personnel"]["PI"] == 150000.0
+        assert updated_grant.budget_items["equipment"]["Microscope"] == 200000.0
+        assert updated_grant.budget_items["travel"]["Conferences"] == 15000.0
+
+        # Calculate total to ensure it matches the grant amount
+        total_budget = 0
+        for category in updated_grant.budget_items.values():
+            for amount in category.values():
+                total_budget += amount
+
+        assert abs(total_budget - updated_grant.amount) < 1.0  # Allow small floating point difference
+
+        # Verify timeline was saved
+        assert updated_grant.timeline is not None
+        assert len(updated_grant.timeline) == 2
+        assert "year1" in updated_grant.timeline
+        assert "year2" in updated_grant.timeline
+
+        # Verify timeline details
+        assert updated_grant.timeline["year1"]["q1"] == "Setup equipment and hire personnel"
+        assert updated_grant.timeline["year2"]["q4"] == "Analysis, paper writing, and final report"
+
+        # Export the grant to verify budget and timeline are included
+        export_path = Path(tempfile.mkdtemp()) / "grant_with_budget.yaml"
+        exported = brain.export_grant_proposal(grant_id, export_path)
+
+        # Read the exported file
+        with open(export_path, "r") as f:
+            export_data = yaml.safe_load(f)
+
+        # Verify budget and timeline in export
+        assert "budget_items" in export_data
+        assert "timeline" in export_data
+        assert export_data["budget_items"]["personnel"]["PI"] == 150000.0
+        assert export_data["timeline"]["year1"]["q1"] == "Setup equipment and hire personnel"
+
         # Clean up
         os.unlink(export_path)
     

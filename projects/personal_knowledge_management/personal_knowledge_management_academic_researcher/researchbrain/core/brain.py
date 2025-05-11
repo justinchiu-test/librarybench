@@ -837,48 +837,117 @@ class ResearchBrain:
     
     def import_collaborator_annotations(self, collaborator_id: UUID, annotations_file: Union[str, Path]) -> int:
         """Import annotations from a collaborator's file.
-        
+
         Args:
             collaborator_id: ID of the collaborator.
             annotations_file: Path to the annotations file.
-            
+
         Returns:
             Number of annotations successfully imported.
         """
         import json
-        
+
         file_path = Path(annotations_file)
         if not file_path.exists():
             return 0
-        
+
         collaborator = self.storage.get(Collaborator, collaborator_id)
         if not collaborator:
             return 0
-        
+
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            
+
+            # Validate the data format
+            if not isinstance(data, list):
+                return 0
+
             count = 0
             for item in data:
-                if 'node_id' in item and 'content' in item:
-                    try:
-                        node_id = UUID(item['node_id'])
-                        if self._node_exists(node_id):
-                            annotation = Annotation(
-                                node_id=node_id,
-                                collaborator_id=collaborator_id,
-                                content=item['content'],
-                                position=item.get('position')
-                            )
-                            self.storage.save(annotation)
-                            count += 1
-                    except (ValueError, TypeError):
-                        # Invalid UUID format, skip this item
+                # Validate annotation item
+                if not isinstance(item, dict):
+                    continue
+
+                if 'node_id' not in item or not item['node_id']:
+                    continue
+
+                if 'content' not in item or not item['content']:
+                    continue
+
+                # Try to parse the node_id as UUID and validate the node exists
+                try:
+                    node_id = UUID(item['node_id'])
+
+                    # Verify the node exists
+                    if not self._node_exists(node_id):
                         continue
-            
+
+                    # Create the annotation object
+                    annotation = Annotation(
+                        node_id=node_id,
+                        collaborator_id=collaborator_id,
+                        content=item['content'],
+                        position=item.get('position'),
+                        status=item.get('status', 'open')  # Default to 'open' if not specified
+                    )
+
+                    # Check for parent annotation (for reply chains)
+                    if 'parent_id' in item and item['parent_id']:
+                        try:
+                            parent_id = UUID(item['parent_id'])
+                            parent_annotation = self.storage.query(Annotation, node_id=node_id, id=parent_id)
+
+                            if parent_annotation and len(parent_annotation) > 0:
+                                # Set this annotation as a reply to the parent
+                                annotation.parent_id = parent_id
+
+                                # Update the parent annotation to include this reply
+                                parent = parent_annotation[0]
+                                if annotation.id not in parent.replies:
+                                    parent.replies.append(annotation.id)
+                                    self.storage.save(parent)
+                        except (ValueError, TypeError):
+                            # Invalid parent_id format, continue without setting parent
+                            pass
+
+                    # Save the annotation
+                    self.storage.save(annotation)
+
+                    # Update the knowledge graph
+                    self._knowledge_graph.add_node(
+                        str(annotation.id),
+                        type='annotation',
+                        title=f"Annotation on {annotation.node_id}"
+                    )
+                    self._knowledge_graph.add_edge(
+                        str(annotation.id),
+                        str(annotation.node_id),
+                        type='annotates'
+                    )
+                    self._knowledge_graph.add_edge(
+                        str(annotation.collaborator_id),
+                        str(annotation.id),
+                        type='created'
+                    )
+
+                    # Update the collaborator's list of notes
+                    node = self.storage.get(Note, node_id)
+                    if node and isinstance(node, Note):
+                        if node_id not in collaborator.notes:
+                            collaborator.notes.append(node_id)
+                            collaborator.update()
+                            self.storage.save(collaborator)
+
+                    count += 1
+
+                except (ValueError, TypeError):
+                    # Invalid UUID format, skip this item
+                    continue
+
             return count
-        except (json.JSONDecodeError, IOError):
+        except (json.JSONDecodeError, IOError, OSError):
+            # Handle file read errors
             return 0
     
     def search(self, query: str, node_types: Optional[List[str]] = None) -> Dict[str, List[Any]]:

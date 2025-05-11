@@ -116,14 +116,28 @@ class DeferredOperation:
     args: Tuple = field(default_factory=tuple)
     kwargs: Dict[str, Any] = field(default_factory=dict)
     callback: Optional[Callable] = None
-    
+
+    def __lt__(self, other: 'DeferredOperation') -> bool:
+        """
+        Compare operations for sorting in the priority queue.
+
+        Args:
+            other: Another operation to compare with
+
+        Returns:
+            True if this operation has higher priority (lower value)
+        """
+        # Needed for priority queue ordering
+        # Use creation time as tie-breaker
+        return (self.priority.value, self.creation_time) < (other.priority.value, other.creation_time)
+
     def execute(self, target_obj: Any) -> Any:
         """
         Execute the operation on the target object.
-        
+
         Args:
             target_obj: Object to execute the operation on
-            
+
         Returns:
             Result of the operation
         """
@@ -262,8 +276,7 @@ class PowerManager:
         self.deferred_operations[priority].append(operation)
         
         # Add to the priority queue
-        # Use the priority value as the first element of the tuple for sorting
-        self.operation_queue.put((priority.value, operation))
+        self.operation_queue.put(operation)
     
     def start_worker(self, target_obj: Any) -> None:
         """
@@ -299,18 +312,18 @@ class PowerManager:
         while not self.stop_event.is_set():
             try:
                 # Try to get an operation from the queue with a timeout
-                priority_value, operation = self.operation_queue.get(timeout=1.0)
-                
+                operation = self.operation_queue.get(timeout=1.0)
+
                 # Check if we should execute this operation now
                 if self._should_execute_now(operation):
                     try:
                         operation.execute(target_obj)
                     except Exception as e:
                         # In a real implementation, we would log this error
-                        pass
+                        print(f"Error executing deferred operation: {e}")
                 else:
                     # Put it back in the queue for later
-                    self.operation_queue.put((priority_value, operation))
+                    self.operation_queue.put(operation)
                 
                 # Mark task as done
                 self.operation_queue.task_done()

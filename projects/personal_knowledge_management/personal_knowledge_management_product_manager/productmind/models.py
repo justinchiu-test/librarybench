@@ -150,8 +150,8 @@ class CompetitiveFeature(BaseModel):
     importance: float = 1.0
     our_implementation: Optional[str] = None
     our_rating: Optional[float] = None
-    competitor_implementations: Dict[UUID, str] = Field(default_factory=dict)
-    competitor_ratings: Dict[UUID, float] = Field(default_factory=dict)
+    competitor_implementations: Dict[str, Optional[str]] = Field(default_factory=dict)
+    competitor_ratings: Dict[str, Optional[float]] = Field(default_factory=dict)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 

@@ -4,7 +4,7 @@ import datetime
 import tempfile
 import pickle
 import pytest
-from iot_coordinator.scheduler import Scheduler, FilePersistence, RedisPersistence, Job
+from scheduler import Scheduler, FilePersistence, RedisPersistence, Job
 
 class FakeRedis:
     def __init__(self):

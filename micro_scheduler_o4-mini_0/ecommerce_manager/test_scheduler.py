@@ -2,8 +2,8 @@ import os
 import tempfile
 import pytest
 from datetime import datetime, timedelta, time as dt_time
-import ecommerce_manager.pytz as pytz
-from ecommerce_manager.scheduler import JobScheduler, RateLimitException
+import pytz
+from scheduler import JobScheduler, RateLimitException
 
 def test_manual_trigger_and_dependency():
     scheduler = JobScheduler()

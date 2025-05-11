@@ -3,7 +3,7 @@ import threading
 import time
 import datetime
 import http.client
-from iot_developer.scheduler import Scheduler, InMemoryBackend
+from scheduler import Scheduler, InMemoryBackend
 
 def test_set_persistence_backend():
     sched = Scheduler()

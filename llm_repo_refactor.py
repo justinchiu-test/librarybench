@@ -288,7 +288,7 @@ def _update_local_imports(new_test_file_path, persona_name, starter_repo_path):
     with open(new_test_file_path, 'r') as f:
         content = f.read()
     # Find import statements (both regular imports and from imports)
-    import_pattern = re.compile(r'(from\s+|import\s+)([.\w]+)')
+    import_pattern = re.compile(r'(?m)^\s*(from\s+|import\s+)([.\w]+)')
     matches = import_pattern.findall(content)
 
     modified_content = content
@@ -306,8 +306,23 @@ def _update_local_imports(new_test_file_path, persona_name, starter_repo_path):
         if os.path.exists(os.path.join(starter_repo_path, persona_name, module_file)):
             # This is a local module that needs to be updated
             old_import = f"{import_type}{module_path}"
-            new_import = f"{import_type}{persona_name}.{module_path}"
+            if import_type.strip() == 'import':
+                new_import = f"{import_type}{persona_name}.{module_path} as {module_path}"
+            else:
+                new_import = f"{import_type}{persona_name}.{module_path}"
             modified_content = modified_content.replace(old_import, new_import)
+            continue
+
+        module_folder = module_path.replace('.', '/')
+        if os.path.exists(os.path.join(starter_repo_path, persona_name, module_folder)):
+            # This is a local module that needs to be updated
+            old_import = f"{import_type}{module_path}"
+            if import_type.strip() == 'import':
+                new_import = f"{import_type}{persona_name}.{module_path} as {module_path}"
+            else:
+                new_import = f"{import_type}{persona_name}.{module_path}"
+            modified_content = modified_content.replace(old_import, new_import)
+
 
     # Write the updated content back to the file
     if modified_content != content:
@@ -362,9 +377,9 @@ def setup_for_refactor(args):
     # Move each test file to the unified test directory with appropriate naming
     for (test_file_orig, test_file_dest, persona_name) in test_files:
 
-        # Move the file 
-        logger.info(f"Moving {test_file_orig} to {test_file_dest}")
-        shutil.move(test_file_orig, test_file_dest)
+        # copy the file 
+        logger.info(f"Copying {test_file_orig} to {test_file_dest}")
+        shutil.copyfile(test_file_orig, test_file_dest)
 
         # Update local import paths in the moved file
         _update_local_imports(test_file_dest, persona_name, args.starter_repo_path)

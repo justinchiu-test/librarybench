@@ -4,7 +4,7 @@ import asyncio
 import time
 import logging
 import pytest
-from web_scraper.scheduler import MicroScheduler
+from scheduler import MicroScheduler
 
 @pytest.fixture
 def scheduler():

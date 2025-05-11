@@ -1,7 +1,7 @@
 import pytest
 import time
 import threading
-from qa_engineer.scheduler import Scheduler, RedisBackend, SQLiteBackend
+from scheduler import Scheduler, RedisBackend, SQLiteBackend
 from datetime import datetime
 
 @pytest.fixture

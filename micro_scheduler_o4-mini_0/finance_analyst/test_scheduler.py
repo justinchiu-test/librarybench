@@ -3,7 +3,7 @@ import time
 import pytest
 import datetime
 import zoneinfo
-import finance_analyst.scheduler as scheduler
+import scheduler
 
 def setup_function():
     # Reset global state before each test

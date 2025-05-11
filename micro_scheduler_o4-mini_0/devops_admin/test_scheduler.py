@@ -7,7 +7,7 @@ import logging
 import pytest
 from datetime import datetime, timedelta
 
-import devops_admin.scheduler as scheduler
+import scheduler
 
 def test_schedule_and_list_jobs(tmp_path):
     # use a fresh scheduler

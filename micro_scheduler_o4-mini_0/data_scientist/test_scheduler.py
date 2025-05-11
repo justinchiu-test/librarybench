@@ -1,7 +1,7 @@
 import pytest
 import ast
 import time
-from data_scientist.scheduler import Scheduler, SQLiteBackend, RedisBackend, Job
+from scheduler import Scheduler, SQLiteBackend, RedisBackend, Job
 
 def test_set_persistence_backend_sqlite(tmp_path):
     sched = Scheduler()

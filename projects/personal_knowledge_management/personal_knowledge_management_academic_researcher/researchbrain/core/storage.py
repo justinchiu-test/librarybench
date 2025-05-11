@@ -813,8 +813,9 @@ class LocalStorage:
             if matching_ids:
                 # Load the matching items
                 return [self.get(model_type, item_id) for item_id in matching_ids if self.get(model_type, item_id) is not None]
-        except Exception:
+        except Exception as e:
             # Fall back to manual search if index search fails
+            print(f"Search index error: {e}")
             pass
 
         # Manual search
@@ -827,26 +828,32 @@ class LocalStorage:
 
             for field in fields:
                 if field in item_dict and isinstance(item_dict[field], str):
-                    if search_text_lower in item_dict[field].lower():
-                        result.append(item)
+                    field_value = item_dict[field].lower()
+                    if search_text_lower in field_value:
+                        if item not in result:
+                            result.append(item)
                         break
 
         return result
 
-    def transaction(self, func, *args, **kwargs):
-        """Execute a function within a transaction.
+    def transaction(self, func=None, *args, **kwargs):
+        """Execute a function within a transaction or act as a context manager.
 
         Args:
-            func: The function to execute.
+            func: The function to execute (optional for context manager mode).
             *args: Positional arguments for the function.
             **kwargs: Keyword arguments for the function.
 
         Returns:
-            The result of the function.
+            The result of the function or self as a context manager.
 
         Raises:
             Any exception raised by the function.
         """
+        # If no function is provided, return self as a context manager
+        if func is None:
+            return self._TransactionContext(self)
+
         # Create a backup of the current state
         temp_backup_dir = self.base_path / 'backups' / f"transaction_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         backup_path = self.backup(temp_backup_dir)
@@ -868,3 +875,48 @@ class LocalStorage:
 
             # Re-raise the exception
             raise e
+
+    class _TransactionContext:
+        """Context manager for transactions."""
+
+        def __init__(self, storage):
+            """Initialize with the storage instance.
+
+            Args:
+                storage: The storage instance.
+            """
+            self.storage = storage
+            self.backup_path = None
+
+        def __enter__(self):
+            """Enter the context, creating a backup.
+
+            Returns:
+                The storage instance.
+            """
+            # Create a backup of the current state
+            temp_backup_dir = self.storage.base_path / 'backups' / f"transaction_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            self.backup_path = self.storage.backup(temp_backup_dir)
+            return self.storage
+
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            """Exit the context, cleaning up or restoring as needed.
+
+            Args:
+                exc_type: Exception type if an exception occurred.
+                exc_val: Exception value if an exception occurred.
+                exc_tb: Exception traceback if an exception occurred.
+
+            Returns:
+                False to propagate exceptions.
+            """
+            if exc_type is not None:
+                # An exception occurred, restore from the backup
+                self.storage.restore(self.backup_path)
+
+            # Clean up the backup
+            if self.backup_path and os.path.exists(self.backup_path):
+                shutil.rmtree(self.backup_path)
+
+            # Don't suppress exceptions
+            return False

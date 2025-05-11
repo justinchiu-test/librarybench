@@ -29,10 +29,12 @@ class Repo:
     def __init__(self, repo_path, test_command="pytest"):
         self.logger = logger
         self.repo_path = repo_path
+        self.test_command = test_command
 
     def evaluate(self):
         test_files = [test_file_path[len(self.repo_path)+1:] for test_file_path in glob.glob(os.path.join(self.repo_path, "test_*.py"))]
-        test_cmd = f"pytest {' '.join(test_files)} --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
+        if os.path.exists("test_output.txt"): os.remove("test_output.txt")
+        test_cmd = f"{self.test_command} {' '.join(test_files)} --timeout=60 --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1"
         self.logger.info(f"Running evaluation. test cmd: {test_cmd}")
         result = {}
         try:
@@ -386,7 +388,7 @@ def setup_for_refactor(args):
 
         # place __init__.py everywhere needed
         _place_inits(args.starter_repo_path)
-    logger.info(f"Successfully moved {len(test_files)} test files to {unified_test_dir}")
+    logger.info(f"Successfully copied {len(test_files)} test files to {unified_test_dir}")
 
     # setup.py file for treating the refactored one as a repo
     with open(os.path.join(args.starter_repo_path, "unified", "setup.py"), 'w') as wf:

@@ -1,133 +1,212 @@
-# ResearchBrain: Knowledge Management System for Academic Researchers
+# Research Knowledge Hub
+
+A comprehensive personal knowledge management system tailored for academic researchers working with complex scientific literature and research projects.
 
 ## Overview
-ResearchBrain is a specialized personal knowledge management system tailored for academic researchers who need to organize complex scientific literature, track research projects, and maintain structured connections between research notes, publications, and grant proposals.
+
+Research Knowledge Hub is a specialized adaptation of the BrainCache personal knowledge management system designed specifically for academic researchers. It focuses on organizing and connecting scientific literature, experimental data, theoretical frameworks, and collaborative inputs while supporting academic writing workflows such as grant proposals and publications.
 
 ## Persona Description
+
 Dr. Elaine Chen is a neuroscience professor juggling multiple research projects, collaborations, and teaching responsibilities. She needs to organize complex scientific literature, experimental notes, and theoretical connections while preparing publications and grant proposals.
 
 ## Key Requirements
-1. **Citation-aware note linking**: Automatically connect notes to referenced academic papers, enabling bidirectional navigation between research notes and their source materials. This feature is critical for maintaining rigorous academic standards by ensuring all claims and insights are properly attributed to primary sources.
 
-2. **Research question tracking**: Create and maintain mappings between research hypotheses and both supporting and contradicting evidence. This allows Dr. Chen to evaluate the strength of different theoretical positions and identify gaps in existing research that need further investigation.
+1. **Citation-aware note linking**: Automatically connect notes to referenced academic papers, linking knowledge elements to their bibliographic sources. This is critical for Dr. Chen to maintain scientific rigor in her work, ensuring all insights are properly attributed and can be traced back to original literature.
 
-3. **Grant proposal workspaces**: Organize specific subsets of knowledge for funding applications, allowing selective curation of relevant research findings, preliminary data, and theoretical frameworks. This feature helps streamline the grant writing process by bringing together all materials needed for specific funding opportunities.
+2. **Research question tracking**: Map hypotheses to supporting evidence and contradictions, allowing structured organization of scientific inquiry. This feature is essential for Dr. Chen to maintain clarity across multiple research streams, identify gaps in evidence, and prioritize experiments that address specific questions.
 
-4. **Experiment logging templates**: Provide structured metadata templates for scientific reproducibility, ensuring consistent documentation of experimental methods, conditions, and results. This systematic approach to experiment documentation improves research integrity and facilitates future replication of studies.
+3. **Grant proposal workspaces**: Organize specific subsets of knowledge for funding applications, creating focused collections of relevant information. This capability is vital for efficiently preparing competitive grant proposals by quickly assembling supporting literature, preliminary data, and methodology notes relevant to specific funding opportunities.
 
-5. **Collaborative annotation importing**: Import and integrate comments and feedback from colleagues while maintaining the integrity of the personal knowledge structure. This capability enables collaborative research while preserving individual organizational systems and intellectual approaches.
+4. **Experiment logging templates**: Provide structured metadata frameworks for scientific reproducibility, ensuring comprehensive documentation of experimental procedures. As a researcher managing multiple experiments simultaneously, Dr. Chen needs standardized approaches to record methodologies, conditions, and results to maintain scientific integrity and facilitate publication.
+
+5. **Collaborative annotation importing**: Incorporate colleague comments while maintaining personal knowledge structure, integrating input from research team members. This functionality is crucial for Dr. Chen's collaborative research environment, allowing her to benefit from team insights while preserving her own organizational system.
 
 ## Technical Requirements
-- **Testability requirements**:
-  - All knowledge management functions must be testable independently
-  - Mock academic paper repositories must be available for testing citation features
-  - Test fixtures should simulate realistic research data structures
-  - Citation parsing functionality must be tested against common academic formats (APA, MLA, Chicago, etc.)
 
-- **Performance expectations**:
-  - System must efficiently handle at least 10,000 interconnected notes
-  - Citation link generation should process at least 100 papers per minute
-  - Full-text search across all research materials should return results in under 2 seconds
-  - Note linking operations should complete in under 500ms
+### Testability Requirements
+- All functions must have comprehensive unit tests with at least 90% code coverage
+- Mock external dependencies (file system, citation APIs) for deterministic testing
+- Test data should include realistic academic paper metadata and citation formats
+- Performance tests should verify response times under varying knowledge base sizes
 
-- **Integration points**:
-  - BibTeX/RIS citation format import/export
-  - PDF metadata extraction for academic papers
-  - Plain text and Markdown file support
-  - Structured data export for statistical analysis
+### Performance Expectations
+- Citation linking should complete in under 1 second for standard academic papers
+- Search operations should return results in under 2 seconds with knowledge bases of up to 10,000 notes
+- Knowledge graph operations should scale efficiently with increasing node counts
+- Background indexing should not impact interactive system performance
 
-- **Key constraints**:
-  - All data must be stored locally in accessible, plain-text formats
-  - No dependency on external web services for core functionality
-  - Must maintain data integrity during concurrent operations
-  - Must prevent data loss during system interruptions
+### Integration Points
+- Support for BibTeX and other citation format imports
+- JSON export capabilities for data interchange with other research tools
+- Plain text storage format for version control system integration
+- API endpoints for programmatic access to knowledge structures
+
+### Key Constraints
+- All data must remain local without cloud dependencies for privacy and control
+- Plain text file storage (markdown) for longevity and portability
+- Low memory footprint to handle large collections of research literature
+- Cross-platform compatibility for collaborative research environments
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement a comprehensive knowledge management foundation with specialized academic research capabilities:
 
-1. **Note Creation and Organization**:
-   - Create, edit, and organize notes in plain text/Markdown
-   - Support for academic formatting including citations, equations, and specialized terminology
-   - Hierarchical and network-based organization systems
+The Research Knowledge Hub must implement the following core functionality:
 
-2. **Academic Citation Integration**:
-   - Parse and index academic papers from PDF and reference files
-   - Extract and store citation metadata (authors, journal, doi, etc.)
-   - Link notes directly to specific sections or pages in source materials
-   - Generate properly formatted citations for use in publications
+1. **Knowledge Base Management**
+   - Create, update, and organize markdown-based research notes
+   - Establish bidirectional links between related notes
+   - Apply tagging system for multi-dimensional categorization
+   - Structure notes hierarchically while maintaining network relationships
 
-3. **Research Mapping and Analysis**:
-   - Create structured representations of research questions and hypotheses
-   - Link evidence to specific research questions with strength indicators
-   - Track contradictions and inconsistencies in research findings
-   - Visualize research landscapes showing knowledge gaps
+2. **Academic Citation Integration**
+   - Parse and extract citation data from academic papers
+   - Link notes to specific sections or quotes from referenced papers
+   - Track citation relationships across the knowledge base
+   - Generate properly formatted citations for academic writing
 
-4. **Collaboration and Knowledge Sharing**:
-   - Import annotations and comments from collaborators
-   - Selectively share knowledge subsets while maintaining master structure
-   - Track attribution of ideas and contributions
-   - Merge insights from multiple researchers while preserving source identity
+3. **Research Question Framework**
+   - Create and manage structured research questions
+   - Link evidence notes to research questions as supporting or contradicting
+   - Calculate evidence strength metrics for research questions
+   - Identify knowledge gaps requiring additional investigation
 
-5. **Project and Grant Management**:
-   - Create workspaces for specific research projects or grant applications
-   - Filter and organize knowledge by project relevance
-   - Track project timelines and research progress
-   - Generate structured reports and summaries for grant applications
+4. **Grant Proposal Management**
+   - Create workspaces for specific funding opportunities
+   - Filter and organize knowledge relevant to proposal sections
+   - Track proposal requirements and corresponding evidence
+   - Archive proposal versions with associated knowledge subsets
+
+5. **Experimental Data Integration**
+   - Define and use templates for experimental documentation
+   - Link raw data references to experiment notes
+   - Track experimental parameters and variations
+   - Connect experimental results to research questions
+
+6. **Collaborative Knowledge Integration**
+   - Import annotations and notes from collaborators
+   - Maintain provenance of externally sourced information
+   - Resolve conflicts in overlapping knowledge areas
+   - Selectively share knowledge subsets with collaborators
+
+7. **Knowledge Retrieval and Analysis**
+   - Perform full-text search with boolean operators
+   - Filter search by tags, citation information, or note relationships
+   - Generate visualizations of knowledge networks
+   - Calculate similarity metrics between notes
 
 ## Testing Requirements
-The implementation must be thoroughly testable with comprehensive pytest coverage:
 
-- **Key functionalities that must be verified**:
-  - Citation parsing accuracy for multiple academic formats
-  - Bidirectional link integrity between notes and sources
-  - Research question-evidence relationship mapping correctness
-  - Template application for experimental documentation
-  - Collaborative annotation merging without data corruption
+### Key Functionalities to Verify
+- Creation and management of notes with proper metadata
+- Establishment and traversal of bidirectional links
+- Citation parsing and relationship mapping
+- Research question tracking with evidence strength metrics
+- Grant proposal workspace organization and filtering
+- Experimental template application and data linking
+- Collaborative annotation integration
+- Search functionality with various filter combinations
 
-- **Critical user scenarios that should be tested**:
-  - Complete workflow from paper import to citation linking to note creation
-  - Research question analysis with conflicting evidence evaluation
-  - Grant proposal assembly from distributed knowledge elements
-  - Collaborative review and annotation of shared research materials
-  - Experiment documentation with template-guided metadata
+### Critical User Scenarios
+- Managing literature for a new research project
+- Organizing evidence for competing hypotheses
+- Preparing materials for a specific grant proposal
+- Documenting a series of related experiments
+- Integrating feedback from research team members
+- Finding all information related to a specific research concept
+- Identifying contradictions in collected evidence
 
-- **Performance benchmarks that must be met**:
-  - Sub-second response time for most knowledge retrieval operations
-  - Efficient handling of large (10,000+) note collections
-  - Scalable citation linking that maintains performance with growing libraries
-  - Memory-efficient operation suitable for standard workstation environments
+### Performance Benchmarks
+- Note creation and linking should complete in under 500ms
+- Complex searches should return results in under 2 seconds
+- Citation processing should handle at least 50 papers per minute
+- Knowledge graph operations should scale to handle at least 20,000 notes
 
-- **Edge cases and error conditions that must be handled properly**:
-  - Malformed citation data in imported papers
-  - Conflicting annotations from multiple collaborators
-  - Circular reference detection and prevention
-  - Recovery from interrupted operations
-  - Handling of very large individual documents
+### Edge Cases and Error Conditions
+- Handling malformed citation data
+- Managing conflicting bidirectional links
+- Dealing with duplicate research questions or evidence
+- Recovering from corrupted note files
+- Handling very large individual notes (>100KB)
+- Managing notes with unusually high numbers of connections
+- Processing incorrectly formatted experimental data
 
-- **Required test coverage metrics**:
-  - Minimum 90% code coverage across all core modules
-  - 100% coverage of citation parsing and linking functionality
-  - All public APIs must have comprehensive integration tests
-  - All error handling paths must be explicitly tested
+### Required Test Coverage Metrics
+- Minimum 90% line coverage for all modules
+- 100% coverage for critical data model and linking functionality
+- All public APIs must have integration tests
+- All error handling paths must be explicitly tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when it demonstrably:
 
-1. Enables seamless navigation between personal research notes and their source materials with accurate citation linking
-2. Provides clear visualization of research questions and their supporting/contradicting evidence
-3. Facilitates the creation of focused grant proposal workspaces that efficiently organize relevant knowledge
-4. Supports systematic experimental documentation with consistent metadata capture
-5. Successfully incorporates collaborative feedback while maintaining personal knowledge organization
-6. Performs efficiently with large research collections containing thousands of interconnected notes and papers
-7. Preserves all data in accessible formats that ensure long-term availability and portability
-8. Passes all specified tests with the required code coverage metrics
+The implementation will be considered successful if it meets the following criteria:
+
+1. **Functional Completeness**
+   - All five key requirements are fully implemented
+   - Core functionality operates as specified
+   - APIs are well-documented and provide access to all features
+
+2. **Technical Quality**
+   - Code is well-structured, modular, and follows Python best practices
+   - Documentation is comprehensive and clear
+   - Error handling is robust and user-friendly
+   - Performance meets or exceeds benchmark requirements
+
+3. **Research Workflow Support**
+   - System effectively supports academic literature organization
+   - Research question tracking provides meaningful insight into evidence relationships
+   - Grant proposal workflows enhance productivity
+   - Experimental data is properly structured and linked
+   - Collaborative features preserve information integrity
+
+4. **Testing Verification**
+   - All tests pass successfully
+   - Code coverage meets or exceeds required thresholds
+   - Edge cases are properly handled
+   - Performance benchmarks are satisfied
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
 
 To set up the development environment:
-```bash
-# Create and activate a virtual environment
-uv venv
-source .venv/bin/activate
 
-# Install required dependencies
-uv pip install -e .
-```
+1. Create a virtual environment using uv:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report (MANDATORY):
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing pytest_results.json is mandatory for project completion. This file serves as proof that all functionality has been implemented correctly and meets the requirements.

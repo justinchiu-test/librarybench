@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.error_localization import ErrorLocalization
+from unified.src.data_engineer import ErrorLocalization
 
 def test_basic_translation():
     el = ErrorLocalization()

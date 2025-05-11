@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
-from unified.src.security_specialist.securedata.datetime_validation import DateTimeValidator
+from unified.src.security_specialist import DateTimeValidator
 
 def test_parse_iso():
     dt = DateTimeValidator.parse('2020-01-01T12:00:00')

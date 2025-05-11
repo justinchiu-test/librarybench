@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.inheritance import Schema
+from unified.src.data_engineer import Schema
 
 def test_schema_inheritance():
     parent = Schema({'a': 1, 'b': 2})

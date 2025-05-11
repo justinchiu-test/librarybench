@@ -1,7 +1,6 @@
 import pytest
 from datetime import datetime
-from unified.src.data_engineer.dataschema.datetime_validation import DateTimeValidator
-import data_engineer.pytz
+from unified.src.data_engineer import DateTimeValidator
 
 def test_iso_parse_and_normalize():
     dt = DateTimeValidator.parse('2020-01-01T12:00:00')

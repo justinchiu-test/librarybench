@@ -1,5 +1,5 @@
 import pytest
-from unified.src.security_specialist.securedata.schema import Schema, SchemaRegistry
+from unified.src.security_specialist import Schema, SchemaRegistry
 
 def test_schema_inheritance_and_versioning():
     base = Schema('User', {'a':1, 'b':2}, version=1)

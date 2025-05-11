@@ -31,12 +31,15 @@ echo "Following the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md..."
 echo "Running claude planner"
 # Claude plan
 time claude --dangerously-skip-permissions \
-  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only write unified/PLAN.md. Give the file structure. Do not implement any code."
+  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only write unified/PLAN.md. Give the file structure. Do not implement any code. Do not give example usage code."
 
 echo "Running codex impl"
 # Codex implement
 CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
   "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md. Do exactly as the plan says, creating and modifying files only in unified/ and nowhere else."
+# TODO how to automatically exit codex when it's done?
+
+pytest unified/tests/*  --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1
 
 # Return to original directory
 popd >/dev/null

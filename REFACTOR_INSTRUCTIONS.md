@@ -16,15 +16,15 @@ Your task is to refactor multiple related implementations into a single, unified
 ### 2. Architecture Design
 - Create `unified/PLAN.md` detailing your architectural approach:
   - Component breakdown with clear responsibilities
-  - Interface definitions between components
+  - File structure and implementation strategy in `unified/src/`
   - Dependency management strategy
-  - Extension points for domain-specific functionality
 
 ### 3. Implementation Rules
 - **Directory Structure**: Place all new code in `unified/src/`
 - **Import Updates**: Modify import paths in test files to reference your new unified implementation
 - **Test Compatibility**: Ensure all tests in `unified/tests/` pass with the new implementation
 - **NO modifications** to any code outside the `unified/` directory
+- **NO local imports** from any code outside the `unified/` directory
 
 ### 4. Coding Standards
 - Use consistent naming conventions throughout the codebase

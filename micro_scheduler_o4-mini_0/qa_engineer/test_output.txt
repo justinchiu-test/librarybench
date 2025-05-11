@@ -1,0 +1,35 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 11 items
+
+test_scheduler.py ...........                                                                               [100%]
+
+================================================ warnings summary =================================================
+micro_scheduler_o4-mini_0/qa_engineer/test_scheduler.py: 18 warnings
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/qa_engineer/scheduler.py:134: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat()
+
+micro_scheduler_o4-mini_0/qa_engineer/test_scheduler.py::test_dependencies
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:82: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-16 (run)
+  
+  Traceback (most recent call last):
+    File "/Users/celine/miniconda3/envs/library/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "/Users/celine/miniconda3/envs/library/lib/python3.13/threading.py", line 992, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/qa_engineer/scheduler.py", line 138, in run
+      'status': status,
+                ^^^^^^
+  UnboundLocalError: cannot access local variable 'status' where it is not associated with a value
+  
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+========================================= 11 passed, 19 warnings in 1.53s =========================================

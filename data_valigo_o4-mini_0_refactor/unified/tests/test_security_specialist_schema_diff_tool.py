@@ -1,5 +1,5 @@
 import pytest
-from unified.src.security_specialist.securedata.schema_diff_tool import SchemaDiffTool
+from unified.src.security_specialist import SchemaDiffTool
 
 def test_diff_added_removed_changed():
     old = {'a': 1, 'b': 2, 'c': 3}

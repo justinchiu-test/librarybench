@@ -1,6 +1,6 @@
 import pytest
 from datetime import datetime, timezone, timedelta
-from unified.src.community_plugin_author.validator.datetime_utils import parse_date, normalize_timezone, min_date, max_date
+from unified.src.community_plugin_author import parse_date, normalize_timezone, min_date, max_date
 
 def test_parse_iso():
     dt = parse_date('2021-01-02T03:04:05')

@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.profile import ProfileRuleSet
+from unified.src.data_engineer import ProfileRuleSet
 
 def test_profile_rules():
     prs = ProfileRuleSet()

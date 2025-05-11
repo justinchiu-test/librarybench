@@ -1,6 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.plugins import register_rule
-from unified.src.community_plugin_author.validator.validation import Validator
+from unified.src.community_plugin_author import register_rule, Validator
 
 @register_rule('r', profile='pA')
 def ruleA(v, ctx): return ctx.get('profile') == 'pA'

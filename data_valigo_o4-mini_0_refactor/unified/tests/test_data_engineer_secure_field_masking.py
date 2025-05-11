@@ -1,6 +1,6 @@
 import pytest
 import hashlib
-from unified.src.data_engineer.dataschema.secure_field_masking import SecureFieldMasking
+from unified.src.data_engineer import SecureFieldMasking
 
 def test_mask_and_hash():
     data = {'ssn':'123-45-6789', 'cc':'1111', 'name':'Joe'}

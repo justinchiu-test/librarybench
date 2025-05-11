@@ -1,5 +1,5 @@
 import pytest
-from unified.src.security_specialist.securedata.plugin_manager import PluginManager
+from unified.src.security_specialist import PluginManager
 
 def test_register_and_get():
     pm = PluginManager()

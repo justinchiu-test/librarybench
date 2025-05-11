@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.diff_tool import SchemaDiffTool
+from unified.src.data_engineer import SchemaDiffTool
 
 def test_diff_added_removed_changed():
     old = {'a': int, 'b': str, 'c': float}

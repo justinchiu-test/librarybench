@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.transformation import TransformationPipeline
+from unified.src.data_engineer import TransformationPipeline
 
 def test_pipeline():
     p = TransformationPipeline()

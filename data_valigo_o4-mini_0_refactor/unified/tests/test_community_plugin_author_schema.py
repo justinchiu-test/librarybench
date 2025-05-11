@@ -1,5 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.schema import Schema, VersionedSchema
+from unified.src.community_plugin_author import Schema, VersionedSchema
 
 def test_schema_inheritance_and_validation():
     parent = Schema({'a': int, 'b': str})

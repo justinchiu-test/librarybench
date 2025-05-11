@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.versioning import SchemaVersioning
+from unified.src.data_engineer import SchemaVersioning
 
 def test_register_and_validate():
     sv = SchemaVersioning()

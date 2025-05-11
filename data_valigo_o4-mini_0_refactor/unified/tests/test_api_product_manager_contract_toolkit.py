@@ -1,7 +1,7 @@
 import pytest
 import asyncio
 from datetime import datetime, timezone, timedelta
-from unified.src.api_product_manager.contract_toolkit import (
+from unified.src.api_product_manager import (
     SchemaDiffTool, ErrorLocalization, PluginArchitecture,
     ValidationError, ProfileBasedRules, CoreDateTimeValidation,
     Schema, VersionedSchema, TransformationPipeline, SecureFieldMasking

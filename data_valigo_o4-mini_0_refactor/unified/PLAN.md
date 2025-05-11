@@ -1,195 +1,140 @@
-# Unified Data Validation and Schema Management Framework
+# Unified Implementation Plan
 
-This document outlines the architectural plan for refactoring multiple implementations of data validation, schema management, and data security into a single, unified codebase.
+This document outlines the architectural approach for refactoring the four related implementations (API Product Manager, Community Plugin Author, Data Engineer, and Security Specialist) into a single unified codebase that meets all requirements while eliminating redundancy.
 
-## Analysis Summary
-
-The existing codebase contains four separate implementations tailored to specific personas:
-- **API Product Manager**: Focused on versioning, data contracts, and transparency
-- **Community Plugin Author**: Emphasizing extensibility and customization
-- **Data Engineer**: Prioritizing data integrity, validation, and transformation
-- **Security Specialist**: Concentrating on data protection and compliance
-
-All implementations share common requirements including schema validation, versioning, plugins, transformations, masking, and error handling, but with slightly different approaches and terminology.
-
-## Architectural Approach
-
-The unified architecture will use a modular, layered design with clear separation of concerns:
-
-1. **Core Layer**: Fundamental data structures and interfaces
-2. **Schema Layer**: Schema definition, inheritance, and versioning
-3. **Validation Layer**: Synchronous and asynchronous validation
-4. **Transformation Layer**: Data transformations and pipelines
-5. **Security Layer**: Field masking and protection
-6. **Plugin Layer**: Extensibility and customization
-7. **Utility Layer**: Shared utilities like datetime handling
-
-## File Structure
-
-```
-unified/
-├── src/
-│   ├── __init__.py
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── errors.py          # Error classes and exception handling
-│   │   └── interfaces.py      # Common interfaces and base classes
-│   ├── schema/
-│   │   ├── __init__.py
-│   │   ├── schema.py          # Schema definition & inheritance
-│   │   ├── versioning.py      # Schema versioning & migrations
-│   │   └── diff.py            # Schema diffing and comparison
-│   ├── validation/
-│   │   ├── __init__.py
-│   │   ├── validator.py       # Core validation logic
-│   │   ├── async_validator.py # Async validation support
-│   │   ├── profiles.py        # Profile-based validation rules
-│   │   └── localization.py    # Error localization
-│   ├── transformation/
-│   │   ├── __init__.py
-│   │   ├── pipeline.py        # Transformation pipeline
-│   │   └── transforms.py      # Standard transformers
-│   ├── security/
-│   │   ├── __init__.py
-│   │   └── masking.py         # Field masking & redaction
-│   ├── plugins/
-│   │   ├── __init__.py
-│   │   ├── manager.py         # Plugin discovery and registration
-│   │   ├── registry.py        # Plugin registry
-│   │   └── hooks.py           # Plugin hook definitions
-│   └── utils/
-│       ├── __init__.py
-│       └── datetime_utils.py  # Date/time parsing and validation
-```
-
-## Component Responsibilities
+## 1. Component Breakdown with Clear Responsibilities
 
 ### Core Components
 
-#### Schema Management
-- **Schema**: Basic schema definition with inheritance support
-- **VersionedSchema**: Schema versioning with migration capabilities
-- **SchemaDiff**: Tools for comparing schema versions
+1. **Schema System**
+   - Responsible for schema definition, inheritance, and versioning
+   - Supports field typing, constraints, and custom validations
+   - Handles versioned migrations between schema definitions
 
-#### Validation
-- **Validator**: Core validation logic
-- **AsyncValidator**: Support for asynchronous validation
-- **ProfileRules**: Context-specific validation rules
-- **ErrorLocalization**: Translatable error messages
+2. **Validation Engine**
+   - Performs synchronous and asynchronous validation against schemas
+   - Manages rule registration, discovery, and profile-based selection
+   - Produces structured validation errors with context
 
-#### Transformation
-- **Pipeline**: Transformation pipeline for data processing
-- **Transforms**: Standard transformers
+3. **Plugin Architecture**
+   - Discovers and registers validation rules and transformers
+   - Supports profile-based rule selection and context awareness
+   - Provides extension points for community developers
 
-#### Security
-- **Masking**: Field masking and data protection
+4. **Transformation System**
+   - Chains and applies transformations to valid data
+   - Handles data type conversions and formatting
+   - Manages secure field masking for sensitive data
 
-#### Plugin System
-- **PluginManager**: Discovery and registration of plugins
-- **Registry**: Centralized plugin registry
-- **Hooks**: Extension points for plugins
+5. **Error Handling**
+   - Localizes error messages through translation backends
+   - Provides detailed context and path information for errors
+   - Supports customizable error formatting
 
-#### Utilities
-- **DateTimeUtils**: Date/time parsing, normalization, and validation
+6. **Utilities**
+   - DateTime parsing, validation, and normalization
+   - Schema diffing and change tracking
+   - Security utilities for data masking
 
-## Interface Design
+### Integration Components
 
-### Schema Interface
-```python
-class ISchema:
-    def validate(self, data: dict) -> bool:
-        """Validate data against schema"""
-        
-    def get_fields(self) -> dict:
-        """Get schema fields"""
+7. **Compatibility Layer**
+   - Provides backwards-compatible imports for existing code
+   - Maps between unified API and persona-specific interfaces
+
+## 2. File Structure and Implementation Strategy
+
+```
+unified/src/
+├── __init__.py                 # Package exports
+├── schema/
+│   ├── __init__.py             # Schema exports
+│   ├── base.py                 # Base Schema class
+│   ├── fields.py               # Field types and constraints
+│   ├── inheritance.py          # Schema inheritance functionality
+│   ├── versioning.py           # Schema versioning and migrations
+│   └── diff.py                 # Schema difference calculation
+├── validation/
+│   ├── __init__.py             # Validation exports
+│   ├── engine.py               # Validation engine (sync/async)
+│   ├── rules.py                # Core validation rules
+│   ├── errors.py               # Error definitions and handling
+│   └── localization.py         # Error message localization
+├── plugins/
+│   ├── __init__.py             # Plugin exports
+│   ├── manager.py              # Plugin discovery and registration
+│   ├── registry.py             # Plugin storage and retrieval
+│   └── profiles.py             # Profile-based rule selection
+├── transform/
+│   ├── __init__.py             # Transform exports
+│   ├── pipeline.py             # Transformation pipeline
+│   ├── processors.py           # Core transformers
+│   └── masking.py              # Secure field masking
+├── utils/
+│   ├── __init__.py             # Utility exports
+│   ├── datetime.py             # DateTime handling utilities
+│   └── security.py             # Security helpers
+└── compat/                     # Compatibility layer for each persona
+    ├── __init__.py
+    ├── api_product_manager.py
+    ├── community_plugin_author.py
+    ├── data_engineer.py
+    └── security_specialist.py
 ```
 
-### Versioned Schema Interface
-```python
-class IVersionedSchema(ISchema):
-    def add_migration(self, from_version: int, migration_func) -> None:
-        """Add migration function"""
-        
-    def migrate(self, data: dict, target_version: int) -> dict:
-        """Migrate data to target version"""
-        
-    def validate_version(self, data: dict) -> bool:
-        """Validate data version"""
+## 3. Dependency Management Strategy
+
+### Internal Dependencies
+
+The component design follows these dependency principles:
+- Lower-level components (utils) have no dependencies on higher-level components
+- Core components (schema, validation) depend only on utils
+- Integration components depend on all other components
+
+Dependency direction:
+```
+utils → schema → validation → plugins → transform → compat
 ```
 
-### Validator Interface
-```python
-class IValidator:
-    def validate(self, data: dict, schema: ISchema) -> bool:
-        """Validate data against schema"""
-        
-    async def validate_async(self, data: dict, schema: ISchema) -> bool:
-        """Validate data asynchronously"""
-```
+### External Dependencies
 
-### Plugin Interface
-```python
-class IPlugin:
-    def initialize(self) -> None:
-        """Initialize plugin"""
-        
-    def shutdown(self) -> None:
-        """Shutdown plugin"""
-```
+The unified implementation will:
+- Minimize external dependencies to reduce maintenance burden
+- Maintain compatibility with existing dependency versions
+- Support asynchronous operations through standard asyncio
 
-### Transformation Interface
-```python
-class ITransformer:
-    def transform(self, value: any) -> any:
-        """Transform a value"""
-```
+## 4. Implementation Approach
 
-## Dependency Management
+### Phase 1: Core Framework
 
-1. **Minimal External Dependencies**: Rely primarily on standard library
-2. **Plugin Architecture**: Use entry points for plugin discovery
-3. **Loose Coupling**: Components interact through well-defined interfaces
-4. **Dependency Injection**: Components accept dependencies through constructor
+1. Implement the base Schema system with inheritance and versioning
+2. Develop the validation engine with sync/async support
+3. Create the plugin architecture with profile awareness
+4. Build the transformation pipeline with secure masking
 
-## Extension Points
+### Phase 2: Feature Parity
 
-The system will provide several extension points:
+1. Implement all utility functions (datetime, schema diff)
+2. Add comprehensive error localization
+3. Ensure full support for all validation rule types
+4. Implement all transformation types
 
-1. **Validation Rules**: Custom validation rules via plugins
-2. **Transformers**: Custom data transformers
-3. **Error Backends**: Pluggable localization backends
-4. **Schema Handlers**: Custom schema types and validators
-5. **Security Processors**: Custom masking and redaction strategies
+### Phase 3: Compatibility
 
-## Backward Compatibility
+1. Create persona-specific compatibility layers
+2. Ensure all tests pass without modifications to test files
+3. Verify feature parity with all implementations
 
-To ensure backward compatibility with existing implementations:
+## 5. Testing Strategy
 
-1. **Facade Pattern**: Provide persona-specific facades that map to the unified API
-2. **Adapter Pattern**: Adapt unified interfaces to match existing interfaces
-3. **Type Aliases**: Maintain type compatibility with existing code
+- Pass all existing tests with the unified implementation
+- Add integration tests for cross-component functionality
+- Ensure edge cases are properly handled
+- Verify performance with large schemas and datasets
 
-## Migration Strategy
+## 6. Documentation Strategy
 
-1. **Core Components First**: Implement core components and interfaces
-2. **Incremental Adaptation**: Adapt test cases incrementally
-3. **Shared Utilities**: Implement shared utilities early
-4. **Integration Testing**: Test cross-component interactions regularly
-
-## Design Decisions
-
-1. **Async/Sync Support**: Both synchronous and asynchronous validation supported
-2. **Schema Inheritance**: Support for schema inheritance and composition
-3. **Plugin Discovery**: Entry point-based plugin discovery
-4. **Error Handling**: Structured error handling with localization
-5. **Security-First**: Security concerns addressed at architecture level
-
-## Next Steps
-
-1. Implement core interfaces and base classes
-2. Develop schema and validation components
-3. Implement transformation and security layers
-4. Build plugin system
-5. Create persona-specific facades
-6. Adapt test cases to use unified implementation
-7. Comprehensive testing and validation
+- Document public API for each component
+- Provide migration guides for each persona
+- Include usage examples for common scenarios
+- Document extension points for plugin authors

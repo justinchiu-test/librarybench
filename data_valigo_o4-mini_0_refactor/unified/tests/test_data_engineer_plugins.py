@@ -1,5 +1,5 @@
 import pytest
-from unified.src.data_engineer.dataschema.plugins import PluginManager
+from unified.src.data_engineer import PluginManager
 
 def test_plugin_registration_and_retrieval():
     pm = PluginManager()

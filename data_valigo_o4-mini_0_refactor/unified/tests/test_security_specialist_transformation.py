@@ -1,5 +1,5 @@
 import pytest
-from unified.src.security_specialist.securedata.transformation import TransformationPipeline
+from unified.src.security_specialist import TransformationPipeline
 
 def test_pipeline():
     pipeline = TransformationPipeline()

@@ -1,5 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.transforms import TransformationPipeline, mask
+from unified.src.community_plugin_author import TransformationPipeline, mask
 
 def test_transformation_pipeline():
     pipe = TransformationPipeline()

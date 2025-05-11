@@ -1,5 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.schema_diff import SchemaDiffTool
+from unified.src.community_plugin_author import SchemaDiffTool
 
 def test_compute_diff_added_removed_changed():
     s1 = {'a': int, 'b': str, 'c': float}

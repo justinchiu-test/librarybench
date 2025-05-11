@@ -1,6 +1,6 @@
 import pytest
 import asyncio
-from unified.src.security_specialist.securedata.validation import Rule, AsyncRule, ValidationEngine
+from unified.src.security_specialist import Rule, AsyncRule, ValidationEngine
 
 class AlwaysTrueRule(Rule):
     def validate(self, value):
@@ -23,12 +23,12 @@ def test_sync_validation():
     results = ve.validate('any')
     assert results == [('t1', True), ('t2', False)]
 
-def test_async_validation():
-    # Test asynchronous validation in synchronous context
+@pytest.mark.asyncio
+async def test_async_validation():
     ve = ValidationEngine()
     ve.register_rule('admin', AlwaysTrueRule('sync'))
     ve.register_rule('admin', AsyncTrueRule('async'))
     ve.set_profile('admin')
-    results = asyncio.run(ve.validate_async('x'))
+    results = await ve.validate_async('x')
     assert ('sync', True) in results
     assert ('async', True) in results

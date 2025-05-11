@@ -1,5 +1,5 @@
 import pytest
-from unified.src.security_specialist.securedata.error_localization import ErrorLocalization
+from unified.src.security_specialist import ErrorLocalization
 
 def test_translate_default():
     el = ErrorLocalization()

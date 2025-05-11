@@ -1,0 +1,64 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 58 items
+
+unified/tests/test_api_product_manager_contract_toolkit.py .........     [ 15%]
+unified/tests/test_community_plugin_author_async_validation.py .s.       [ 20%]
+unified/tests/test_community_plugin_author_datetime_utils.py .....       [ 29%]
+unified/tests/test_community_plugin_author_error_localization.py ..      [ 32%]
+unified/tests/test_community_plugin_author_plugins.py ...                [ 37%]
+unified/tests/test_community_plugin_author_profiles.py .                 [ 39%]
+unified/tests/test_community_plugin_author_schema.py ..                  [ 43%]
+unified/tests/test_community_plugin_author_schema_diff.py .              [ 44%]
+unified/tests/test_community_plugin_author_transforms.py ..              [ 48%]
+unified/tests/test_data_engineer_async_validation.py .s                  [ 51%]
+unified/tests/test_data_engineer_datetime_validation.py ..               [ 55%]
+unified/tests/test_data_engineer_diff_tool.py .                          [ 56%]
+unified/tests/test_data_engineer_error_localization.py ..                [ 60%]
+unified/tests/test_data_engineer_inheritance.py .                        [ 62%]
+unified/tests/test_data_engineer_plugins.py .                            [ 63%]
+unified/tests/test_data_engineer_profile.py .                            [ 65%]
+unified/tests/test_data_engineer_secure_field_masking.py .               [ 67%]
+unified/tests/test_data_engineer_transformation.py .                     [ 68%]
+unified/tests/test_data_engineer_versioning.py ..                        [ 72%]
+unified/tests/test_security_specialist_datetime_validation.py .....      [ 81%]
+unified/tests/test_security_specialist_error_localization.py ..          [ 84%]
+unified/tests/test_security_specialist_masking.py ..                     [ 87%]
+unified/tests/test_security_specialist_plugin_manager.py ..              [ 91%]
+unified/tests/test_security_specialist_schema.py .                       [ 93%]
+unified/tests/test_security_specialist_schema_diff_tool.py .             [ 94%]
+unified/tests/test_security_specialist_transformation.py .               [ 96%]
+unified/tests/test_security_specialist_validation.py .s                  [100%]
+
+=============================== warnings summary ===============================
+unified/tests/test_community_plugin_author_async_validation.py:18
+  /Users/celine/Research/librarybench/data_valigo_o4-mini_0_refactor/unified/tests/test_community_plugin_author_async_validation.py:18: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+unified/tests/test_data_engineer_async_validation.py:18
+  /Users/celine/Research/librarybench/data_valigo_o4-mini_0_refactor/unified/tests/test_data_engineer_async_validation.py:18: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+unified/tests/test_security_specialist_validation.py:26
+  /Users/celine/Research/librarybench/data_valigo_o4-mini_0_refactor/unified/tests/test_security_specialist_validation.py:26: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+data_valigo_o4-mini_0_refactor/unified/tests/test_community_plugin_author_async_validation.py::test_validator_async_method
+data_valigo_o4-mini_0_refactor/unified/tests/test_data_engineer_async_validation.py::test_async_rule
+data_valigo_o4-mini_0_refactor/unified/tests/test_security_specialist_validation.py::test_async_validation
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:148: PytestUnhandledCoroutineWarning: async def functions are not natively supported and have been skipped.
+  You need to install a suitable plugin for your async framework, for example:
+    - anyio
+    - pytest-asyncio
+    - pytest-tornasync
+    - pytest-trio
+    - pytest-twisted
+    warnings.warn(PytestUnhandledCoroutineWarning(msg.format(nodeid)))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+================== 55 passed, 3 skipped, 6 warnings in 0.20s ===================

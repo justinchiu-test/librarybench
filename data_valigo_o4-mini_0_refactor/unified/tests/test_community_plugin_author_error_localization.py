@@ -1,5 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.errors import ErrorLocalizer
+from unified.src.community_plugin_author import ErrorLocalizer
 
 def test_default_translate():
     loc = ErrorLocalizer()

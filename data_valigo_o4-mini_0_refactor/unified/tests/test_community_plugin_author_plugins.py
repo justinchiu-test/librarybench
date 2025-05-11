@@ -1,5 +1,5 @@
 import pytest
-from unified.src.community_plugin_author.validator.plugins import register_rule, get_rule, register_transformer, get_transformer
+from unified.src.community_plugin_author import register_rule, get_rule, register_transformer, get_transformer
 
 def test_rule_registration_and_retrieval():
     @register_rule('r1')

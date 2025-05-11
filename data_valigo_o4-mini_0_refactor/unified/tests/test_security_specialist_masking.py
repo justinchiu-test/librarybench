@@ -1,6 +1,6 @@
 import pytest
 import hashlib
-from unified.src.security_specialist.securedata.masking import SecureFieldMasking
+from unified.src.security_specialist import SecureFieldMasking
 
 def test_redact():
     assert SecureFieldMasking.redact('secret') == '****'

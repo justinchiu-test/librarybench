@@ -7,11 +7,11 @@ import uuid
 import datetime
 import argparse
 import ipaddress
-import cloud_infra_engineer.keyring
+import cloud_infra_engineer.keyring as keyring
 import pytest
-import cloud_infra_engineer.toml
+import cloud_infra_engineer.toml as toml
 import json
-import cloud_infra_engineer.yaml
+import cloud_infra_engineer.yaml as yaml
 from cloud_infra_engineer.cli_scaffold import (
     bump_version, init_package, publish_package, register_hook,
     handle_signals, load_config, env_override, compute_default,

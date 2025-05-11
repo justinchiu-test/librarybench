@@ -381,13 +381,24 @@ def setup_for_refactor(args):
         logger.info(f"Copying {test_file_orig} to {test_file_dest}")
         shutil.copyfile(test_file_orig, test_file_dest)
 
-        # Update local import paths in the moved file
+        # Update local import paths in the moved file. won't be perfect.
         _update_local_imports(test_file_dest, persona_name, args.starter_repo_path)
 
         # place __init__.py everywhere needed
         _place_inits(args.starter_repo_path)
-
     logger.info(f"Successfully moved {len(test_files)} test files to {unified_test_dir}")
+
+    # setup.py file for treating the refactored one as a repo
+    with open(os.path.join(args.starter_repo_path, "unified", "setup.py"), 'w') as wf:
+        wf.write(f"""from setuptools import setup, find_packages
+
+setup(
+    name='{args.starter_repo_path}',
+    version='1.0.0',
+    packages=find_packages(),
+)""")
+    
+
 
 
 def main():

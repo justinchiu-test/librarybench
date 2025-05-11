@@ -1,7 +1,7 @@
 import json
 import configparser
-import devops_engineer.toml
-import devops_engineer.yaml
+import devops_engineer.toml as toml
+import devops_engineer.yaml as yaml
 import os
 from devops_engineer.devops_cli.config_loader import load_config
 

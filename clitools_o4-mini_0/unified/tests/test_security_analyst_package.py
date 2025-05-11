@@ -1,6 +1,6 @@
 import os
 import subprocess
-import security_analyst.toml
+import security_analyst.toml as toml
 import pytest
 from security_analyst.cli_framework.package import init_package, publish_package
 

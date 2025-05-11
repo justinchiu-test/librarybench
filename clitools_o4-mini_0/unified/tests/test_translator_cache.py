@@ -1,7 +1,7 @@
 import os
 import tempfile
 import shelve
-from translator.cache import translator.Cache
+from translator.cache import Cache
 
 def test_in_memory_cache():
     c = Cache()

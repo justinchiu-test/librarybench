@@ -1,7 +1,7 @@
 import os
 import tempfile
 from translator.validator import validate_input
-from translator.i18n import translator.I18n
+from translator.i18n import I18n
 
 def test_validate_input_all_valid(tmp_path):
     # Prepare i18n

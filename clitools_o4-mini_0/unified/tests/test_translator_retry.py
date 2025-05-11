@@ -1,5 +1,5 @@
 import pytest
-from translator.retry import translator.retry
+from translator.retry import retry
 
 def test_retry_success_after_failure():
     calls = []

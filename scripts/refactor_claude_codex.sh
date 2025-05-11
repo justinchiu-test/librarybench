@@ -40,9 +40,15 @@ CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
 # TODO why is codex still sometimes asking for confirmation to keep going?
 # TODO how to automatically exit codex when it's done?
 
-pytest unified/tests/  --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1
+pushd unified >/dev/null
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+pytest --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1
+deactivate
 
 # Return to original directory
+popd >/dev/null
 popd >/dev/null
 
 # Run scoring script

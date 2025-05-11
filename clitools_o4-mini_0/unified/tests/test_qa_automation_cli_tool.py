@@ -104,7 +104,7 @@ def test_cache_helper_memory(tmp_path):
 
 def test_cache_helper_disk(tmp_path, monkeypatch):
     # redirect cache_dir to tmp_path
-    import qa_automation.cli_tool
+    import qa_automation.cli_tool as cli_tool
     monkeypatch.setattr(cli_tool, 'cache_dir', str(tmp_path))
     c = CacheHelper(use_disk=True)
     c.set('k2', {'x':1})

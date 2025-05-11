@@ -1,5 +1,5 @@
 import os
-from translator.run_test import translator.run_test
+from translator.run_test import run_test
 
 def test_run_test_echo(tmp_path, monkeypatch):
     # Use echo command

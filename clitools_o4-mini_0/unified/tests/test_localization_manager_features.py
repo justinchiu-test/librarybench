@@ -3,7 +3,7 @@ import json
 import tempfile
 import pytest
 
-from localcli import __version__
+from localization_manager.localcli import __version__
 from localization_manager.localcli.features import (
     bump_version, gen_scaffold, publish_package, gen_config_schema,
     validate_config, format_help, load_translations, handle_signals,

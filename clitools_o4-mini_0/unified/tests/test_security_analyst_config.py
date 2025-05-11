@@ -12,14 +12,14 @@ def test_load_json(tmp_path):
     assert data["a"] == 1
 
 def test_load_yaml(tmp_path):
-    import security_analyst.yaml
+    import security_analyst.yaml as yaml
     p = tmp_path / "cfg.yaml"
     p.write_text("a: 2")
     data = load_config(str(p), schema)
     assert data["a"] == 2
 
 def test_load_toml(tmp_path):
-    import security_analyst.toml
+    import security_analyst.toml as toml
     p = tmp_path / "cfg.toml"
     p.write_text("a = 3")
     data = load_config(str(p), schema)

@@ -15,4 +15,4 @@ data/
 *.npy
 
 *_metrics.json
-
+**/report.json

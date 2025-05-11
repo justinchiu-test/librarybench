@@ -34,70 +34,137 @@ class ResearchBrain:
     def _build_knowledge_graph(self) -> None:
         """Build the internal knowledge graph from stored data."""
         self._knowledge_graph = nx.DiGraph()
-        
-        # Add nodes for all knowledge objects
-        for note in self.storage.list_all(Note):
-            self._knowledge_graph.add_node(str(note.id), type='note', title=note.title)
-        
-        for citation in self.storage.list_all(Citation):
-            self._knowledge_graph.add_node(str(citation.id), type='citation', title=citation.title)
-        
-        for question in self.storage.list_all(ResearchQuestion):
-            self._knowledge_graph.add_node(str(question.id), type='question', title=question.question)
-        
-        for experiment in self.storage.list_all(Experiment):
-            self._knowledge_graph.add_node(str(experiment.id), type='experiment', title=experiment.title)
-        
-        for grant in self.storage.list_all(GrantProposal):
-            self._knowledge_graph.add_node(str(grant.id), type='grant', title=grant.title)
-        
-        # Add edges for relationships
-        for note in self.storage.list_all(Note):
-            # Note to citation edges
-            for citation_id in note.citations:
-                self._knowledge_graph.add_edge(str(note.id), str(citation_id), type='cites')
-            
-            # Note to source edges
-            if note.source:
-                self._knowledge_graph.add_edge(str(note.id), str(note.source), type='references', page=note.page_reference)
-        
-        for citation in self.storage.list_all(Citation):
-            # Citation to note edges
-            for note_id in citation.notes:
-                self._knowledge_graph.add_edge(str(citation.id), str(note_id), type='cited_in')
-        
-        for question in self.storage.list_all(ResearchQuestion):
-            # Question to evidence edges
-            for evidence in question.evidence:
-                self._knowledge_graph.add_edge(
-                    str(question.id), 
-                    str(evidence.note_id), 
-                    type='evidence',
-                    evidence_type=evidence.evidence_type,
-                    strength=evidence.strength
-                )
-        
-        for experiment in self.storage.list_all(Experiment):
-            # Experiment to research question edges
-            if experiment.research_question_id:
-                self._knowledge_graph.add_edge(str(experiment.id), str(experiment.research_question_id), type='investigates')
-            
-            # Experiment to note edges
-            for note_id in experiment.notes:
-                self._knowledge_graph.add_edge(str(experiment.id), str(note_id), type='documents')
-        
-        for grant in self.storage.list_all(GrantProposal):
-            # Grant to note edges
-            for note_id in grant.notes:
-                self._knowledge_graph.add_edge(str(grant.id), str(note_id), type='includes')
-            
-            # Grant to experiment edges
-            for experiment_id in grant.experiments:
-                self._knowledge_graph.add_edge(str(grant.id), str(experiment_id), type='proposes')
-            
-            # Grant to research question edges
-            for question_id in grant.research_questions:
-                self._knowledge_graph.add_edge(str(grant.id), str(question_id), type='addresses')
+
+        # Add nodes for all knowledge objects using parallel processing
+        with self.storage.transaction(lambda: None):  # Start a transaction to ensure data consistency
+            # Add nodes for all knowledge objects
+            for note in self.storage.list_all(Note):
+                self._knowledge_graph.add_node(str(note.id), type='note', title=note.title)
+
+            for citation in self.storage.list_all(Citation):
+                self._knowledge_graph.add_node(str(citation.id), type='citation', title=citation.title)
+
+            for question in self.storage.list_all(ResearchQuestion):
+                self._knowledge_graph.add_node(str(question.id), type='question', title=question.question)
+
+            for experiment in self.storage.list_all(Experiment):
+                self._knowledge_graph.add_node(str(experiment.id), type='experiment', title=experiment.title)
+
+            for grant in self.storage.list_all(GrantProposal):
+                self._knowledge_graph.add_node(str(grant.id), type='grant', title=grant.title)
+
+            for collaborator in self.storage.list_all(Collaborator):
+                self._knowledge_graph.add_node(str(collaborator.id), type='collaborator', title=collaborator.name)
+
+            for annotation in self.storage.list_all(Annotation):
+                self._knowledge_graph.add_node(str(annotation.id), type='annotation', title=f"Annotation on {annotation.node_id}")
+
+            # Add edges for relationships
+            for note in self.storage.list_all(Note):
+                # Note to citation edges
+                for citation_id in note.citations:
+                    self._knowledge_graph.add_edge(str(note.id), str(citation_id), type='cites')
+
+                # Note to source edges
+                if note.source:
+                    self._knowledge_graph.add_edge(str(note.id), str(note.source), type='references', page=note.page_reference)
+
+                # Note section references
+                for section, content in note.section_references.items():
+                    if note.source:
+                        self._knowledge_graph.add_edge(str(note.id), str(note.source), type='section_reference',
+                                                    section=section, content=content)
+
+            for citation in self.storage.list_all(Citation):
+                # Citation to note edges
+                for note_id in citation.notes:
+                    self._knowledge_graph.add_edge(str(citation.id), str(note_id), type='cited_in')
+
+            for question in self.storage.list_all(ResearchQuestion):
+                # Question to evidence edges
+                for evidence in question.evidence:
+                    self._knowledge_graph.add_edge(
+                        str(question.id),
+                        str(evidence.note_id),
+                        type='evidence',
+                        evidence_type=evidence.evidence_type,
+                        strength=evidence.strength
+                    )
+
+                    # Add edges from evidence to citations
+                    for citation_id in evidence.citation_ids:
+                        self._knowledge_graph.add_edge(
+                            str(evidence.note_id),
+                            str(citation_id),
+                            type='evidence_citation',
+                            evidence_id=str(evidence.id)
+                        )
+
+                # Related questions
+                for related_id in question.related_questions:
+                    self._knowledge_graph.add_edge(
+                        str(question.id),
+                        str(related_id),
+                        type='related_to'
+                    )
+
+            for experiment in self.storage.list_all(Experiment):
+                # Experiment to research question edges
+                if experiment.research_question_id:
+                    self._knowledge_graph.add_edge(str(experiment.id), str(experiment.research_question_id), type='investigates')
+
+                # Experiment to note edges
+                for note_id in experiment.notes:
+                    self._knowledge_graph.add_edge(str(experiment.id), str(note_id), type='documents')
+
+                # Experiment to collaborator edges
+                for collaborator_id in experiment.collaborators:
+                    self._knowledge_graph.add_edge(str(experiment.id), str(collaborator_id), type='involves')
+                    self._knowledge_graph.add_edge(str(collaborator_id), str(experiment.id), type='participates_in')
+
+            for grant in self.storage.list_all(GrantProposal):
+                # Grant to note edges
+                for note_id in grant.notes:
+                    self._knowledge_graph.add_edge(str(grant.id), str(note_id), type='includes')
+
+                # Grant to experiment edges
+                for experiment_id in grant.experiments:
+                    self._knowledge_graph.add_edge(str(grant.id), str(experiment_id), type='proposes')
+
+                # Grant to research question edges
+                for question_id in grant.research_questions:
+                    self._knowledge_graph.add_edge(str(grant.id), str(question_id), type='addresses')
+
+                # Grant to collaborator edges
+                for collaborator_id in grant.collaborators:
+                    self._knowledge_graph.add_edge(str(grant.id), str(collaborator_id), type='involves')
+                    self._knowledge_graph.add_edge(str(collaborator_id), str(grant.id), type='participates_in')
+
+            for collaborator in self.storage.list_all(Collaborator):
+                # Collaborator to note edges
+                for note_id in collaborator.notes:
+                    self._knowledge_graph.add_edge(str(collaborator.id), str(note_id), type='authored')
+
+            for annotation in self.storage.list_all(Annotation):
+                # Annotation to node edges
+                self._knowledge_graph.add_edge(str(annotation.id), str(annotation.node_id), type='annotates')
+                self._knowledge_graph.add_edge(str(annotation.collaborator_id), str(annotation.id), type='created')
+
+                # Annotation reply structure
+                if annotation.parent_id:
+                    self._knowledge_graph.add_edge(str(annotation.id), str(annotation.parent_id), type='replies_to')
+
+                for reply_id in annotation.replies:
+                    self._knowledge_graph.add_edge(str(reply_id), str(annotation.id), type='replies_to')
+
+            # Check for circular references and potential issues
+            try:
+                # Find strongly connected components (potential circular references)
+                cycles = list(nx.simple_cycles(self._knowledge_graph))
+                if cycles:
+                    print(f"Warning: {len(cycles)} circular references detected in the knowledge graph")
+            except nx.NetworkXNoCycle:
+                pass  # No cycles detected
     
     def create_note(self, title: str, content: str, tags: Optional[Set[str]] = None, 
                    source_id: Optional[UUID] = None, page_reference: Optional[int] = None) -> UUID:
@@ -1079,10 +1146,10 @@ class ResearchBrain:
     
     def _node_exists(self, node_id: UUID) -> bool:
         """Check if a knowledge node exists.
-        
+
         Args:
             node_id: ID of the node to check.
-            
+
         Returns:
             True if the node exists, False otherwise.
         """
@@ -1097,5 +1164,413 @@ class ResearchBrain:
             return True
         if self.storage.get(GrantProposal, node_id):
             return True
-        
+
         return False
+
+    def add_section_reference(self, note_id: UUID, citation_id: UUID, section: str, content: str) -> bool:
+        """Add a section-specific reference to a citation.
+
+        Args:
+            note_id: ID of the note.
+            citation_id: ID of the citation.
+            section: Section name or identifier in the citation.
+            content: Relevant content or notes about the section.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        note = self.storage.get(Note, note_id)
+        citation = self.storage.get(Citation, citation_id)
+
+        if not note or not citation:
+            return False
+
+        # Add or update the section reference
+        note.section_references[section] = content
+
+        # Update source if not already set
+        if not note.source:
+            note.source = citation_id
+
+        # Add citation to note's citations if not already there
+        if citation_id not in note.citations:
+            note.citations.append(citation_id)
+
+        # Update the citation to reference this note
+        if note_id not in citation.notes:
+            citation.notes.append(note_id)
+            citation.update()
+            self.storage.save(citation)
+
+        note.update()
+        self.storage.save(note)
+
+        # Update the knowledge graph with the section reference
+        self._knowledge_graph.add_edge(
+            str(note_id),
+            str(citation_id),
+            type='section_reference',
+            section=section,
+            content=content
+        )
+
+        # Add the basic references edges if not already present
+        self._knowledge_graph.add_edge(str(note_id), str(citation_id), type='cites')
+        self._knowledge_graph.add_edge(str(citation_id), str(note_id), type='cited_in')
+
+        return True
+
+    def get_notes_by_section(self, citation_id: UUID, section: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get notes that reference specific sections of a citation.
+
+        Args:
+            citation_id: ID of the citation.
+            section: Optional section name to filter by. If None, returns all section references.
+
+        Returns:
+            List of dictionaries containing note information and relevant section content.
+        """
+        citation = self.storage.get(Citation, citation_id)
+        if not citation:
+            return []
+
+        result = []
+
+        # Get all notes that reference this citation
+        for note_id in citation.notes:
+            note = self.storage.get(Note, note_id)
+            if not note:
+                continue
+
+            # Filter by section if specified
+            if section:
+                if section in note.section_references:
+                    result.append({
+                        'note_id': note.id,
+                        'title': note.title,
+                        'section': section,
+                        'content': note.section_references[section]
+                    })
+            else:
+                # Include all section references
+                for sec, content in note.section_references.items():
+                    result.append({
+                        'note_id': note.id,
+                        'title': note.title,
+                        'section': sec,
+                        'content': content
+                    })
+
+        return result
+
+    def update_research_question_status(self, question_id: UUID,
+                                       status: str,
+                                       conclusion: Optional[str] = None) -> bool:
+        """Update the status of a research question and optionally add a conclusion.
+
+        Args:
+            question_id: ID of the research question.
+            status: New status (open, resolved, abandoned, etc.).
+            conclusion: Optional conclusion or findings.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        question = self.storage.get(ResearchQuestion, question_id)
+        if not question:
+            return False
+
+        question.status = status
+
+        if conclusion:
+            question.conclusion = conclusion
+
+        question.update()
+        self.storage.save(question)
+        return True
+
+    def relate_research_questions(self, question_id: UUID, related_id: UUID,
+                                bidirectional: bool = True) -> bool:
+        """Establish a relationship between two research questions.
+
+        Args:
+            question_id: ID of the first research question.
+            related_id: ID of the related research question.
+            bidirectional: Whether the relationship should be bidirectional.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        question = self.storage.get(ResearchQuestion, question_id)
+        related = self.storage.get(ResearchQuestion, related_id)
+
+        if not question or not related:
+            return False
+
+        # Add the relationship to the first question
+        if related_id not in question.related_questions:
+            question.related_questions.append(related_id)
+            question.update()
+            self.storage.save(question)
+
+            # Update the knowledge graph
+            self._knowledge_graph.add_edge(str(question_id), str(related_id), type='related_to')
+
+        # Add the reverse relationship if requested
+        if bidirectional and question_id not in related.related_questions:
+            related.related_questions.append(question_id)
+            related.update()
+            self.storage.save(related)
+
+            # Update the knowledge graph for the reverse relationship
+            self._knowledge_graph.add_edge(str(related_id), str(question_id), type='related_to')
+
+        return True
+
+    def get_evidence_strength_summary(self, question_id: UUID) -> Dict[str, int]:
+        """Get a summary of evidence strengths for a research question.
+
+        Args:
+            question_id: ID of the research question.
+
+        Returns:
+            Dictionary with counts of evidence by strength category.
+        """
+        question = self.storage.get(ResearchQuestion, question_id)
+        if not question:
+            return {}
+
+        strength_counts = {
+            str(EvidenceStrength.STRONG): 0,
+            str(EvidenceStrength.MODERATE): 0,
+            str(EvidenceStrength.WEAK): 0,
+            str(EvidenceStrength.ANECDOTAL): 0,
+            str(EvidenceStrength.THEORETICAL): 0
+        }
+
+        for evidence in question.evidence:
+            strength = str(evidence.strength)
+            if strength in strength_counts:
+                strength_counts[strength] += 1
+
+        return strength_counts
+
+    def add_collaborator_to_experiment(self, experiment_id: UUID, collaborator_id: UUID,
+                                     role: Union[str, CollaboratorRole] = CollaboratorRole.COLLABORATOR) -> bool:
+        """Add a collaborator to an experiment with a specific role.
+
+        Args:
+            experiment_id: ID of the experiment.
+            collaborator_id: ID of the collaborator.
+            role: Role of the collaborator in this experiment.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        experiment = self.storage.get(Experiment, experiment_id)
+        collaborator = self.storage.get(Collaborator, collaborator_id)
+
+        if not experiment or not collaborator:
+            return False
+
+        # Convert string role to enum if needed
+        if isinstance(role, str):
+            role = CollaboratorRole(role)
+
+        # Add collaborator to experiment if not already there
+        if collaborator_id not in experiment.collaborators:
+            experiment.collaborators.append(collaborator_id)
+            experiment.collaborator_roles[str(collaborator_id)] = role
+            experiment.update()
+            self.storage.save(experiment)
+
+            # Update knowledge graph
+            self._knowledge_graph.add_edge(str(experiment_id), str(collaborator_id), type='involves', role=str(role))
+            self._knowledge_graph.add_edge(str(collaborator_id), str(experiment_id), type='participates_in', role=str(role))
+
+        return True
+
+    def analyze_citation_network(self) -> Dict[str, Any]:
+        """Analyze the citation network to identify central papers and citation patterns.
+
+        Returns:
+            Dictionary with network analysis metrics.
+        """
+        # Create a subgraph with only citation relationships
+        citation_graph = nx.DiGraph()
+
+        for citation in self.storage.list_all(Citation):
+            citation_graph.add_node(str(citation.id), title=citation.title)
+
+        # Add edges based on citations referencing other citations
+        for citation in self.storage.list_all(Citation):
+            if hasattr(citation, 'references') and citation.references:
+                for ref_id in citation.references:
+                    if self.storage.get(Citation, ref_id):
+                        citation_graph.add_edge(str(citation.id), str(ref_id))
+
+        # Calculate various centrality metrics
+        result = {
+            'total_papers': citation_graph.number_of_nodes(),
+            'total_citations': citation_graph.number_of_edges(),
+            'top_cited': [],
+            'key_papers': []
+        }
+
+        # Most cited papers (in-degree centrality)
+        if citation_graph.number_of_nodes() > 0:
+            in_degree = {node: val for node, val in citation_graph.in_degree()}
+            top_cited = sorted(in_degree.items(), key=lambda x: x[1], reverse=True)[:10]
+
+            for node_id, count in top_cited:
+                citation = self.storage.get(Citation, UUID(node_id))
+                if citation:
+                    result['top_cited'].append({
+                        'id': node_id,
+                        'title': citation.title,
+                        'authors': citation.authors,
+                        'citation_count': count
+                    })
+
+            # Calculate betweenness centrality for key bridging papers
+            try:
+                betweenness = nx.betweenness_centrality(citation_graph)
+                top_betweenness = sorted(betweenness.items(), key=lambda x: x[1], reverse=True)[:10]
+
+                for node_id, score in top_betweenness:
+                    citation = self.storage.get(Citation, UUID(node_id))
+                    if citation:
+                        result['key_papers'].append({
+                            'id': node_id,
+                            'title': citation.title,
+                            'authors': citation.authors,
+                            'betweenness_score': score
+                        })
+            except:
+                # Network might be disconnected or have other issues
+                result['key_papers'] = []
+
+        return result
+
+    def get_research_progress(self, question_id: UUID) -> Dict[str, Any]:
+        """Get a progress summary for a research question.
+
+        Args:
+            question_id: ID of the research question.
+
+        Returns:
+            Dictionary with progress metrics and related items.
+        """
+        question = self.storage.get(ResearchQuestion, question_id)
+        if not question:
+            return {}
+
+        # Get evidence summary
+        evidence_summary = self.get_evidence_strength_summary(question_id)
+
+        # Get related experiments
+        related_experiments = []
+        for experiment in self.storage.list_all(Experiment):
+            if experiment.research_question_id == question_id:
+                related_experiments.append({
+                    'id': str(experiment.id),
+                    'title': experiment.title,
+                    'status': str(experiment.status)
+                })
+
+        # Get related notes
+        related_notes = []
+        for source, target, data in self._knowledge_graph.out_edges(str(question_id), data=True):
+            if data.get('type') == 'evidence':
+                note = self.storage.get(Note, UUID(target))
+                if note:
+                    related_notes.append({
+                        'id': str(note.id),
+                        'title': note.title,
+                        'evidence_type': data.get('evidence_type', ''),
+                        'strength': data.get('strength', '')
+                    })
+
+        # Get grants addressing this question
+        related_grants = []
+        for grant in self.storage.list_all(GrantProposal):
+            if question_id in grant.research_questions:
+                related_grants.append({
+                    'id': str(grant.id),
+                    'title': grant.title,
+                    'status': str(grant.status)
+                })
+
+        return {
+            'question': question.question,
+            'status': question.status,
+            'evidence_summary': evidence_summary,
+            'experiments': related_experiments,
+            'notes': related_notes,
+            'grants': related_grants,
+            'active_experiments': sum(1 for exp in related_experiments if exp['status'] in ('ACTIVE', 'ANALYZING')),
+            'completed_experiments': sum(1 for exp in related_experiments if exp['status'] == 'COMPLETED'),
+            'total_evidence_items': len(question.evidence)
+        }
+
+    def import_experiment_data(self, experiment_id: UUID, data_file: Union[str, Path],
+                             metadata: Optional[Dict[str, Any]] = None) -> bool:
+        """Import experimental data and link it to an experiment.
+
+        Args:
+            experiment_id: ID of the experiment.
+            data_file: Path to the data file.
+            metadata: Optional metadata about the experimental data.
+
+        Returns:
+            True if successful, False otherwise.
+        """
+        experiment = self.storage.get(Experiment, experiment_id)
+        if not experiment:
+            return False
+
+        file_path = Path(data_file)
+        if not file_path.exists():
+            return False
+
+        # Save the data file as an attachment
+        target_path = self.storage.save_attachment(file_path)
+
+        # Create a note to document the data import
+        note_content = f"## Experimental Data Import\n\nFile: {file_path.name}\n"
+
+        if metadata:
+            note_content += "\n### Metadata\n\n"
+            for key, value in metadata.items():
+                note_content += f"- **{key}:** {value}\n"
+
+        note = Note(
+            title=f"Data: {experiment.title} - {file_path.name}",
+            content=note_content,
+            attachments=[target_path]
+        )
+
+        self.storage.save(note)
+
+        # Link the note to the experiment
+        if note.id not in experiment.notes:
+            experiment.notes.append(note.id)
+
+            # Add data file to experiment's data files list
+            if not hasattr(experiment, 'data_files'):
+                experiment.data_files = []
+
+            experiment.data_files.append({
+                'file_path': str(target_path),
+                'note_id': str(note.id),
+                'metadata': metadata or {}
+            })
+
+            experiment.update()
+            self.storage.save(experiment)
+
+            # Update knowledge graph
+            self._knowledge_graph.add_node(str(note.id), type='note', title=note.title)
+            self._knowledge_graph.add_edge(str(experiment_id), str(note.id), type='documents', data_type='experimental_data')
+
+        return True

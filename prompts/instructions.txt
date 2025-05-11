@@ -58,16 +58,27 @@ For each project idea and its corresponding personas:
      - Performance benchmarks that must be met
      - Edge cases and error conditions that must be handled properly
      - Required test coverage metrics
-     
-     IMPORTANT: 
+
+     IMPORTANT:
      - ALL functionality must be testable via pytest without any manual intervention
      - Tests should verify behavior against requirements, not implementation details
      - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
      - Tests should be comprehensive enough to verify all aspects of the requirements
      - Tests should not assume or dictate specific implementation approaches
+     - REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+       ```
+       pip install pytest-json-report
+       pytest --json-report --json-report-file=pytest_results.json
+       ```
+     - The pytest_results.json file must be included as proof that all tests pass
    
    - ## Success Criteria
-     Clear metrics and outcomes that would indicate the implementation successfully meets this persona's needs
+     Clear metrics and outcomes that would indicate the implementation successfully meets this persona's needs.
+
+     REQUIRED FOR SUCCESS:
+     - All tests must pass when run with pytest
+     - A valid pytest_results.json file must be generated showing all tests passing
+     - The implementation must satisfy all key requirements specified for this persona
 
 5. The instructions should focus on WHAT needs to be built rather than HOW to build it. Define requirements clearly but leave implementation details to the developer.
 
@@ -79,5 +90,13 @@ For each project idea and its corresponding personas:
 
 9. Instruct the agent to use `uv venv` to setup virtual environments. From within the project directory, the environment can be activated with `source .venv/bin/activate`. Install the project with `uv pip install -e .`.
 
+10. CRITICAL: Emphasize that running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+    ```
+    pip install pytest-json-report
+    pytest --json-report --json-report-file=pytest_results.json
+    ```
+
 Output your instructions into projects/{project_name}/{project_name}_{persona_identifier}/INSTRUCTIONS.md.
 Do not generate tests.
+
+REMINDER: The instructions MUST emphasize that generating and providing pytest_results.json is a critical requirement for project completion.

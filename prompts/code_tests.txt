@@ -11,7 +11,6 @@ Your task is to implement a Python solution and comprehensive tests for a projec
 5. IMPORTANT: Your implementation MUST pass all tests
 6. Follow these coding standards:
    - Use type hints for all function parameters and return values
-   - Include docstrings for all functions, classes, and modules
    - Implement proper error handling with specific exceptions
    - Organize code into logical modules and classes
    - Follow PEP 8 style guidelines
@@ -47,7 +46,9 @@ Before considering the task complete:
 3. Verify your implementation meets all requirements specified in INSTRUCTIONS.md
 4. Check that the code adheres to the coding standards
 5. Do not submit code that fails any tests
-6. You MUST include the pytest_results.json file as proof that all tests pass
+6. YOU MUST INCLUDE THE pytest_results.json FILE AS FINAL OUTPUT
+7. CRITICAL: Always verify that pytest_results.json exists in your project directory before completing your work
+8. FAILING TO PRODUCE pytest_results.json MEANS THE TASK IS INCOMPLETE
 
 # PYTEST JSON REPORT SETUP
 Before running tests, install the pytest-json-report plugin:
@@ -61,5 +62,19 @@ pytest --json-report --json-report-file=pytest_results.json
 ```
 
 This JSON report is MANDATORY and serves as proof that your implementation passes all tests.
+
+# FINAL CHECKLIST
+Before submitting your work, verify that:
+1. All Python implementation files are created
+2. All tests are created in the tests/ directory
+3. All tests pass when run with pytest
+4. pytest_results.json file has been generated
+5. pytest_results.json shows all tests passing
+6. The implementation meets all requirements in INSTRUCTIONS.md
+7. The README.md file is complete with all required sections
+
+IMPORTANT: YOU MUST CONFIRM THE EXISTENCE OF pytest_results.json IN YOUR PROJECT DIRECTORY AS YOUR FINAL STEP.
+
+WITHOUT A VALID pytest_results.json FILE, YOUR SUBMISSION IS INCOMPLETE AND WILL NOT BE ACCEPTED.
 
 Ensure your implementation meets the requirements specified in the INSTRUCTIONS.md file while following best practices for Python development.

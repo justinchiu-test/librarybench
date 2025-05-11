@@ -6,7 +6,7 @@ from typing import Any, Dict
 import anthropic
 from openai import OpenAI
 
-from prompts import implementation_prompt_template, fix_implementation_prompt_template, refactoring_prompt_template
+from prompts import implementation_prompt_template, fix_implementation_prompt_template
 
 import sys
 import ipdb
@@ -272,7 +272,7 @@ class OpenAIAgent(Agent):
         return result
 
 
-    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task) -> str:
         system_prompt = f"You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. Your task is to {task} code according to the provided specifications and tests."
         return self.generate(prompt, sampling_params, system_prompt)
         
@@ -282,10 +282,10 @@ class ClaudeAgent(Agent):
         super().__init__(model_name)
         self.client = anthropic.Anthropic()
 
-    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task="refactor") -> str:
+    def generate_code(self, prompt: str, sampling_params: Dict[str, Any], task) -> str:
         system_prompt = """You are a world-class software engineer with expertise in writing clean, efficient, and maintainable code. 
-Your task is to implement or refactor code according to the provided specifications and tests. 
-When implementing new files or refactoring existing ones, focus on creating well-structured, 
+Your task is to implement code according to the provided specifications and tests. 
+When implementing new files or fixing existing ones, focus on creating well-structured, 
 modular code that is easy to understand and maintain. 
 Always ensure your code passes all tests and maintains the expected functionality."""
         return self.generate(prompt, sampling_params, system_prompt)

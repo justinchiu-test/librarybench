@@ -378,7 +378,7 @@ def setup_for_refactor(args):
 def main():
     parser = argparse.ArgumentParser(description="LLM Repository Refactor")
     parser.add_argument(
-        "--model", type=str, default=None, help="Model to use for refactoring"
+        "--model", type=str, default=None, help="Model to use"
     )
     parser.add_argument(
         "--task",

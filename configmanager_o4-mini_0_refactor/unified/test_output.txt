@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 104 items
+
+tests/test_ci_qa_engineer_config_manager.py ..........                   [  9%]
+tests/test_data_scientist_config_manager.py ..........                   [ 19%]
+tests/test_devops_engineer_config_manager.py ...........                 [ 29%]
+tests/test_freelancer_dev_config_manager.py ..........                   [ 39%]
+tests/test_game_developer_settings_manager.py ....s.....                 [ 49%]
+tests/test_iot_engineer_config_manager.py ...........                    [ 59%]
+tests/test_mobile_app_dev_config_manager.py ..s........                  [ 70%]
+tests/test_platform_architect_config_manager.py ...........              [ 80%]
+tests/test_platform_engineer_config_service.py ..........                [ 90%]
+tests/test_web_app_developer_config_system.py ..........                 [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+======================== 102 passed, 2 skipped in 1.64s ========================

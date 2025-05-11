@@ -1,0 +1,3 @@
+value = 123
+[inner]
+key = 'abc'

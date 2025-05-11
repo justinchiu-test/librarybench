@@ -1,0 +1,5 @@
+[nested]
+x = 10
+y = 20
+z = {subkey = 'val'}
+new = 'yes'

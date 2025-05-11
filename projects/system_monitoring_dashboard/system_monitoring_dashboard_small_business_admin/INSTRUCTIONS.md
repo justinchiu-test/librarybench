@@ -160,5 +160,5 @@ To set up your development environment:
 
 3. Install the required dependencies
    ```
-   uv sync
+   uv pip install -e .
    ```

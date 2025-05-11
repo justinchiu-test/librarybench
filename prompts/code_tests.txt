@@ -39,7 +39,7 @@ The tests should:
 
 # VERIFICATION REQUIREMENT
 Before considering the task complete:
-1. Run all tests using pytest and ensure they pass
+1. Run all tests using `pytest` and ensure they pass
 2. REQUIRED: Run pytest and generate a JSON report as proof:
    ```
    pytest --json-report --json-report-file=pytest_results.json

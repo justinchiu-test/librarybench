@@ -129,5 +129,5 @@ uv venv
 source .venv/bin/activate
 
 # Install required dependencies
-uv sync
+uv pip install -e .
 ```

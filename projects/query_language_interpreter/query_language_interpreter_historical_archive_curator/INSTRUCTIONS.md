@@ -1,184 +1,162 @@
-# Historical Archive Query Engine
-
-A query language interpreter specialized for historical collections with complex metadata and uncertain information.
+# Historical Collections Query Language Interpreter
 
 ## Overview
-
-The Historical Archive Query Engine provides a specialized query system for digitized historical documents, photographs, and artifacts with complex metadata. This project variant focuses on enabling archivists to query across heterogeneous collections with varying attributes and incomplete information, featuring fuzzy matching, temporal uncertainty handling, provenance tracking, and confidence scoring.
+This specialized Query Language Interpreter enables archivists and historians to effectively query across heterogeneous collections of historical documents, photographs, and artifacts with complex and often incomplete metadata. The interpreter provides fuzzy matching capabilities, temporal uncertainty handling, provenance chain querying, cross-collection joins, and confidence scoring, making it an ideal tool for discovering connections and patterns in historical archives.
 
 ## Persona Description
-
 Eleanor digitizes and organizes historical documents, photographs, and artifacts with complex metadata. She needs to query across heterogeneous collections with varying attributes and incomplete information.
 
 ## Key Requirements
+1. **Fuzzy matching operators tolerant of historical spelling variations and transcription errors**: Provides sophisticated fuzzy text matching that accounts for historical spelling variations, common transcription errors, OCR mistakes, and alternative name forms, enabling successful searches despite inconsistencies in how names, places, and terms were recorded across different historical sources.
 
-1. **Fuzzy matching operators tolerant of historical spelling variations and transcription errors**
-   - Implement phonetic matching algorithms (Soundex, Metaphone, etc.) for historical names
-   - Support edit distance measures with customizable thresholds
-   - Enable language-specific and historical spelling variation awareness
-   - Provide specialized fuzzy matching for dates, places, and proper names
-   - Critical for Eleanor to find relevant items despite inconsistent spellings, transcription variations, and historical language differences
+2. **Temporal uncertainty handling for items with estimated or range-based dates**: Supports flexible date representations including ranges, approximations (circa), seasons, partial dates (month/year only), and different calendar systems, allowing meaningful queries despite the inherent date uncertainty in historical records where precise dates are often unknown.
 
-2. **Temporal uncertainty handling for items with estimated or range-based dates**
-   - Develop date representations supporting ranges, approximations, and uncertain dates
-   - Implement operators for querying with awareness of temporal uncertainty
-   - Support various historical calendar systems and date formats
-   - Enable chronological sorting and filtering with uncertainty awareness
-   - Essential for working with historical collections where exact dates are often unknown or approximate
+3. **Provenance chain querying showing acquisition history and authentication evidence**: Enables tracking and querying the complete ownership and authentication history of items, allowing archivists to establish item legitimacy, trace the history of collection development, and identify potential connections between donors or collecting expeditions.
 
-3. **Provenance chain querying showing acquisition history and authentication evidence**
-   - Create data structures for representing item ownership and transfer history
-   - Implement path queries for tracing provenance chains
-   - Support evidence strength assessment and source credibility tracking
-   - Enable queries based on provenance attributes and relationships
-   - Vital for establishing item authenticity, tracking acquisition history, and supporting scholarly research on collection items
+4. **Cross-collection joins connecting items related by historical figures or events**: Facilitates discovery of relationships between items across different collections based on connections to the same historical people, places, events, or themes, essential for creating comprehensive historical narratives that span multiple collection types.
 
-4. **Cross-collection joins connecting items related by historical figures or events**
-   - Develop specialized join operations for heterogeneous collection metadata
-   - Support entity resolution across different naming conventions and identifiers
-   - Enable relationship discovery between items in different collections
-   - Provide contextual awareness of historical relationships and associations
-   - Important for discovering connections between items across disparate collections that may reference the same historical figures, locations, or events
-
-5. **Confidence scoring indicating reliability of result matches based on metadata quality**
-   - Implement multi-factor confidence assessment algorithms
-   - Support customizable weighting of different evidence types
-   - Enable confidence thresholds and sorting in query results
-   - Provide detailed explanation of confidence calculations
-   - Critical for transparently communicating the reliability of query results based on metadata completeness, source quality, and match certainty
+5. **Confidence scoring indicating reliability of result matches based on metadata quality**: Provides automated assessment of the reliability of query results based on metadata completeness, source credibility, verification status, and corroborating evidence, helping researchers prioritize findings and understand the relative certainty of different potential matches.
 
 ## Technical Requirements
-
 ### Testability Requirements
-- All functions must be unit-testable with pytest
-- Test fuzzy matching algorithms against historical text corpora
-- Verify temporal uncertainty handling with various date formats and calendar systems
-- Test provenance chain querying with complex ownership histories
-- Validate confidence scoring against manually assessed reference cases
+- Fuzzy matching algorithms must be tested with known historical text variations
+- Temporal handling must be verified with various uncertain date representations
+- Provenance chain operations must be tested with complex ownership histories
+- Cross-collection joins must be validated with items having known relationships
+- Confidence scoring must be tested against expert-rated example cases
 
 ### Performance Expectations
-- Support catalogs with at least 10 million items
-- Execute common fuzzy matching queries in under 3 seconds
-- Process cross-collection joins involving 100,000+ items in under 10 seconds
-- Scale linearly with collection size for most operations
-- Maintain interactive query response times for catalog browsing
+- Must handle collections containing millions of items with reasonable response times
+- Fuzzy matching should strike an optimal balance between recall and precision
+- Complex queries joining multiple collections should return initial results within 5 seconds
+- Memory usage should scale efficiently with collection size
+- Index structures should optimize for the specific challenges of historical data
 
 ### Integration Points
-- Import metadata from standard archival formats (EAD, MARC, Dublin Core)
-- Connect with digital asset management systems
-- Support export to cultural heritage data exchange formats
-- Interface with authority databases for names, places, and subjects
-- Provide compatibility with scholarly research tools
+- Support for common metadata standards (Dublin Core, MODS, EAD, etc.)
+- Import capabilities for standard archive export formats
+- Integration with digital asset management systems
+- Export functionality for research findings and exhibition planning
+- Optional integration with visualization tools for relationship mapping
 
 ### Key Constraints
-- Handle extremely heterogeneous metadata across different collection types
-- Support very sparse metadata where many fields may be unknown
-- Process multilingual content and historical language variations
-- Maintain scholarly rigor in uncertainty representation
-- Balance precision and recall appropriately for historical research needs
+- Must accommodate extremely heterogeneous metadata across different collection types
+- Should handle the uncertainty and incompleteness inherent in historical records
+- Must preserve original metadata while enabling normalized searching
+- Should support multilingual collections with varying character sets
+- Must operate effectively with limited computational resources typical in cultural institutions
 
-### Implementation Notes
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this Historical Collections Query Language Interpreter includes:
 
-The Historical Archive Query Engine must implement the following core functionality:
+1. **Query Engine with Historical Extensions**:
+   - SQL-like syntax extended for historical and archival operations
+   - Parser handling fuzzy matching expressions and temporal uncertainty
+   - Execution planning optimized for heterogeneous metadata querying
+   - Result ranking based on relevance and confidence metrics
 
-1. **Archival Metadata Management**
-   - Handle diverse metadata schemas across different collection types
-   - Support flexible attribute sets varying by item type
-   - Manage controlled vocabularies and authority records
-   - Enable metadata quality assessment and enhancement
+2. **Text Matching Framework**:
+   - Implementation of advanced fuzzy matching algorithms
+   - Historical spelling variation handling
+   - Name matching with awareness of historical naming conventions
+   - Multilingual support for historical text variations
 
-2. **Historical Query Language Processor**
-   - Implement query syntax with special operators for historical data
-   - Support fuzzy matching and uncertainty-aware operations
-   - Enable confidence-based filtering and sorting
-   - Provide specialized functions for common archival queries
+3. **Temporal Analysis System**:
+   - Flexible date representation and normalization
+   - Uncertainty-aware date comparison operations
+   - Support for different calendar systems and historical date formats
+   - Temporal proximity and overlap detection
 
-3. **Temporal Reasoning Engine**
-   - Represent and normalize dates with uncertainty
-   - Implement temporal operators aware of date approximations
-   - Support historical calendar systems and conversions
-   - Enable chronological operations with imprecise dates
+4. **Provenance Management**:
+   - Ownership history modeling and traversal
+   - Authentication evidence tracking
+   - Acquisition relationship mapping
+   - Chain validity assessment
 
-4. **Entity Resolution Framework**
-   - Maintain identity resolution for historical figures, places, and events
-   - Support name variants and contextual disambiguation
-   - Implement cross-collection entity matching
-   - Enable relationship discovery and network analysis
-
-5. **Provenance and Confidence Assessment**
-   - Track ownership and custody chains
-   - Evaluate evidence quality and source reliability
-   - Calculate multi-factor confidence scores
-   - Support scholarly attribution and citation
+5. **Cross-Collection Analysis**:
+   - Entity resolution across different metadata schemas
+   - Relationship discovery algorithms
+   - Confidence scoring based on metadata quality
+   - Evidence aggregation and corroboration assessment
 
 ## Testing Requirements
-
 ### Key Functionalities to Verify
-- Accuracy of fuzzy matching algorithms for historical names and text
-- Correct handling of temporal uncertainty in searches and sorting
-- Proper traversal and analysis of provenance chains
-- Accurate cross-collection joining of related items
-- Appropriate confidence scoring reflecting metadata quality
+- Accuracy of fuzzy matching for historical text with known variations
+- Correct handling of various uncertain date formats and ranges
+- Proper traversal and querying of provenance chains
+- Accurate identification of relationships across different collections
+- Appropriate confidence scoring that correlates with expert assessments
 
 ### Critical User Scenarios
-- Finding all items related to a historical figure despite spelling variations
-- Identifying artifacts from a specific historical period despite date uncertainty
-- Tracing the ownership history of a valuable item to establish authenticity
-- Discovering connections between items in different physical collections
-- Assessing the reliability of metadata for scholarly research
+- Searching for historical figures across collections with name variations
+- Finding items related to events with uncertain or approximate dates
+- Tracing the provenance history of significant artifacts
+- Discovering connections between items across different collection types
+- Assessing the reliability of potential matches for research purposes
 
 ### Performance Benchmarks
-- Execute fuzzy name matching across 1 million records in under 5 seconds
-- Process temporal queries with uncertainty in under 3 seconds
-- Traverse provenance chains up to 50 steps deep in under 2 seconds
-- Perform cross-collection joins between 10 collections of 100,000 items each in under 10 seconds
-- Calculate confidence scores for 10,000 search results in under 1 second
+- Fuzzy matching should achieve at least 90% accuracy against a test corpus of historical name variations
+- Temporal queries should correctly handle at least 95% of test cases with uncertain dates
+- Provenance chain operations should process collections with up to 20 transfer events per item
+- Cross-collection joins should handle at least 10 different collection types simultaneously
+- System should scale to manage at least 5 million catalog records with acceptable performance
 
 ### Edge Cases and Error Conditions
-- Handling extremely sparse metadata with minimal identifying information
-- Processing items with highly conflicting date attributions
-- Managing broken provenance chains with missing links
-- Dealing with ambiguous entity references that could match multiple historical figures
-- Calculating confidence when evidence sources themselves have varying reliability
+- Handling of extremely sparse or inconsistent metadata
+- Behavior with conflicting temporal information
+- Appropriate treatment of broken provenance chains
+- Graceful handling of multilingual text with mixed character sets
+- Correct operation with extremely old or unusual date formats
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all modules
-- Test fuzzy matching with at least 1,000 historical name variations
-- Verify temporal uncertainty with at least 10 different date formats and calendar systems
-- Test provenance queries with at least 50 different chain topologies
-- Validate confidence scoring against at least 100 manually rated test cases
+- Minimum 90% code coverage across all modules
+- 100% coverage for fuzzy matching and temporal comparison functions
+- All confidence scoring algorithms must have dedicated test cases
+- Cross-collection join operations must be tested with various metadata schema combinations
+- All supported date formats and uncertainty representations must be explicitly tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation will:
 
-The implementation will be considered successful if it meets the following criteria:
+1. Effectively match historical text despite spelling variations and transcription errors, verified by tests with known historical text variants
+2. Correctly handle uncertain and range-based dates, validated through test cases with various temporal representations
+3. Properly track and query item provenance chains, demonstrated through tests with complex ownership histories
+4. Successfully identify relationships between items across different collections, confirmed with test cases of known related items
+5. Accurately score the confidence of potential matches based on metadata quality, verified against expert-rated examples
 
-1. **Functional Completeness**
-   - All five key requirements are fully implemented
-   - Fuzzy matching successfully finds relevant items despite spelling variations
-   - Temporal uncertainty handling correctly manages approximate dates
-   - Provenance chains are properly represented and queryable
-   - Cross-collection relationships are accurately identified
-   - Confidence scoring meaningfully reflects result reliability
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Scholarly Integrity**
-   - Maintains appropriate historical accuracy in all operations
-   - Transparently communicates uncertainty and confidence levels
-   - Preserves provenance information and attribution
-   - Enables verifiable and reproducible research findings
-   - Supports rigorous historical methodology
+## Environment Setup
 
-3. **Archival Utility**
-   - Significantly improves discovery of relevant items compared to exact matching
-   - Enables new insights through relationship visualization
-   - Supports collection management and curatorial tasks
-   - Enhances metadata quality assessment and improvement
-   - Facilitates scholarly access to collections
+To set up your development environment:
 
-4. **Performance and Scalability**
-   - Handles institutional-scale collections efficiently
-   - Provides interactive query response times for common operations
-   - Scales appropriately with growing collections
-   - Optimizes resource usage for large operations
+```bash
+# From within the project directory
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```bash
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

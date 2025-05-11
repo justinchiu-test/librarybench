@@ -1,183 +1,185 @@
-# Pandemic Response Simulation Framework
+# Pandemic Simulation and Intervention Analysis Framework
 
 ## Overview
-A specialized distributed simulation framework designed for epidemiological researchers to model disease spread through populations and evaluate intervention strategies. This framework enables the simulation of pandemic scenarios across diverse geographic and demographic contexts, incorporating realistic human behavior patterns, testing intervention strategies, forecasting healthcare resource utilization, and comparing policy effectiveness.
+A distributed simulation framework specialized for epidemiologists to model disease spread across diverse populations and geographic regions. The framework enables comprehensive pandemic scenario modeling with capabilities for testing intervention strategies, forecasting healthcare resource utilization, and incorporating realistic human behavior patterns.
 
 ## Persona Description
 Dr. Okafor models disease spread through populations to evaluate intervention strategies and resource allocation. His primary goal is to simulate pandemic scenarios across diverse geographic and demographic contexts while incorporating realistic human behavior patterns.
 
 ## Key Requirements
 
-1. **Multi-Region Simulation with Travel and Contact Patterns**
-   - Model disease spread across multiple geographic regions with distinct characteristics
-   - Implement realistic human mobility and travel patterns between regions
-   - Support for heterogeneous contact networks within and between populations
-   - Account for demographic variations in each region affecting disease dynamics
-   - Critical for Dr. Okafor because disease spread is fundamentally influenced by how people move and interact across different geographic areas, and accurate modeling of these patterns is essential for predicting transmission dynamics and identifying high-risk regions
+1. **Multi-Region Simulation with Travel and Contact Patterns**  
+   Implement a system for modeling disease transmission across multiple interconnected regions with realistic population movement and contact networks. This capability is critical for Dr. Okafor because infectious diseases spread through human mobility networks, and accurate modeling of inter-regional travel and local contact patterns is essential for predicting disease spread trajectories across diverse geographic and demographic contexts.
 
-2. **Intervention Strategy Testing with Timing Optimization**
-   - Simulate various pandemic intervention strategies (lockdowns, vaccination, masking, etc.)
-   - Test different timing scenarios for intervention deployment
-   - Model the effect of intervention combinations and sequences
-   - Optimize intervention schedules to maximize effectiveness while minimizing societal disruption
-   - Critical for Dr. Okafor because the timing and combination of interventions significantly impact their effectiveness, and computational optimization can identify non-intuitive strategies that balance public health outcomes with social and economic considerations
+2. **Intervention Strategy Testing with Timing Optimization**  
+   Develop capabilities for defining, implementing, and evaluating various intervention strategies (e.g., vaccination campaigns, quarantine measures, travel restrictions) with tools for optimizing implementation timing. This feature is vital because public health officials need evidence-based guidance on which interventions to deploy and when to implement them for maximum effectiveness, helping Dr. Okafor provide actionable recommendations that balance health outcomes with societal impacts.
 
-3. **Healthcare Resource Utilization Forecasting**
-   - Predict healthcare system loads (hospitalizations, ICU beds, ventilators) based on disease spread
-   - Model healthcare capacity constraints and their impact on outcomes
-   - Simulate resource allocation strategies across regions and facilities
-   - Generate early warning indicators for potential system overloads
-   - Critical for Dr. Okafor because healthcare system capacity is a critical constraint during pandemics, and accurate forecasting helps prevent overwhelming medical resources through proactive resource allocation and surge capacity planning
+3. **Healthcare Resource Utilization Forecasting**  
+   Create a forecasting system that predicts healthcare resource needs (hospital beds, ICU capacity, ventilators, staff) based on simulated disease progression. This functionality is essential because healthcare systems can be overwhelmed during pandemic events, and Dr. Okafor's work informs critical resource allocation decisions that directly impact patient outcomes and healthcare system resilience.
 
-4. **Behavioral Adaptation Models for Population Response**
-   - Simulate how populations respond to pandemic conditions and policy changes
-   - Model compliance rates with different interventions based on demographic factors
-   - Account for behavioral fatigue and changing risk perceptions over time
-   - Incorporate feedback loops between disease prevalence and behavior changes
-   - Critical for Dr. Okafor because human behavior significantly affects intervention effectiveness, and realistic behavioral models are essential for accurately predicting the real-world impact of public health policies
+4. **Behavioral Adaptation Models for Population Response**  
+   Build sophisticated behavioral models that capture how populations dynamically respond to disease prevalence, public health messaging, and implemented policies. This capability is crucial because human behavior significantly influences disease spread dynamics, and incorporating realistic behavioral responses allows Dr. Okafor to model intervention effectiveness under real-world conditions rather than assuming perfect compliance.
 
-5. **Policy Effectiveness Comparison with Confidence Intervals**
-   - Statistically rigorous comparison of different intervention policies
-   - Generate confidence intervals for outcome predictions
-   - Support sensitivity analysis to identify critical parameters affecting outcomes
-   - Produce clear visualizations and metrics for decision-maker communication
-   - Critical for Dr. Okafor because policy recommendations must be based on robust statistical analysis that communicates both the expected outcomes and the certainty of those predictions, enabling informed decision-making under uncertainty
+5. **Policy Effectiveness Comparison with Confidence Intervals**  
+   Implement statistical analysis tools for comparing policy interventions across multiple scenarios with quantified uncertainty measures. This feature is important because decision-makers need to understand both the expected outcomes of different policies and the associated uncertainties, allowing Dr. Okafor to provide comprehensive analysis that acknowledges the inherent uncertainties in complex social-epidemiological systems.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each component must have comprehensive unit tests with at least 90% code coverage
-- Integration tests verifying correct interactions between regions and population groups
-- Validation tests comparing model outputs against historical pandemic data
-- Sensitivity analysis tests to verify appropriate response to parameter changes
-- Statistical validity tests for confidence interval calculations
+- All disease transmission models must be validatable against historical epidemiological data
+- Intervention implementation must be precisely reproducible for comparative analysis
+- Population behavior models must be calibratable to empirical behavioral data
+- Resource utilization predictions must be testable against healthcare system capacity data
+- Statistical analysis methods must be verifiable against established epidemiological literature
 
 ### Performance Expectations
-- Support for simulating populations of at least 100 million individuals across multiple regions
-- Ability to run hundreds of intervention scenarios for comparison within 24 hours
-- Support for at least 1000 Monte Carlo iterations for uncertainty quantification
-- Interactive response time (<1 min) for scenario specification and basic analysis
-- Complete end-to-end analysis including confidence intervals within 4 hours
+- Must scale to simulate populations of at least 100 million individuals
+- Should process at least 30 simulated days per minute of computation time
+- Must support at least 100 simultaneous regions with distinct characteristics
+- Should execute at least 1,000 scenario variations for confidence interval generation
+- Result analysis should complete within 10 minutes for standard intervention comparisons
 
 ### Integration Points
-- Import interfaces for demographic and geographic data
-- Integration with mobility data sources and contact pattern information
-- Export capabilities for visualization and reporting tools
-- APIs for defining custom disease models and intervention strategies
-- Data exchange with healthcare capacity databases
+- Data interfaces for importing demographic and geographic information
+- API for defining custom disease progression models
+- Extensible intervention strategy definition framework
+- Connectors for external behavioral data sources
+- Export capabilities for results in standard epidemiological formats
 
 ### Key Constraints
-- All components must be implementable in pure Python
-- Distribution mechanisms must use standard library capabilities
-- The system must work across heterogeneous computing environments
-- Memory efficiency to handle large population models
-- All randomization must support seeding for reproducible results
+- Implementation must be in Python with no UI components
+- All simulation components must be deterministic when using fixed random seeds
+- Memory usage must be optimized for large-scale population modeling
+- System must operate effectively on standard research computing infrastructure
+- Data structures must support efficient serialization for checkpointing
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation should provide a Python library with the following core components:
+The Pandemic Simulation and Intervention Analysis Framework needs to implement these core capabilities:
 
-1. **Epidemiological Modeling System**
-   - Compartmental disease models with customizable parameters
+1. **Disease Transmission Model**
+   - Configurable disease progression states and transition probabilities
    - Age-structured and demographic-aware transmission dynamics
-   - Stochastic and deterministic modeling options
-   - Region-specific disease progression parameters
-   - Healthcare impact calculation and forecasting
+   - Support for multiple transmission routes (airborne, contact, fomite)
+   - Stochastic and deterministic simulation modes
+   - Viral evolution and variant modeling
 
-2. **Population and Mobility Framework**
-   - Synthetic population generation with demographic attributes
-   - Contact network modeling within and between regions
-   - Mobility and travel pattern implementation
-   - Temporal variations in movement and contacts
-   - Data-driven calibration capabilities
+2. **Spatial and Mobility System**
+   - Multi-scale geographic representation (households, neighborhoods, cities, regions)
+   - Realistic mobility patterns based on demographic factors
+   - Time-varying contact networks at multiple scales
+   - Cross-border and international travel modeling
+   - Location-specific transmission risk factors
 
-3. **Intervention Modeling System**
-   - Library of common intervention strategies
-   - Customizable intervention parameters and timing
-   - Intervention combination and sequencing support
-   - Impact modeling on transmission, mobility, and behavior
-   - Optimization algorithms for intervention scheduling
+3. **Intervention Implementation Framework**
+   - Flexible intervention definition system
+   - Timing and phasing controls for implementation
+   - Targeting mechanisms for specific regions or populations
+   - Combinatorial intervention strategy support
+   - Compliance modeling with demographic variation
 
-4. **Behavioral Response Modeling**
-   - Population compliance models with demographic factors
-   - Risk perception and behavioral adaptation
-   - Intervention fatigue and adherence decay
-   - Social influence and information spread
-   - Feedback mechanisms between disease prevalence and behavior
+4. **Healthcare System Modeling**
+   - Resource requirement forecasting based on disease severity
+   - Capacity constraints and overflow effects
+   - Staff availability and burnout modeling
+   - Resource allocation optimization
+   - Treatment effectiveness modeling
 
-5. **Statistical Analysis Framework**
-   - Monte Carlo simulation management for uncertainty quantification
-   - Confidence interval calculation for key metrics
-   - Sensitivity analysis for parameter importance
-   - Policy comparison with statistical significance testing
-   - Visualization and reporting capabilities
+5. **Behavioral Response System**
+   - Risk perception and decision-making models
+   - Social influence and information diffusion
+   - Adaptation to changing conditions
+   - Demographic variation in behavioral responses
+   - Policy compliance dynamics
+
+6. **Analysis and Comparison Tools**
+   - Statistical comparison of intervention effectiveness
+   - Uncertainty quantification methods
+   - Sensitivity analysis for key parameters
+   - Counterfactual scenario generation
+   - Confidence interval calculation for predictions
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-1. **Disease Spread Modeling**
-   - Accurate implementation of epidemiological models
-   - Correct handling of stochastic processes
-   - Proper regional interaction and travel effects
-   - Appropriate healthcare impact calculations
-
-2. **Intervention Effects**
-   - Correct implementation of intervention mechanisms
-   - Appropriate timing effects for intervention deployment
-   - Realistic modeling of intervention combinations
-   - Accurate optimization of intervention schedules
-
-3. **Population Behavior**
-   - Realistic compliance modeling based on demographic factors
-   - Appropriate behavioral changes in response to disease prevalence
-   - Correct implementation of behavioral fatigue over time
-   - Proper integration of behavior with disease transmission
-
-4. **Resource Utilization Prediction**
-   - Accurate healthcare demand forecasting
-   - Correct capacity constraint handling
-   - Appropriate resource allocation modeling
-   - Realistic prediction of system overload effects
-
-5. **Statistical Analysis**
-   - Correct confidence interval calculations
-   - Proper sensitivity analysis implementation
-   - Accurate policy comparison metrics
-   - Statistical validity of uncertainty quantification
+- Accuracy of disease transmission dynamics compared to known epidemiological models
+- Correctness of intervention implementation and timing
+- Realism of population behavioral responses
+- Accuracy of healthcare resource utilization predictions
+- Statistical validity of policy comparisons and confidence intervals
+- Performance scaling with population size and region count
 
 ### Critical User Scenarios
-1. Modeling the spread of a novel respiratory pathogen across multiple countries
-2. Evaluating the impact of different vaccination strategies on disease outcomes
-3. Forecasting healthcare resource needs during pandemic peaks
-4. Testing the effectiveness of travel restrictions and border controls
-5. Comparing policy packages comprising multiple interventions with timing variations
+- Simulating a novel pathogen spread across multiple countries with varied demographics
+- Testing the impact of different vaccination strategies with limited vaccine supply
+- Forecasting hospital bed and ICU needs during a disease outbreak
+- Comparing effectiveness of different non-pharmaceutical interventions
+- Analyzing how behavioral adaptations affect intervention outcomes
+- Generating policy recommendations with quantified confidence levels
 
 ### Performance Benchmarks
-1. Complete simulation of 100 million population with 1-year time horizon in under 1 hour
-2. Run 1000 Monte Carlo iterations for confidence interval generation within 4 hours
-3. Optimize intervention timing across 10 possible interventions in under 2 hours
-4. Process and analyze results from 100 different policy scenarios in under 30 minutes
-5. Scale efficiently to utilize at least 32 distributed processes
+- Simulation speed: minimum 30 simulated days per minute for 100 million population
+- Scaling efficiency: minimum 80% parallel efficiency on up to 100 compute nodes
+- Memory efficiency: maximum 4GB per 10 million simulated individuals
+- Analysis throughput: processing 1,000 scenario variations within 1 hour
+- Storage requirements: maximum 500MB per full pandemic trajectory
 
 ### Edge Cases and Error Conditions
-1. Handling highly contagious diseases with reproductive numbers >10
-2. Managing edge effects at regional boundaries with different intervention policies
-3. Accurately modeling healthcare collapse scenarios beyond capacity
-4. Handling extreme variations in population compliance and behavior
-5. Properly managing computational resources with very large population sizes
+- Handling of extreme transmission scenarios (R0 > 10)
+- Management of healthcare system collapse scenarios
+- Modeling of complete travel restrictions between regions
+- Simulation of highly heterogeneous compliance with interventions
+- Representation of novel intervention strategies not in historical data
 
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for core disease modeling
-- 100% coverage of intervention implementation logic
-- All statistical analysis methods fully validated
-- Comprehensive testing of boundary conditions between regions
-- Performance tests must cover varying population sizes and region counts
+### Test Coverage Requirements
+- Unit test coverage of at least 90% for all disease transmission models
+- Integration tests for all intervention implementation mechanisms
+- Validation against historical epidemic data where available
+- Performance tests for scaling behavior
+- Statistical validation of uncertainty quantification methods
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully simulate disease spread across regions with 100+ million total population
-2. Demonstrate statistically significant discrimination between different intervention strategies
-3. Produce healthcare utilization forecasts with confidence intervals
-4. Show realistic behavioral adaptation effects on intervention outcomes
-5. Generate optimized intervention timing recommendations that outperform naive approaches
-6. Validate model outputs against historical pandemic data with acceptable error margins
-7. Complete complex multi-region simulations with uncertainty quantification in under 4 hours
+
+The implementation of the Pandemic Simulation and Intervention Analysis Framework will be considered successful when:
+
+1. The system accurately models disease spread across multiple regions with realistic mobility patterns
+2. Intervention strategies can be defined, implemented, and compared with statistical rigor
+3. Healthcare resource utilization can be forecast with sufficient accuracy for planning purposes
+4. Population behavioral responses realistically influence disease transmission dynamics
+5. Policy effectiveness can be compared with appropriate confidence intervals to guide decision-making
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file must be included as proof that all tests pass and is a critical requirement for project completion.

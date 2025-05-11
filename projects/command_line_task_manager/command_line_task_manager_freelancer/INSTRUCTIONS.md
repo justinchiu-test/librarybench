@@ -1,168 +1,153 @@
-# TermTask for Freelance Developers
+# FreelanceFlow - CLI Task Management for Independent Developers
 
 ## Overview
-A specialized command-line task management system designed for freelance developers working across multiple client projects. This variant focuses on client portal integration, invoicing automation, milestone tracking, proposal management, and offline operation to streamline the business aspects of freelance development work.
+A specialized command-line task management system designed for freelance developers managing multiple client projects. The system enables accurate tracking of billable hours, organization of client-specific tasks, and generation of detailed billing reports based on time tracked against specific deliverables.
 
 ## Persona Description
 Mia works on multiple freelance projects with different clients and needs to track billable hours accurately. Her primary goal is to organize client-specific tasks and generate billing reports based on time tracked against specific deliverables.
 
 ## Key Requirements
+1. **Client Portal Integration**: Develop a secure API mechanism that allows clients to view task status without requiring CLI access. This is critical for Mia as it enables transparent communication with clients about project progress, eliminates the need for manual status reports, and maintains professional client relationships while protecting project details.
 
-1. **Client Portal Integration**
-   - Allow clients to view task status without CLI access
-   - Generate client-friendly status pages and progress reports
-   - Support client commenting and priority adjustment
-   - Control visibility of internal notes vs. client-facing information
-   - This feature is critical because it enables professional client communication without extra effort, allowing Mia to give clients visibility into project progress while maintaining her preferred command-line workflow for efficiency.
+2. **Invoicing Automation**: Create a sophisticated report generation system that produces itemized bills from completed tasks with time tracking data. This feature is essential for Mia to save time on administrative work, ensure accurate billing for all completed work, and provide professional, detailed invoices that clearly justify charges to clients.
 
-2. **Invoicing Automation**
-   - Generate itemized bills from completed tasks
-   - Calculate billable amounts based on tracked time and rates
-   - Support different rate structures by client and task type
-   - Track payment status and send reminders
-   - This capability is essential because accurate, timely invoicing is critical for Mia's cash flow, and automation reduces errors while saving administrative time that can be better spent on billable work.
+3. **Contract Milestone Tracking**: Implement contract milestone management with payment status integration. This capability allows Mia to organize tasks according to contract milestones, track completion percentage against payment schedules, and maintain clear visibility of outstanding payments versus delivered work.
 
-3. **Contract Milestone Tracking**
-   - Define and monitor contract deliverables and deadlines
-   - Link milestones to payment schedules
-   - Track milestone approval and signoff processes
-   - Generate milestone-based progress reports
-   - This feature is vital because it helps Mia organize work around contractual obligations, ensures timely delivery of client commitments, and links project progress directly to payment schedules.
+4. **Proposal-to-Task Conversion**: Develop functionality to transform client project proposals into structured task lists with estimates. This feature enables Mia to quickly initialize new projects based on approved proposals, maintain consistency between quoted work and actual tasks, and track scope changes against the original agreement.
 
-4. **Proposal and Client Acquisition Management**
-   - Convert proposals to project tasks upon acceptance
-   - Track proposal status and follow-ups
-   - Estimate time requirements for prospective work
-   - Analyze historical project data for better estimates
-   - This functionality is critical because effective proposal management impacts Mia's business growth, and the ability to convert accepted proposals directly into structured tasks streamlines project initialization.
-
-5. **Offline-First Operation**
-   - Work without internet connectivity during travel/remote work
-   - Synchronize data when connectivity is restored
-   - Conflict resolution for changes made offline
-   - Prioritize tasks for offline periods
-   - This feature is essential because Mia often works while traveling or in locations with unreliable internet, and needs her task management system to function flawlessly regardless of connectivity status.
+5. **Disconnected Mode Operation**: Build a robust local-first operation mode that enables full functionality without internet connection. This capability is crucial for Mia's mobile work style, allowing her to continue tracking time and managing tasks while traveling or working in remote locations, with automatic synchronization when connectivity is restored.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock client portal for testing client-facing features
-- Simulated time tracking data for testing invoicing
-- Virtual contract database for testing milestone tracking
-- Sample proposal repository for testing conversion workflows
-- Network connectivity simulation for testing offline operation
+- All components must support offline/online mode testing with appropriate mocking
+- Client portal API must be fully testable without requiring an actual web server
+- Invoice generation must be verifiable with predetermined time entries and expected outputs
+- Contract milestone calculations must be testable with simulated project progress
+- Proposal conversion must be testable with standard proposal formats
+- All database operations must be testable with in-memory storage options
 
 ### Performance Expectations
-- Support for managing 50+ concurrent client projects
-- Generate invoices for 500+ time entries in under 5 seconds
-- Track 100+ milestones across all active projects
-- Convert complex proposals to task structures in under 2 seconds
-- Efficient offline operation with minimal memory footprint
+- System must handle at least 50 simultaneous client projects without performance degradation
+- Time tracking operations must have negligible impact on system performance
+- Invoice generation for a year's worth of tasks must complete in under 10 seconds
+- Local data operations in disconnected mode must perform identically to connected mode
+- Synchronization after reconnection must efficiently handle up to 1000 offline changes
 
 ### Integration Points
-- Client portal web interfaces
-- Accounting systems for invoice integration
-- Contract management tools
-- Proposal templates and document formats
-- Synchronization endpoints for offline operation
+- Secure API endpoint for client portal data access
+- Standardized invoice format generation (PDF, HTML, JSON)
+- Local data storage with serialization/deserialization for offline mode
+- Synchronization mechanism with conflict resolution strategy
+- Proposal import mechanism supporting common formats (Markdown, JSON, YAML)
 
 ### Key Constraints
-- Must operate entirely in command-line environment when needed
-- Must maintain data integrity during synchronization operations
-- Support for secure client data separation
-- Minimal resource usage for operation on travel devices
-- Must handle timezone differences for international clients
+- The implementation must maintain complete data privacy with client separation
+- All functionality must be accessible via programmatic API without UI components
+- The system must be resilient to connection interruptions during synchronization
+- Time tracking must be accurate to the minute for proper billing
+- Contract milestone and payment data must be stored securely with proper encryption
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for freelance developers includes:
+1. **Client-Centric Task Management**: A core module handling CRUD operations for tasks with client segregation, ensuring complete separation of data between different client projects.
 
-1. **Task Management Core**
-   - Create, read, update, and delete client-specific tasks
-   - Organize tasks by client, project, and deliverable
-   - Track task status, priorities, and time estimates
-   - Support for detailed notes and time tracking
-   - Persistence with client data separation
+2. **Advanced Time Tracking System**: Precise time recording functionality that logs work periods against specific tasks, with support for manual time entry, timer-based recording, and categorization by billable/non-billable status.
 
-2. **Client Management System**
-   - Maintain client profiles and contact information
-   - Track client projects and engagement history
-   - Manage client-specific settings and preferences
-   - Control access permissions for client portal
-   - Generate client-facing reports and status updates
+3. **Contract and Milestone Manager**: A component that maintains relationship between tasks and contract deliverables, tracking completion percentage and payment status for each milestone.
 
-3. **Time Tracking and Billing Engine**
-   - Record time entries against specific tasks
-   - Associate time with clients and projects
-   - Calculate billable amounts based on rates
-   - Generate invoices with appropriate itemization
-   - Track payment status and history
+4. **Invoicing Engine**: A flexible reporting system capable of generating detailed invoices from completed tasks and time entries, with customizable templates and format options.
 
-4. **Contract and Milestone Framework**
-   - Define contract terms and deliverable milestones
-   - Link milestones to specific task groups
-   - Track progress toward milestone completion
-   - Manage approval and signoff workflows
-   - Monitor deadline compliance and alerts
+5. **Proposal Conversion Tool**: Logic to parse project proposals and generate appropriate task structures, estimates, and milestones based on the proposal content.
 
-5. **Proposal Management System**
-   - Create and track project proposals
-   - Estimate resource requirements and timelines
-   - Convert accepted proposals to project structures
-   - Analyze historical data for estimation accuracy
-   - Track conversion rates and follow-up activities
+6. **Synchronization Framework**: A robust mechanism for offline operation, storing changes locally and synchronizing with the main data store when connectivity is restored, including conflict resolution strategies.
 
-6. **Synchronization Engine**
-   - Implement offline-first data architecture
-   - Manage local data storage and synchronization
-   - Detect and resolve data conflicts
-   - Optimize bandwidth usage during synchronization
-   - Prioritize critical data for limited connectivity scenarios
+7. **Client Portal API**: A secure interface for exposing limited task and progress data to clients, with authentication and authorization controls.
+
+The system should be designed as a collection of Python modules with clean interfaces, allowing components to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Client portal correctly displays appropriate task information
-- Invoicing accurately calculates billable amounts based on time tracked
-- Milestone tracking properly links deliverables to tasks and payments
-- Proposal conversion creates appropriate task structures
-- Offline operation maintains full functionality without connectivity
+- Task creation, retrieval, updating, and deletion with client segregation
+- Time tracking accuracy including start/stop operations and manual entry
+- Invoice generation with correct calculations and formatting
+- Contract milestone progress tracking and payment status updates
+- Proposal parsing and task list generation
+- Offline operation and synchronization with conflict resolution
+- Client portal data access with proper security controls
 
 ### Critical User Scenarios
-- Tracking time across multiple client projects in a single day
-- Generating an end-of-month invoice for a client with multiple projects
-- Managing a complex project with multiple milestones and deadlines
-- Converting an accepted client proposal into a structured task list
+- Complete client project lifecycle from proposal to final invoice
+- Time tracking across multiple client projects within the same day
 - Working offline while traveling and synchronizing upon return
+- Client reviewing project progress through the portal interface
+- Contract milestone completion and payment tracking
+- Generating end-of-month invoices for all active clients
 
 ### Performance Benchmarks
-- Support 10,000+ historical tasks across all clients
-- Generate invoices for a month of work (100+ entries) in under 3 seconds
-- Synchronize a week of offline changes in under 10 seconds
-- Load complete client history and task list in under 2 seconds
-- Support 50+ concurrent active projects without performance degradation
+- Task operations must complete in <50ms for typical usage
+- Time tracking start/stop operations must have <100ms latency
+- Invoice generation must process at least 500 time entries per second
+- Local database operations must perform within 10% of online operations
+- Synchronization after being offline must process at least 100 changes per second
 
 ### Edge Cases and Error Conditions
-- Handling disputed or partially paid invoices
-- Managing scope changes to milestones and contracts
-- Recovering from interruptions during proposal conversion
-- Resolving complex conflicts from extended offline periods
-- Dealing with retroactive time entry corrections after invoicing
-- Supporting international clients with different currencies and time zones
+- Handling conflicting changes during synchronization
+- Recovery from interrupted time tracking sessions
+- Proper handling of timezone differences for remote work
+- Accurate calculations with partial hours and minimum billing increments
+- Security for client data with proper access controls
+- Resilience against network interruptions during data transfer
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for financial calculations and invoice generation
-- Comprehensive integration tests for synchronization operations
-- Performance tests for large client portfolios
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Security tests must verify client data isolation and access controls
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully generates accurate invoices that match time tracked
-- Clients can view appropriate progress information without developer intervention
-- Milestone tracking ensures deliverables are completed on schedule
-- Proposal conversion streamlines the process of starting new client projects
-- Offline operation provides full functionality regardless of connectivity
-- Administrative time spent on client management is reduced by at least 30%
-- Financial management accuracy improves with fewer missed billable hours
-- Client satisfaction increases due to improved transparency and communication
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates the ability to manage tasks for at least 10 distinct clients with proper data isolation.
+3. Time tracking functionality accurately records and reports billable hours with appropriate categorization.
+4. Invoicing correctly calculates billing based on tracked time and contracted rates.
+5. The system operates fully in offline mode with successful synchronization when reconnected.
+6. Client portal API securely exposes appropriate information without compromising data privacy.
+7. Contract milestone tracking accurately reflects project progress and payment status.
+8. The implementation maintains high performance even with large datasets across many clients.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

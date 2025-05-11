@@ -1,169 +1,163 @@
-# Interactive Data Explorer for Urban Transportation Planning
+# Urban Transit Data Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for transportation planners analyzing urban mobility patterns to optimize public transit. This tool emphasizes geospatial flow visualization, temporal demand modeling, route optimization, accessibility analysis, and transfer efficiency to improve city transportation networks.
+A specialized terminal-based data exploration framework designed for transportation planners who analyze city transit data to optimize public transportation routes and schedules. This tool enables visualization of passenger flow, identification of underserved areas, and modeling of potential service changes on commuter patterns without requiring graphical interfaces or specialized hardware.
 
 ## Persona Description
 Aisha analyzes city transportation data to optimize public transit routes and schedules. She needs to visualize passenger flow, identify underserved areas, and model the impact of potential service changes on commuter patterns.
 
 ## Key Requirements
+1. **Geospatial flow visualization** - Generate clear representations showing passenger movement through transit networks, critical for understanding how people navigate the city's transportation system. This feature helps planners identify major corridors, transfer points, and potential bottlenecks in the network.
 
-1. **Geospatial Flow Visualization**
-   - Implement specialized visualization showing passenger movement through transit networks
-   - Critical because understanding how people move through the city is fundamental to transit planning
-   - Must represent directional flow volumes between origins and destinations
-   - Should overlay flow patterns on geographic maps with transit infrastructure
+2. **Temporal demand modeling** - Implement analysis tools to identify peak usage patterns and service gaps across different times of day, days of the week, and seasons. Understanding when and where demand fluctuates helps planners allocate resources efficiently and address service deficiencies.
 
-2. **Temporal Demand Modeling**
-   - Create analysis tools that identify peak usage patterns and service gaps across time
-   - Essential for understanding when and where transit demand occurs throughout the day, week, and year
-   - Must detect recurring patterns, seasonal variations, and anomalous demand events
-   - Should project future demand based on historical patterns and growth trends
+3. **Route optimization simulation** - Develop modeling capabilities to test schedule modifications against historical demand patterns, predicting the impact of service changes before implementation. This what-if analysis helps planners evaluate potential improvements without costly real-world trials.
 
-3. **Route Optimization Simulation**
-   - Develop simulation capabilities for testing schedule modifications against historical demand
-   - Important for predicting the impact of service changes before implementation
-   - Must model passenger behavior including route choice, transfers, and walking distances
-   - Should optimize for multiple objectives including coverage, efficiency, and passenger convenience
+4. **Accessibility mapping** - Create visualizations showing transit coverage across different demographics and geographic areas to identify equity issues and underserved populations. This feature ensures transportation resources are distributed fairly and meet the needs of all community members.
 
-4. **Accessibility Mapping**
-   - Implement tools to analyze transit coverage across different demographics and neighborhoods
-   - Critical for ensuring equitable service and identifying underserved communities
-   - Must integrate transit network data with demographic and land use information
-   - Should quantify access to essential services (jobs, healthcare, education) via public transit
-
-5. **Multimodal Transfer Analysis**
-   - Create specialized analytics to evaluate connection efficiency between transportation types
-   - Essential for improving the integration of different transit modes (bus, rail, bike, pedestrian)
-   - Must identify transfer pain points, long waits, and missing connections
-   - Should simulate improvements to transfer infrastructure and coordination
+5. **Multimodal transfer analysis** - Highlight connection efficiency between different transportation types (bus, subway, bike share, etc.) to improve integration of the overall network. This helps planners understand how well different parts of the transportation system work together.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Geospatial visualization must be verified against actual route and ridership data
+  - Temporal modeling algorithms must be validated with historical demand patterns
+  - Optimization simulations must produce consistent results for identical inputs
+  - Accessibility calculations must conform to transportation equity standards
+  - Multimodal analysis must accurately represent actual transfer patterns and times
 
-### Testability Requirements
-- All components must be testable via pytest with reproducible results
-- Geospatial algorithms must be validated against standard GIS operations
-- Temporal modeling must demonstrate statistical validity with historical data
-- Simulation outcomes must be verifiable against actual system changes
-- Accessibility metrics must be testable against established transportation equity standards
+- **Performance Expectations**:
+  - Must handle transit networks with up to 500 routes and 10,000 stops
+  - Process ridership data for 1 million daily passenger trips
+  - Generate visualizations of passenger flow within 10 seconds
+  - Run route optimization simulations within 30 seconds
+  - Memory usage must remain below 4GB even with comprehensive network data
 
-### Performance Expectations
-- Must handle urban-scale transportation datasets with millions of trip records
-- Geospatial visualization should render complex flow patterns interactively
-- Temporal analysis should process years of historical usage data efficiently
-- Simulations should evaluate multiple scenarios in minutes rather than hours
-- Accessibility calculations should cover entire metropolitan areas with fine-grained resolution
+- **Integration Points**:
+  - Support for standard transit data formats (GTFS, GTFS-RT, Shapefile, GeoJSON)
+  - Import capabilities for demographic and land use data
+  - Export functionality for planning reports and presentations
+  - Support for multimodal transportation data integration
+  - Integration with census and socioeconomic datasets
 
-### Integration Points
-- Data import from common transportation data formats (GTFS, APC, AFC, mobile data)
-- Support for standard geospatial data formats (GeoJSON, Shapefile, GeoPackage)
-- Integration with demographic and land use datasets
-- Export capabilities for planning documentation and presentations
-- Optional integration with transportation modeling systems
+- **Key Constraints**:
+  - All visualizations must be terminal-compatible without external dependencies
+  - Analysis must be reproducible with consistent results for planning justification
+  - Must function on standard planning department hardware without cloud dependencies
+  - Should handle incomplete or inconsistent transit data common in real-world systems
+  - Must support public engagement by generating clear, explainable outputs
 
-### Key Constraints
-- Must operate with publicly available data without requiring proprietary sources
-- Should handle inconsistent and incomplete transportation datasets
-- Must process anonymized passenger data while preserving privacy
-- Should accommodate various transit network configurations and modes
-- Must be adaptable to different urban contexts and scales
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Urban Transit Data Explorer must provide a comprehensive framework for transportation planning analysis:
 
-The implementation must provide the following core capabilities:
+1. **Transit Network Analysis**:
+   - Parse and process GTFS and other transit schedule data
+   - Build network representations of transit systems
+   - Calculate connectivity metrics and service levels
+   - Identify critical network segments and transfer points
+   - Generate network visualizations optimized for terminal display
 
-1. **Urban Mobility Analysis**
-   - Processing of origin-destination matrices from transit data
-   - Flow visualization with directional and volume components
-   - Catchment area analysis for stations and stops
-   - Trip chaining and purpose inference
-   - Modal split analysis for different journey types
+2. **Passenger Flow Analysis**:
+   - Process origin-destination matrices and ridership data
+   - Calculate passenger volumes along routes and at stops
+   - Identify major travel corridors and patterns
+   - Analyze boarding and alighting patterns at stops
+   - Generate flow visualizations showing passenger movement
 
-2. **Temporal Pattern Recognition**
-   - Multi-scale temporal decomposition (daily, weekly, seasonal)
-   - Peak period identification and characterization
-   - Anomaly detection for unusual demand patterns
-   - Trend analysis for growing or declining usage
-   - Forecasting models for future demand scenarios
+3. **Temporal Demand Analysis**:
+   - Analyze ridership patterns across different time periods
+   - Identify peak and off-peak demand characteristics
+   - Calculate headway adequacy relative to demand
+   - Detect service gaps and overcrowding periods
+   - Generate temporal heatmaps and demand curves
 
-3. **Transit Service Optimization**
-   - Route performance evaluation against multiple metrics
-   - Schedule adherence and reliability analysis
-   - Simulation of passenger journey impacts from service changes
-   - Headway optimization based on demand patterns
-   - Resource allocation modeling for vehicles and staff
+4. **Route Planning and Optimization**:
+   - Implement route optimization algorithms (coverage, efficiency, equity)
+   - Model impact of schedule and routing changes
+   - Calculate service metrics for proposed modifications
+   - Compare different service scenarios using multiple criteria
+   - Generate reports on projected impacts of changes
 
-4. **Equity and Accessibility Framework**
-   - Integration of transit and demographic data
-   - Isochrone generation for transit access times
-   - Service equity analysis across socioeconomic factors
-   - Essential destination accessibility scoring
-   - Transit desert identification and prioritization
-
-5. **Multimodal Integration Analysis**
-   - Transfer point identification and evaluation
-   - Intermodal connection quality assessment
-   - Walking and waiting time analysis
-   - Transfer synchronization opportunities
-   - First/last mile connection modeling
+5. **Accessibility and Equity Analysis**:
+   - Calculate transit access metrics for different city areas
+   - Integrate demographic and socioeconomic data
+   - Identify underserved populations and areas
+   - Analyze transfer burden across different communities
+   - Generate equity-focused visualizations and metrics
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Geospatial flow visualization correctly represents passenger movement patterns
+  - Temporal demand modeling accurately identifies peak periods and service gaps
+  - Route optimization simulation produces realistic predictions for service changes
+  - Accessibility mapping correctly identifies underserved areas
+  - Multimodal transfer analysis accurately reflects connection efficiency
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Analyzing ridership patterns to identify heavily used corridors
+  - Identifying times when service frequency doesn't match passenger demand
+  - Simulating the impact of adding a new bus route or changing a schedule
+  - Evaluating transit access equity across different neighborhoods
+  - Analyzing transfer efficiency between bus lines and subway stations
 
-1. **Geospatial Visualization Tests**
-   - Validation of flow mapping algorithms
-   - Testing with synthetic and real-world origin-destination data
-   - Verification of geographic accuracy
-   - Performance testing with large flow datasets
-   - Edge case testing for unusual network geometries
+- **Performance Benchmarks**:
+  - Process GTFS data for a 500-route transit system within 20 seconds
+  - Generate passenger flow visualization for 1 million daily trips within 15 seconds
+  - Complete demand analysis for a week of ridership data within 30 seconds
+  - Run route optimization simulation for 10 route modifications within 30 seconds
+  - Memory usage below 4GB during all operations
 
-2. **Temporal Analysis Tests**
-   - Validation of pattern detection against labeled datasets
-   - Testing with synthetic time series representing various transit patterns
-   - Verification of forecasting accuracy with historical data
-   - Testing with irregular and missing data patterns
-   - Performance testing with multi-year datasets
+- **Edge Cases and Error Conditions**:
+  - Handling incomplete or inconsistent GTFS data
+  - Managing special service schedules (holidays, special events)
+  - Processing transit systems with complex transfer patterns
+  - Dealing with sparse ridership data for certain routes or times
+  - Accounting for seasonal variations in travel patterns
 
-3. **Simulation Model Tests**
-   - Validation against historical service changes with known outcomes
-   - Testing with diverse passenger behavior scenarios
-   - Verification of model sensitivity to input parameters
-   - Testing with extreme conditions and edge cases
-   - Performance testing with complex network simulations
+- **Required Test Coverage Metrics**:
+  - 90% code coverage for all core functionality
+  - 100% coverage for optimization and simulation functions
+  - All data parsers tested with valid and invalid inputs
+  - Complete integration tests for all public APIs
+  - Performance tests for all computationally intensive operations
 
-4. **Accessibility Analysis Tests**
-   - Validation of accessibility metrics against established methodologies
-   - Testing with diverse demographic and geographic scenarios
-   - Verification of equity calculations
-   - Performance testing with metropolitan-scale datasets
-   - Edge case testing for isolated areas and unusual transit configurations
-
-5. **Transfer Analysis Tests**
-   - Validation of transfer identification algorithms
-   - Testing with multi-modal journey scenarios
-   - Verification of waiting time calculations
-   - Performance testing with complex transfer networks
-   - Testing with scheduled and real-time arrival data
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Urban Transit Data Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Clear visualization of passenger flow through transit networks
+2. Accurate identification of temporal demand patterns and service gaps
+3. Realistic simulation of route and schedule optimization scenarios
+4. Comprehensive mapping of transit accessibility across different demographics
+5. Insightful analysis of transfer efficiency between transportation modes
 
-1. Accurately visualizes passenger movements to reveal dominant flow patterns
-2. Effectively identifies temporal demand patterns to inform service planning
-3. Reliably simulates the impact of potential service changes on passenger journeys
-4. Equitably evaluates transit accessibility across different communities and demographics
-5. Identifies opportunities to improve connections between different transportation modes
-6. Processes urban-scale transit data with acceptable performance
-7. Provides clear, actionable insights for transportation planning decisions
-8. Adapts to different urban contexts and transit network configurations
-9. Demonstrates quantifiable improvements to proposed transit service changes
-10. Supports evidence-based planning for more efficient and equitable urban transportation
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the urban transportation planner's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

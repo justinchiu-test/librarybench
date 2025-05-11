@@ -1,114 +1,172 @@
-# NetScope for Security Incident Response
+# Incident Response Network Analyzer
 
 ## Overview
-A specialized network protocol analyzer optimized for cybersecurity incident response, enabling rapid analysis of suspicious traffic patterns to identify attack vectors, contain active breaches, and gather forensic evidence for security investigations.
+A specialized network protocol analysis library designed specifically for cybersecurity incident response teams to rapidly analyze suspicious network traffic, identify attack patterns, reconstruct attack timelines, and generate actionable threat intelligence from captured network data.
 
 ## Persona Description
 Elena works on a cybersecurity incident response team handling active network intrusions. She needs to quickly analyze suspicious network traffic patterns to identify attack vectors, contain breaches, and gather forensic evidence for investigations.
 
 ## Key Requirements
-1. **Attack pattern recognition matching traffic against known exploit signatures and tactics**
-   - Implement a signature-based detection system that can match captured network traffic against a database of known attack patterns and exploit signatures
-   - The system must support both atomic signatures (specific byte patterns) and behavioral signatures (sequences of packets that indicate malicious activity)
-   - Include capabilities to update and manage the signature database, with versioning and provenance tracking
 
-2. **Forensic timeline reconstruction showing the progression of suspicious network activities**
-   - Develop a timeline reconstruction system that can chronologically organize captured packets related to an incident
-   - Implement correlation algorithms to link related activities across different protocols and connections
-   - Provide functionality to annotate the timeline with analyst observations and export it in formats suitable for incident reporting
+1. **Attack Pattern Recognition System**  
+   Create a module that can match traffic against known exploit signatures and tactics. This is critical for Elena as it allows her to quickly identify malicious traffic patterns during active incidents without manually analyzing each packet, significantly reducing response time.
 
-3. **Malware command-and-control detection identifying beaconing and exfiltration patterns**
-   - Create detection algorithms for periodic beaconing behaviors characteristic of compromised systems
-   - Implement heuristics to identify data exfiltration attempts, including unusual data transfer patterns, encoding methods, and destination anomalies
-   - Support for detecting common C2 obfuscation techniques such as domain generation algorithms and traffic mimicry
+2. **Forensic Timeline Reconstruction**  
+   Implement functionality to chronologically reconstruct network activities, highlighting suspicious events. This feature is essential for Elena to understand the progression of an attack, establish a sequence of events, and determine the initial entry point and subsequent lateral movement.
 
-4. **IoC (Indicators of Compromise) extraction generating shareable threat intelligence**
-   - Develop automated extraction of network-based IoCs including suspicious IPs, domains, URLs, and unusual DNS patterns
-   - Implement export capabilities in standard threat intelligence formats (STIX, TAXII, OpenIOC, etc.)
-   - Include confidence scoring for extracted IoCs based on correlation with known malicious patterns
+3. **Malware Command-and-Control Detection**  
+   Develop capabilities to identify beaconing patterns, unusual connection intervals, and data exfiltration attempts. This helps Elena isolate compromised systems by detecting their communication with malicious external servers, even when attackers are using encryption or obfuscation techniques.
 
-5. **Incident containment assistance with targeted blocking recommendations for specific traffic**
-   - Implement analysis capabilities that can generate specific network blocking rules based on identified malicious traffic
-   - Support multiple firewall and IDS/IPS rule formats (iptables, Cisco, Snort, etc.) for immediate deployment
-   - Include risk assessment for recommended blocks to prevent disruption to legitimate business activities
+4. **IoC (Indicators of Compromise) Extraction**  
+   Build a system to automatically extract and format potential IoCs (IP addresses, domains, hashes) from analyzed traffic. This allows Elena to quickly generate shareable threat intelligence that can be distributed to other security teams or fed into defensive systems to prevent similar attacks elsewhere.
+
+5. **Incident Containment Assistance**  
+   Create functionality that suggests specific traffic blocking rules based on detected malicious communications. This feature is vital during active incidents as it helps Elena rapidly implement containment measures to stop ongoing attacks while minimizing disruption to legitimate business operations.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- All detection algorithms must be testable with predefined packet capture files containing known malicious patterns
-- Signature matching system must report false positive and false negative rates against test datasets
-- Timeline reconstruction accuracy must be verifiable through predefined ground truth datasets
-- IoC extraction precision and recall must be measurable against known IoC datasets
+- All components must be testable with mock network traffic data fixtures
+- Attack pattern recognition algorithms must be testable with known malicious traffic samples
+- Timeline reconstruction must be verifiable with timestamped event sequences
+- IoC extraction must be validated against known-good extraction results
+- Containment rule generation must be tested for accuracy and proper syntax
 
 ### Performance Expectations
-- Attack pattern recognition must process at least 1000 packets per second on standard hardware
-- Timeline reconstruction must handle sessions spanning at least 24 hours of continuous traffic
-- Analysis operations should perform efficiently on packet captures up to 10GB in size
-- Memory usage must scale linearly with traffic volume and remain under 4GB for most operations
+- Process at least 1GB of PCAP data in under 5 minutes on standard hardware
+- Attack pattern matching must complete within 30 seconds for 100MB of traffic data
+- Timeline reconstruction should process 10,000 network events in under 10 seconds
+- IoC extraction should handle at least 500 potential indicators per minute
+- All analysis functions should support incremental processing for real-time analysis
 
 ### Integration Points
-- Support for importing PCAP files from standard network capture tools
-- API endpoints for receiving live packet streams from network taps or monitoring systems
-- Export capabilities compatible with incident response platforms and SIEMs
-- Integration with threat intelligence feeds for signature and IoC correlation
+- Support for reading standard PCAP/PCAPNG capture files
+- Export IoCs in STIX/TAXII 2.1 format for threat intelligence sharing
+- Generate firewall rules compatible with major platforms (iptables, pf, Windows Firewall)
+- Import custom attack signatures in Suricata/Snort format
+- API for integration with incident management systems
 
 ### Key Constraints
-- All analysis must be possible offline without external service dependencies
-- Must preserve chain of custody for forensic evidence requirements
-- All operations must be logged for audit trail requirements
-- Parsing of potential malicious payloads must be done in a safe, contained manner
+- Must work with offline captures when network connectivity is restricted
+- All analysis must be performed locally without external API dependencies
+- No sensitive data should be transmitted outside the analysis environment
+- Processing should be possible on systems with 8GB RAM or more
+- Must handle malformed packets without crashing
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Security Incident Response version of NetScope must provide a comprehensive packet analysis library specifically optimized for security investigations. The system should enable rapid triage of network traffic to identify potential security incidents, provide detailed analysis tools for investigating confirmed breaches, and generate actionable intelligence for containment and remediation.
 
-Key functional components include:
-- A modular signature detection engine with support for complex pattern matching
-- Timeline analysis tools with event correlation capabilities
-- Statistical anomaly detection focused on potential malicious behaviors
-- Automatic extraction and categorization of potential indicators of compromise
-- Rule generation for network security controls to contain identified threats
+The Incident Response Network Analyzer should provide the following core functionality:
 
-The system should implement a layered analysis approach, moving from rapid triage to in-depth forensic examination as suspicious activity is confirmed. All operations should maintain evidentiary integrity and provide complete audit trails suitable for legal and compliance purposes.
+1. **Traffic Analysis Engine**
+   - Parse and decode network protocols from captured traffic data
+   - Support for TCP/IP, UDP, HTTP, DNS, SMTP, TLS, and other common protocols
+   - Handle fragmented packets and session reconstruction
+   - Provide statistical analysis of connection metadata
+
+2. **Attack Detection System**
+   - Signature-based detection using known attack patterns
+   - Heuristic-based detection for identifying suspicious behaviors
+   - Anomaly detection for identifying deviations from normal traffic
+   - Support for custom detection rules
+
+3. **Forensic Analysis Tools**
+   - Session reconstruction to follow attack progression
+   - Temporal analysis to create accurate event timelines
+   - Extraction of files and artifacts from network streams
+   - Correlation of related network activities
+
+4. **Threat Intelligence Generation**
+   - Automated extraction of potential IoCs
+   - Classification of indicators by confidence and threat level
+   - Formatting for sharing with other security systems
+   - Deduplication and validation of extracted indicators
+
+5. **Containment Support**
+   - Analysis of network communication patterns to identify isolation points
+   - Generation of containment rules for various security controls
+   - Impact assessment for proposed containment actions
+   - Prioritization of containment recommendations
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate detection of known attack patterns in both live and captured traffic
-- Correct temporal ordering and causality linkage in the timeline reconstruction
-- Detection of various command-and-control and data exfiltration patterns
-- Extraction of valid, actionable IoCs from traffic containing security incidents
-- Generation of effective blocking rules that contain threats without excessive collateral impact
+- Accuracy of protocol parsing and decoding
+- Correctness of attack pattern recognition
+- Precision of timeline reconstruction
+- Completeness of IoC extraction
+- Effectiveness of containment recommendations
 
 ### Critical User Scenarios
-- Analyzing a suspected breach to determine the initial attack vector
-- Tracking lateral movement of attackers across a network
-- Identifying data exfiltration during an active breach
-- Generating actionable threat intelligence from an incident
-- Creating emergency containment rules during an active incident
+- Analyzing a captured PCAP file of a known malware infection
+- Reconstructing the timeline of a multi-stage attack
+- Detecting and analyzing command-and-control communications
+- Extracting and formatting IoCs from an incident for sharing
+- Generating containment rules for an active compromise
 
 ### Performance Benchmarks
-- Complete initial triage analysis of a 1GB PCAP file in under 5 minutes
-- Process live traffic at minimum line rate for a 1Gbps network connection
-- Extract IoCs from a multi-day traffic capture in under 10 minutes
-- Generate blocking rules within 30 seconds of identifying malicious traffic
+- Process at least 100 packets per second on reference hardware
+- Complete full analysis of a 1GB PCAP file in under 5 minutes
+- Extract at least 95% of known IoCs from test traffic samples
+- Generate timeline reconstruction with millisecond precision
+- Produce containment rules within 5 seconds of detection
 
 ### Edge Cases and Error Conditions
-- Graceful handling of corrupt or incomplete packet captures
-- Accurate analysis of fragmented or out-of-order packets
-- Correct handling of encrypted traffic without breaking encryption
-- Proper management of very large (>10GB) packet captures
-- Resilience against adversarial attempts to evade detection
-- Error handling for malformed packets and protocol violations
+- Handling of corrupt PCAP files
+- Dealing with encrypted traffic and partial visibility
+- Processing extremely large capture files (10GB+)
+- Managing high-cardinality data (many unique IPs/domains)
+- Handling of non-standard or custom protocols
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core analysis components
-- Complete coverage of all signature matching algorithms
-- Tests for each supported protocol decoder
-- Comprehensive tests for timeline reconstruction with complex scenarios
-- Full coverage of all IoC extraction mechanisms
+- Minimum 90% code coverage for core functionality
+- 100% coverage for IoC extraction and formatting
+- 95% coverage for attack pattern recognition
+- 90% coverage for timeline reconstruction
+- 95% coverage for containment rule generation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Successful detection of at least 95% of MITRE ATT&CK techniques that have network observables in test traffic
-- Timeline reconstruction accuracy of at least 98% when compared to ground truth data
-- False positive rate below 1% for IoC extraction from realistic network traffic
-- Generated blocking rules effectively contain threats in test scenarios while affecting less than 0.1% of legitimate traffic
-- System demonstrates linear scaling with traffic volume, maintaining specified performance metrics
-- All operations maintain complete audit trails suitable for evidentiary purposes
+
+The Incident Response Network Analyzer implementation will be considered successful when:
+
+1. It can accurately identify at least 90% of known attack patterns in test network captures
+2. It successfully reconstructs attack timelines with correct event sequencing
+3. It correctly identifies command-and-control communication with 85% or higher accuracy
+4. It extracts valid IoCs with at least 90% accuracy and minimal false positives
+5. It generates effective containment rules that would block malicious traffic without disrupting legitimate communications
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

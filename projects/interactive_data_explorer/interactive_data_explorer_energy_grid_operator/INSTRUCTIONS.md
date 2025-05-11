@@ -1,169 +1,160 @@
-# Interactive Data Explorer for Energy Grid Operations
+# Power Grid Data Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for energy grid operators monitoring power distribution networks. This tool emphasizes grid topology visualization, equipment anomaly detection, load forecasting, renewable integration analysis, and failure simulation to ensure reliable and efficient power distribution.
+A terminal-based power distribution network analysis framework designed specifically for energy grid operators who need to monitor complex grid topologies, analyze consumption patterns, identify potential failure points, and optimize power distribution. This specialized tool enables real-time data exploration in control room environments without requiring graphical interfaces.
 
 ## Persona Description
 Chen monitors power distribution networks to ensure reliable service and efficient load balancing. He needs to analyze consumption patterns, identify potential failure points, and optimize power distribution across the grid.
 
 ## Key Requirements
+1. **Grid topology visualization** - Show load distribution across network segments to identify bottlenecks and imbalances. This functionality is critical as grid operators need to understand the real-time flow of electricity through complex interconnected networks to identify potential issues before they cause outages.
 
-1. **Grid Topology Visualization**
-   - Implement specialized visualization showing load distribution across network segments
-   - Critical because understanding the current state of the electrical grid is fundamental to operations
-   - Must represent various electrical parameters (voltage, current, phase angles) across the network
-   - Should highlight overloaded segments, bottlenecks, and underutilized capacity
+2. **Anomaly detection for equipment failures** - Implement early warning system for potential equipment failures using statistical pattern detection. Grid operators must be able to proactively identify unusual behavior patterns in transformers, substations, and transmission equipment before catastrophic failures occur.
 
-2. **Anomaly Detection for Equipment Failures**
-   - Create detection algorithms for early warning of potential equipment failures
-   - Essential for preventing outages through proactive maintenance
-   - Must identify subtle precursor patterns that indicate developing equipment issues
-   - Should distinguish between normal operational variations and genuine anomalies
+3. **Load forecasting tools** - Predict demand patterns based on weather and usage history, essential for planning generation capacity and maintenance windows. Accurate forecasting allows operators to ensure adequate power is available while avoiding costly over-generation.
 
-3. **Load Forecasting Tools**
-   - Develop predictive models for energy demand based on weather and usage history
-   - Important for anticipating load requirements and planning generation capacity
-   - Must incorporate multiple factors including weather, time patterns, and special events
-   - Should provide both short-term (hours/days) and medium-term (weeks/months) forecasts
+4. **Renewable integration analysis** - Show impact of variable energy sources like solar and wind on grid stability, critical for modern grid operations with increasing renewable penetration. Operators need to understand how fluctuating renewable inputs affect overall grid performance.
 
-4. **Renewable Integration Analysis**
-   - Implement analytics to show impact of variable energy sources on grid stability
-   - Critical as energy grids incorporate increasing amounts of intermittent renewable generation
-   - Must model the interaction between conventional and renewable generation sources
-   - Should assess stability margins and recommend compensatory measures
-
-5. **Cascading Failure Simulation**
-   - Create simulation capabilities to identify critical points in the distribution network
-   - Essential for understanding vulnerability to cascading failures that could cause blackouts
-   - Must model how failures propagate through the interconnected grid
-   - Should identify critical components whose failure would have widespread impacts
+5. **Cascading failure simulation** - Identify critical points in the distribution network where failures could propagate, vital for understanding systemic risks and prioritizing maintenance. This feature helps prevent widespread outages by highlighting vulnerable network segments.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - All grid topology algorithms must be testable with standard IEEE power system test cases
+  - Statistical anomaly detection must be verifiable against known failure patterns
+  - Forecasting accuracy must be measurable against historical data
+  - Simulation results must be reproducible and match industry-standard models
+  - All transformations of grid data must maintain referential integrity
 
-### Testability Requirements
-- All components must be testable via pytest with reproducible results
-- Grid modeling algorithms must be validated against established power flow equations
-- Anomaly detection must demonstrate statistical validity with historical failure data
-- Forecasting models must be assessable against standard accuracy metrics
-- Simulation outcomes must be verifiable against historical grid events
+- **Performance Expectations**:
+  - Must handle networks with up to 10,000 nodes and 15,000 connections
+  - Real-time analysis must complete within 2 seconds for critical operations
+  - Forecasting calculations should complete within 30 seconds for 7-day forecasts
+  - Cascading failure simulations must run in under 60 seconds for complex scenarios
+  - Memory usage must not exceed 4GB during normal operation
 
-### Performance Expectations
-- Must handle large-scale grid data representing thousands of nodes and connections
-- Visualization should render complex grid topologies with near real-time updates
-- Anomaly detection should process thousands of sensor readings per second
-- Forecasting should incorporate years of historical load and weather data
-- Simulations should evaluate complex failure scenarios in seconds to minutes
+- **Integration Points**:
+  - Support for standard power industry data formats (CIM XML, PSS/E, MATPOWER)
+  - Compatible with weather data APIs for forecasting integration
+  - Support for time-series database outputs from SCADA systems
+  - Integration with historical operational data archives
 
-### Integration Points
-- Data import from common energy management systems and SCADA
-- Support for standard power system data formats (CIM, PSS/E, MATPOWER)
-- Integration with weather data services and forecasts
-- Export capabilities for operational reporting and shift handovers
-- Compatibility with grid modeling and simulation tools
+- **Key Constraints**:
+  - Must function in air-gapped control room environments without internet access
+  - No dependencies on external visualization libraries or frameworks
+  - All operations must be usable via keyboard-only interfaces for control room use
+  - Security constraints prohibit any transmission of grid data to external systems
 
-### Key Constraints
-- Must operate reliably in critical infrastructure environments
-- Should handle both real-time monitoring and historical analysis
-- Must process data with varying quality from diverse sensor types
-- Should operate within the secure operational technology environment
-- Must be adaptable to different grid topologies and voltage levels
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Power Grid Data Explorer must provide a comprehensive analytical framework focused on electric grid operations:
 
-The implementation must provide the following core capabilities:
+1. **Grid Topology Analysis**:
+   - Load and parse grid network structures from standard industry formats
+   - Calculate power flow and load distribution across network segments
+   - Identify bottlenecks, congestion points, and overloaded components
+   - Analyze network connectivity and resilience against component failures
+   - Visualize load distribution using text-based heatmaps and network diagrams
 
-1. **Power System Network Analysis**
-   - Implementation of power flow calculations and state estimation
-   - Topology processing and network connectivity analysis
-   - Congestion identification and bottleneck analysis
-   - Operating limit monitoring and violation detection
-   - Historical comparison of grid states under similar conditions
+2. **Equipment Health Monitoring**:
+   - Process time-series telemetry from grid components (transformers, breakers, etc.)
+   - Apply statistical models to detect abnormal operating conditions
+   - Calculate equipment health indices based on operating parameters
+   - Generate early warnings for potential equipment failures
+   - Track maintenance history and correlate with performance indicators
 
-2. **Grid Equipment Monitoring**
-   - Sensor data processing from diverse equipment types
-   - Anomaly detection based on statistical and physical models
-   - Remaining useful life estimation for critical components
-   - Maintenance prioritization based on condition assessment
-   - Equipment performance benchmarking and trending
+3. **Load Forecasting and Planning**:
+   - Integrate historical load data with weather information
+   - Apply time-series forecasting algorithms (ARIMA, Prophet, etc.) to predict demand
+   - Account for seasonal patterns, holidays, and special events
+   - Generate confidence intervals for predicted load levels
+   - Compare forecasts with available generation capacity
 
-3. **Energy Demand Forecasting**
-   - Multi-factor predictive modeling incorporating relevant variables
-   - Weather sensitivity analysis for load components
-   - Special event and holiday impact modeling
-   - Forecast accuracy tracking and model adaptation
-   - Ensemble forecasting combining multiple prediction approaches
+4. **Renewable Energy Integration**:
+   - Model impact of intermittent renewable sources on grid stability
+   - Calculate reserve requirements based on renewable generation forecasts
+   - Analyze correlation between weather patterns and renewable output
+   - Optimize conventional generation scheduling around renewable availability
+   - Identify grid areas most impacted by renewable variability
 
-4. **Renewable Energy Integration**
-   - Intermittent generation impact assessment
-   - Correlation analysis between renewable output and demand
-   - Stability margin calculation with varying renewable penetration
-   - Flexibility requirement estimation for reliable integration
-   - Scenario modeling for different renewable deployment strategies
-
-5. **Reliability and Contingency Analysis**
-   - N-1 and N-2 contingency simulation
-   - Cascading failure modeling with protection system interaction
-   - Critical component identification through impact assessment
-   - Recovery pathway analysis after failures
-   - Resilience scoring for different grid configurations
+5. **Failure Analysis and Simulation**:
+   - Model cascading failure scenarios using power flow simulations
+   - Identify critical components whose failure would cause widespread outages
+   - Calculate system resilience metrics and vulnerability indices
+   - Simulate protection system responses to contingency events
+   - Generate prioritized maintenance recommendations based on risk analysis
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Grid topology representation correctly models actual power networks
+  - Anomaly detection algorithms successfully identify known fault patterns
+  - Load forecasting accuracy meets industry standards (MAPE < 5%)
+  - Cascading failure simulations match reference implementation results
+  - Renewable integration analysis correctly assesses impact on grid stability
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Importing grid topology and analyzing current load distribution
+  - Detecting anomalous behavior in grid equipment before failure
+  - Generating accurate load forecasts for operational planning
+  - Assessing impact of additional renewable capacity on grid stability
+  - Identifying critical vulnerabilities in network topology
 
-1. **Grid Modeling Tests**
-   - Validation of power flow calculations against industry standards
-   - Testing with standard IEEE test systems of varying complexity
-   - Verification of topology processing algorithms
-   - Performance testing with large-scale grid models
-   - Edge case testing for unusual grid configurations
+- **Performance Benchmarks**:
+  - Load and analyze full grid topology (10,000 nodes) within 10 seconds
+  - Process 1 week of telemetry data (5-minute intervals) within 15 seconds
+  - Generate 7-day hourly load forecast within 30 seconds
+  - Complete cascading failure simulation for 3 contingency events within 60 seconds
+  - Memory usage below 4GB during all operations
 
-2. **Anomaly Detection Tests**
-   - Validation against labeled datasets with known equipment issues
-   - Testing with synthetic anomaly patterns of varying subtlety
-   - Verification of false positive/negative rates
-   - Performance testing with high-frequency sensor data
-   - Resilience testing with noisy and missing data
+- **Edge Cases and Error Conditions**:
+  - Handling incomplete or corrupted grid topology data
+  - Managing telemetry data gaps and sensor failures
+  - Graceful degradation with extremely large networks
+  - Adapting to unexpected renewable generation patterns
+  - Detecting and reporting physically impossible grid states
 
-3. **Forecasting Model Tests**
-   - Validation of prediction accuracy against historical actuals
-   - Testing with diverse weather scenarios and special events
-   - Verification of confidence interval calculations
-   - Testing with multiple time horizons (hours to months)
-   - Benchmarking against established forecasting methods
+- **Required Test Coverage Metrics**:
+  - 90% code coverage for all core functionality
+  - 100% coverage for critical safety-related functions
+  - All public APIs must have integration tests
+  - All numerical algorithms must have validation tests against known results
 
-4. **Renewable Integration Tests**
-   - Validation of stability assessment against detailed simulations
-   - Testing with various renewable penetration scenarios
-   - Verification of impact metrics for intermittent generation
-   - Performance testing with high-resolution renewable output data
-   - Edge case testing for extreme weather events
-
-5. **Failure Simulation Tests**
-   - Validation against historical cascading events
-   - Testing with diverse initial failure conditions
-   - Verification of protection system modeling
-   - Performance testing with complex cascade scenarios
-   - Sensitivity analysis for simulation parameters
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Power Grid Data Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Complete functionality for all 5 key requirements with comprehensive test coverage
+2. Ability to handle realistic power grid datasets of appropriate scale
+3. Accurate anomaly detection capabilities verified against known equipment failure patterns
+4. Load forecasting accuracy meeting industry standards
+5. Realistic cascading failure simulation results consistent with power flow physics
 
-1. Accurately visualizes power flow and loading conditions across the grid network
-2. Effectively identifies early warning signs of potential equipment failures
-3. Reliably forecasts load requirements under varying conditions
-4. Clearly shows the operational impacts of intermittent renewable generation
-5. Realistically simulates how failures could propagate through the system
-6. Processes grid-scale data with acceptable performance
-7. Provides actionable insights for grid operators to maintain reliability
-8. Adapts to different grid topologies and operating conditions
-9. Demonstrates quantifiable improvements to grid reliability and efficiency
-10. Supports the complete operational workflow from monitoring through analysis to action
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the energy grid operator's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

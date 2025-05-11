@@ -1,177 +1,184 @@
-# FinanceMailFlow - Accounting Practice Email Management System
+# Accounting Firm Email Automation Suite
 
 ## Overview
-FinanceMailFlow is a specialized email automation system designed for small accounting firms that need to securely manage client communications, tax document exchanges, deadline tracking, financial data organization, and regulatory updates. The system streamlines accounting practice operations through intelligent email classification, secure document handling, compliance tracking, and client segmentation to improve service quality while maintaining strict security and regulatory standards.
+AccountMail is a specialized email automation library designed for small accounting practices managing client communications, tax preparation workflows, and financial document exchanges. It enables secure handling of sensitive financial information, structured communication around tax deadlines, client categorization, document organization, and targeted distribution of regulatory updates, helping accounting professionals maintain organized, secure, and efficient client communications.
 
 ## Persona Description
 Maya runs a small accounting practice managing tax preparation and financial advisory services for dozens of clients. Her primary goal is to securely handle financial document exchanges while maintaining a structured communication calendar for tax deadlines and regulatory updates.
 
 ## Key Requirements
 
-1. **Secure Document Request and Encrypted Attachment Management**
-   - Implement templated document request emails for tax and financial information
-   - Create secure, encrypted channels for document exchange
-   - Track outstanding document requests and receipt status
-   - Verify document completeness against requirement checklists
-   - This feature is critical because secure document exchange is foundational to accounting practice, and automated tracking ensures nothing is missed while maintaining security standards required for sensitive financial information.
+1. **Secure Document Request and Handling System**
+   - Create and manage secure document request templates with encrypted attachment handling
+   - Track document submissions and maintain comprehensive status reporting
+   - Implement appropriate security measures for sensitive financial information
+   - This feature is critical because it ensures that sensitive financial documents are requested, transmitted, and stored securely, maintaining client confidentiality and regulatory compliance while efficiently tracking document completion status
 
-2. **Tax Deadline Management and Reminder System**
-   - Track tax filing deadlines customized to each client's situation
-   - Generate escalating reminder sequences as deadlines approach
-   - Handle extension requests and modified deadline tracking
-   - Provide visibility into upcoming deadline workload
-   - This feature is essential because missed tax deadlines can result in significant penalties for clients, making a robust, automated deadline tracking system vital to accounting service quality and risk management.
+2. **Tax Deadline Calendar and Reminder System**
+   - Maintain tax filing deadlines for different client categories (individuals, businesses, etc.)
+   - Generate appropriate reminder sequences based on deadline proximity
+   - Track client-specific extension requests and modified deadlines
+   - This feature is essential because it prevents missed tax filing deadlines through automated, timely reminders, reducing compliance risks for clients while ensuring the accounting practice can properly manage workload around key tax dates
 
-3. **Client Categorization by Service Type and Fiscal Year**
-   - Segment clients by service types (individual tax, business tax, advisory, etc.)
-   - Organize communications based on fiscal year timing
-   - Create custom communication schedules for different client types
-   - Enable targeted messaging to specific client segments
-   - This feature is vital because different client types have vastly different needs and timelines, and appropriate segmentation ensures communications are relevant and timely for each client's specific situation.
+3. **Client Categorization and Service Management**
+   - Organize clients by service type (tax preparation, bookkeeping, advisory)
+   - Track fiscal year timing and filing requirements
+   - Maintain client-specific service packages and fee structures
+   - This feature is vital because it ensures communications are properly targeted based on the services each client receives, enables appropriate billing, and helps manage workload distribution across different service categories
 
-4. **Financial Document Organization and Classification**
-   - Automatically tag and classify received financial documents
-   - Extract key information from standard financial forms
-   - Organize documents by client, tax year, and document type
-   - Create searchable archives of financial information
-   - This feature is crucial because accounting practices handle thousands of financial documents annually, and automated organization dramatically reduces filing time while improving retrieval speed for client service.
+4. **Financial Document Organization System**
+   - Automatically tag and categorize financial document attachments
+   - Implement a searchable repository of client financial information
+   - Maintain document version control and audit trails
+   - This feature streamlines the management of numerous financial documents, ensuring they can be quickly located when needed while maintaining proper organization and security for confidential financial information
 
-5. **Regulatory Update Distribution and Compliance Tracking**
-   - Monitor and distribute relevant tax code and regulatory changes
-   - Target updates to affected client segments
-   - Track client acknowledgment of critical regulatory information
-   - Maintain audit trail of compliance-related communications
-   - This feature is invaluable because staying current with regulatory changes is a core value of accounting services, and targeted distribution ensures clients receive only relevant updates while maintaining records of important communications.
+5. **Regulatory Update Distribution System**
+   - Create and distribute updates on tax law changes and regulatory requirements
+   - Target communications to affected client segments based on relevance
+   - Track acknowledgment and client questions regarding updates
+   - This feature enables the firm to keep clients informed about relevant regulatory changes that affect their financial situation, demonstrating value while ensuring clients can plan appropriately for tax implications of new regulations
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All email encryption and security measures must be verifiable with security testing
-- Template rendering must be testable with different client and financial data
-- Deadline calculation must be verifiable with various tax scenarios
-- Document classification must be testable with sample financial documents
-- All client categorization rules must produce consistent, verifiable results
+- All secure document handling functions must be testable with mock financial documents
+- Tax deadline reminder generation must be verifiable with test calendar scenarios
+- Client categorization algorithms must produce consistent results with test client data
+- Document tagging and organization must be testable with sample financial documents
+- Update distribution targeting must be verifiable with test regulatory changes
 
 ### Performance Expectations
-- Email processing and classification must complete in under 400ms per message
-- Document encryption/decryption must add no more than 2 seconds to processing
-- The system must handle a client base of at least 500 accounts
-- Search operations must return results in under 1 second across all client documents
-- Reminder scheduling must process at least
-100 deadline calculations per second
+- Document request generation should process at least 50 requests per minute
+- Deadline tracking should efficiently monitor deadlines for at least 500 clients
+- Client categorization should handle databases of up to 1000 clients
+- Document organization should manage at least 10,000 financial documents efficiently
+- The system should handle at least 100 unique tax forms and document types
 
 ### Integration Points
-- IMAP/SMTP support for connecting to standard email providers with encryption
-- Secure document storage system integration
-- Tax software data exchange capabilities
-- Calendar integration for deadline management
-- Regulatory information source integration options
+- IMAP and SMTP libraries for email retrieval and sending
+- Template engine for dynamic content generation
+- SQLite or similar database for client and document information
+- Encryption libraries for secure document handling
+- Scheduling system for deadline management and reminders
 
 ### Key Constraints
-- All financial data must be encrypted in transit and at rest
-- The system must comply with financial data security regulations
-- No sensitive data should be processed by external services without approval
-- The system must maintain complete audit trails for all client communications
-- Email operations must be fault-tolerant to prevent data loss
+- All financial data must be handled with appropriate security measures
+- The system must comply with relevant data protection regulations
+- Document handling must maintain proper audit trails for compliance
+- Email transmission of financial information must use secure methods
+- The implementation must be resilient to network and security interruptions
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-FinanceMailFlow must provide a comprehensive API for email management focused on accounting practice needs:
+The core of the Accounting Firm Email Automation Suite should provide:
 
-1. **Email Processing Engine**
-   - Connect to email accounts via IMAP/SMTP with encryption
-   - Apply classification rules to incoming messages
-   - Categorize communications by client, purpose, and priority
-   - Trigger automated responses based on message content and context
+1. **Secure Communication Engine**
+   - Implementing encrypted communication channels for financial information
+   - Managing secure document requests and submissions
+   - Maintaining audit trails of all sensitive communications
+   - Enforcing appropriate access controls and security policies
 
-2. **Document Management System**
-   - Process secure document attachments with encryption
-   - Track document requests and completeness
-   - Classify and organize received documents
-   - Maintain secure document history and access logs
+2. **Tax Calendar Management System**
+   - Tracking tax deadlines for different entity types and jurisdictions
+   - Generating appropriate reminder sequences based on deadline proximity
+   - Managing extensions and modified filing timelines
+   - Coordinating workload based on approaching deadlines
 
-3. **Client Database**
-   - Store client profiles with service types and fiscal information
-   - Track communication history and preferences
-   - Maintain deadline and compliance requirements
-   - Organize clients into appropriate service segments
+3. **Client Management Module**
+   - Organizing client information by service type and requirements
+   - Tracking client-specific details relevant to tax preparation
+   - Managing service agreements and billing information
+   - Supporting search and filtering of the client database
 
-4. **Deadline and Compliance Tracker**
-   - Calculate and monitor tax and filing deadlines
-   - Generate appropriate reminder sequences
-   - Track regulatory requirements by client type
-   - Maintain audit trails of compliance-related communications
+4. **Document Management System**
+   - Categorizing and organizing financial documents
+   - Implementing version control for document revisions
+   - Providing secure storage and retrieval of sensitive documents
+   - Maintaining complete document histories and audit trails
 
-5. **Reporting and Analytics Engine**
-   - Monitor document completion rates and outstanding requests
-   - Track workload distribution across tax seasons
-   - Analyze client communication patterns
-   - Generate practice management insights
+5. **Regulatory Compliance Module**
+   - Tracking relevant tax law and regulatory changes
+   - Creating targeted communications about regulatory updates
+   - Documenting client notification of important changes
+   - Managing compliance requirements across client portfolio
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Email security measures must ensure encryption of all sensitive content
-- Template variable substitution must work correctly across all accounting templates
-- Deadline calculation must account for tax holidays and jurisdictional rules
-- Document classification must correctly identify common financial form types
-- Client segmentation must accurately group clients by appropriate criteria
+- Secure document request generation and tracking
+- Tax deadline reminder sequence accuracy and timing
+- Client categorization and service tracking
+- Financial document tagging and organization
+- Regulatory update targeting and distribution
 
 ### Critical User Scenarios
-- A new tax year begins and appropriate document requests are sent to clients
-- A tax deadline approaches and appropriate reminders are triggered
-- A client sends sensitive financial documents that are securely processed
-- A regulatory change affects certain clients who receive targeted updates
-- A new client is onboarded with appropriate service type classification
+- Requesting tax documents from clients securely with appropriate tracking
+- Managing tax filing deadlines with automated reminder sequences
+- Categorizing clients based on service type and fiscal year
+- Organizing and retrieving client financial documents
+- Distributing targeted regulatory updates to affected client segments
 
 ### Performance Benchmarks
-- System must handle at least 100 document exchanges per day with full security
-- Search operations must maintain sub-second response with 50,000+ stored documents
-- Deadline tracking must support at least 2,000 active deadlines across all clients
-- Document classification must process at least 500 standard forms per day
-- Security operations must not reduce system responsiveness below acceptable thresholds
+- Document request generation should complete in under 200ms per request
+- Deadline tracking should process at least 500 client deadlines efficiently
+- Client categorization should handle up to 1000 clients without performance degradation
+- Document management should support at least 10,000 documents with sub-second retrieval
+- Regulatory update targeting should process client database in under 5 seconds
 
 ### Edge Cases and Error Conditions
-- System must handle documents in various formats (PDFs, images, spreadsheets)
-- Deadline calculations must correctly handle complex situations (extensions, amendments)
-- The system must gracefully handle email server connection failures
-- Encryption key management must be robust against common failure scenarios
-- Document storage must maintain integrity during system interruptions
+- Handling secure transmission failures or encryption issues
+- Managing conflicting or overlapping tax deadlines
+- Processing clients with multiple service categories or unusual fiscal years
+- Dealing with document submission errors or corrupted financial files
+- Handling regulatory updates that affect complex client segments
 
 ### Required Test Coverage Metrics
-- Unit test coverage must exceed 90% for all core modules
-- Integration tests must verify all system components working together
-- Security tests must verify encryption and access control measures
-- Compliance tests must verify adherence to financial data regulations
-- Regression tests must ensure functionality is preserved across updates
+- Minimum 90% code coverage across all modules
+- 100% coverage of secure document handling functions
+- 100% coverage of deadline calculation and reminder generation
+- 100% coverage of document categorization algorithms
+- Minimum 95% coverage of client segmentation logic
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-A successful implementation of FinanceMailFlow will meet the following criteria:
+- Secure document requests are properly generated and tracked
+- Tax deadline reminders are accurately created with appropriate timing
+- Clients are correctly categorized by service type and fiscal year
+- Financial documents are properly organized and retrievable
+- Regulatory updates are appropriately targeted to relevant client segments
+- All performance benchmarks are met under load testing
+- The system correctly handles all specified edge cases and error conditions
 
-1. **Efficiency Improvements**
-   - Reduce time spent on email management by at least 60%
-   - Decrease document processing time by at least 70%
-   - Ensure 100% of tax deadlines are tracked and reminded
-   - Reduce time spent organizing client files by at least 80%
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Practice Impact**
-   - Eliminate missed tax filing deadlines completely
-   - Improve client document completion rates by at least 40%
-   - Reduce time from document request to receipt by at least 30%
-   - Enable handling 30% more clients without adding staff
+## Getting Started
+To set up the development environment:
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-3. **Technical Quality**
-   - Pass all specified test requirements with >90% coverage
-   - Meet or exceed all performance expectations
-   - Provide a clean, well-documented API that could be extended
-   - Operate reliably without unexpected crashes or data loss
-   - Maintain security and confidentiality of all financial information
+CRITICAL: When testing your implementation, you MUST run tests with pytest-json-report and provide the pytest_results.json file:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
 
-4. **User Experience**
-   - Enable creation of new document request templates in under 5 minutes
-   - Allow setup of new client tax profiles in under 10 minutes
-   - Provide clear visibility into upcoming deadlines and workload
-   - Generate useful analytics that improve practice management
-
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+Providing the pytest_results.json file is MANDATORY for demonstrating that your implementation meets the requirements.

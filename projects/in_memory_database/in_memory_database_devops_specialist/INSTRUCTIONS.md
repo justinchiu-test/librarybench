@@ -1,159 +1,189 @@
-# MetricsDB: High-Throughput In-Memory Database for DevOps Monitoring
+# MetricStore: High-Throughput In-Memory Database for DevOps Monitoring
 
 ## Overview
-A specialized in-memory database designed for collecting, storing, and analyzing high-volume metrics from thousands of cloud services with optimized storage, fast analytical queries, and intelligent data lifecycle management.
+A specialized high-throughput in-memory database designed for storing, processing, and analyzing metrics from large-scale cloud infrastructure. This system optimizes for efficient storage of time-series metrics, multi-dimensional filtering, statistical analysis, alerting capabilities, and automatic data tiering to support DevOps observability requirements.
 
 ## Persona Description
 Carlos maintains observability systems for a cloud platform, collecting metrics from thousands of services. He needs a high-throughput solution for recent metrics that supports complex analytical queries before data is archived.
 
 ## Key Requirements
 
-1. **Specialized bit-packed storage for timestamp-value pairs**
-   - Critical for efficiently storing millions of time-series metrics with minimal memory footprint
-   - Must implement bit-packing techniques optimized for common metric data patterns
-   - Should support various numeric types with configurable precision/compression tradeoffs
-   - Must include adaptive encoding based on data characteristics (sparse/dense, range, distribution)
-   - Should provide detailed memory efficiency metrics for optimization
+1. **Bit-Packed Storage Optimization for Metrics**
+   - Implementation of specialized bit-packed storage formats for timestamp-value pairs
+   - Optimized compression techniques for different metric types (counters, gauges, histograms)
+   - Memory-efficient indexing strategies for time-series data
+   - This feature is critical for Carlos as efficient storage directly impacts the volume of metrics that can be kept in-memory for fast querying, allowing more comprehensive monitoring of cloud services without excessive hardware costs
 
-2. **Multi-dimensional metrics filtering with label-based indexing**
-   - Essential for quickly locating relevant metrics among thousands of services and dimensions
-   - Must implement label-based indexing for efficient filtering by service, instance, region, etc.
-   - Should support complex boolean expressions for combining multiple label conditions
-   - Must include cardinality control to prevent explosion from high-cardinality labels
-   - Should provide query optimization suggestions for inefficient label queries
+2. **Multi-Dimensional Metrics Filtering**
+   - Implementation of label-based indexing for efficient filtering of metrics by multiple dimensions
+   - Support for complex boolean expressions combining multiple label criteria
+   - Optimized query execution for high-cardinality label spaces
+   - Cloud environments involve metrics with multiple dimensions (service, instance, region, customer, etc.), and Carlos needs to quickly filter these to isolate issues or analyze specific segments of infrastructure
 
-3. **Downsampling with statistical function preservation**
-   - Vital for maintaining query performance while preserving critical statistical properties
-   - Must support automatic downsampling at configurable time intervals
-   - Should preserve key statistical functions (min, max, avg, percentiles) during downsampling
-   - Must implement various aggregation methods appropriate for different metric types
-   - Should include anomaly-aware downsampling that preserves significant deviations
+3. **Statistical Downsampling with Function Preservation**
+   - Implementation of downsampling algorithms that preserve important statistical properties
+   - Support for various statistical functions (min, max, avg, percentiles) during downsampling
+   - Configurable resolution levels for different retention periods
+   - Carlos needs to analyze metric patterns over various time ranges, requiring downsampled data that accurately represents the original measurements' statistical characteristics to identify anomalies and trends
 
-4. **Alerting expressions embedded within query language**
-   - Important for detecting and responding to operational issues in real-time
-   - Must extend query language with alerting expressions and threshold definitions
-   - Should support complex alert conditions incorporating multiple metrics and time windows
-   - Must include hysteresis and dampening to prevent alert flapping
-   - Should provide alert preview and testing capabilities
+4. **Embedded Alerting Expressions**
+   - Implementation of an alerting expression language embedded within the query system
+   - Support for threshold-based, trend-based, and anomaly-based alert conditions
+   - Efficient evaluation of alert expressions over large metric sets
+   - Proactive alerting is essential for Carlos to identify and respond to infrastructure issues before they impact services, requiring expressions that can be efficiently evaluated against incoming metrics
 
-5. **Retention policies with automatic tiering**
-   - Critical for managing the lifecycle of metrics data with varying retention requirements
-   - Must implement configurable retention policies based on time and importance
-   - Should support automatic tiering to cold storage for historical data
-   - Must include policy-based sampling for very old data
-   - Should provide utilities for retention policy simulation and impact analysis
+5. **Automatic Tiering to Cold Storage**
+   - Implementation of configurable retention policies for different metric categories
+   - Automatic tiering of aging data to more cost-effective storage
+   - Seamless query access across hot and cold data tiers
+   - Carlos must balance performance and cost by keeping recent metrics in-memory while automatically archiving older data to cold storage, with consistent query access regardless of where data resides
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be thoroughly testable with pytest without external dependencies
-- Tests must verify behavior with simulated metrics streams at production-level volumes
-- Performance tests must validate query efficiency under high cardinality and data volume
-- Alerting tests must confirm correct triggering and resolution of complex conditions
-- Retention tests must verify proper data lifecycle management according to policies
+- Compression efficiency must be measurable with different metric patterns
+- Query performance must be benchmarkable across various filtering scenarios
+- Downsampling accuracy must be verifiable against original data
+- Alert expression evaluation must be testable with historical metric patterns
+- Data tiering must be analyzable for both performance and storage efficiency
 
 ### Performance Expectations
-- Support ingestion of at least 1 million metrics per second on standard server hardware
-- Query response time under 100ms for filtering across 10,000+ services with multiple dimensions
-- Memory usage must not exceed 2GB per million active time series (excluding string tables)
-- Bit-packed storage must achieve at least 75% size reduction over standard representations
-- Downsampling must process at least 100,000 samples per second per CPU core
+- System must ingest at least 100,000 metric points per second
+- Filtering queries must return results in under 100ms for common cases
+- Downsampling operations must complete in under 500ms for 1M data points
+- Alert expressions must evaluate in under 50ms against current metric state
+- Data tiering must have no visible impact on query performance
 
 ### Integration Points
-- Must provide Python APIs for integration with monitoring applications
-- Should support standard protocols for metrics ingestion (StatsD, Prometheus, OpenMetrics)
-- Must include adapters for exporting alert definitions to notification systems
-- Should offer interfaces compatible with visualization tools (Grafana, etc.)
-- Must support integration with cold storage solutions for data tiering
+- Standard interfaces for metric collection systems (Prometheus, StatsD, etc.)
+- Query API compatible with common visualization tools
+- Alerting integration with notification systems
+- Export functionality for long-term storage systems
+- API for configuration and administration
 
 ### Key Constraints
-- No UI components - purely APIs and libraries for integration into monitoring systems
-- Must operate without external database dependencies - self-contained Python library
-- All operations must be designed for resilience to sudden spikes in monitoring data
-- Must support horizontal scalability through consistent, predictable sharding
+- The implementation must use only Python standard library with no external dependencies
+- Memory usage must be optimized for high metric volume
+- The system must maintain performance as the metric volume grows
+- All operations must have predictable resource usage patterns
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation must provide:
+The system must provide the following core functionality:
 
-1. **Time-Series Data Storage**
-   - Bit-packed storage engine optimized for timestamp-value pairs
-   - Label indexing system for multi-dimensional filtering
-   - Memory management with configurable limits and eviction policies
-   - Compression strategies specialized for different metric data patterns
+1. **Metric Storage Engine**
+   - Efficient in-memory storage optimized for time-series metrics
+   - Specialized compression for different metric types
+   - High-throughput ingestion pipeline
 
-2. **Query Engine**
-   - Multi-dimensional filtering using label-based expressions
-   - Time-range queries with support for various time windows and alignments
-   - Aggregation functions for statistical analysis across services and time
-   - Performance optimization for common query patterns
+2. **Multi-Dimensional Query System**
+   - Implementation of label-based indexing
+   - Query parser and execution engine
+   - Optimization for common filtering patterns
 
-3. **Downsampling System**
-   - Automatic aggregation at configurable time intervals
-   - Statistical function preservation during resolution reduction
-   - Anomaly-aware sampling retaining significant deviations
-   - Efficient backfilling for retroactive downsampling
+3. **Statistical Analysis Framework**
+   - Implementation of statistical functions for downsampling
+   - Accurate calculation of percentiles and other aggregates
+   - Temporal aggregation over configurable windows
 
-4. **Alerting Framework**
-   - Expression-based alert definition integrated with query language
-   - Threshold evaluation with configurable sensitivity
-   - Alert state management with hysteresis and dampening
-   - Notification routing based on alert properties
+4. **Alerting Subsystem**
+   - Expression language for defining alert conditions
+   - Efficient evaluation engine for alert expressions
+   - State tracking for alert transitions
 
-5. **Data Lifecycle Management**
-   - Retention policy definition and enforcement
-   - Automatic tiering to cold storage based on configurable rules
-   - Sampling strategies for historical data
-   - Recovery mechanisms for retrieving historical data when needed
+5. **Tiering and Retention System**
+   - Policy-based data lifecycle management
+   - Automatic migration between storage tiers
+   - Query federation across hot and cold data
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Correct storage and retrieval of metrics data with various patterns and volumes
-- Accurate query results when filtering across multiple dimensions
-- Proper statistical preservation during downsampling at different resolutions
-- Reliable alert triggering and resolution based on complex conditions
-- Effective data lifecycle management according to retention policies
+- Efficient storage and retrieval of time-series metrics
+- Accurate filtering based on multi-dimensional label criteria
+- Statistical integrity during downsampling operations
+- Correct evaluation of alert expressions
+- Proper function of automatic tiering based on policies
 
 ### Critical User Scenarios
-- High-volume metrics ingestion during service deployments or incidents
-- Complex analytical queries across thousands of services and metrics
-- Alert evaluation during system anomalies and recoveries
-- Data tiering and retrieval for incident post-mortems
-- Query performance during high-cardinality exploration
+- Ingestion of high-volume metrics from a large service fleet
+- Analysis of performance trends across multiple dimensions
+- Detection of anomalies through statistical analysis
+- Alerting on critical threshold violations
+- Historical analysis spanning hot and cold data tiers
 
 ### Performance Benchmarks
-- Measure ingestion throughput at varying data rates and cardinality
-- Verify query performance with different filtering complexity and result sizes
-- Confirm memory efficiency of bit-packed storage compared to standard formats
-- Validate downsampling throughput and accuracy at different aggregation levels
-- Benchmark alert evaluation time for various complexity levels
+- Ingest at least 100,000 metric points per second on reference hardware
+- Support at least 10,000 concurrent metric time series in memory
+- Complete common filtering queries in under 100ms
+- Calculate percentiles over 1M data points in under 500ms
+- Evaluate at least 1,000 alert expressions per second
 
 ### Edge Cases and Error Conditions
-- Sudden spikes in data volume during major incidents
-- Extremely high cardinality from misconfigured services
-- Long-running queries that could impact system performance
-- Recovery from unexpected process termination
-- Query patterns that circumvent indexing optimizations
+- Behavior under memory pressure
+- Handling of corrupt or invalid metric data
+- Recovery from ingestion pipeline failures
+- Operation during cold tier unavailability
+- Performance with extremely high cardinality label sets
 
-### Required Test Coverage
-- 90% code coverage for all components
-- 100% coverage of data integrity and alerting logic
-- Comprehensive performance tests for all critical operations
-- Specific tests for memory efficiency and resource utilization
-- Simulation tests for extended operation with production-like workloads
+### Required Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of alert expression evaluation code
+- All error recovery paths must be tested
+- Performance tests must cover varying load conditions
+- Data integrity tests must verify no loss during tiering
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it:
+The implementation will be considered successful if:
 
-1. Efficiently ingests metrics at rates exceeding 1 million data points per second
-2. Maintains query response times under 100ms for typical filtering operations
-3. Achieves at least 75% memory reduction through bit-packed storage techniques
-4. Correctly evaluates complex alerting expressions with minimal delay
-5. Properly manages data lifecycle according to configured retention policies
-6. Preserves critical statistical properties during downsampling operations
-7. Handles high-cardinality dimensions without significant performance degradation
-8. Operates reliably under sudden load spikes and resource constraints
-9. Provides accurate and informative query results for monitoring and troubleshooting
-10. Passes all test scenarios including performance and resource utilization requirements
+1. It efficiently stores metrics with significantly reduced memory footprint
+2. Multi-dimensional queries accurately filter metric data with high performance
+3. Downsampling preserves statistical characteristics of the original data
+4. Alert expressions correctly identify conditions requiring attention
+5. Data tiering automatically manages metric lifecycle according to policies
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Clone the repository and navigate to the project directory
+2. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+3. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+4. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+5. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

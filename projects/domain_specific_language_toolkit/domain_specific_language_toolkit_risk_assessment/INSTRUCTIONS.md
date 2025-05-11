@@ -1,142 +1,162 @@
-# Insurance Risk Assessment Language Framework
-
-A domain-specific language toolkit for defining, validating, and executing complex underwriting rules for risk calculation.
+# Insurance Risk Assessment Language Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on insurance risk assessment. It enables actuaries and underwriters to precisely define risk calculation logic while ensuring consistency across different insurance products. The system emphasizes statistical model integration, risk factor visualization, historical data validation, compliance verification, and sensitivity analysis.
+A specialized Domain Specific Language toolkit for defining, analyzing, and implementing complex underwriting and risk assessment rules. This toolkit enables actuaries and underwriters to express precise risk calculation logic while ensuring consistency across different insurance products and maintaining compliance with insurance regulations.
 
 ## Persona Description
-
 Olivia leads risk management for an insurance company that needs to define complex underwriting rules. Her primary goal is to create a risk assessment language that allows actuaries and underwriters to precisely define risk calculation logic while ensuring consistency across different insurance products.
 
 ## Key Requirements
+1. **Statistical model integration with uncertainty quantification**: Seamless incorporation of statistical and actuarial models with explicit handling of uncertainty ranges, confidence intervals, and probability distributions. This is critical because actuarial science fundamentally depends on statistical modeling, and proper uncertainty quantification is essential for accurate risk pricing, capital reserving, and regulatory compliance.
 
-1. **Statistical model integration with uncertainty quantification**
-   - Implement a system for integrating statistical and actuarial models with explicit uncertainty quantification
-   - This capability is essential for Olivia because modern insurance risk assessment relies on sophisticated statistical models. This feature enables her team to incorporate complex probabilistic models directly into underwriting rules while preserving information about prediction confidence, ensuring that risk pricing appropriately accounts for both the estimated risk and the uncertainty in that estimate.
+2. **Risk factor relationship visualization with correlation analysis**: Tools to visualize and analyze the relationships between different risk factors, including direct and indirect correlations, mutual dependencies, and combined effects. This is essential because understanding how risk factors interrelate helps underwriters identify hidden risk concentrations, prevent pricing errors based on assumed independence, and develop more nuanced pricing strategies.
 
-2. **Risk factor relationship visualization with correlation analysis**
-   - Develop a data representation system that can visualize the relationships and correlations between different risk factors
-   - Understanding how risk factors relate to each other is critical for accurate risk assessment. This feature allows Olivia's team to identify and account for correlations between risk factors that might amplify or mitigate risk, preventing both underpricing (which threatens solvency) and overpricing (which reduces competitiveness).
+3. **Historical data validation against previous assessments**: Mechanisms to validate newly defined risk rules against historical data and previous underwriting decisions to ensure consistency and identify unexpected deviations. This is vital because consistency in underwriting decisions is important for regulatory compliance and customer fairness, and historical validation helps detect unintended consequences of rule changes.
 
-3. **Historical data validation against previous assessments**
-   - Create a validation framework that can test new underwriting rules against historical data and outcomes
-   - This capability enables evidence-based rule development. It allows Olivia to verify that new or modified rules would have correctly assessed risk in historical cases, providing confidence that changes will improve accuracy rather than introducing new biases or errors in the underwriting process.
+4. **Compliance verification with insurance regulations**: Automated checking of risk assessment rules against relevant insurance regulations, rate filing requirements, and anti-discrimination laws. This is necessary because the insurance industry is heavily regulated with complex compliance requirements that vary by jurisdiction, product type, and customer segment, and automated verification reduces compliance risk.
 
-4. **Compliance verification with insurance regulations**
-   - Build a verification system that checks underwriting rules against relevant regulatory requirements
-   - Insurance is a highly regulated industry with strict rules about underwriting practices. This feature ensures that Olivia's risk assessment rules comply with all applicable regulations, preventing both financial penalties for non-compliance and potential reputational damage from improper underwriting practices.
-
-5. **Sensitivity analysis identifying critical decision factors**
-   - Implement sensitivity analysis tools that identify which factors have the greatest impact on risk assessment outcomes
-   - This analytical capability is crucial for understanding risk drivers. It enables Olivia's team to identify which factors most significantly influence risk calculations, helping them focus data collection efforts, refine the most impactful rules, and explain assessment decisions to stakeholders and customers.
+5. **Sensitivity analysis identifying critical decision factors**: Analytical capabilities to determine which factors have the greatest impact on risk assessment outcomes across different scenarios and customer profiles. This is crucial because understanding factor sensitivity helps prioritize data collection efforts, calibrate pricing models more effectively, and explain underwriting decisions to stakeholders and customers.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each risk rule must be automatically verifiable against historical data
+  - Statistical models must be testable with simulated and historical datasets
+  - Compliance checking must validate against current regulatory requirements
+  - Sensitivity analysis must demonstrate accurate impact attribution
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- All risk assessment rules must be testable against historical case libraries
-- Statistical model integrations must be verifiable with synthetic data generation
-- Compliance checks must be testable against regulatory requirement test suites
-- Sensitivity analysis must be verifiable with controlled input variations
-- Test coverage must include edge cases and extreme risk scenarios
+- **Performance Expectations**:
+  - Rule evaluation must complete for a single risk assessment in under 500ms
+  - Batch processing must handle 10,000+ policy applications in under 10 minutes
+  - Statistical model integration must support models with 100+ variables
+  - System must process historical validation against 1 million+ previous cases in under 60 minutes
 
-### Performance Expectations
-- Rule compilation must complete within 3 seconds for complex underwriting rulebooks
-- Risk assessment for individual cases must complete within 500ms for real-time applications
-- Batch processing must handle 10,000+ cases per hour for portfolio analysis
-- Statistical model evaluations must complete within reasonable timeframes based on model complexity
-- The system must support concurrent evaluation of multiple insurance products
+- **Integration Points**:
+  - Actuarial modeling systems and libraries
+  - Policy administration and underwriting platforms
+  - Regulatory compliance databases
+  - Claims management systems
+  - Customer data repositories and third-party data sources
+  - Business intelligence and reporting systems
 
-### Integration Points
-- Statistical and actuarial modeling libraries
-- Historical claims and underwriting databases
-- Regulatory compliance databases and updates
-- Customer relationship management systems
-- Reporting and business intelligence platforms
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All risk assessment logic must be expressible through the DSL without requiring custom code
+  - Rule definitions must be storable as human-readable text files
+  - System must maintain audit trails of all rule changes and applications
+  - Performance must scale to handle enterprise-level policy volumes
 
-### Key Constraints
-- All risk calculations must be deterministic and reproducible for audit purposes
-- The system must maintain data privacy in compliance with regulations
-- No UI components; all visualization capabilities must be expressed through data
-- All assessment logic must be traceable for regulatory explanation
-- The system must support version control of risk assessment rules
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Insurance Risk Assessment DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for risk assessment
+2. Integration mechanisms for statistical and actuarial models
+3. Visualization tools for risk factor relationships and correlations
+4. Historical data validation capabilities
+5. Regulatory compliance checking framework
+6. Sensitivity analysis algorithms for factor impact assessment
+7. Rule version control and audit trail maintenance
+8. Documentation generators for regulatory filings and internal review
+9. Performance optimization for high-volume underwriting operations
+10. Test utilities for validating rule accuracy against known outcomes
 
-1. **Risk Assessment Language**: A grammar and parser for defining underwriting rules and risk calculation logic with clear semantics.
-
-2. **Statistical Integration**: Mechanisms for incorporating statistical and actuarial models into risk assessment rules with uncertainty handling.
-
-3. **Factor Relationship Analysis**: Tools for analyzing and visualizing relationships between risk factors, including correlation analysis.
-
-4. **Historical Validation**: Frameworks for testing risk assessment rules against historical data to validate accuracy.
-
-5. **Compliance Checking**: Systems for verifying that underwriting rules conform to regulatory requirements and internal policies.
-
-6. **Sensitivity Testing**: Methods for identifying the factors with the greatest impact on risk assessment outcomes through controlled variation.
-
-7. **Rule Compilation**: Translation of high-level risk assessment rules into efficient executable code for production systems.
-
-8. **Version Management**: Tools for managing changes to risk assessment rules with comprehensive audit trails.
+The system should enable actuaries and underwriters to define elements such as:
+- Risk factor definitions and categorizations
+- Rating variables and their permissible values
+- Pricing algorithms and premium calculations
+- Underwriting decision trees and eligibility criteria
+- Exception handling for special cases
+- Territorial rating plans
+- Experience rating modifications
+- Regulatory compliance constraints
+- Reinsurance thresholds and considerations
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into executable risk assessment logic
+  - Accurate integration with statistical models and distributions
+  - Proper visualization of risk factor relationships
+  - Correct validation against historical underwriting decisions
+  - Comprehensive compliance checking against regulatory requirements
 
-### Key Functionalities to Verify
-- Accurate parsing of risk assessment rules from domain-specific syntax
-- Correct integration and evaluation of statistical models
-- Proper detection of regulatory compliance violations
-- Effective identification of critical risk factors through sensitivity analysis
-- Reliable validation against historical underwriting data
+- **Critical User Scenarios**:
+  - Actuary defines new rating algorithm for an insurance product
+  - Underwriter creates eligibility rules for a specialized risk segment
+  - Compliance officer validates rate plan against regulatory requirements
+  - Data scientist analyzes sensitivity of risk factors across customer segments
+  - Product manager compares rule performance against historical profitability
 
-### Critical User Scenarios
-- Actuary defines new risk calculation rules for an insurance product
-- System validates rules against regulatory requirements and historical data
-- Underwriter applies risk assessment to a specific case or portfolio
-- Sensitivity analysis identifies key factors driving risk assessment
-- Compliance team verifies rule changes against regulatory requirements
+- **Performance Benchmarks**:
+  - Evaluate 100+ risk factors for a single policy in under 500ms
+  - Process batch rating for 10,000 policies in under 10 minutes
+  - Validate rule changes against 5 years of historical data in under 30 minutes
+  - Generate sensitivity analysis across 50+ factors in under 5 minutes
 
-### Performance Benchmarks
-- Rule compilation completed in under 3 seconds for complex rule sets
-- Risk assessment completed in under 500ms for individual cases
-- Batch processing handling 10,000+ cases per hour
-- Statistical model evaluation within performance parameters of the model complexity
-- System maintains performance with multiple concurrent product assessments
+- **Edge Cases and Error Conditions**:
+  - Handling of missing or incomplete applicant data
+  - Detection of statistical anomalies in model outputs
+  - Management of conflicting regulatory requirements across jurisdictions
+  - Behavior during catastrophic event scenarios
+  - Graceful degradation when third-party data sources are unavailable
 
-### Edge Cases and Error Conditions
-- Handling of missing or incomplete risk factor data
-- Proper response to statistical model failures or anomalies
-- Graceful degradation when historical validation data is limited
-- Recovery from partial rule compilation failures
-- Handling of conflicting regulatory requirements across jurisdictions
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of risk rule parser and interpreter
+  - 100% coverage of compliance verification components
+  - 95% coverage of statistical model integration
 
-### Required Test Coverage Metrics
-- Minimum 95% line coverage for core rule parsing and compilation logic
-- 100% coverage of compliance checking algorithms
-- 95% coverage of statistical model integration
-- 90% coverage for sensitivity analysis functions
-- 100% test coverage for critical rating factors
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Actuaries and underwriters can define complex risk assessment logic without requiring programming expertise.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to express complex insurance risk logic
+4. Statistical models are properly integrated with uncertainty quantification
+5. Risk factor relationships are accurately visualized and analyzed
+6. Historical data validation correctly identifies deviations from past decisions
+7. Compliance verification successfully identifies regulatory issues
+8. Sensitivity analysis accurately identifies critical decision factors
 
-2. The system accurately integrates statistical models while appropriately quantifying uncertainty.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Risk assessment rules are automatically validated for regulatory compliance before deployment.
+## Setup Instructions
+To set up the development environment:
 
-4. Historical data validation provides confidence in the accuracy of new or modified rules.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. Sensitivity analysis provides clear insights into the factors driving risk assessment outcomes.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. The time required to develop and validate new underwriting rules is reduced by at least 50%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. Consistency and accuracy of risk assessment across different insurance products is measurably improved.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

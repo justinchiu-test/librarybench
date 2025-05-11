@@ -1,7 +1,7 @@
-# Operationally-focused Microservices Framework
+# Operationally Resilient Microservices Framework
 
 ## Overview
-A highly operable event-driven microservices framework designed for rapid scaling and high reliability, with built-in operational features including automated recovery, zero-downtime deployment, chaos testing integration, and comprehensive monitoring. The framework prioritizes operational excellence to minimize maintenance overhead while supporting the rapid growth needs of startups.
+This project is a specialized event-driven microservices framework designed for DevOps environments that prioritizes operational reliability, automated recovery, and comprehensive observability. It provides service health monitoring, zero-downtime deployment capabilities, chaos testing integration, dynamic resource scaling, and comprehensive tracing to create a robust microservices platform that minimizes operational overhead.
 
 ## Persona Description
 Alex manages infrastructure for a rapidly growing startup that needs to scale services quickly without compromising reliability. His primary goal is to implement a microservices platform with robust operational characteristics that supports automated deployment, monitoring, and recovery to minimize operational overhead.
@@ -9,147 +9,186 @@ Alex manages infrastructure for a rapidly growing startup that needs to scale se
 ## Key Requirements
 
 1. **Service Health Monitoring with Automated Recovery Mechanisms**
-   - Comprehensive health check system for all services
-   - Automated service restart and recovery procedures
-   - Self-healing capabilities for common failure modes
-   - Degraded operation modes for partial system failures
-   - This is critical for Alex as it reduces manual intervention for common issues, allowing the small operations team to focus on growth rather than maintenance
+   - Implement comprehensive health checking for all services
+   - Create automated recovery procedures for common failure patterns
+   - Support for dependency-aware health evaluation and recovery sequencing
+   - Include degraded operation detection and remediation
+   - This feature is critical for minimizing operational overhead by enabling self-healing systems that recover automatically from failures
 
 2. **Deployment Orchestration with Zero-downtime Updates**
-   - Rolling update strategies for all services
-   - Blue-green deployment support for major changes
-   - Automated rollback mechanisms for failed deployments
-   - Deployment impact monitoring and verification
-   - This enables frequent releases without service disruption, essential for a startup that needs to rapidly evolve its product
+   - Develop rolling update strategies with traffic shifting
+   - Create blue/green deployment patterns for microservices
+   - Support for automatic rollback on deployment failures
+   - Include deployment verification through health metrics
+   - This feature ensures continuous service availability during updates and minimizes deployment risk
 
 3. **Chaos Testing Integration for Resilience Verification**
-   - Built-in chaos testing framework for simulating failures
-   - Scheduled resilience testing runs with automatic reporting
-   - Service dependency failure simulations
-   - Recovery time objective verification
-   - This helps Alex ensure the system remains resilient as it grows and changes, proactively finding weaknesses before they affect users
+   - Implement controllable fault injection across the microservices ecosystem
+   - Create scenario-based resilience testing
+   - Support for automated resilience verification
+   - Include chaos experiment reporting and documentation
+   - This feature proactively validates system resilience by intentionally introducing failures to ensure recovery mechanisms function correctly
 
 4. **Resource Utilization Optimization with Dynamic Scaling**
-   - Automatic scaling based on load and resource utilization
-   - Resource usage profiling and optimization
-   - Cost-aware scaling algorithms
-   - Idle resource reclamation
-   - This allows the startup to efficiently use its infrastructure budget, scaling up for demand without wasting resources
+   - Develop automated scaling based on service demand metrics
+   - Create resource utilization monitoring and forecasting
+   - Support for cost-optimization through intelligent resource allocation
+   - Include capacity planning tools for growth projections
+   - This feature optimizes infrastructure costs while ensuring sufficient capacity for variable workloads
 
 5. **Comprehensive Tracing and Logging Infrastructure**
-   - Distributed tracing across all service boundaries
-   - Structured logging with consistent metadata
-   - Centralized log aggregation and analysis
-   - Performance metric collection and alerting
-   - This gives Alex's team complete visibility into system behavior, accelerating troubleshooting and enabling data-driven optimization
+   - Implement distributed tracing across service boundaries
+   - Create structured logging with correlation identifiers
+   - Support for centralized log aggregation and analysis
+   - Include performance metrics collection and visualization
+   - This feature provides complete visibility into system behavior for troubleshooting and optimization
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All operational components must have comprehensive unit tests
-- Integration tests for recovery mechanisms
-- Chaos testing framework must be testable in isolated environments
-- Deployment strategies must be verifiable without production impact
-- Monitoring and alerting systems must have validation frameworks
+- Support for automated resilience testing
+- Ability to simulate various failure scenarios
+- Testing of deployment and rollback procedures
+- Verification of monitoring and recovery mechanisms
 
 ### Performance Expectations
-- Monitoring overhead must not exceed 5% of service resource usage
-- Recovery mechanisms must restore service within 30 seconds
-- Zero-downtime deployments must maintain 99.9% availability
-- Scaling operations must complete within 2 minutes
-- Tracing overhead must not exceed 3% of request processing time
+- Support for at least 1,000 service instances
+- Maximum 30-second recovery time for failed services
+- Ability to handle 100+ deployments per day without service disruption
+- Support for comprehensive tracing across 10,000+ transactions per second
 
 ### Integration Points
-- Container orchestration platforms (e.g., Kubernetes)
-- Cloud provider infrastructure APIs
-- CI/CD pipeline integration
-- Log aggregation and analysis systems
-- Metric storage and visualization platforms
+- Integration with container orchestration platforms (conceptual, no actual K8s dependency)
+- Support for infrastructure as code principles
+- Compatibility with popular monitoring and observability tools
+- Integration with CI/CD pipelines for automated deployment
 
 ### Key Constraints
-- Must work across multiple cloud providers
-- Minimal manual configuration requirements
-- Support for polyglot microservices (not just Python)
-- Resource efficiency to minimize infrastructure costs
-- Security by design for all operational components
+- Must operate without service disruption during maintenance
+- Must scale horizontally for both the framework and managed services
+- Must provide comprehensive operational visibility
+- Must minimize human intervention for routine operational tasks
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Operationally-focused Microservices Framework must provide:
+The framework must provide:
 
-1. **Health Management System**
-   - Service health check definition and execution
-   - Automated recovery workflow engine
-   - Failure detection with root cause analysis
-   - Degraded operation management
+1. **Health Monitoring and Recovery System**
+   - Service health checks and monitoring
+   - Automated recovery procedures
+   - Dependency-aware health evaluation
+   - Self-healing mechanisms
 
-2. **Deployment Orchestration**
-   - Deployment strategy implementation (rolling, blue-green)
-   - Deployment verification mechanisms
-   - Rollback automation
-   - Release impact measurement
+2. **Deployment and Update Management**
+   - Zero-downtime deployment strategies
+   - Traffic shifting and load balancing
+   - Deployment verification
+   - Automated rollback mechanisms
 
-3. **Resilience Testing Framework**
-   - Chaos experiment definition and execution
-   - Failure injection mechanisms
-   - Resilience test scheduling
-   - Recovery validation
+3. **Resilience Testing Infrastructure**
+   - Fault injection capabilities
+   - Chaos experiment coordination
+   - Resilience verification
+   - Experiment reporting and documentation
 
-4. **Resource Management**
-   - Load-based auto-scaling implementation
+4. **Resource Management and Scaling**
+   - Dynamic scaling based on demand
    - Resource utilization monitoring
-   - Cost optimization algorithms
-   - Dynamic resource allocation
+   - Cost optimization strategies
+   - Capacity planning tools
 
 5. **Observability Infrastructure**
    - Distributed tracing implementation
-   - Structured logging framework
-   - Metric collection and aggregation
-   - Visualization and alerting integration
+   - Structured logging system
+   - Metrics collection and aggregation
+   - Performance analysis tools
 
 ## Testing Requirements
 
-### Key Functionalities to Verify
-- Automated recovery from common failure scenarios
-- Zero-downtime deployment for service updates
-- System resilience under various chaos testing conditions
-- Dynamic scaling in response to changing load
-- End-to-end request tracing across service boundaries
+### Key Functionalities that Must be Verified
+- Automatic recovery from various failure scenarios
+- Zero-downtime deployment with traffic shifting
+- Resilience under chaos testing conditions
+- Dynamic scaling based on load conditions
+- End-to-end transaction tracing
 
 ### Critical User Scenarios
-- Service auto-recovery during unexpected failures
-- Deployment of major service updates without downtime
-- System behavior during simulated infrastructure outages
-- Resource adaptation during traffic spikes
-- Rapid troubleshooting using distributed tracing
+- Recovery from service instance failures
+- Deployment of service updates without disruption
+- System behavior under resource constraints
+- System response to sudden traffic spikes
+- Troubleshooting complex transaction failures
 
 ### Performance Benchmarks
-- Service recovery within 30 seconds of failure detection
-- Zero-downtime deployments with no failed requests
-- System maintains availability during chaos testing sessions
-- Scaling operations completed within 2 minutes
-- Tracing and monitoring overhead below 5% of CPU usage
+- Recover failed services within 30 seconds
+- Complete zero-downtime deployments within 5 minutes
+- Scale up to handle 3x traffic increase within 2 minutes
+- Trace and log 10,000+ transactions per second
+- Support 1,000+ service instances with comprehensive monitoring
 
 ### Edge Cases and Error Conditions
-- Cascading failure scenarios
-- Network partitions between services
-- Corrupted or invalid deployment artifacts
-- Resource exhaustion situations
-- Data plane and control plane separation during failures
+- Cascading failures across service dependencies
+- Partial network partitions
+- Resource exhaustion scenarios
+- Corrupt configuration deployments
+- Data inconsistency during recovery
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all components
-- 100% coverage of failure recovery paths
-- All deployment strategies must have integration tests
-- Complete chaos testing scenario coverage
-- Comprehensive observability verification
+- Minimum 90% line coverage for all code
+- 100% coverage of recovery mechanisms
+- 100% coverage of deployment orchestration
+- 100% coverage of chaos testing functionality
+- 100% coverage of scaling logic
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Services recover automatically from 95% of common failure modes
-- Deployment success rate above 99% with zero downtime
-- System maintains SLAs during chaos testing scenarios
-- Infrastructure costs scale linearly or sub-linearly with traffic
-- Mean time to resolution for incidents reduced by 50%
-- On-call burden reduced by 70% through automation
-- Engineering productivity increased through improved visibility
-- Zero critical production incidents due to deployment failures
+
+The implementation will be considered successful if:
+
+1. Services automatically recover from common failure scenarios
+2. Deployments can be performed without service disruption
+3. The system demonstrates resilience under chaos testing
+4. Resources scale dynamically based on demand
+5. Distributed transactions can be traced across service boundaries
+6. Performance meets the specified benchmarks
+7. All test cases pass with the required coverage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
+
+To set up the development environment:
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the project in development mode
+uv pip install -e .
+
+# Install test dependencies
+uv pip install pytest pytest-json-report
+
+# Run tests and generate the required JSON report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+CRITICAL: Generating and providing the pytest_results.json file is a mandatory requirement for project completion. This file serves as evidence that all functionality has been implemented correctly and passes all tests.

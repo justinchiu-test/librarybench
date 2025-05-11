@@ -1,112 +1,174 @@
-# CI/CD Pipeline Orchestration System
+# CI/CD Pipeline Orchestrator for Microservices
 
 ## Overview
-A specialized concurrent task scheduler designed to efficiently coordinate build, test, and deployment operations across hundreds of microservices. This system intelligently allocates build farm resources, optimizes task execution environments, and provides predictive insights about pipeline completion times.
+A specialized concurrent task scheduler designed for modern DevOps environments, focused on efficiently coordinating build, test, and deployment tasks across hundreds of microservices. This system optimizes build farm infrastructure utilization while intelligently handling cross-service dependencies and dynamically adapting to changing system loads.
 
 ## Persona Description
 Raj designs CI/CD pipelines for a large software organization with hundreds of microservices. His primary goal is to coordinate build, test, and deployment tasks across services while efficiently utilizing the company's build farm infrastructure.
 
 ## Key Requirements
+
 1. **Infrastructure-Aware Task Scheduling**
-   - Implement environment-aware scheduling that matches build/test tasks to optimal execution environments based on task characteristics and available infrastructure
-   - Critical for Raj because it eliminates resource mismatches (e.g., memory-intensive tasks on low-memory nodes), reducing build failures and improving overall throughput of the CI/CD system
+   - Implement intelligent scheduling that matches tasks to optimal execution environments based on task requirements and environment capabilities
+   - This feature is critical for Raj as it ensures that specialized tasks (like UI tests, security scans, or builds requiring specific platforms) are routed to the most appropriate build agents
+   - The system must collect and utilize infrastructure metadata to make optimal placement decisions
 
-2. **Build Artifact Caching with Dependency Tracking**
-   - Create an intelligent caching system that stores and reuses build artifacts, with automatic invalidation when dependencies change
-   - Essential for Raj to dramatically reduce redundant work in the build pipeline, as many microservices share common dependencies and rebuilding unchanged components wastes costly infrastructure resources
+2. **Build Artifact Caching System**
+   - Create a sophisticated caching mechanism for build artifacts with dependency-based invalidation to prevent redundant work
+   - This feature is essential for Raj as it dramatically reduces build times and infrastructure load by avoiding repeated compilation of unchanged components
+   - Must accurately track dependencies to ensure cache invalidation when dependent components change
 
-3. **Dynamic Parallelism Adjustment**
-   - Develop a system that automatically adjusts the degree of parallel execution based on system load, task priority, and resource availability
-   - Vital for managing variable load on the build farm, ensuring critical builds get resources immediately while optimally utilizing available capacity during both peak and off-peak times
+3. **Dynamic Parallelism Control**
+   - Implement adaptive parallelism that adjusts task concurrency based on system load, task priority, and resource availability
+   - This feature is crucial for Raj to maximize build farm throughput while preventing system overload during peak usage periods
+   - Must include throttling mechanisms for resource-intensive operations to maintain overall system responsiveness
 
-4. **Cross-Service Build Dependency Resolution**
-   - Implement a dependency graph for builds across services that minimizes blocking while ensuring correct build order
-   - Crucial for Raj's microservice architecture where services have complex interdependencies, but builds should proceed with minimal waiting to maximize throughput
+4. **Cross-Service Dependency Resolution**
+   - Develop a dependency management system that minimizes blocking between services during build and deployment processes
+   - This feature is vital for Raj as it reduces overall pipeline latency in a microservices environment where services have complex interdependencies
+   - Must support both explicit dependencies and automatically detected dependencies
 
-5. **Execution Forecast Modeling**
-   - Build a prediction system that accurately estimates pipeline completion times based on historical performance data and current system load
-   - Important for Raj to provide reliable delivery estimates to stakeholders and to identify potential delays early, allowing for proactive resource allocation adjustments
+5. **Pipeline Time Forecasting**
+   - Create a prediction system that models pipeline execution time based on historical data, current system load, and pipeline composition
+   - This feature is important for Raj to provide reliable estimates for deployment timelines and to identify optimization opportunities
+   - Must adapt to changing patterns and detect anomalies in execution times
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All scheduling components must be independently testable without requiring actual build infrastructure
-  - Caching behavior must be verifiable with deterministic test fixtures
-  - Pipeline dependency resolution must be testable with complex dependency graphs
-  - Timing predictions must be verifiable against historical execution data
-  - Components must achieve >90% test coverage with deterministic test outcomes
 
-- **Performance Expectations**
-  - Scheduling decisions must be made within 200ms for a system with 500+ microservices
-  - Build dependency resolution must complete in under 1 second for the entire service graph
-  - Caching system must add <5% overhead to build times while reducing overall build time by >50%
-  - Dynamic parallelism adjustments must respond to load changes within 10 seconds
-  - System must handle at least 1000 concurrent build tasks across the infrastructure
+### Testability Requirements
+- All components must be independently testable with well-defined interfaces
+- System must support mocking of external services and infrastructure components
+- Tests must validate correct behavior under various load conditions and failure scenarios
+- Test coverage should exceed 90% for core scheduling and dependency resolution components
 
-- **Integration Points**
-  - Version control systems (Git) for source code and change detection
-  - Container technologies (Docker, Kubernetes) for execution environments
-  - Artifact repositories for dependency management and caching
-  - Infrastructure monitoring systems for resource tracking
-  - Notification systems for build status and forecasting
+### Performance Expectations
+- Support for at least 500 concurrent tasks across multiple pipelines
+- Scheduling decisions must complete in under 50ms for complex dependency graphs
+- System should achieve at least 95% resource utilization under normal conditions
+- Cache hit rate should exceed 85% for typical incremental builds
 
-- **Key Constraints**
-  - Must operate with unprivileged access on build infrastructure
-  - Must maintain backward compatibility with existing CI/CD tools
-  - Cache invalidation must be 100% reliable to prevent incorrect builds
-  - System must be resilient to individual node failures in the build farm
-  - Implementation must work across heterogeneous build environments
+### Integration Points
+- Integration with common CI/CD tools (Jenkins, GitLab CI, GitHub Actions)
+- Support for container orchestration systems (Kubernetes, Docker Swarm)
+- Interfaces for artifact storage systems (Artifactory, Nexus)
+- Compatibility with infrastructure provisioning tools (Terraform, Pulumi)
+
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- The system must maintain deterministic builds for reproducibility
+- All operations should be captured in detailed audit logs
+- Must operate efficiently in heterogeneous infrastructure environments
+- System must be resilient to infrastructure failures
 
 ## Core Functionality
-The system must provide a comprehensive framework for defining CI/CD pipelines as directed acyclic graphs with complex dependencies both within and across services. It should implement intelligent scheduling algorithms that optimize for both resource efficiency and build throughput, with special attention to dependency-based parallelization.
 
-Key components include:
-1. A task definition system using Python decorators/functions for declaring pipeline stages and dependencies
-2. An infrastructure-aware scheduler that matches tasks to optimal execution environments
-3. A dependency resolution system that maximizes parallel execution while maintaining build order correctness
-4. A sophisticated build artifact caching system with proper invalidation
-5. A dynamic parallelism controller that adjusts concurrent execution based on system conditions
-6. A prediction engine that forecasts pipeline completion times based on historical data
+The CI/CD Pipeline Orchestrator must provide:
+
+1. **Task Definition and Pipeline Construction**
+   - A declarative API for defining build, test, and deployment tasks with their dependencies
+   - Support for complex pipeline topologies with conditional execution paths
+   - Version-aware task definitions to support evolving pipeline requirements
+
+2. **Intelligent Resource Allocation**
+   - Matching of tasks to appropriate infrastructure based on requirements
+   - Dynamic adjustment of parallelism based on system conditions
+   - Fair sharing of resources across teams and projects with priority support
+
+3. **Caching and Artifacts Management**
+   - Efficient storage and retrieval of build artifacts with content-based addressing
+   - Dependency-aware cache invalidation to ensure correctness
+   - Garbage collection of outdated artifacts to manage storage constraints
+
+4. **Dependency Resolution and Coordination**
+   - Analysis of inter-service dependencies to optimize execution order
+   - Minimization of blocking relationships between pipeline stages
+   - Support for complex dependency types (build-time, test-time, runtime)
+
+5. **Monitoring and Prediction**
+   - Collection of detailed execution metrics for all pipeline components
+   - Predictive models for pipeline execution time and resource utilization
+   - Anomaly detection to identify performance regressions
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Task-to-environment matching correctly identifies optimal execution environments
-  - Artifact caching properly invalidates when dependencies change
-  - Parallelism adjusts correctly under varying system loads
-  - Cross-service dependencies are resolved with minimal blocking
-  - Execution time predictions fall within acceptable error margins
 
-- **Critical User Scenarios**
-  - Multi-service build with complex cross-service dependencies
-  - High-priority hotfix deployment during peak build farm utilization
-  - Recovery from infrastructure node failures during builds
-  - Handling of circular dependencies between services
-  - Sudden spike in build requests with constrained resources
+### Key Functionalities to Verify
+- Task scheduling correctly maps tasks to appropriate infrastructure
+- Caching system correctly invalidates and reuses artifacts
+- Parallelism control adapts appropriately to system load
+- Dependency resolution correctly orders task execution
+- Execution time predictions fall within acceptable error margins
 
-- **Performance Benchmarks**
-  - 30% reduction in average build pipeline duration
-  - 50% reduction in resource utilization for equivalent workloads
-  - 95% cache hit rate for unchanged components
-  - Forecasting accuracy within 15% of actual completion time
-  - System remains responsive with 1000+ concurrent build tasks
+### Critical Scenarios to Test
+- Handling of complex microservice dependency graphs
+- Response to infrastructure failure during pipeline execution
+- Performance under high concurrency with heterogeneous task types
+- Correct behavior with incremental builds and partial changes
+- Adaptation to varying system load conditions
 
-- **Edge Cases and Error Conditions**
-  - Cache corruption recovery without requiring full rebuilds
-  - Handling of infrastructure failure during critical builds
-  - Detection and management of dependency cycles
-  - Recovery from scheduler failure without losing build progress
-  - Graceful degradation under extreme load conditions
+### Performance Benchmarks
+- Scheduling overhead should not exceed 2% of total pipeline execution time
+- Cache lookup operations should complete in under 10ms
+- System should handle at least 100 pipeline initiations per minute
+- End-to-end latency should be at least 30% better than naive sequential execution
 
-- **Required Test Coverage Metrics**
-  - >90% line coverage for all scheduler components
-  - 100% coverage of dependency resolution logic
-  - 100% coverage of cache invalidation rules
-  - >95% branch coverage for environment matching logic
-  - Integration tests must cover all error recovery scenarios
+### Edge Cases and Error Conditions
+- Handling of circular dependencies between services
+- Recovery from infrastructure failures during critical operations
+- Correct behavior when cache storage becomes corrupted or unavailable
+- Proper handling of tasks that exceed their resource allocation
+- Graceful degradation under extreme load conditions
+
+### Required Test Coverage
+- Minimum 90% line coverage for core scheduling and caching components
+- Comprehensive integration tests for dependency resolution
+- Performance tests simulating production-scale pipeline executions
+- Chaos testing for infrastructure failure scenarios
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Overall build farm throughput increases by at least 40%
-- Average build pipeline duration decreases by 30%
-- Infrastructure utilization efficiency improves by 50%
-- Pipeline completion time prediction accuracy exceeds 85%
-- Build failures due to infrastructure issues reduced by 75%
-- Raj's team can support 2x more microservices with the same infrastructure
+
+The implementation will be considered successful if:
+
+1. Infrastructure-aware scheduling correctly matches tasks to optimal execution environments
+2. Build artifact caching achieves at least 85% hit rate for incremental builds
+3. Dynamic parallelism control maintains high resource utilization without overloading the system
+4. Cross-service dependency resolution minimizes blocking between services
+5. Execution time predictions are within 15% of actual completion times for 90% of pipelines
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using UV:
+   ```
+   uv venv
+   source .venv/bin/activate
+   ```
+
+2. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+3. CRITICAL: Run tests with pytest-json-report to generate pytest_results.json:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

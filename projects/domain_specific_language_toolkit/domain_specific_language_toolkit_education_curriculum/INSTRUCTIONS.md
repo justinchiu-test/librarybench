@@ -1,142 +1,160 @@
-# Adaptive Learning Path Definition Language
-
-A domain-specific language toolkit for creating personalized educational pathways with branching logic based on student performance and learning styles.
+# Adaptive Learning Path Design Language Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on educational curriculum design and adaptive learning paths. It enables educators without technical backgrounds to define personalized learning journeys with branching logic based on student performance and learning preferences. The system emphasizes educational scaffolding, learning objective mapping, accessibility, adaptive assessment, and engagement analytics.
+A specialized Domain Specific Language toolkit for educators to create personalized learning pathways with branching logic and adaptive content delivery. This toolkit enables educators without technical backgrounds to define sophisticated educational sequences that adjust based on student performance, learning preferences, and educational standards compliance.
 
 ## Persona Description
-
 Jamal develops adaptive learning platforms for K-12 education. His primary goal is to create a language that allows educators without technical backgrounds to define personalized learning paths with branching logic based on student performance and learning styles.
 
 ## Key Requirements
+1. **Educational scaffolding patterns with progression templates**: A library of predefined learning progression patterns based on pedagogical best practices that can be customized for different subjects and learning contexts. This is critical because it provides educators with research-based structures for knowledge building, ensures appropriate sequencing of learning activities, and promotes consistent skill development across various educational objectives.
 
-1. **Educational scaffolding patterns with progression templates**
-   - Implement a library of reusable educational scaffolding patterns that represent proven pedagogical approaches for knowledge building
-   - This capability is crucial for Jamal because it enables educators to leverage established educational theory without requiring deep pedagogical expertise. These templates provide structured frameworks for creating sequenced learning experiences that gradually build competency while supporting students at different skill levels.
+2. **Learning objective mapping to curriculum standards**: Automatic linking of learning activities and assessments to recognized educational standards like Common Core, NGSS, or local curriculum frameworks. This is essential because it helps educators ensure compliance with required standards, provides accountability for educational outcomes, and simplifies reporting for administrative purposes.
 
-2. **Learning objective mapping to curriculum standards**
-   - Develop a system for mapping learning activities and assessments to standardized curriculum objectives and educational standards
-   - This feature is essential because it ensures that adaptive learning paths remain aligned with required educational standards despite their personalized nature. It enables Jamal to demonstrate how adaptive content meets regulated curriculum requirements and facilitates reporting on standards-based learning outcomes.
+3. **Accessibility rule checking for inclusive content delivery**: Validation capabilities that ensure learning paths accommodate different learning abilities, conform to accessibility standards, and provide alternative content formats when needed. This is vital because it ensures educational content is available to all students regardless of disabilities, learning differences, or technical limitations, supporting equity in educational access.
 
-3. **Accessibility rule checking for inclusive content delivery**
-   - Create a validation system that checks learning path definitions against accessibility guidelines and best practices
-   - Ensuring that educational content is accessible to all students, including those with disabilities, is a fundamental requirement. This capability enables Jamal to verify that learning paths incorporate appropriate accommodations and follow universal design principles, ensuring equitable access to educational opportunities.
+4. **Adaptive assessment logic with difficulty scaling**: Dynamic assessment mechanisms that adjust question difficulty, format, or content based on student performance and demonstrated mastery levels. This is necessary because it provides more accurate measurement of student understanding, prevents frustration from overly difficult or trivially easy assessments, and efficiently identifies knowledge gaps.
 
-4. **Adaptive assessment logic with difficulty scaling**
-   - Build a framework for defining assessment rules that automatically adjust difficulty based on student performance
-   - This adaptive capability is at the core of personalized learning, allowing the system to appropriately challenge each student. It enables Jamal to create learning experiences that avoid both frustration (from excessive difficulty) and disengagement (from insufficient challenge), optimizing the learning experience for individual students.
-
-5. **Student engagement optimization through pathway analytics**
-   - Implement an analytics system that can measure and predict student engagement with different learning path variations
-   - Understanding how students engage with content is critical for iterative improvement of learning paths. This feature provides Jamal with data-driven insights about which educational approaches are most effective for different student segments, enabling continuous refinement of the adaptive learning experience.
+5. **Student engagement optimization through pathway analytics**: Built-in analytics to track student engagement patterns and identify areas where learning paths may be causing disengagement or confusion. This is crucial because it allows educators to continuously improve learning sequences based on actual student experiences, target areas with low engagement, and maximize learning efficiency and motivation.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each learning path must be automatically verifiable against curriculum standards
+  - Adaptive logic must be testable with simulated student performance profiles
+  - Accessibility compliance must be systematically validated
+  - Scaffolding patterns must be verified against pedagogical best practices
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- Learning paths must be testable with simulated student profiles and performance patterns
-- Accessibility validation must be verifiable against established guidelines (WCAG, etc.)
-- Standards alignment must be testable against multiple curriculum frameworks
-- Adaptive assessment logic must be verifiable with diverse student performance scenarios
-- Engagement predictions must be testable against historical student interaction data
+- **Performance Expectations**:
+  - Learning path validation must complete in under 5 seconds
+  - Adaptive assessment logic must respond to student input in under 1 second
+  - System must handle complex pathways with 200+ decision points without degradation
+  - Analytics processing must handle data from 10,000+ student interactions efficiently
 
-### Performance Expectations
-- Learning path compilation must complete within 2 seconds
-- Accessibility validation must complete within 5 seconds for comprehensive content sets
-- Standards alignment checking must process 1000+ learning objectives in under 10 seconds
-- Adaptive assessment calculations must occur in real-time (< 100ms) during student interaction
-- Analytics processing must handle data from 100,000+ student sessions within 1 minute
+- **Integration Points**:
+  - Learning Management Systems (LMS) through LTI and API interfaces
+  - Student Information Systems for learner data
+  - Curriculum standards databases (Common Core, NGSS, etc.)
+  - Content repositories with educational resources
+  - Analytics and reporting platforms
 
-### Integration Points
-- Curriculum standards databases for mapping learning objectives
-- Learning management systems for deploying compiled learning paths
-- Accessibility validation tools and guidelines
-- Student information systems for learner profile data
-- Analytics platforms for processing engagement metrics
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All pathway logic must be expressible through the DSL without requiring custom code
+  - Learning path definitions must be storable as human-readable text files
+  - System must maintain compliance with educational data privacy regulations (FERPA, COPPA)
+  - All defined pathways must support offline export for low-connectivity environments
 
-### Key Constraints
-- No UI components; all functionality must be exposed through APIs
-- All learning path definitions must be deterministic and reproducible
-- The system must maintain student data privacy in compliance with education regulations
-- Content must be represented in a format that supports multiple delivery mechanisms
-- All analytics must be anonymizable for research purposes
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Adaptive Learning Path DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for educational pathways
+2. A scaffolding pattern library based on established pedagogical approaches
+3. Curriculum standards mapping and validation capabilities
+4. Accessibility validation against WCAG and educational inclusion guidelines
+5. Adaptive assessment logic with difficulty adjustment algorithms
+6. Student engagement analytics and optimization suggestions
+7. Export mechanisms for deploying pathways to learning management systems
+8. Documentation generators that produce educator-friendly pathway guides
+9. Version control and sharing capabilities for collaborative development
+10. Test utilities for simulating student progress through defined pathways
 
-1. **Learning Path Definition Language**: A grammar and parser for defining educational sequences with branching logic based on student performance and characteristics.
-
-2. **Scaffolding Template System**: Reusable patterns that encapsulate proven pedagogical approaches for different learning scenarios.
-
-3. **Standards Alignment**: Mechanisms for mapping learning activities and assessments to curriculum standards and tracking coverage.
-
-4. **Accessibility Validation**: Tools for checking learning path elements against accessibility guidelines and providing remediation suggestions.
-
-5. **Adaptive Assessment**: A system for defining assessment rules that automatically adjust difficulty based on student performance.
-
-6. **Student Profile Modeling**: Data structures for representing student characteristics, preferences, and performance that influence path adaptation.
-
-7. **Engagement Analytics**: Tools for collecting and analyzing data on student interactions with learning paths to optimize engagement.
-
-8. **Path Compilation**: Translation of high-level learning path definitions into executable formats that can be deployed in learning management systems.
+The system should enable educators to define elements such as:
+- Learning objectives and success criteria
+- Content sequencing with prerequisites and dependencies
+- Formative and summative assessment strategies
+- Differentiation options based on student needs
+- Remediation paths for addressing misconceptions
+- Enrichment opportunities for advanced learners
+- Cross-curricular connections between subjects
+- Varied content formats for different learning styles
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into executable learning path representations
+  - Accurate mapping to curriculum standards
+  - Proper validation of accessibility requirements
+  - Correct application of adaptive assessment logic
+  - Accurate analytics on student engagement and performance
 
-### Key Functionalities to Verify
-- Accurate parsing of learning path definitions from domain-specific syntax
-- Correct application of scaffolding patterns to learning sequences
-- Proper mapping of learning activities to curriculum standards
-- Effective validation of content against accessibility guidelines
-- Accurate adaptation of assessment difficulty based on student performance
+- **Critical User Scenarios**:
+  - Teacher creates a differentiated math unit with multiple learning paths
+  - Curriculum coordinator validates alignment with district standards
+  - Special education teacher adapts existing content for specific learning needs
+  - Educational researcher analyzes effectiveness of different pathway structures
+  - District administrator implements consistent learning approaches across schools
 
-### Critical User Scenarios
-- Educator defines a personalized learning path using scaffolding templates
-- System validates learning path for curriculum standards alignment
-- Learning path adapts assessment difficulty based on student performance
-- Accessibility validation identifies and suggests improvements for non-compliant content
-- Engagement analytics identify optimization opportunities in existing paths
+- **Performance Benchmarks**:
+  - Validate a complex learning path (100+ activities) in under 5 seconds
+  - Process standard mapping for 1000+ learning objectives in under 30 seconds
+  - Generate analytics from 10,000 student interaction records in under 5 minutes
+  - Apply adaptive logic to assessment selection in under 500ms
 
-### Performance Benchmarks
-- Path compilation completed in under 2 seconds for complex learning sequences
-- Standards alignment checking completed in under 10 seconds for comprehensive curricula
-- Accessibility validation completed in under 5 seconds for full learning paths
-- Adaptive assessment logic execution in under 100ms during student interaction
-- Analytics processing for 100,000+ student sessions completed in under 1 minute
+- **Edge Cases and Error Conditions**:
+  - Handling of circular dependencies in learning prerequisites
+  - Detection of learning dead-ends in complex branching paths
+  - Management of extreme skill level differences in the same cohort
+  - Graceful degradation when standard mappings are incomplete
+  - Pathway behavior when student history data is limited or missing
 
-### Edge Cases and Error Conditions
-- Handling of conflicting adaptation rules within learning paths
-- Proper response to unrecognized curriculum standards
-- Graceful degradation when student profile data is incomplete
-- Recovery from partial path compilation failures
-- Handling of accessibility requirements that conflict with pedagogical objectives
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of pathway parser and interpreter
+  - 100% coverage of adaptive assessment logic
+  - 95% coverage of standards mapping components
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core path parsing and compilation logic
-- 100% coverage of accessibility validation rules
-- 95% coverage of adaptive assessment algorithms
-- 90% coverage for standards alignment mapping
-- 100% test coverage for student data privacy protection
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Educators without programming expertise can define complex adaptive learning paths using the domain-specific language.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to create educationally sound adaptive pathways
+4. Standard mapping correctly identifies alignment with curriculum requirements
+5. Accessibility validation successfully identifies inclusion issues
+6. Adaptive assessment logic appropriately adjusts based on student performance
+7. Analytics components correctly identify engagement patterns and optimization opportunities
+8. Educators without programming expertise can create and modify learning paths
 
-2. Learning paths are automatically validated for curriculum standards alignment and accessibility compliance.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Assessments effectively adapt to individual student performance levels.
+## Setup Instructions
+To set up the development environment:
 
-4. Student engagement metrics show measurable improvement compared to static learning content.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. Learning paths can be easily updated in response to curriculum changes or engagement analytics.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. The time required to develop personalized learning experiences is reduced by at least 60%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. The system demonstrates measurable improvement in learning outcomes for diverse student populations.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

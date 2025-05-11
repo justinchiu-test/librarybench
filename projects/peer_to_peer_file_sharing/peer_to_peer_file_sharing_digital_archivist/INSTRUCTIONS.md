@@ -1,153 +1,177 @@
-# Distributed Digital Heritage Preservation Network
+# DistriArchive - Distributed Digital Preservation Network
 
 ## Overview
-A resilient peer-to-peer preservation system designed for long-term archiving of cultural heritage materials, enabling redundant storage across diverse geographical locations with built-in integrity verification, location optimization, and comprehensive metadata synchronization.
+DistriArchive is a specialized peer-to-peer file sharing library designed for digital preservation, focusing on creating redundant, resilient storage across multiple independent locations. It ensures long-term preservation through geographic distribution, rigorous integrity checking, comprehensive metadata management, and preservation-specific data formats.
 
 ## Persona Description
 Dr. Patel preserves digital cultural heritage by creating distributed archives of important materials. She needs redundant, resilient storage across multiple independent locations to ensure long-term preservation.
 
 ## Key Requirements
+
 1. **Replication Management**
-   - Configurable replication factor for different preservation priorities
-   - Intelligent distribution to ensure sufficient independent copies
-   - Automated rebalancing when nodes join or leave
-   - Critical for ensuring no single point of failure exists for irreplaceable cultural artifacts, with more important materials receiving higher replication levels
+   - Implement a system to track, manage, and ensure sufficient copies of archived materials exist across the network
+   - Critical for Dr. Patel to maintain preservation redundancy standards for cultural heritage materials
+   - Must support configurable replication policies based on material importance, size, and preservation requirements
+   - Should include automated replication repair when copies fall below minimum thresholds
 
 2. **Geographic Diversity Optimization**
-   - Location-aware distribution of replicas
-   - Physical separation requirements for critical materials
-   - Geopolitical risk assessment and distribution planning
-   - Essential for protecting against regional disasters, political instability, or infrastructure failures by ensuring copies exist in diverse physical locations
+   - Create algorithms to distribute data across different physical locations for disaster resilience
+   - Essential for protecting against regional disasters, political instability, or infrastructure failures
+   - Must incorporate location metadata and network latency to infer geographic distribution
+   - Should optimize for maximum physical separation of critical materials
 
-3. **Scheduled Integrity Verification**
-   - Cryptographic fixity checking on a configurable schedule
-   - Automated repair of degraded copies
-   - Corruption detection and alerting system
-   - Vital for detecting and addressing bit rot, storage failures, or tampering over the decades-long timespan of digital preservation
+3. **Integrity Checking with Scheduled Verification**
+   - Develop a comprehensive system for periodic verification of stored artifacts against checksums
+   - Vital for ensuring bit-level preservation over long time periods
+   - Must support multiple hash algorithms for future-proofing (SHA-256, SHA-3, etc.)
+   - Should include scheduled verification and automatic reporting of corruption
 
 4. **Catalog Synchronization**
-   - Distributed metadata catalog
-   - Conflict resolution for concurrent metadata updates
-   - Versioned metadata history
-   - Necessary for maintaining consistent, accurate descriptive information across all preservation nodes, supporting proper discovery and management of archived materials
+   - Implement mechanisms to maintain consistent metadata across all archive nodes
+   - Necessary for coordinated preservation efforts and resource discovery
+   - Must handle schema evolution as metadata standards change over time
+   - Should resolve conflicts when different nodes update metadata independently
 
 5. **Preservation-Specific Formats**
-   - Format conversion to archival standards
-   - Embedded provenance and authenticity information
-   - Self-describing preservation packages
-   - Critical for ensuring long-term accessibility and establishing chain of custody for digital materials, enhancing their scholarly and cultural value
+   - Create a framework for embedding provenance and authenticity information directly with preserved content
+   - Crucial for maintaining context and establishing chain of custody for cultural heritage materials
+   - Must include cryptographic signing for authenticity verification
+   - Should support standard preservation metadata (PREMIS, METS) in a distributed context
 
 ## Technical Requirements
-### Testability Requirements
-- All preservation functions must have comprehensive tests
-- Distributed storage behavior must be verifiable in simulated environments
-- Integrity mechanisms must have 100% test coverage
-- Metadata synchronization must have extensive conflict tests
-- Format conversion must be validated against standards
 
-### Performance Expectations
-- Support for archives containing millions of items
-- Efficient handling of individual artifacts up to 100GB
-- Minimal network overhead for integrity checking
-- Responsive metadata queries despite distributed nature
-- Graceful operation with intermittently connected nodes
+- **Testability Requirements**
+  - All preservation functions must have high test coverage (>95%)
+  - Long-term processes must be accelerated in testing through injectable time controls
+  - Corruption detection must be testable with deliberate data manipulation
+  - Geographic distribution must be testable with simulated node locations
 
-### Integration Points
-- Standard archival metadata schema compatibility (MODS, Dublin Core, etc.)
-- Digital preservation system APIs (Archivematica, Preservica, etc.)
-- Geolocation services for node distribution
-- Library catalog and discovery systems
-- Long-term storage technologies (LOCKSS, tape archives)
+- **Performance Expectations**
+  - System must scale to handle archives in the multi-terabyte range
+  - Integrity verification must process at least 100GB of data per day on modest hardware
+  - Metadata operations must complete within seconds even with millions of catalog entries
+  - Replication processes must utilize available bandwidth efficiently with throttling capabilities
 
-### Key Constraints
-- Must operate with heterogeneous storage infrastructure
-- Must function with nodes connecting intermittently
-- No single entity should control the entire preservation network
-- Must accommodate extremely long-term operation (decades)
-- Must have minimal external dependencies for core functionality
+- **Integration Points**
+  - Standard metadata interchange formats (DC, MODS, PREMIS, METS)
+  - Cryptographic verification using standard libraries (hashlib, cryptography)
+  - Filesystem abstraction for cross-platform storage
+  - Network layer abstraction for different connectivity scenarios
+
+- **Key Constraints**
+  - Implementation must be pure Python for maximum portability across preservation nodes
+  - All operations must be designed for long-term stability (decades rather than years)
+  - Storage formats must be self-describing and resistant to format obsolescence
+  - All core functionality must operate without UI components
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must be implemented as a library with the following components:
 
-1. **Replication Engine**
-   - Copy distribution and management
-   - Replication factor enforcement
-   - Node availability monitoring
-   - Recovery and redistribution
+The DistriArchive implementation should provide these core functions:
 
-2. **Geographic Distribution System**
-   - Location tracking and management
-   - Distribution planning algorithms
-   - Risk analysis framework
-   - Physical separation verification
+1. **Distributed Archive Management**
+   - Network-wide inventory of preserved content
+   - Policy-based replication and distribution
+   - Long-term preservation planning and execution
 
-3. **Integrity Verification Framework**
-   - Scheduled verification management
-   - Multi-algorithm checksum implementation
+2. **Replication and Distribution**
+   - Copy creation and verification across the network
+   - Geographic analysis and optimization
+   - Replication health monitoring and repair
+
+3. **Integrity Management**
+   - Multiple hash algorithm support for all content
+   - Scheduled verification processes
    - Corruption detection and reporting
-   - Automated repair mechanisms
+   - Automatic repair from intact copies
 
-4. **Metadata Management System**
+4. **Metadata System**
    - Distributed catalog implementation
-   - Schema validation and enforcement
-   - Conflict detection and resolution
-   - Version history tracking
+   - Conflict resolution for metadata updates
+   - Schema evolution handling
+   - Search and retrieval capabilities
 
-5. **Preservation Package Processor**
-   - Format conversion to archival standards
-   - Provenance tracking and embedding
-   - Self-containment packaging
-   - Long-term access provision
+5. **Preservation Packaging**
+   - Content packaging with embedded metadata
+   - Provenance and authenticity records
+   - Self-describing format implementation
+   - Migration path planning for format obsolescence
 
 ## Testing Requirements
-### Key Functionalities to Verify
-- Proper replication according to preservation policies
-- Geographic distribution meeting separation requirements
-- Accurate detection and repair of data corruption
-- Consistent metadata synchronization despite conflicts
-- Correct creation of standards-compliant preservation packages
 
-### Critical Scenarios to Test
-- Network operation with fluctuating node availability
-- Geographic distribution with simulated regional failures
-- Integrity verification with various corruption patterns
-- Metadata synchronization with concurrent updates
-- Format conversion with diverse input materials
+- **Key Functionalities to Verify**
+  - Replication actually achieves required redundancy levels
+  - Geographic distribution properly maximizes physical separation
+  - Integrity checking correctly identifies corrupted files
+  - Catalog synchronization properly resolves conflicts
+  - Preservation formats correctly embed and maintain provenance information
 
-### Performance Benchmarks
-- Replication speed vs. available network bandwidth
-- Geographic optimization quality vs. computational time
-- Fixity checking overhead as percentage of storage size
-- Metadata query response time despite distribution
-- Package processing throughput for various formats
+- **Critical User Scenarios**
+  - Ingesting new cultural heritage materials into the distributed archive
+  - Recovering content after simulated node failures
+  - Detecting and repairing corrupted archive items
+  - Updating metadata across a distributed network of preservation nodes
+  - Verifying authenticity of preserved content
 
-### Edge Cases and Error Conditions
-- Severe node unavailability across the network
-- Geographic limitations when few diverse locations exist
-- Recovery from widespread integrity failures
-- Resolution of complex metadata conflicts
-- Handling of unrecognized or problematic formats
-- Extremely large or complex preservation items
+- **Performance Benchmarks**
+  - Must process at least 1TB of test data in verification tests
+  - Metadata operations must scale to at least 1 million catalog entries
+  - Replication must effectively utilize available bandwidth (at least 80% efficiency)
+  - Geographic distribution algorithms must complete analysis in under 60 seconds for 100 nodes
 
-### Required Test Coverage
-- 100% coverage of replication management code
-- ≥95% coverage for geographic distribution components
-- 100% coverage for integrity verification mechanisms
-- ≥90% coverage for metadata synchronization
-- ≥95% coverage for preservation package processing
+- **Edge Cases and Error Handling**
+  - Resilience when majority of nodes are offline
+  - Recovery from corrupted metadata catalog
+  - Handling of incomplete or damaged preservation packages
+  - Operation with extremely limited bandwidth
+  - Recovery from cryptographic verification failures
+
+- **Test Coverage Requirements**
+  - Core preservation functions must have 100% test coverage
+  - Edge cases and error conditions must be thoroughly tested
+  - Performance tests must verify scaling capabilities
+  - Tests must simulate long-term operations (years/decades) through time manipulation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Digital artifacts consistently maintain the specified minimum number of copies
-2. Copies are distributed to minimize geographic and geopolitical risks
-3. Data integrity is regularly verified and automatically repaired when needed
-4. Metadata remains consistent and accurate across all preservation nodes
-5. Artifacts are stored in formats optimized for long-term access and authenticity
-6. All five key requirements are fully implemented and testable via pytest
-7. The system provides greater preservation security than centralized alternatives
-8. Preserved materials remain accessible and verifiable over extended time periods
+The implementation will be considered successful if:
 
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Digital materials can be reliably preserved across a distributed network
+2. Replication management maintains the specified number of copies
+3. Geographic diversity ensures physical separation of replicas
+4. Integrity checking successfully identifies and helps repair corruption
+5. Catalog synchronization maintains consistent metadata
+6. Preservation formats properly maintain provenance and authenticity
+7. All components perform efficiently at archive-scale data volumes
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Install test dependencies with `uv pip install pytest pytest-json-report`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

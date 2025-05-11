@@ -1,127 +1,175 @@
-# Academic Storage Resource Management System
+# Academic Storage Resource Manager
+
+A specialized file system analyzer for educational environments focused on optimizing storage allocation among faculty, research, and student needs.
 
 ## Overview
-A specialized file system analysis library for educational environments that helps efficiently allocate limited storage resources across faculty, research, and student needs. This solution provides quota management, usage pattern analysis, and educational content identification.
+
+The Academic Storage Resource Manager is a Python library designed to help educational IT coordinators efficiently allocate limited storage resources across diverse computing needs in academic environments. It provides tools for user quota analysis, educational content identification, semester-based usage pattern visualization, shared resource optimization, and simplified reporting for non-technical stakeholders.
 
 ## Persona Description
+
 Miguel manages IT resources for a university department with limited budget but diverse computing needs. He needs to efficiently allocate storage resources across faculty, research, and student needs.
 
 ## Key Requirements
-1. **User quota analysis and recommendation engine**
-   - Develop intelligent algorithms for analyzing historical usage patterns by user and group
-   - Create predictive models for future storage needs based on user types and activities
-   - Generate fair and efficient quota recommendations balancing needs and constraints
-   - Track quota utilization and effectiveness over time, with automatic adjustment recommendations
 
-2. **Educational content identification system**
-   - Implement classification algorithms to differentiate course materials from personal files
-   - Detect and categorize different types of educational content (lectures, assignments, research data, etc.)
-   - Identify shared resources versus individual materials
-   - Track content lifecycles across academic terms
+1. **User Quota Analysis and Recommendation Engine**:
+   Tools to analyze historical usage patterns and recommend appropriate quota allocations for different user groups. This is critical for Miguel because it enables data-driven decisions about storage allocation rather than arbitrary assignments. The system must analyze usage trends over time to identify both underutilized and constrained allocations, then suggest optimal quota adjustments.
 
-3. **Semester-based usage pattern visualization**
-   - Create data models representing storage demand fluctuations throughout the academic year
-   - Track cyclical patterns tied to academic calendar events (term start/end, exam periods, etc.)
-   - Predict peak demand periods for resource planning
-   - Generate insights for optimizing provisioning during different academic phases
+2. **Educational Content Identification**:
+   Mechanisms to automatically distinguish course materials from personal files and research data. This feature is essential because it allows Miguel to implement appropriate retention and backup policies for different content types. Academic files have different lifecycle and protection requirements than personal files, and Miguel needs to ensure critical educational resources are properly preserved.
 
-4. **Shared resource optimization framework**
-   - Develop analytics to identify opportunities for consolidated storage services
-   - Detect redundant content across users and courses
-   - Analyze access patterns to determine optimal sharing structures
-   - Generate recommendations for resource pooling and sharing policies
+3. **Semester-Based Usage Pattern Visualization**:
+   Analytics that visualize storage demand fluctuations throughout the academic year. This capability is crucial for capacity planning as academic environments experience predictable usage spikes aligned with the semester calendar. Miguel needs to understand these patterns to prepare infrastructure for peak demand periods like finals and project deadlines.
 
-5. **Non-technical reporting system**
-   - Design simplified data representations for presenting to non-technical department administrators
-   - Create clear metrics for storage utilization, allocation efficiency, and cost-effectiveness
-   - Generate budget justification reports based on actual usage data
-   - Provide comparison analytics against peer departments or institutions
+4. **Shared Resource Optimization**:
+   Tools to identify opportunities for consolidating storage services and eliminating redundancy. This is vital in budget-constrained educational environments where efficiency is paramount. Miguel needs to identify duplicate content, underutilized personal storage, and opportunities for shared storage pools to maximize resource efficiency.
+
+5. **Simplified Reporting for Non-Technical Stakeholders**:
+   Generation of clear, graphical reports designed for presentation to department administrators without technical backgrounds. This feature is essential because Miguel must justify IT resource allocations to administrative leadership. Reports must translate technical metrics into business-relevant insights that demonstrate efficient resource utilization and support budget requests.
 
 ## Technical Requirements
-- **Usability**: Must provide clear, actionable insights suitable for administrators with limited technical background
-- **Fairness**: Quota and resource allocation recommendations must be equitable and based on objective metrics
-- **Flexibility**: Must accommodate diverse needs of different academic departments and user types
-- **Efficiency**: Must maximize utility of limited storage resources without sacrificing educational outcomes
-- **Privacy**: Must respect academic privacy while still enabling effective resource management
+
+### Testability Requirements
+- All components must have clear APIs that can be tested independently
+- Test fixtures should include sample educational directory structures
+- Quota analysis algorithms must be testable with historical usage datasets
+- Report generation must be verifiable through automated testing
+- Test suites should achieve at least 90% code coverage
+
+### Performance Expectations
+- User quota analysis should complete in under 5 minutes for departments with 1,000+ users
+- Content classification should process at least 100GB per hour
+- Memory usage should not exceed 500MB during standard operations
+- Analysis results should be cached with efficient incremental updates
+- Operations should have minimal impact on active file systems
+
+### Integration Points
+- Standard filesystem access interfaces (local and network storage)
+- User directory service integration (LDAP, Active Directory)
+- Course management system integration (optional)
+- Export capabilities for reports (PDF, HTML, Excel)
+- Email notification systems for quota alerts
+
+### Key Constraints
+- All operations must be read-only to avoid disrupting educational activities
+- Privacy regulations for student data must be strictly observed
+- Implementation must support heterogeneous environments (Windows, Mac, Linux)
+- Solutions must be implementable with limited IT staff resources
+- Analysis must work across both centralized and distributed storage systems
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Quota Management System**
-   - Usage pattern analysis algorithms
-   - Predictive modeling for storage needs
-   - Fairness-based allocation engine
-   - Effectiveness tracking and adjustment
 
-2. **Content Classification Engine**
-   - Educational material detection
-   - Content categorization algorithms
-   - Ownership and sharing analysis
-   - Academic lifecycle tracking
+The Academic Storage Resource Manager must provide the following core functionality:
 
-3. **Temporal Analysis Framework**
-   - Academic calendar correlation
-   - Cyclical pattern detection
-   - Peak demand prediction
-   - Seasonal optimization engine
+1. **User Storage Analysis Framework**:
+   - Historical usage tracking by user and group
+   - Trend analysis for growth prediction
+   - Anomaly detection for unusual storage consumption
+   - Comparative analysis between similar user groups
+   - Quota recommendation algorithms with configurable parameters
 
-4. **Resource Consolidation System**
-   - Redundancy detection algorithms
-   - Access pattern analysis
-   - Sharing opportunity identification
-   - Policy recommendation engine
+2. **Content Classification System**:
+   - Pattern-based identification of educational materials
+   - Course-related file detection and organization
+   - Differentiation between research, educational, and personal content
+   - File lifecycle stage determination
+   - Content ownership and sharing analysis
 
-5. **Administrative Reporting Framework**
-   - Simplified data representation models
-   - Key performance indicator tracking
-   - Budget justification generators
-   - Comparative analysis tools
+3. **Temporal Usage Analysis**:
+   - Academic calendar correlation with storage patterns
+   - Detection of cyclical usage trends
+   - Peak demand period identification
+   - Predictive modeling for future semesters
+   - Historical comparison across academic years
+
+4. **Resource Consolidation Engine**:
+   - Duplicate content detection across user directories
+   - Shared storage opportunity identification
+   - Cold data archival recommendation
+   - Multi-user access pattern analysis
+   - Resource pooling strategy suggestions
+
+5. **Stakeholder Reporting System**:
+   - Automated report generation with configurable templates
+   - Visual representation of key storage metrics
+   - Cost analysis and budget justification tools
+   - Comparison with peer institutions (if data available)
+   - Executive summaries for administrative leadership
 
 ## Testing Requirements
-- **Quota Analysis Testing**
-  - Test with simulated usage patterns for various academic user types
-  - Validate prediction accuracy with historical data
-  - Verify recommendation fairness with controlled allocation scenarios
-  - Test adjustment algorithms with changing usage patterns
 
-- **Content Classification Testing**
-  - Test with diverse collection of academic and personal files
-  - Validate categorization accuracy with pre-classified content
-  - Verify lifecycle tracking across simulated academic terms
-  - Test with mixed-use content and edge cases
+### Key Functionalities to Verify
+- Accuracy of quota recommendations based on historical data
+- Precision of educational content identification
+- Reliability of semester-based usage pattern detection
+- Effectiveness of shared resource optimization recommendations
+- Clarity and correctness of generated reports
 
-- **Pattern Analysis Testing**
-  - Test detection algorithms with academic calendar-aligned data
-  - Validate prediction accuracy for peak demand periods
-  - Verify optimization recommendations against expert strategies
-  - Test with various institutional calendar patterns
+### Critical User Scenarios
+- Start-of-semester storage provisioning for new courses
+- End-of-semester cleanup and archival operations
+- Mid-year budget justification reporting
+- Storage reallocation between departments
+- Handling of special projects with temporary storage needs
 
-- **Resource Optimization Testing**
-  - Test redundancy detection with known duplicative content
-  - Validate sharing recommendations against best practices
-  - Verify access pattern analysis with simulated usage data
-  - Test policy recommendations with diverse department structures
+### Performance Benchmarks
+- Complete analysis of a department with 1,000 users in under 10 minutes
+- Processing of 1TB educational file system in under 1 hour
+- Memory usage below 500MB during all operations
+- Report generation in under 30 seconds
+- API response times under 200ms for standard queries
 
-- **Reporting Testing**
-  - Test clarity and comprehensibility with non-technical reviewers
-  - Validate metric accuracy against raw data
-  - Verify budget justification quality against institutional standards
-  - Test comparative analysis with benchmark datasets
+### Edge Cases and Error Conditions
+- Handling of permission restrictions in mixed-access environments
+- Graceful operation with incomplete historical data
+- Proper analysis of unusual file types specific to academic disciplines
+- Recovery from interrupted scans
+- Appropriate handling of very large individual directories (e.g., research data)
+
+### Required Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of report generation functions
+- All recommendation algorithms must have dedicated test suites
+- Performance tests for resource-intensive operations
+- Integration tests for all supported storage systems
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Generate quota recommendations that accommodate at least 95% of legitimate user needs while staying within overall storage constraints
-2. Correctly identify and classify educational content with at least 90% accuracy
-3. Predict semester-based usage patterns and peak demands with 85%+ accuracy
-4. Identify resource consolidation opportunities that reduce overall storage requirements by at least 25%
-5. Create reports that effectively communicate technical storage metrics to non-technical administrators
-6. Achieve 90%+ user satisfaction with storage allocation while maintaining strict budget discipline
 
-To set up your development environment:
-```bash
-# Create and activate a virtual environment
-uv venv
-source .venv/bin/activate
+The Academic Storage Resource Manager implementation will be considered successful when:
 
-# Install dependencies
-uv pip install -e .
+1. Quota recommendations accurately reflect actual needs based on historical patterns
+2. Content classification correctly identifies at least 90% of educational materials
+3. Semester-based usage visualizations clearly show academic calendar correlations
+4. Shared resource recommendations identify significant consolidation opportunities
+5. Generated reports effectively communicate technical information to non-technical stakeholders
+6. Implementation meets all performance benchmarks
+7. Code is well-structured, maintainable, and follows Python best practices
+8. The system can be deployed in varied educational environments with minimal configuration
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+NOTE: To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, activate the environment with `source .venv/bin/activate`. Install the project with `uv pip install -e .`.
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion. Use the following commands:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

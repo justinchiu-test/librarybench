@@ -1,138 +1,140 @@
-# Content Creator Metadata Management System
+# Social Media Content Metadata Management System
 
 ## Overview
-A comprehensive metadata management system for social media content creators that tracks platform usage, engagement metrics, hashtag strategies, content scheduling, and performance trends. The system enables efficient content repurposing while preventing duplication and optimizing engagement strategies across multiple platforms.
+A specialized metadata organization system for social media content creators who need to track media usage across multiple platforms, analyze performance, and efficiently repurpose content while avoiding duplication.
 
 ## Persona Description
 Jamal produces content across multiple platforms and needs to track which photos and videos have been used, where they've been published, and how they've performed. He wants to repurpose content efficiently while avoiding duplication.
 
 ## Key Requirements
+1. **Platform usage tracking**: Develop a system to record where and when each media asset has been published across different social platforms. This is critical for preventing redundant posting and understanding the distribution history of content across the creator's social media ecosystem.
 
-1. **Platform Usage Tracking**
-   - Monitors where and when each media asset has been published across different social platforms
-   - Critical for Jamal because it prevents accidental reuse on the same platform while identifying opportunities to repurpose content across different channels
-   - Must maintain a comprehensive publication history with detailed platform-specific context including post URLs, publication dates, and account information
+2. **Engagement metrics association**: Create functionality to connect performance data (likes, shares, comments, etc.) with specific media assets. This enables data-driven content strategy by identifying which visual elements and content types generate the most engagement.
 
-2. **Engagement Metrics Association**
-   - Links performance data from various platforms to specific media assets
-   - Essential for Jamal's content strategy as it connects content characteristics with audience response, enabling data-driven decisions about what performs well
-   - Must aggregate metrics like views, likes, comments, shares, and click-through rates from different platforms into normalized, comparable datasets
+3. **Hashtag and keyword management**: Implement tools for maintaining consistent cross-platform tagging strategies and analyzing tag performance. This ensures content discoverability and brand consistency while optimizing for each platform's unique audience and algorithm.
 
-3. **Hashtag and Keyword Management**
-   - Implements consistent tagging strategies across platforms while optimizing for each channel
-   - Vital for Jamal's discoverability as it ensures his content uses the most effective keywords for each platform's algorithm
-   - Must track hashtag performance, recommend optimal tags based on trends, and maintain a taxonomy of personal tagging conventions
+4. **Content calendar integration**: Build mechanisms to schedule media for future publishing dates and organize content planning. This provides structure to the content creation workflow and enables strategic timing of posts across platforms.
 
-4. **Content Calendar Integration**
-   - Schedules media for future publishing dates and tracks publication timelines
-   - Crucial for Jamal's workflow planning as it provides visibility into scheduled content across platforms and prevents timing conflicts
-   - Must support complex publishing schedules, recurring content themes, and platform-specific timing optimization
-
-5. **Trend Analysis**
-   - Identifies visual elements, topics, or formats that drive higher engagement
-   - Indispensable for Jamal's content optimization as it reveals patterns in successful content, allowing him to replicate high-performing characteristics
-   - Must analyze correlations between content attributes (visual elements, topics, formats) and engagement metrics to identify success factors
+5. **Trend analysis**: Develop analytics to identify visual or thematic elements that drive higher engagement. This helps the creator understand which content characteristics resonate with audiences and informs future content creation decisions.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Platform tracking functions must be independently testable with simulated publication data
-  - Metrics association must verify correct relationship mapping
-  - Hashtag management must be testable against reference performance data
-  - Calendar functions must verify scheduling conflicts and optimization
-  - Trend analysis algorithms must produce consistent results for test datasets
+### Testability Requirements
+- All platform tracking and metrics functions must be independently testable
+- Use test fixtures with sample social media metrics and publishing history
+- Support simulation of various engagement patterns
+- Enable isolated testing of scheduling and calendar functions
 
-- **Performance Expectations**
-  - Must efficiently handle content libraries with 10,000+ media items
-  - Trend analysis should complete in under 30 seconds for the entire library
-  - Search and filtering operations should return results in under 1 second
-  - Must support concurrent updates from multiple platform data sources
+### Performance Expectations
+- Process metadata for at least 5,000 content pieces efficiently
+- Support content libraries with up to 50,000 assets
+- Analysis operations should complete in under 5 seconds
+- Schedule management should handle complex publishing calendars
 
-- **Integration Points**
-  - Social media platform APIs for performance data
-  - Calendar systems for scheduling coordination
-  - Hashtag and trend monitoring services
-  - Content management and scheduling tools
+### Integration Points
+- Common image and video formats used in social media
+- Platform-specific metadata requirements and limitations
+- Analytics and engagement metrics from various platforms
+- Hashtag and keyword databases for performance tracking
+- Content calendar and scheduling systems
 
-- **Key Constraints**
-  - Must maintain privacy and security for unpublished content
-  - Must handle rate limits and API restrictions from different platforms
-  - Must adapt to changing metrics and algorithms across platforms
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- System must adapt to changing platform requirements
+- Data structures must accommodate cross-platform metrics normalization
+- Analytics should work with incomplete or inconsistent engagement data
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for social media content with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Publication Tracking and History**
-   - Record complete publication history for each media asset
-   - Track cross-platform usage of the same content
-   - Prevent accidental duplication while enabling intentional repurposing
+1. **Content Usage Tracking**
+   - Track which assets have been published on which platforms
+   - Record publishing dates, contexts, and formats
+   - Identify unused or underutilized content
 
-2. **Performance Metrics Management**
-   - Collect and normalize engagement data across platforms
-   - Associate metrics with specific content and attributes
-   - Enable comparative analysis across different channels
+2. **Cross-Platform Analytics**
+   - Normalize engagement metrics across different platforms
+   - Associate performance data with specific content assets
+   - Generate comparative performance analysis
 
-3. **Content Optimization**
-   - Manage hashtags and keywords for different platforms
-   - Track tagging effectiveness and trending topics
-   - Recommend optimal tagging strategies based on performance
+3. **Metadata Optimization**
+   - Manage hashtags and keywords across platforms
+   - Track tag performance and trends
+   - Suggest optimal tagging strategies based on performance
 
-4. **Publication Planning**
-   - Schedule content across multiple platforms
-   - Prevent conflicts and optimize timing
-   - Coordinate themed content and campaign releases
+4. **Content Planning and Scheduling**
+   - Organize content for future publishing
+   - Maintain publishing schedules across platforms
+   - Prevent duplicate or redundant posting
 
-5. **Performance Analysis**
-   - Identify patterns in successful content
-   - Correlate content characteristics with engagement metrics
-   - Generate actionable insights for content strategy
+5. **Performance Pattern Analysis**
+   - Identify visual and thematic elements driving engagement
+   - Analyze temporal patterns in content performance
+   - Generate insights for content strategy optimization
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate tracking of publication history across platforms
-  - Correct association of engagement metrics with media assets
-  - Effective management of hashtags and keywords
-  - Proper handling of content scheduling and conflicts
-  - Accurate identification of performance trends and patterns
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Adding new content to the library and planning its publication
-  - Analyzing the performance of published content across platforms
-  - Identifying opportunities to repurpose high-performing content
-  - Optimizing hashtag strategies based on performance data
-  - Scheduling a coordinated multi-platform content campaign
+1. **Platform Tracking**
+   - Test recording of publishing history across platforms
+   - Verify detection of duplicate or redundant content usage
+   - Test platform-specific metadata handling
 
-- **Performance Benchmarks**
-  - Publication tracking must handle at least 50 updates per second
-  - Trend analysis must process the entire library in under 30 seconds
-  - Hashtag effectiveness calculations must complete in under 5 seconds
-  - System must maintain responsive performance with 10,000+ media items
+2. **Metrics Integration**
+   - Test association of engagement metrics with content
+   - Verify normalization of metrics across platforms
+   - Test handling of incomplete or missing metrics
 
-- **Edge Cases and Error Conditions**
-  - Platform API failures or rate limiting
-  - Conflicting engagement metrics from different sources
-  - Removed or edited posts requiring history reconciliation
-  - Rapid trend changes affecting hashtag effectiveness
-  - Content published outside the system requiring retrospective tracking
+3. **Tag Management**
+   - Test hashtag and keyword organization
+   - Verify cross-platform tagging consistency
+   - Test performance tracking of different tags
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage for core tracking functions
-  - 100% coverage for engagement metric normalization
-  - Comprehensive coverage of scheduling conflict detection
-  - Complete verification of trend correlation algorithms
+4. **Scheduling Functionality**
+   - Test content calendar management
+   - Verify scheduling across multiple platforms
+   - Test conflict detection and resolution
+
+5. **Analytics Capabilities**
+   - Test identification of high-performing content elements
+   - Verify trend detection in engagement patterns
+   - Test generation of actionable content insights
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully tracks where and when each piece of content has been published across all platforms.
-2. Engagement metrics are accurately associated with specific media assets and content attributes.
-3. Hashtag and keyword strategies are effectively managed across different platforms.
-4. Content scheduling prevents conflicts while optimizing publication timing.
-5. Trend analysis correctly identifies content characteristics that drive higher engagement.
-6. The system prevents accidental content duplication while facilitating intentional repurposing.
-7. Performance metrics are normalized for valid cross-platform comparison.
-8. The system adapts to changing platform metrics and algorithms.
-9. Performance benchmarks are met for content libraries with 10,000+ media items.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system accurately tracks content usage across multiple platforms
+3. Engagement metrics are properly associated with specific content assets
+4. Hashtag and keyword management provides consistent cross-platform tagging
+5. Content calendar integration successfully organizes future publishing schedules
+6. Trend analysis effectively identifies patterns in content performance
+7. All tests pass when run with pytest
+8. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,126 +1,162 @@
 # Interactive Programming Education Platform
 
+A specialized documentation system that combines theoretical computer science concepts with interactive code exercises to create personalized learning paths for computer science education.
+
 ## Overview
-An advanced educational documentation system designed for computer science education that maps concept dependencies, provides interactive code exercises with automated validation, creates customized learning paths, collects aggregated performance metrics, and enables collaborative annotation to enhance student learning and engagement.
+
+The Interactive Programming Education Platform enables computer science professors to create comprehensive instructional materials that adapt to students' learning progress. It maps concept dependencies, provides interactive exercises with automated validation, customizes learning paths, collects performance metrics, and facilitates collaborative annotations.
 
 ## Persona Description
+
 Dr. Williams teaches programming courses and needs to create interactive textbook materials that students can explore at their own pace. He wants to combine theoretical concepts with practical, executable examples that demonstrate principles in action.
 
 ## Key Requirements
-1. **Concept Dependency Mapping** - Implement a system that analyzes and visualizes prerequisite relationships between programming concepts, creating a structured knowledge graph that shows what topics a student must understand before tackling more advanced material. This is critical for Dr. Williams because it helps students navigate the curriculum logically, ensures they have necessary foundational knowledge before attempting advanced topics, and reduces frustration from attempting material they're not prepared for.
 
-2. **Interactive Code Exercises** - Create a framework for embedding executable code examples with automated validation, hints, and progressive difficulty levels that adapt to student performance. This feature is essential because it provides immediate feedback on code correctness, reinforces theoretical concepts with hands-on practice, and allows students to experiment safely within a controlled environment that gradually scaffolds their learning.
+1. **Concept Dependency Mapping** - The system must create and visualize the prerequisite relationships between programming concepts, showing which topics must be mastered before others. This is critical for Dr. Williams because understanding concept dependencies allows for structured learning progressions, helping students follow logical learning paths and preventing them from tackling advanced topics before mastering fundamentals.
 
-3. **Learning Path Customization** - Develop functionality to generate personalized learning sequences based on student background, progress, and goals, adapting to different learning styles and prior knowledge. This capability is vital for Dr. Williams because it accommodates diverse student backgrounds in his courses, allows advanced students to move ahead while providing extra support to those who need it, and increases course completion rates through personalized pacing.
+2. **Interactive Code Exercises** - The tool must provide executable programming challenges with automated validation and contextual hints. As a professor, Dr. Williams needs this feature to bridge theory and practice, allowing students to immediately apply new concepts, receive instant feedback, and correct misconceptions before they become entrenched.
 
-4. **Anonymous Performance Analytics** - Implement a system to collect and analyze aggregated, anonymized data on common misconceptions, exercise completion rates, and time spent on different concepts. This is important for Dr. Williams because it helps him identify concepts that students consistently struggle with, provides empirical data to improve his teaching materials, and enables evidence-based course refinement without compromising student privacy.
+3. **Learning Path Customization** - The system must generate personalized learning sequences based on each student's background knowledge and progress. This is essential for Dr. Williams to accommodate diverse student backgrounds and learning paces in his courses, ensuring students neither struggle with overly advanced material nor waste time on concepts they've already mastered.
 
-5. **Collaborative Annotation** - Design capabilities for students to share notes, questions, and insights within the documentation, creating a collaborative learning environment while preserving the original instructional content. This is crucial for Dr. Williams because it encourages peer learning, surfaces student questions that may indicate unclear explanations, and builds a community of practice around the course material that enhances the formal instruction.
+4. **Anonymous Performance Metrics** - The tool must collect and aggregate student performance data while preserving individual privacy, identifying commonly misunderstood concepts. This data helps Dr. Williams identify topics that require additional explanation or alternative teaching approaches, allowing continuous improvement of course materials based on actual learning outcomes.
+
+5. **Collaborative Annotation** - The system must enable students to share notes, questions, and insights within the documentation while maintaining academic integrity. This feature supports peer learning and community knowledge building in Dr. Williams' courses, allowing students to benefit from each other's perspectives and questions while creating a collaborative learning environment.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Concept dependency mapping must be verifiable with known concept relationships
-  - Code exercise validation must produce consistent results across execution environments
-  - Learning path algorithms must generate reproducible paths given the same inputs
-  - Analytics aggregation must maintain student anonymity while providing useful insights
-  - Annotation functionality must preserve document integrity with proper versioning
 
-- **Performance Expectations**
-  - Interactive code execution should provide results within 3 seconds
-  - Dependency graph generation should process 500+ concepts in under 10 seconds
-  - Learning path customization should generate recommendations in under 2 seconds
-  - System should support courses with 1,000+ students and 10,000+ exercises
-  - Analytics processing should handle 100,000+ exercise submissions daily
+### Testability Requirements
+- All components must have comprehensive unit tests with minimum 90% code coverage
+- Concept mapping must be verifiable with predefined knowledge graphs
+- Exercise validation must be testable with correct and incorrect submissions
+- Learning path generation must be verifiable with different student profiles
+- Performance metrics must be testable with simulated student interactions
 
-- **Integration Points**
-  - Code execution environments for multiple programming languages
-  - Learning Management Systems (LMS) for optional grade synchronization
-  - Version control systems for content management
-  - Privacy-preserving analytics frameworks
-  - Authentication systems for optional identified usage
+### Performance Expectations
+- Concept dependency visualization must generate in under 3 seconds
+- Code exercise validation must provide feedback in under 1 second
+- Learning path customization must compute in under 500ms
+- Performance metrics must aggregate data from 500+ students in under 10 seconds
+- Collaborative annotations must sync between users in near real-time (< 2 seconds)
 
-- **Key Constraints**
-  - All student performance data must be anonymized by default
-  - Interactive examples must run in sandboxed environments for security
-  - System must function without internet connectivity for classroom settings
-  - Documentation must be exportable to offline formats for accessibility
-  - All components must be highly configurable for different teaching approaches
+### Integration Points
+- Code execution engines for multiple programming languages
+- Academic content management systems
+- Learning management systems (LMS)
+- Automated assessment tools
+- Plagiarism detection systems
+
+### Key Constraints
+- All functionality must be implementable without UI components
+- Must support at least 5 programming languages (Python, Java, C++, JavaScript, SQL)
+- Must handle courses with at least 100 distinct programming concepts
+- Must scale to support classes with at least 500 concurrent students
+- Must maintain student privacy and comply with educational data regulations
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide a Python library with the following core modules:
 
-1. **Concept Analyzer**: Process educational content to identify and map concept relationships and dependencies.
+The system must provide:
 
-2. **Exercise Framework**: Create, validate, and provide feedback on interactive code exercises with progressive difficulty.
+1. A concept knowledge graph engine that maps dependencies between programming topics
+2. An interactive code execution environment with automated validation and feedback
+3. A learning path generation system that creates personalized concept sequences
+4. A performance analytics engine that identifies learning patterns while preserving privacy
+5. A collaborative annotation system that enables peer learning
+6. An educational content management system optimized for programming instruction
+7. A code plagiarism detection system that maintains academic integrity
 
-3. **Path Generator**: Build customized learning sequences based on student profiles and performance data.
-
-4. **Analytics Engine**: Collect and process anonymized performance data to identify learning patterns and obstacles.
-
-5. **Annotation Manager**: Handle collaborative notes and questions while maintaining content integrity.
-
-6. **Content Processor**: Parse and transform educational content into interactive formats with embedded exercises.
-
-7. **Documentation Generator**: Produce comprehensive, navigable educational materials from structured content.
-
-These modules should be designed with clean interfaces, allowing them to work together as an integrated system while maintaining the ability to use individual components independently for different educational contexts.
+These components should work together to create an adaptive learning environment that combines theoretical concepts with practical coding experience, personalized to each student's needs.
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Accurate identification and mapping of concept dependencies
-  - Correct execution and validation of code exercises across programming languages
-  - Appropriate learning path generation based on student parameters
-  - Proper anonymization and aggregation of performance data
-  - Functional annotation system that preserves document integrity
 
-- **Critical User Scenarios**
-  - Student navigating a complex topic through prerequisite concepts
-  - Completion of interactive exercises with varying levels of assistance
-  - Generation of personalized learning paths for students with different backgrounds
-  - Professor analyzing class-wide performance to identify problem areas
-  - Collaborative annotation session with multiple concurrent users
+The implementation must include tests for:
 
-- **Performance Benchmarks**
-  - Process a complete textbook of 500+ pages in under 5 minutes
-  - Execute and validate 100 code exercises in under 3 minutes
-  - Generate learning paths for 500 students in under 5 minutes
-  - Process 10,000 exercise submissions for analytics in under 10 minutes
-  - Support 100+ concurrent users adding annotations without performance degradation
+### Key Functionalities Verification
+- Concept dependency mapping correctly identifies prerequisite relationships
+- Interactive exercises properly validate student code submissions
+- Learning path customization generates appropriate sequences for different profiles
+- Performance metrics accurately identify commonly misunderstood concepts
+- Collaborative annotation successfully synchronizes between users
 
-- **Edge Cases and Error Conditions**
-  - Circular dependencies in concept relationships
-  - Code exercises with multiple valid solutions or approaches
-  - Students with unusual learning profiles or backgrounds
-  - Recovery from interrupted exercise submission or validation
-  - Handling of malicious code in exercise submissions
-  - Conflicting annotations targeting the same content
+### Critical User Scenarios
+- A professor creates a new programming course with concept dependencies
+- A student follows a personalized learning path through course material
+- A teaching assistant analyzes performance data to identify struggling concepts
+- Students collaboratively discuss a complex algorithm implementation
+- A professor updates course material based on performance insights
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% line coverage across all modules
-  - 100% coverage for code execution sandboxing (for security)
-  - 95%+ coverage for learning path generation algorithms
-  - 95%+ coverage for data anonymization functions
-  - 90%+ coverage for dependency mapping algorithms
+### Performance Benchmarks
+- Concept visualization generates within time limits for complex knowledge graphs
+- Code validation responds instantly for typical student submissions
+- Learning path computation performs efficiently with diverse student profiles
+- Performance analytics scale appropriately with increasing student numbers
+- Annotation synchronization maintains responsiveness with concurrent users
 
-IMPORTANT: 
+### Edge Cases and Error Handling
+- Handling cyclic dependencies in concept relationships
+- Processing code submissions with syntax errors or infinite loops
+- Managing students with unusual learning profiles or knowledge gaps
+- Dealing with boundary cases in performance aggregation
+- Handling conflicting annotations or collaborative editing conflicts
+
+### Required Test Coverage
+- Minimum 90% test coverage for all components
+- 100% coverage for code validation and feedback generation
+- Integration tests for all external system interfaces
+- Security tests for student data privacy protection
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. It correctly identifies and maps dependencies between 95%+ of related concepts
-2. Interactive code exercises properly execute, validate responses, and provide appropriate feedback
-3. Learning path customization produces appropriate sequences for different student profiles
-4. Performance analytics identify learning obstacles while maintaining student anonymity
-5. Collaborative annotation functions without compromising core content integrity
-6. The system works effectively across multiple programming languages taught in CS programs
-7. All components function without a user interface while providing APIs that could support UI development
-8. All tests pass with the specified coverage metrics
+The implementation will be considered successful if:
 
-To set up a development environment for this project, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Concept dependency mapping correctly identifies at least 95% of prerequisite relationships
+2. Interactive exercises provide accurate validation and helpful feedback for student submissions
+3. Learning path customization generates appropriate sequences for at least 5 different student profiles
+4. Performance metrics successfully identify commonly misunderstood concepts from aggregated data
+5. Collaborative annotation enables effective peer learning while maintaining data integrity
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. From within the project directory, create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report to generate the required report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion.

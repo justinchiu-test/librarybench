@@ -1,175 +1,184 @@
-# LegalMailFlow - Legal Consultation Email Management System
+# Legal Consultant Email Automation Suite
 
 ## Overview
-LegalMailFlow is a specialized email automation system designed for independent legal consultants who need to efficiently manage client communications, case-related correspondence, confidential information, and billable activities. The system streamlines legal practice management through intelligent email organization, deadline tracking, secure document handling, and time tracking to improve client service while maintaining appropriate legal standards.
+LegalMail is a specialized email automation library designed for independent legal consultants who need to manage case-related communications, track billable time, monitor legal deadlines, and securely handle client documents. It enables efficient organization of legal correspondence while maintaining appropriate confidentiality, ensuring timely follow-ups on critical legal matters, and tracking billable communications.
 
 ## Persona Description
 Carlos provides legal consulting services to small businesses and must maintain detailed client communications while ensuring timely follow-ups on legal matters. His primary goal is to manage case-related emails with appropriate confidentiality while tracking billable communications and deadlines.
 
 ## Key Requirements
 
-1. **Case-Based Email Organization with Confidentiality Classification**
-   - Implement automatic categorization of emails by client, case, and matter
-   - Apply appropriate confidentiality classifications based on content analysis
-   - Create secure storage systems for sensitive client communications
-   - Enable quick search and filtering with appropriate access controls
-   - This feature is critical because it ensures client communications are properly organized and secured according to legal standards, reducing liability while improving efficiency in finding case-relevant information.
+1. **Case-based Email Organization System**
+   - Organize emails by client, case, and matter type with confidentiality classification
+   - Support tagging and categorization of communications by legal topic
+   - Implement appropriate access controls based on confidentiality levels
+   - This feature is critical because it ensures all case-related communications are properly organized and secured according to their confidentiality requirements, enabling efficient retrieval while maintaining legal and ethical obligations
 
 2. **Legal Deadline Tracking and Reminder System**
-   - Track legal deadlines, statutes of limitations, and filing dates
+   - Monitor case-specific deadlines and statutes of limitations
    - Generate escalating reminder sequences as deadlines approach
-   - Create automated priority flags for time-sensitive matters
-   - Link deadline notifications to relevant case documentation
-   - This feature is essential because missed deadlines in legal practice can have severe consequences for clients and practitioners, including malpractice liability, making systematic deadline management critical.
+   - Provide notification of urgent or imminent deadlines
+   - This feature is essential because missed legal deadlines can have serious consequences for clients and expose the consultant to malpractice risks, making automated tracking and timely reminders vital to legal practice
 
 3. **Billable Time Tracking for Client Communications**
-   - Automatically track time spent on email communications by client and matter
-   - Generate time entries with appropriate billing codes and descriptions
-   - Create billing reports and summaries for invoicing
-   - Track billable vs. non-billable communications
-   - This feature is vital because accurate time tracking is foundational to legal practice revenue, yet email time is often under-billed due to the difficulty of manual tracking, leading to significant lost income.
+   - Automatically track time spent on email communications by client and case
+   - Generate time entries with appropriate case references and activity descriptions
+   - Produce billable time reports for invoicing purposes
+   - This feature is vital because it captures billable time spent on email communications that might otherwise go unrecorded, ensuring accurate billing while reducing the administrative burden of manual time tracking
 
-4. **Document Request and Secure Attachment Handling**
-   - Create templated document request emails for common client needs
-   - Implement secure handling for document attachments with encryption
-   - Track outstanding document requests and receipt status
-   - Organize received documents by client, case, and document type
-   - This feature is crucial because document collection and management are core legal activities that require security, consistency, and tracking to maintain case progress and client confidence.
+4. **Document Request and Management System**
+   - Create template-based document requests with tracking
+   - Manage document submission deadlines and send reminders
+   - Implement secure attachment handling protocols
+   - This feature streamlines the collection of necessary legal documents from clients and third parties, ensuring all required materials are received in a timely manner while maintaining appropriate security and chain of custody
 
-5. **Client Portal Notification and Secure Sharing System**
-   - Generate secure document sharing links integrated with client portals
-   - Create notification emails for portal updates and document availability
-   - Track client engagement with shared documents
-   - Implement secure messaging alternatives for confidential communications
-   - This feature is invaluable because secure alternatives to email attachments are increasingly required for legal practice, improving security while providing auditable records of document access and delivery.
+5. **Client Portal Notification System**
+   - Generate secure document sharing notifications
+   - Track document access and acknowledgment
+   - Maintain audit trails of client portal interactions
+   - This feature is important because it facilitates secure document exchange with clients, providing a more secure alternative to email attachments for sensitive legal documents while maintaining records of client access and review
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All email confidentiality classification must be testable with mock legal communications
-- Template rendering must be verifiable with different client and case data
-- Deadline calculation and reminder scheduling must be verifiable with test cases
-- Time tracking calculations must produce consistent, verifiable results
-- Document security measures must be verifiable through security testing
+- All email organization functions must be testable with mock legal communications
+- Deadline tracking must be verifiable with test case timelines
+- Time tracking algorithms must produce accurate results with test communication data
+- Document request tracking must be testable with simulated document submissions
+- Portal notification generation must be verifiable with test document sharing scenarios
 
 ### Performance Expectations
-- Email classification must complete in under 400ms per message
-- Template application must render in under 200ms
-- The system must handle a client base of at least 100 active matters
-- Search operations must return results in under 1 second
-- Time tracking operations must have negligible impact on email processing speed
+- Email classification should process at least 100 emails per minute
+- Deadline tracking should efficiently monitor at least 200 active deadlines
+- Time tracking should process communications in under 100ms each
+- The system should handle data for at least 50 active cases without performance degradation
+- Document management should support tracking of at least 1000 documents
 
 ### Integration Points
-- IMAP/SMTP support for connecting to standard email providers
-- Calendar integration for deadline management
-- Document management system integration capabilities
-- Billing/practice management system integration options
-- Secure client portal integration capabilities
+- IMAP and SMTP libraries for email retrieval and sending
+- Template engine for dynamic content generation
+- SQLite or similar database for case, client, and deadline information
+- Time tracking API for billable hours recording
+- Secure file handling system for document management
 
 ### Key Constraints
-- All client communications must be encrypted in transit and at rest
-- The system must comply with attorney-client privilege requirements
-- No confidential data should be processed by external services without approval
-- The system must maintain audit trails for all confidential data access
-- Email operations must be fault-tolerant to prevent data loss
+- All communications must maintain attorney-client privilege and confidentiality
+- The system must be compliant with legal ethics rules regarding client communications
+- Deadline calculations must account for court calendars and jurisdictional rules
+- Document handling must maintain metadata and version control
+- All operations must be logged for ethical compliance and audit purposes
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-LegalMailFlow must provide a comprehensive API for email management focused on legal practice needs:
+The core of the Legal Consultant Email Automation Suite should provide:
 
-1. **Email Processing Engine**
-   - Connect to email accounts via IMAP/SMTP with encryption
-   - Apply classification rules to incoming messages
-   - Categorize and organize emails by client, case, and matter
-   - Trigger automated responses based on message content and context
+1. **Case Management Module**
+   - Organizing and categorizing case-related communications
+   - Implementing confidentiality classification and access controls
+   - Maintaining case histories and communication records
+   - Supporting search and retrieval by case parameters
 
-2. **Case Management System**
-   - Track cases, their status, and key deadlines
-   - Organize communications by legal matter
-   - Maintain case history and related documents
-   - Monitor statute of limitations and critical dates
+2. **Deadline Management System**
+   - Tracking legal deadlines and statutes of limitations
+   - Calculating reminder schedules based on deadline importance
+   - Generating escalating reminder notifications
+   - Managing calendar rules for different jurisdictions
 
-3. **Client Database**
-   - Store client profiles with contact information and matter history
-   - Track communication preferences and history
-   - Maintain conflict check information
-   - Link emails to specific clients and matters
+3. **Time Tracking Engine**
+   - Monitoring time spent on email communications
+   - Categorizing activities for billing purposes
+   - Generating billable time entries with appropriate details
+   - Producing time reports for billing and analysis
 
-4. **Document Handling System**
-   - Manage document requests and receipt status
-   - Process and securely store email attachments
-   - Generate secure sharing links for client portal integration
-   - Track document access and delivery confirmation
+4. **Document Management System**
+   - Creating and tracking document requests
+   - Managing document metadata and version control
+   - Implementing secure document handling protocols
+   - Tracking document submission status and completeness
 
-5. **Time and Billing Engine**
-   - Track time spent on email communications
-   - Categorize activities with appropriate billing codes
-   - Generate billing reports for invoice creation
-   - Maintain accurate records for billing justification
+5. **Secure Communication Module**
+   - Generating secure portal notifications
+   - Tracking document access and client acknowledgments
+   - Maintaining audit trails of client interactions
+   - Supporting encryption and secure transmission
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Email confidentiality classification must be >95% accurate for typical legal communications
-- Template variable substitution must work correctly across all legal templates
-- Deadline calculation must account for court holidays and jurisdictional rules
-- Time tracking must accurately measure email interaction duration
-- Document security measures must prevent unauthorized access
+- Case-based classification accuracy for various legal communication types
+- Deadline tracking and reminder generation for different deadline types
+- Billable time calculation for email communications
+- Document request tracking and reminder sequences
+- Secure portal notification generation and tracking
 
 ### Critical User Scenarios
-- A new client matter is created and related emails are automatically categorized
-- A legal deadline is approaching and appropriate reminders are generated
-- A sensitive client communication is properly classified and secured
-- Time spent on client communications is accurately tracked and categorized
-- Secure documents are shared through the client portal with proper notifications
+- Processing and organizing incoming case-related emails with confidentiality classification
+- Tracking approaching legal deadlines and generating appropriate reminders
+- Recording billable time for client email communications
+- Requesting and tracking required legal documents from clients
+- Notifying clients of secure documents available in the portal
 
 ### Performance Benchmarks
-- System must handle at least 200 emails per day with full processing
-- Search operations must maintain sub-second response with 50,000+ stored emails
-- Report generation must complete in <10 seconds with 12 months of data
-- Security operations (encryption/decryption) must add no more than 500ms to processing
-- Deadline calculations must process at least 100 dates per second
+- Email classification should achieve 95% accuracy on test samples
+- Deadline tracking should handle at least 200 active deadlines efficiently
+- Time tracking should record durations with 1-minute precision
+- Document request system should track at least 1000 documents without performance issues
+- The system should handle data for at least 50 active legal matters concurrently
 
 ### Edge Cases and Error Conditions
-- System must handle emails with multiple confidentiality requirements
-- Deadline calculations must correctly handle jurisdictional variations and holidays
-- The system must gracefully handle email server connection failures
-- Conflict of interest situations must be flagged appropriately
-- Document security must remain intact during system failures
+- Handling communications that relate to multiple cases or clients
+- Managing conflicting or overlapping legal deadlines
+- Processing communications with complex or unusual time tracking requirements
+- Dealing with failed document submissions or corrupt attachments
+- Handling undeliverable notifications or client access issues
 
 ### Required Test Coverage Metrics
-- Unit test coverage must exceed 90% for all core modules
-- Integration tests must verify all system components working together
-- Security tests must verify encryption and access control measures
-- Compliance tests must verify adherence to legal practice requirements
-- Regression tests must ensure functionality is preserved across updates
+- Minimum 90% code coverage across all modules
+- 100% coverage of confidentiality classification functions
+- 100% coverage of deadline calculation and reminder generation
+- 100% coverage of billable time tracking algorithm
+- Minimum 95% coverage of document request and tracking functions
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-A successful implementation of LegalMailFlow will meet the following criteria:
+- Case-based email organization correctly classifies test communications
+- Deadline tracking accurately monitors test case timelines and generates appropriate reminders
+- Billable time tracking correctly calculates time spent on test communications
+- Document request system properly tracks test document submissions
+- Portal notification system accurately generates and tracks test notifications
+- All performance benchmarks are met under load testing
+- The system correctly handles all specified edge cases and error conditions
 
-1. **Efficiency Improvements**
-   - Reduce time spent on email management by at least 60%
-   - Ensure 100% of legal deadlines are tracked and reminded
-   - Increase captured billable time from email activities by at least 40%
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Practice Impact**
-   - Improve client response time by at least 50%
-   - Eliminate missed legal deadlines completely
-   - Enhance document organization and accessibility
-   - Provide auditable records of all client communications
+## Getting Started
+To set up the development environment:
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-3. **Technical Quality**
-   - Pass all specified test requirements with >90% coverage
-   - Meet or exceed all performance expectations
-   - Provide a clean, well-documented API that could be extended
-   - Operate reliably without unexpected crashes or data loss
-   - Maintain security and confidentiality of all client information
+CRITICAL: When testing your implementation, you MUST run tests with pytest-json-report and provide the pytest_results.json file:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
 
-4. **User Experience**
-   - Enable creation of new email templates in under 3 minutes
-   - Allow setup of new client matters in under 5 minutes
-   - Provide clear visibility into upcoming deadlines and priorities
-   - Generate useful analytics that improve practice management
-
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+Providing the pytest_results.json file is MANDATORY for demonstrating that your implementation meets the requirements.

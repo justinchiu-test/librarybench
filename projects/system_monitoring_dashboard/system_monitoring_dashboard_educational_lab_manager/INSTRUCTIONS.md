@@ -1,10 +1,10 @@
-# Academic Computer Lab Monitoring System
+# Academic Lab Monitoring System
 
-A specialized monitoring solution designed for university computer science departments to track, analyze, and proactively manage computer lab resources.
+A specialized monitoring solution for educational computer labs that tracks classroom usage, software licenses, and student resource utilization.
 
 ## Overview
 
-The Academic Computer Lab Monitoring System is a tailored implementation of the PyMonitor system that focuses on the unique needs of educational environments. It enables lab managers to track student workstation usage, monitor specialized software availability, analyze utilization patterns, and detect unauthorized configuration changes to ensure labs remain consistently available for classes and research activities.
+This implementation of PyMonitor is designed specifically for academic environments, enabling lab managers to organize monitoring by classroom, track software license usage, analyze lab utilization patterns, monitor student disk quotas, and detect unauthorized configuration changes to lab systems.
 
 ## Persona Description
 
@@ -12,159 +12,224 @@ Dr. Rodriguez oversees computer labs for a university computer science departmen
 
 ## Key Requirements
 
-1. **Classroom Grouping Organization** - Implement a flexible system that organizes monitoring by physical location and course requirements. This is critical for Dr. Rodriguez because it allows him to manage different labs with varying hardware configurations and software installations, prioritizing attention based on current and upcoming class schedules.
+1. **Classroom Grouping Organization**
+   - Implement logical grouping of systems by physical classroom location
+   - Support hierarchical organization (building/floor/room/workstation)
+   - Enable bulk operations and reporting by classroom group
+   - Allow customizable attributes for grouping (course assignments, hardware specs)
+   - Support temporary groupings for special events or specific courses
+   - This is critical because educational labs are physically organized by classroom, and issues that affect an entire lab room need to be identified and addressed before classes begin.
 
-2. **Software License Usage Tracking** - Develop functionality to monitor the utilization of specialized software licenses across lab workstations. This is essential because the department has limited, expensive licenses for specialized software, and Dr. Rodriguez needs to ensure availability for courses that require these applications while optimizing license allocation.
+2. **Software License Usage Tracking**
+   - Monitor active usage of licensed software across lab workstations
+   - Track concurrent license utilization against available license counts
+   - Generate usage reports to identify underutilized or oversubscribed software
+   - Alert on approaching license limits for popular applications
+   - Provide historical trends to inform future license purchasing decisions
+   - This is critical because academic departments have limited software budgets and need to ensure licenses are available for students during classes while optimizing costs.
 
-3. **Lab Hours Utilization Reporting** - Create a system to track and analyze patterns in student computer usage across different times and locations. Dr. Rodriguez needs this data to make informed decisions about lab availability hours, resource allocation, and capacity planning based on actual usage patterns throughout the academic year.
+3. **Lab Hours Utilization Reporting**
+   - Track workstation usage patterns throughout operating hours
+   - Correlate usage with scheduled class times and open lab periods
+   - Generate heatmaps of peak usage times and locations
+   - Identify underutilized resources and potential congestion points
+   - Support semester-over-semester trend analysis
+   - This is critical because academic departments need data to justify lab resources, schedule maintenance windows, and plan for future expansions or consolidations.
 
-4. **Disk Quota Monitoring** - Implement disk usage tracking for student accounts across shared storage resources. This is crucial because students working on programming projects and research can quickly fill shared storage, potentially disrupting classes and other students' work if not proactively managed.
+4. **Disk Quota Monitoring**
+   - Track student storage usage across network drives and local storage
+   - Monitor approaching quota limits with configurable thresholds
+   - Generate reports on storage growth trends
+   - Identify file types and patterns consuming excessive space
+   - Support automated notifications to students approaching quotas
+   - This is critical because limited shared storage resources in academic environments can be quickly depleted by student projects, potentially impacting coursework for many students.
 
-5. **Configuration Drift Detection** - Develop functionality to identify unauthorized changes to lab systems compared to approved baseline configurations. This capability is important because lab workstations frequently experience configuration changes from student use, and Dr. Rodriguez needs to identify which machines need restoration to standard configurations before classes.
+5. **Configuration Drift Detection**
+   - Monitor critical system configurations for unauthorized changes
+   - Detect installation of unauthorized software or system modifications
+   - Support defining standard system images and detecting deviations
+   - Generate reports on systems requiring attention or reimaging
+   - Track configuration changes over time with attribution when possible
+   - This is critical because lab workstations are used by many students who may intentionally or accidentally modify system configurations, potentially impacting subsequent users or class activities.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All monitoring components must be testable with pytest
-- License monitoring must support mocked license servers
-- Usage pattern analysis must be testable with synthetic usage data
-- Configuration checking must verify against sample baselines without requiring actual drift
+- All components must be testable with pytest without requiring physical lab hardware
+- Software license monitoring must be verifiable with simulated license usage patterns
+- Usage reporting must be testable with mock usage data
+- Quota monitoring must be testable with simulated file systems
+- Configuration detection must be testable with predetermined configuration sets
 
 ### Performance Expectations
-- Minimal impact on lab workstation performance during active student use
-- Ability to handle simultaneous monitoring of up to 200 workstations
-- Quick scan of disk quotas across networked storage (complete in under 5 minutes)
-- Configuration drift detection that completes within 10 minutes for a 30-machine lab
+- Support for monitoring up to 500 workstations across multiple classrooms
+- License tracking must update at minimum every 5 minutes
+- Utilization analytics must aggregate data within 10 minutes of collection
+- Quota monitoring must reflect changes within 15 minutes
+- Configuration scans must run with minimal performance impact during active lab hours
+- Historical data storage must be efficient enough to retain at least 4 academic terms
 
 ### Integration Points
-- Integration with common license servers (FlexLM, etc.)
-- Support for networked file systems for quota monitoring
-- Compatibility with Active Directory or LDAP for user account information
-- Interface with system imaging or configuration management tools
-- Support for scheduling systems to correlate with class timetables
+- Active Directory/LDAP for student and course information
+- License management systems for software entitlements
+- File servers for quota monitoring
+- Configuration management systems like Puppet, Chef, or Ansible
+- Course scheduling systems for cross-referencing lab usage with scheduled classes
+- Email/notification systems for alerts to staff and students
 
 ### Key Constraints
-- Must not interfere with student work during classes
-- Should operate with minimal privileges on student workstations
-- Must accommodate heterogeneous lab environments (different hardware/software configurations)
-- Must respect student privacy while collecting necessary utilization data
-- Must support multiple operating systems (Windows, Linux, macOS) commonly found in academic environments
+- Must operate in mixed Windows/Linux/macOS lab environments
+- Cannot significantly impact workstation performance during active use
+- Must respect student privacy according to institutional policies
+- Cannot interfere with specialized lab software or hardware
+- Should minimize network bandwidth utilization
+- Must operate within academic budget constraints (minimal commercial dependencies)
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Academic Computer Lab Monitoring System must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Lab Organization and Management**
-   - Logical grouping of computers by physical lab, course requirements, or hardware capabilities
-   - Tagging system for associating machines with courses and requirements
-   - Scheduling awareness to prioritize monitoring based on current and upcoming classes
-   - Summary views of lab status organized by physical or logical groupings
-   - Resource allocation tracking across different lab environments
+1. **Lab Organization Module**
+   - Hierarchical grouping system for lab workstations
+   - Attribute-based classification and filtering
+   - Group-level operations and aggregated status reporting
+   - Mapping between physical locations and logical groups
+   - Integration with institutional directory services
 
-2. **License Utilization Monitoring**
-   - Connection to license servers to track current usage and availability
-   - Historical tracking of license utilization patterns
-   - Course-correlated license requirements and availability forecasting
-   - Alert mechanisms for license exhaustion before scheduled classes
-   - License usage optimization recommendations
+2. **License Monitoring Module**
+   - Real-time tracking of software process execution
+   - License pool management and availability tracking
+   - Usage pattern analysis and forecasting
+   - License utilization reporting and recommendations
+   - Alert generation for license limit violations
 
-3. **Student Usage Analytics**
-   - Anonymous tracking of workstation utilization by time and location
-   - Peak usage time identification and trending
-   - Correlation between class schedules and actual usage patterns
-   - Resource demand forecasting based on historical patterns
-   - Underutilized resource identification for potential reallocation
+3. **Usage Analytics Module**
+   - Workstation utilization tracking (login/logout, active/idle)
+   - Time-based analytics with customizable intervals
+   - Correlation with academic schedules and events
+   - Usage visualization data preparation
+   - Resource utilization forecasting
 
-4. **Storage Quota Management**
-   - Individual and aggregate disk usage monitoring
-   - Quota threshold alerting before critical levels are reached
-   - Growth rate analysis and capacity planning
-   - Identification of unusual storage consumption patterns
-   - Historical usage trends correlated with academic calendar
+4. **Storage Quota Manager**
+   - File system usage monitoring across network and local storage
+   - Individual and group quota tracking
+   - Growth rate analysis and projections
+   - File type classification and usage breakdown
+   - Notification system for quota violations
 
-5. **System Configuration Compliance**
-   - Baseline configuration definition and storage
-   - Scheduled and on-demand configuration verification
-   - Detailed reporting of configuration drift with specific changes
-   - Prioritization of critical vs. non-critical configuration differences
-   - Integration with system restoration or remediation processes
+5. **Configuration Management Module**
+   - System configuration baseline definition
+   - Regular configuration scanning and comparison
+   - Drift detection and categorization
+   - Remediation recommendation
+   - Change history tracking
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Accuracy of license usage tracking compared to actual license servers
-- Precision of disk quota measurements across different storage systems
-- Reliability of configuration drift detection with various types of changes
-- Consistency of usage pattern analysis with synthetic data
-- Effectiveness of lab grouping and organization mechanisms
+### Key Functionalities to Verify
+- Accurate organization and grouping of lab systems
+- Precise tracking of software license usage
+- Reliable reporting on lab utilization patterns
+- Accurate monitoring of student disk quotas
+- Effective detection of configuration changes
 
 ### Critical User Scenarios
-- Preparing labs for upcoming classes with specific software requirements
-- Identifying and addressing storage quota issues before they impact classes
-- Detecting and remediating unauthorized system configuration changes
-- Analyzing lab usage patterns to optimize availability hours
-- Ensuring license availability for specialized software during peak usage periods
+- Setting up monitoring for a new computer lab
+- Tracking license usage during peak class periods
+- Analyzing lab utilization to optimize open hours
+- Identifying students approaching storage quotas
+- Detecting and addressing unauthorized system changes
 
 ### Performance Benchmarks
-- Time to scan and report configuration drift across a full lab
-- Speed of license status checks across multiple license servers
-- Efficiency of disk quota calculations for large shared storage systems
-- Resource impact of monitoring agents on active workstations
-- Scalability testing with increasing numbers of monitored systems
+- Support for 500+ monitored systems without significant performance degradation
+- License tracking accuracy within 2 minutes of actual usage
+- Lab usage analytics processing within 10 minutes of data collection
+- Quota monitoring updates within 15 minutes of file system changes
+- Configuration scans completing in under 5 minutes per system
 
-### Edge Cases and Error Handling
-- Behavior when license servers are unavailable
-- Handling of network storage connectivity issues
-- Graceful degradation during partial monitoring system failure
-- Recovery from interrupted configuration scans
-- Handling of corrupt or unexpected configuration states
+### Edge Cases and Error Conditions
+- Handling network partitions between lab locations
+- Managing temporary offline systems appropriately
+- Correctly attributing shared computer usage in open lab hours
+- Identifying false positives in configuration drift detection
+- Handling academic term transitions and student turnover
 
-### Required Test Coverage
-- 90% code coverage for core monitoring components
-- 100% coverage for license monitoring logic
-- 95% coverage for configuration comparison algorithms
-- 90% coverage for storage quota calculation
-- 90% coverage for usage pattern analysis
+### Test Coverage Metrics
+- Minimum 90% code coverage across all modules
+- 100% coverage of license tracking algorithms
+- 100% coverage of quota calculation logic
+- 100% coverage of configuration comparison functionality
+- 95% coverage of grouping and organizational logic
+- 90% coverage of analytics functions
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. Lab workstations can be effectively organized and monitored by location, course requirements, and hardware capabilities
-2. Software license availability issues are detected at least 15 minutes before scheduled classes that require those licenses
-3. Student usage patterns are accurately captured and analyzed to identify peak usage times with 95% accuracy
-4. Disk quota issues are identified and reported before they impact class activities
-5. Configuration drift is detected with at least 98% accuracy compared to baseline configurations
-6. The system scales effectively to monitor at least 200 workstations simultaneously
-7. Resource impact on monitored workstations is negligible during active student use
-8. All components pass their respective test suites with required coverage levels
+1. **Effective Classroom Organization**
+   - Systems can be logically grouped by location
+   - Reporting and operations can be performed at the group level
+   - Classroom-specific monitoring is easily accessible
 
----
+2. **Accurate License Tracking**
+   - Software license usage is accurately monitored
+   - Reports clearly show utilization against available licenses
+   - Alerts are generated when license limits are approached
+
+3. **Comprehensive Utilization Analytics**
+   - Lab usage patterns are clearly captured and reported
+   - Peak usage times are identified
+   - Data supports resource allocation decisions
+
+4. **Proactive Quota Management**
+   - Student storage usage is accurately tracked
+   - Approaching quota limits are identified before they impact work
+   - Storage growth trends are analyzed effectively
+
+5. **Reliable Configuration Monitoring**
+   - Unauthorized changes to lab systems are detected
+   - Standard configurations are preserved
+   - Systems requiring attention are clearly identified
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

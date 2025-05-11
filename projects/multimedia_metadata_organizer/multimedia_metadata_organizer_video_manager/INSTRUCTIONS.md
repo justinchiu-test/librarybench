@@ -1,139 +1,141 @@
 # Video Production Metadata Management System
 
 ## Overview
-A comprehensive metadata management system for video production that organizes raw footage, tracks production status, monitors licensing, integrates with editing workflows, and identifies content sensitivity concerns. The system enables efficient post-production workflows while maintaining detailed relationships between source material and final edited sequences.
+A specialized metadata organization system for video production managers who need to track and organize terabytes of interview footage, B-roll, and archival material while maintaining relationships between source footage and final edited sequences.
 
 ## Persona Description
 Sophia oversees post-production for a documentary film studio managing terabytes of interview footage, B-roll, and archival material. She needs to organize raw footage and track the relationships between source material and final edited sequences.
 
 ## Key Requirements
+1. **Interview transcription linking**: Develop a system that associates transcripts with video timestamps and automatically identifies speakers. This is critical for quickly locating specific content within hours of interview footage and enabling content-based searches across the entire video library.
 
-1. **Interview Transcription Linking**
-   - Automatically associates transcribed text with timecodes and speaker identification
-   - Critical for Sophia because it makes interview content searchable by keyword while maintaining synchronization with the original footage
-   - Must correctly identify different speakers and link their statements to corresponding video segments, enabling quick location of specific quotes or topics within hours of interview footage
+2. **Production status tracking**: Create a workflow system showing which clips have been reviewed, selected, or included in edits. This is essential for managing the production pipeline and preventing duplicate work across team members.
 
-2. **Production Status Tracking**
-   - Monitors the progress of footage through the production workflow
-   - Essential for Sophia's role as it provides visibility into which clips have been reviewed, selected for potential use, included in rough cuts, or incorporated into final edits
-   - Must maintain a complete history of status changes and editorial decisions to support production management and client reviews
+3. **Licensing status monitoring**: Implement functionality to flag footage with pending or expired usage rights. This is crucial for legal compliance and avoiding costly rights violations, particularly when working with archival material from various sources.
 
-3. **Licensing Status Monitoring**
-   - Tracks usage rights, permissions, and expiration dates for all footage
-   - Vital for Sophia's legal compliance as it prevents the inclusion of footage with expired or inappropriate licensing in final productions
-   - Must provide alerts for approaching expirations and clear indicators of usage limitations for archival or third-party material
+4. **Edit decision list integration**: Build a system that tracks which source clips appear in final productions and maintains bidirectional relationships between raw footage and finished sequences. This provides critical context for archival purposes and facilitates future reuse of footage.
 
-4. **Edit Decision List Integration**
-   - Maps relationships between raw source footage and final edited sequences
-   - Indispensable for Sophia's editorial process as it maintains the connections between original material and its appearance in edited timelines
-   - Must track which segments of source clips are used in each edit version, including precise in/out points and any applied transformations
-
-5. **Content Sensitivity Flagging**
-   - Identifies footage containing potentially sensitive, controversial, or restricted content
-   - Crucial for Sophia's risk management as it helps prevent the accidental inclusion of inappropriate material in final productions
-   - Must support customizable sensitivity categories and provide clear warnings when flagged content is accessed or included in edits
+5. **Content sensitivity flagging**: Create a mechanism to identify and tag footage containing potential legal or ethical concerns. This helps production teams handle sensitive material appropriately and ensures proper review before inclusion in final productions.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - All metadata extraction and association functions must be independently testable
-  - Transcription linking must be verifiable with sample audio/video and text
-  - Status tracking state transitions must be fully testable
-  - Licensing expiration alerts must be testable with simulated time progression
-  - Edit relationship tracking must verify bidirectional connections between source and output
+### Testability Requirements
+- All metadata extraction and association functions must be independently testable
+- Mock external transcription services for testing without real audio processing
+- Use test fixtures with sample video files and metadata
+- Support transaction rollback for testing modification operations
 
-- **Performance Expectations**
-  - Must efficiently handle projects with 100+ hours of source footage
-  - Metadata extraction and indexing should process video at faster than real-time rate
-  - Search operations across transcriptions should return results in under 2 seconds
-  - Status updates and relationship tracking must handle concurrent operations from multiple users
+### Performance Expectations
+- Process metadata for video files at a rate of at least 10 hours of footage per hour
+- Handle relationships between thousands of source clips and dozens of final productions
+- Search operations should complete in under 5 seconds even with complex criteria
+- Support incremental updates to avoid reprocessing entire video files
 
-- **Integration Points**
-  - Standard video metadata formats (XMP, MXF metadata)
-  - Common transcription formats (SRT, VTT)
-  - Edit decision list (EDL) and project file formats
-  - Industry-standard timecode formats and frame rate handling
+### Integration Points
+- Common video file formats (MP4, MOV, MXF, AVI) and their metadata
+- Professional video editing formats (EDL, XML, AAF)
+- Transcription services and subtitle formats
+- Rights management databases and licensing systems
+- Timecode standards and frame rate conversions
 
-- **Key Constraints**
-  - Must be non-destructive to original video files and metadata
-  - Must handle mixed frame rates and timecode formats
-  - Must scale to documentary projects with thousands of individual clips
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- Must handle various timecode formats and frame rates consistently
+- Storage requirements must be optimized for large video collections
+- Operations should be resumable in case of interruption
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for video production with these core capabilities:
+The system must provide a Python library that enables:
 
 1. **Video Metadata Extraction and Organization**
    - Extract technical metadata from various video formats
-   - Organize footage by project, shoot date, and content type
-   - Create searchable indexes of video content and metadata
+   - Organize footage by production, shoot date, and content type
+   - Support custom metadata fields specific to documentary production
 
 2. **Transcription and Content Analysis**
-   - Link transcribed text with corresponding video segments
-   - Identify and differentiate speakers in interview footage
-   - Enable content search across transcriptions and associated metadata
+   - Interface with transcription services to generate timestamped text
+   - Identify speakers within interview footage
+   - Enable content-based searching across transcribed material
 
-3. **Production Workflow Tracking**
-   - Monitor the status of footage through the editorial process
-   - Track editorial decisions and clip selections
-   - Maintain history of status changes and usage
+3. **Production Workflow Management**
+   - Track the status of clips through the production process
+   - Maintain relationships between source footage and edited sequences
+   - Record edit decisions and version history
 
-4. **Rights and Compliance Management**
-   - Track licensing terms, restrictions, and expirations
-   - Flag content with sensitivity or compliance concerns
-   - Ensure all used footage has appropriate permissions
+4. **Rights and Licensing Management**
+   - Track usage rights for all footage, especially archival material
+   - Monitor license expirations and usage limitations
+   - Generate reports on licensing status for productions
 
-5. **Editorial Relationship Mapping**
-   - Maintain bidirectional links between source footage and edited sequences
-   - Track which portions of source clips appear in various edits
-   - Document the transformations applied to footage in final productions
+5. **Sensitive Content Handling**
+   - Flag content with potential legal or ethical concerns
+   - Track review status for sensitive material
+   - Implement access controls for sensitive footage
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate extraction of video metadata from various formats
-  - Correct synchronization of transcriptions with video timecodes
-  - Proper tracking of clip status throughout the production workflow
-  - Accurate monitoring of licensing terms and expiration dates
-  - Complete mapping between source footage and edited sequences
-  - Effective identification and flagging of sensitive content
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Processing newly acquired footage into the production system
-  - Searching for specific content across hours of interview material
-  - Tracking which raw clips have been used in which edited sequences
-  - Verifying licensing compliance for an entire production
-  - Identifying all instances where flagged sensitive content appears
+1. **Metadata Extraction Accuracy**
+   - Test extraction from various video formats
+   - Verify correct handling of timecodes and frame rates
+   - Test behavior with corrupt or incomplete metadata
 
-- **Performance Benchmarks**
-  - Metadata extraction must process video faster than real-time
-  - Transcript linking must accurately synchronize at least 95% of dialogue
-  - Search operations must locate content within seconds even across large projects
-  - System must scale to handle projects with 100+ hours of source material
+2. **Transcription Integration**
+   - Test association of transcripts with video timestamps
+   - Verify speaker identification functionality
+   - Test content-based searching across transcripts
 
-- **Edge Cases and Error Conditions**
-  - Mixed frame rates and timecode formats within a single project
-  - Discontinuous timecode in source footage
-  - Complex edit operations (speed changes, reverse clips, nested sequences)
-  - Partial or incomplete licensing information
-  - Conflicting metadata from different sources
+3. **Production Tracking**
+   - Test workflow status tracking through production stages
+   - Verify relationship mapping between source and edited material
+   - Test version tracking and history maintenance
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage for core metadata processing
-  - 100% coverage for licensing and sensitivity tracking functions
-  - Comprehensive coverage of timecode and edit relationship mapping
-  - Complete verification of state transitions in status tracking
+4. **Rights Management**
+   - Test license expiration alerting
+   - Verify tracking of complex usage rights
+   - Test reporting on licensing status
+
+5. **Sensitivity Controls**
+   - Test flagging of sensitive content
+   - Verify review status tracking
+   - Test access control mechanisms
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully extracts and organizes metadata from at least 95% of common video formats.
-2. Transcriptions are correctly linked to video segments with speaker identification.
-3. Production status is accurately tracked throughout the editorial workflow.
-4. Licensing terms are properly monitored with timely expiration alerts.
-5. Edit decision lists correctly map relationships between source and output.
-6. Sensitive content is appropriately flagged and warnings are generated when used.
-7. Search operations find relevant content within seconds across large projects.
-8. The system maintains data integrity with no modification of original files.
-9. Performance benchmarks are met for projects with 100+ hours of footage.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system can accurately extract and organize metadata from various video formats
+3. Transcription linking works correctly with proper timestamp alignment
+4. Production status tracking maintains accurate workflow information
+5. Licensing status monitoring correctly identifies and alerts on expiring rights
+6. Edit decision list integration maintains proper relationships between source and final footage
+7. Content sensitivity flagging works correctly for various sensitive content types
+8. All tests pass when run with pytest
+9. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

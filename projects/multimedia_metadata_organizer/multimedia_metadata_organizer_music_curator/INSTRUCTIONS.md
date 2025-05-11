@@ -1,138 +1,140 @@
-# Music Collection Metadata Standardization System
+# Music Collection Metadata Management System
 
 ## Overview
-A specialized metadata management system for music libraries that standardizes inconsistent metadata across multiple sources and formats. The system employs audio fingerprinting, music-specific taxonomies, discography completion, artist role clarification, and listening history integration to create a unified music experience.
+A specialized metadata organization system for music collection curators who need to standardize inconsistent metadata across diverse music formats and sources to create a unified listening experience.
 
 ## Persona Description
 Aisha manages a vast personal music library spanning multiple formats from vinyl rips to streaming purchases. She needs to standardize inconsistent metadata across sources to create a unified listening experience.
 
 ## Key Requirements
+1. **Audio fingerprinting**: Implement functionality to identify untitled or mislabeled tracks through acoustic signatures. This is essential for correctly identifying tracks when metadata is missing, corrupted, or inconsistent across different sources and formats.
 
-1. **Audio Fingerprinting**
-   - Identifies untitled or mislabeled tracks through acoustic signature analysis
-   - Critical for Aisha because it resolves the common problem of incorrectly labeled tracks from various sources, particularly from vinyl rips or tracks with ambiguous titles
-   - Must match audio content against reference databases to determine the correct track information regardless of file naming or existing metadata
+2. **Music-specific taxonomies**: Create a system implementing genre, mood, and theme classification that works consistently across different musical styles and eras. This enables precise organization and discovery of music based on listening preferences rather than just artist or album.
 
-2. **Music-Specific Taxonomies**
-   - Implements comprehensive classification systems for genre, mood, and thematic content
-   - Essential for Aisha's organization as it enables consistent categorization across her diverse collection and supports sophisticated filtering and playlist generation
-   - Must support multiple overlapping taxonomies including traditional genres, mood-based categories, instrumental characteristics, and cultural contexts
+3. **Discography completion**: Develop mechanisms to detect missing tracks or albums within artist collections and identify gaps in the music library. This helps maintain complete collections and highlights acquisition opportunities.
 
-3. **Discography Completion**
-   - Detects missing tracks or albums within artist collections
-   - Valuable for Aisha's completionist approach to collecting music, helping identify gaps in artist catalogs or album collections
-   - Must compare existing library contents against authoritative discography data to identify missing items and track collection completeness
+4. **Performance role distinction**: Build a metadata schema that differentiates primary artists from featured guests, session musicians, producers, and other contributors. This provides accurate credit attribution and enables more precise searching and filtering.
 
-4. **Performance Role Distinction**
-   - Differentiates between primary artists, featured guests, session musicians, producers, and other contributors
-   - Important for Aisha's ability to accurately track artist collaborations and properly attribute creative contributions
-   - Must standardize inconsistent artist role designations and create proper relationship mapping between tracks and all contributors
-
-5. **Listening History Integration**
-   - Tracks personal ratings, play counts, and favorites across different platforms
-   - Crucial for Aisha's music discovery and appreciation, as it preserves her listening patterns and preferences regardless of source
-   - Must consolidate play history and ratings from multiple sources and apply them consistently across the unified library
+5. **Listening history integration**: Create functionality to track personal ratings, play counts, and listening patterns across different playback platforms. This helps prioritize music organization based on personal preferences and listening habits.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Audio fingerprinting algorithms must be testable with sample audio files
-  - Taxonomy classification must be verifiable against reference genre mappings
-  - Discography completion must be testable against known artist catalogs
-  - Artist role parsing and standardization must handle varied input formats
-  - History integration must correctly merge data from multiple sources
+### Testability Requirements
+- All metadata extraction and normalization functions must be independently testable
+- Mock audio fingerprinting services for testing without audio processing
+- Use test fixtures with sample music metadata of varying completeness
+- Support simulation of listening history and play count data
 
-- **Performance Expectations**
-  - Must efficiently handle libraries of 100,000+ tracks
-  - Audio fingerprinting should process tracks at faster than real-time rate
-  - Metadata standardization should process at least 10 tracks per second
-  - Search operations should return results in under 1 second
+### Performance Expectations
+- Process metadata for at least 1,000 tracks per minute
+- Handle music collections with up to 500,000 tracks efficiently
+- Search operations should complete in under 1 second
+- Support incremental updates to avoid reprocessing entire collections
 
-- **Integration Points**
-  - Standard audio metadata formats (ID3, Vorbis comments, etc.)
-  - Audio fingerprinting reference databases
-  - Authoritative music databases for discography information
-  - External play history and rating sources
+### Integration Points
+- Common audio file formats (MP3, FLAC, AAC, WAV) and their metadata
+- Music metadata standards (ID3, Vorbis Comments, APE Tags)
+- Audio fingerprinting and acoustic analysis services
+- MusicBrainz and other music database APIs
+- Playback history from various media players and streaming services
 
-- **Key Constraints**
-  - Must be non-destructive to original audio files
-  - Must handle multiple audio formats (MP3, FLAC, AAC, etc.)
-  - Must work with offline libraries without requiring constant internet access
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- Must preserve original metadata while adding standardized enrichment
+- Operations must be non-destructive to the original audio files
+- System should work offline after initial setup of reference databases
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for music collections with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Audio Analysis and Identification**
-   - Generate acoustic fingerprints from audio content
-   - Match fingerprints against reference databases
-   - Correct mislabeled or unidentified tracks
+1. **Music Metadata Extraction and Standardization**
+   - Extract metadata from various audio file formats
+   - Normalize inconsistent artist, album, and track information
+   - Handle multiple metadata standards and merge information
 
-2. **Metadata Standardization**
-   - Normalize inconsistent artist, album, and track naming
-   - Reconcile conflicting metadata from different sources
-   - Apply consistent formatting rules across the collection
+2. **Audio Identification and Analysis**
+   - Generate and compare audio fingerprints for track identification
+   - Match unidentified tracks against reference databases
+   - Extract acoustic features for similarity matching and mood classification
 
-3. **Music Organization and Classification**
-   - Apply genre, mood, and theme taxonomies
-   - Track album completeness and artist discographies
-   - Organize music by various attributes beyond basic metadata
+3. **Music-Specific Organization**
+   - Implement hierarchical genre classification
+   - Support mood and theme tagging
+   - Enable custom taxonomies for specialized collections
 
-4. **Contributor and Role Management**
-   - Parse and standardize artist role information
-   - Distinguish between different types of contributors
-   - Create relationship networks between artists and tracks
+4. **Artist and Contribution Management**
+   - Track detailed contributor information and roles
+   - Maintain artist relationships and collaborations
+   - Support disambiguation of similar artist names
 
-5. **Personal Preference Tracking**
-   - Integrate listening history from multiple sources
-   - Maintain consistent rating systems
-   - Preserve user preference data across format changes
+5. **Collection Analysis and Enhancement**
+   - Identify incomplete albums and discographies
+   - Track listening patterns and preferences
+   - Generate recommendations for collection improvements
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate identification of tracks through audio fingerprinting
-  - Correct application of genre and mood taxonomies
-  - Proper detection of missing items in discographies
-  - Accurate differentiation of artist roles and contributions
-  - Successful integration of listening history from multiple sources
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Identifying and correcting metadata for a batch of unlabeled tracks
-  - Organizing a collection using consistent genre classifications
-  - Analyzing an artist's discography to identify missing albums or tracks
-  - Standardizing contributor credits across a collection
-  - Preserving listening history when reorganizing the library
+1. **Metadata Extraction and Normalization**
+   - Test extraction from various audio formats
+   - Verify normalization of inconsistent metadata
+   - Test merging of metadata from multiple sources
 
-- **Performance Benchmarks**
-  - Audio fingerprinting must process tracks at 10x real-time or faster
-  - Metadata standardization must handle at least 10 tracks per second
-  - Library analysis must scale efficiently to collections of 100,000+ tracks
-  - System must perform consistently with limited memory footprint
+2. **Audio Identification**
+   - Test fingerprint generation and matching
+   - Verify identification of tracks with missing metadata
+   - Test handling of ambiguous or partial matches
 
-- **Edge Cases and Error Conditions**
-  - Tracks with no matches in fingerprint databases
-  - Artists with ambiguous names or multiple artists with the same name
-  - Compilation albums and various artist collections
-  - Classical music with complex performer/composer relationships
-  - Tracks with dramatically different metadata across sources
+3. **Taxonomy Implementation**
+   - Test genre classification across different musical styles
+   - Verify mood and theme tagging consistency
+   - Test custom taxonomy creation and application
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage for core metadata processing
-  - 100% coverage for fingerprinting and identification functions
-  - Comprehensive coverage of taxonomy application logic
-  - Complete verification of history merging algorithms
+4. **Contributor Management**
+   - Test parsing and normalization of contributor information
+   - Verify role distinction and attribution
+   - Test artist relationship tracking
+
+5. **Collection Analysis**
+   - Test detection of missing albums and tracks
+   - Verify listening history integration
+   - Test recommendation generation based on collection gaps
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully identifies at least 90% of unidentified tracks through audio fingerprinting.
-2. Genre, mood, and theme classifications are consistently applied across the entire library.
-3. Discography analysis correctly identifies missing albums and tracks for artists.
-4. Artist roles and contributions are properly differentiated and standardized.
-5. Listening history and ratings are successfully integrated from multiple sources.
-6. The system standardizes metadata across different formats and sources.
-7. Performance benchmarks are met for libraries of 100,000+ tracks.
-8. The system handles edge cases and unusual metadata patterns gracefully.
-9. All operations maintain data integrity with no corruption of audio files.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system can accurately identify tracks through audio fingerprinting
+3. Music-specific taxonomies effectively organize music by genre, mood, and theme
+4. Discography completion correctly identifies gaps in artist collections
+5. Performance role distinction accurately tracks and differentiates contributors
+6. Listening history integration successfully captures and utilizes playback data
+7. All tests pass when run with pytest
+8. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

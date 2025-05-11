@@ -1,147 +1,236 @@
-# Legal Document Analysis System
+# Legal Document Analysis Framework
+
+A specialized natural language processing toolkit for analyzing legal texts, identifying obligations, detecting inconsistencies, and tracking regulatory compliance in contracts and legal documents.
 
 ## Overview
-A specialized natural language processing toolkit designed for legal professionals to analyze contracts, legal briefs, and regulatory documents, focusing on entity extraction, obligation detection, reference linking, inconsistency identification, and regulatory compliance verification.
+
+This project provides legal professionals with powerful tools to analyze contracts, legal briefs, and regulatory documents. The framework helps identify legal entities, detect obligations and commitments, link defined terms, find inconsistencies, and match text with relevant regulations. All functionality is implemented as Python libraries with no dependencies on external NLP tools, making it ideal for confidential legal document processing.
 
 ## Persona Description
+
 Aisha reviews contracts, legal briefs, and regulatory documents to identify inconsistencies, obligations, and potential compliance issues. She needs specialized text analysis focusing on legal terminology, commitments, and conditional statements.
 
 ## Key Requirements
-1. **Legal Entity Extraction**: Develop algorithms to identify and categorize legal entities within documents, including parties, jurisdictions, regulated items, dates, monetary values, and defined terms. This enables rapid comprehension of document scope and applicability, which is foundational for all subsequent legal analysis.
 
-2. **Obligation Detection**: Implement pattern recognition to highlight commitments, requirements, deadlines, and performance obligations throughout legal documents, distinguishing between mandatory, permissive, and prohibitive language. This allows lawyers to quickly identify all actions required of each party, reducing the risk of overlooked responsibilities.
+1. **Legal Entity Extraction System**: Develop algorithms to identify and categorize parties, jurisdictions, regulated items, and legal entities throughout documents.
+   - This feature is critical for Aisha as it allows her to quickly establish who the relevant parties are, what jurisdictions apply, and which items are subject to regulation across lengthy legal documents.
+   - The system must accurately detect and classify different types of legal entities even when referenced through different naming conventions or defined terms.
 
-3. **Definitional Reference Linking**: Create a system to connect defined terms to their formal definitions within documents and across related document sets, establishing a hierarchical map of terminology usage and definition inheritance. This clarifies the precise meaning of terms throughout complex legal documents, preventing misinterpretation due to context-specific definitions.
+2. **Obligation and Requirement Detection**: Create a framework that identifies commitments, requirements, deadlines, and conditional obligations embedded within legal language.
+   - This capability is essential for Aisha to ensure no contractual obligations are overlooked and to track compliance requirements across complex agreements.
+   - The detection must distinguish between different types of obligations (must, shall, will) and identify their associated conditions, timeframes, and responsible parties.
 
-4. **Inconsistency Identification**: Develop algorithms to detect contradictory statements, ambiguous clauses, and logical conflicts within and across legal documents, highlighting potential drafting errors or negotiation issues. This helps identify problematic language that could lead to disputes or unintended legal consequences.
+3. **Definitional Reference Linking**: Implement a system to connect defined terms with their formal definitions within documents and track their usage throughout.
+   - This feature helps Aisha ensure consistent interpretation of defined terms and verify that terms are used in accordance with their specific definitions.
+   - The linking must handle common legal drafting patterns where terms are "incorporated by reference" from other sections or external documents.
 
-5. **Regulatory Citation Matching**: Implement recognition patterns to connect document text with specific laws, regulations, and legal standards, verifying compliance requirements and identifying potentially non-compliant provisions. This streamlines regulatory review by automatically flagging sections referencing external legal requirements and standards.
+4. **Inconsistency and Ambiguity Identification**: Build analytical tools to find contradictory statements, ambiguous clauses, and logical conflicts within legal documents.
+   - This capability enables Aisha to identify potential areas of dispute or misinterpretation before they become problematic in practice.
+   - The identification must detect both direct contradictions and subtle inconsistencies in obligation, permission, or definition of terms.
+
+5. **Regulatory Citation Matching**: Develop a framework for connecting document text with specific laws, regulations, and legal standards that apply to particular provisions.
+   - This feature allows Aisha to verify compliance with relevant regulations and ensure proper citation of controlling legal authorities.
+   - The matching must recognize various citation formats and connect provisions to the appropriate external regulatory framework.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - All analysis algorithms must produce consistent, deterministic results
-  - Entity extraction must be testable against gold-standard legal corpora
-  - Obligation detection must identify known commitments with high precision
-  - Definition linking must establish verifiable cross-references
-  - Inconsistency identification must be validated against known conflicts
 
-- **Performance Expectations**:
-  - Process lengthy contracts (100+ pages) in reasonable timeframes
-  - Handle large regulatory documents with complex structures
-  - Support batch processing of related document sets (master agreements, amendments)
-  - Maintain lookup speed for cross-referenced definitions
-  - Scale to handle document repositories for comprehensive compliance review
+### Testability Requirements
+- All entity extraction must be verifiable against expert-annotated legal documents
+- Obligation detection should achieve measurable precision and recall against test corpora
+- Reference linking must be testable for both accuracy and completeness
+- Inconsistency detection should be validated against known conflicting provisions
+- Citation matching must be verifiable against standard legal citation formats
 
-- **Integration Points**:
-  - Import capabilities for standard legal document formats (PDF, DOCX, etc.)
-  - Support for legal citation formats and jurisdiction-specific conventions
-  - Export of analysis results in structured formats
-  - Reference resolution across document collections
-  - Version comparison for contract revisions and amendments
+### Performance Expectations
+- Process and analyze documents up to 100 pages (50,000 words) in under 60 seconds
+- Handle legal documents with complex nested structures and cross-references
+- Support batch processing of multiple related documents (e.g., contract with amendments)
+- Provide incremental analysis capability for efficient review of document revisions
+- Maintain consistent performance regardless of document formatting or structure
 
-- **Key Constraints**:
-  - Use only Python standard library without external dependencies
-  - Maintain high precision to meet legal standards of accuracy
-  - Handle jurisdiction-specific legal terminology and conventions
-  - Support for formal legal document structures and formatting
-  - Manage document confidentiality appropriately
+### Integration Points
+- Accept common legal document formats (DOC, DOCX, PDF, plain text)
+- Export analysis results in structured formats suitable for legal review systems
+- Support integration with specialized legal citation databases
+- Enable incorporation of jurisdiction-specific rules and regulations
+- Provide programmatic access to analysis results for integration with other legal tools
+
+### Key Constraints
+- Implementation must use only Python standard library
+- Analysis must preserve document confidentiality with no external API dependencies
+- System must handle variations in legal drafting styles across different jurisdictions
+- Processing must be resilient to document formatting inconsistencies
+- All analysis must be explainable and traceable to specific textual evidence
+- Memory usage must be optimized to handle very large legal documents
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement:
 
-1. Specialized legal text preprocessing:
-   - Document structure recognition (sections, clauses, exhibits)
-   - Legal citation parsing and normalization
-   - Handling of document hierarchies and cross-references
-   - Jurisdiction-specific formatting and conventions
-   - Legal boilerplate identification
+The system consists of five main components:
 
-2. Entity extraction frameworks for:
-   - Party identification with role assignment
-   - Jurisdiction and governing law recognition
-   - Temporal expressions and deadline extraction
-   - Monetary values and payment terms
-   - Product, service, and regulated item identification
+1. **Legal Entity Recognizer**: A specialized named entity recognition system for legal documents. It should:
+   - Identify parties, persons, organizations, and legal entities
+   - Recognize jurisdictions, venues, and governing law provisions
+   - Detect regulated items, controlled substances, and restricted technologies
+   - Track entity relationships and hierarchies
+   - Handle variations in entity references throughout documents
 
-3. Obligation analysis capabilities:
-   - Deontic language classification (shall, must, may, etc.)
-   - Conditional obligation recognition
-   - Deadline and timeline extraction
-   - Performance requirement identification
-   - Obligation assignment to specific parties
+2. **Obligation Analysis Engine**: A framework for detecting and categorizing legal duties. It should:
+   - Identify mandatory actions (shall, must, will, agrees to)
+   - Detect conditional obligations and their triggering conditions
+   - Recognize temporal aspects (deadlines, recurring obligations)
+   - Extract responsible parties for each obligation
+   - Classify obligation types (performance, payment, notification, etc.)
 
-4. Definition and reference management:
-   - Term definition extraction and cataloging
-   - Reference resolution within and across documents
-   - Definition hierarchy and inheritance tracking
-   - Definitional scope determination
-   - Term usage consistency verification
+3. **Definition and Reference Manager**: A system for handling defined terms. It should:
+   - Extract formal definitions and their scope of application
+   - Link each term usage to its controlling definition
+   - Track reference incorporation from external documents
+   - Verify consistent usage according to definitions
+   - Identify undefined terms that should have definitions
 
-5. Logical and compliance analysis:
-   - Contradiction and inconsistency detection
-   - Ambiguity identification and classification
-   - Regulatory requirement mapping
-   - Compliance verification against cited standards
-   - Risk factor identification and classification
+4. **Logical Consistency Analyzer**: A tool for detecting document inconsistencies. It should:
+   - Identify direct contradictions between provisions
+   - Detect logical conflicts in rights and obligations
+   - Recognize ambiguous language and unclear references
+   - Find gaps in procedural or conditional structures
+   - Highlight potential interpretation conflicts
+
+5. **Regulatory Compliance Matcher**: A framework for connecting text to applicable regulations. It should:
+   - Recognize legal and regulatory citations in various formats
+   - Link provisions to relevant external authorities
+   - Verify compliance with referenced regulations
+   - Track citation completeness and accuracy
+   - Identify potentially missing regulatory references
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of legal entity extraction across document types
-  - Precision and recall of obligation detection in complex clauses
-  - Completeness of definition reference linking
-  - Reliability of inconsistency identification in ambiguous text
-  - Accuracy of regulatory citation matching
 
-- **Critical User Scenarios**:
-  - Analyzing lengthy contracts for all party obligations
-  - Reviewing document amendments against original agreements
-  - Checking regulatory compliance of industry-specific documents
-  - Identifying definitional inconsistencies across document sets
-  - Extracting key contract provisions for due diligence
+### Key Functionalities to Verify
 
-- **Performance Benchmarks**:
-  - Process standard contracts (50 pages) in under 2 minutes
-  - Complete full citation analysis of regulatory filings in under 5 minutes
-  - Compare document revisions with highlighted changes rapidly
-  - Maintain reasonable memory usage with large document collections
-  - Support incremental analysis for live document editing
+1. Legal Entity Extraction:
+   - Test identification accuracy for different entity types
+   - Verify correct categorization of legal entities
+   - Test handling of entity variations and references
+   - Validate detection of jurisdiction and venue information
+   - Verify extraction of regulated items and controlled substances
 
-- **Edge Cases and Error Conditions**:
-  - Handling poorly structured or non-standard legal documents
-  - Processing scanned documents with OCR errors
-  - Managing documents with complex nested definitions
-  - Analyzing documents with jurisdiction-specific terminology
-  - Graceful handling of ambiguous legal language
+2. Obligation Detection:
+   - Test recognition of different obligation types
+   - Verify extraction of conditional structures
+   - Test identification of temporal components
+   - Validate assignment of responsibilities to parties
+   - Verify detection of obligation scope and limitations
 
-- **Required Test Coverage**:
-  - 95%+ coverage of all analysis algorithms
-  - Comprehensive testing of entity extraction patterns
-  - Validation against diverse legal document types
-  - Testing across multiple legal domains (contracts, regulations, briefs)
-  - Verification with documents containing known issues and edge cases
+3. Definition Linking:
+   - Test accuracy of definition extraction
+   - Verify correct linking of terms to definitions
+   - Test handling of nested and hierarchical definitions
+   - Validate scope determination for defined terms
+   - Verify tracking of terms incorporated by reference
 
-IMPORTANT: 
+4. Inconsistency Identification:
+   - Test detection of direct contradictions
+   - Verify identification of logical conflicts
+   - Test recognition of ambiguous provisions
+   - Validate finding of procedural gaps
+   - Verify detection of definition inconsistencies
+
+5. Regulatory Citation:
+   - Test recognition of various citation formats
+   - Verify matching to appropriate regulatory sources
+   - Test handling of hierarchical citation structures
+   - Validate citation completeness checking
+   - Verify identification of missing required citations
+
+### Critical User Scenarios
+
+1. Reviewing a complex commercial contract for all obligations and deadlines
+2. Analyzing a regulatory compliance document against applicable laws
+3. Identifying inconsistencies in a contract with multiple amendments
+4. Verifying proper definition and usage of technical terms in an IP agreement
+5. Extracting all conditional obligations from a set of related agreements
+
+### Performance Benchmarks
+
+- Process standard 50-page contracts in under 30 seconds
+- Achieve >85% precision and recall on legal entity extraction
+- Identify >90% of explicit obligations in test documents
+- Link >95% of defined terms to their definitions
+- Detect >80% of known inconsistencies in test documents
+
+### Edge Cases and Error Conditions
+
+- Test with unusually formatted or structured legal documents
+- Verify behavior with documents containing intentional ambiguities
+- Test with highly technical legal documents from specialized fields
+- Validate performance on documents with minimal structural cues
+- Test with documents containing non-standard legal drafting approaches
+- Verify handling of documents with extensive cross-references
+- Test with multilingual or mixed-language legal documents
+
+### Required Test Coverage Metrics
+
+- Line coverage: Minimum 90%
+- Branch coverage: Minimum 85%
+- Function coverage: Minimum 95%
+- All public APIs must have 100% test coverage
+- All error handling paths must be tested
+- All legal pattern recognition logic must be thoroughly tested
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Legal entities are accurately identified and categorized with precision comparable to expert review
-2. Obligations are detected with high recall, capturing at least 95% of explicit commitments
-3. Definitional references are correctly linked throughout documents with clear scope boundaries
-4. Logical inconsistencies are identified with minimal false positives
-5. Regulatory citations are properly connected to relevant external sources
-6. The system processes standard legal documents with acceptable performance
-7. Analysis results provide actionable insights for legal review
-8. The toolkit significantly reduces manual review time for common legal documents
-9. Results maintain the high accuracy standards required for legal work
-10. The system adapts to different legal domains and document types
+- The system correctly identifies at least 85% of legal entities in test documents
+- Obligation detection achieves at least 85% precision and recall on test corpora
+- Definition linking correctly connects at least 90% of defined terms to their definitions
+- Inconsistency detection identifies at least 80% of known contradictions in test documents
+- Regulatory citation matching correctly recognizes at least 90% of standard legal citations
 
-## Development Environment
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up your development environment:
+
+1. Create a virtual environment using uv:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Install testing tools:
+   ```
+   pip install pytest pytest-json-report
+   ```
+
+5. Run tests with JSON reporting:
+   ```
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+IMPORTANT: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion. This file serves as proof that all tests pass and the implementation meets the specified requirements.

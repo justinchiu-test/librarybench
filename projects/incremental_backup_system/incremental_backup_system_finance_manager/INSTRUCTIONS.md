@@ -1,177 +1,154 @@
-# FinanceVault - Personal Financial Document Backup System
+# FinancialVault - Incremental Backup System for Financial Records
 
 ## Overview
-FinanceVault is a specialized incremental backup system designed for meticulous management of personal financial records and tax documents. It automatically classifies financial documents, implements calendar-aware retention, provides simplified yearly archiving, optimizes receipt images, and integrates with personal financial software to ensure complete and organized preservation of financial history.
+A specialized incremental backup system designed for finance managers handling personal and family financial documents. The system enables intelligent classification of financial records, calendar-aware retention for tax seasons, and annual archiving capabilities while optimizing storage for document images and providing integration with personal financial software.
 
 ## Persona Description
 Chen meticulously tracks personal finances and tax documents for their family. They need a reliable backup system for financial records that simplifies tax preparation and protects against data loss.
 
 ## Key Requirements
+1. **Financial Document Classification**: Implement an intelligent system that automatically categorizes statements, receipts, tax forms, and other financial documents based on content analysis. This capability allows Chen to maintain a well-organized archive of financial records without manual sorting, making it much easier to find specific documents during tax preparation or financial review.
 
-1. **Financial Document Classification**
-   - Implement intelligent categorization of statements, receipts, and tax forms
-   - Create automatic metadata extraction from financial documents
-   - Develop hierarchical organization by institution, account, and document type
-   - Support custom tagging and categorization rules
-   - This classification is critical for Chen as it automatically organizes the many financial documents their family receives, making it easy to locate specific records when needed for tax preparation or financial planning
+2. **Calendar-aware Retention Policies**: Create dynamic retention rules that automatically adjust based on tax seasons, filing deadlines, and regulatory requirements. This feature ensures that Chen's financial documents are kept for appropriate timeframes based on their type and relevance to upcoming tax filings, with automatic policy adjustments around key financial dates.
 
-2. **Calendar-Aware Retention Policies**
-   - Design retention rules that understand tax deadlines and fiscal years
-   - Implement jurisdiction-specific tax record requirements
-   - Create automatic policy adjustment during tax seasons
-   - Support for special handling of documents near retention thresholds
-   - These intelligent retention policies ensure that Chen keeps tax records for the legally required period in their jurisdiction, automatically adjusting retention during tax season to prevent premature deletion of potentially needed documents
+3. **Simplified Annual Archiving**: Develop a streamlined process for creating permanent, immutable yearly archives at the end of each tax year. This functionality provides Chen with a complete, point-in-time snapshot of all financial records relevant to a specific tax year, securely preserved for potential future audits or reference.
 
-3. **Simplified Yearly Archiving**
-   - Develop automated year-end financial record bundling
-   - Implement tax-year organization and labeling
-   - Create verification and completeness checking for yearly archives
-   - Support for annotating and documenting yearly financial summaries
-   - This archiving feature allows Chen to create permanent, organized records at the end of each tax year, simplifying future lookups and ensuring that complete financial history is preserved in a structured manner
+4. **Receipt Image Optimization**: Implement specialized handling for smartphone photos of paper receipts and documents, including perspective correction, enhancement, and OCR. This capability ensures that Chen's digitized paper documents are stored in the most useful and space-efficient format while remaining fully legible and preserving all critical information.
 
-4. **Receipt Image Optimization**
-   - Design specialized handling for smartphone photos of paper receipts
-   - Implement image enhancement, cropping, and text extraction
-   - Create storage optimization for receipt images
-   - Support correlation between receipt images and transaction records
-   - This optimization is essential because Chen regularly captures paper receipts with their smartphone; the system ensures these images are properly processed for legibility, storage efficiency, and integration with their financial records
-
-5. **Financial Software Integration**
-   - Implement specialized backup for personal finance application data files
-   - Create consistency checking between application data and document backups
-   - Develop detection of financial application schema changes
-   - Support for preserving transaction history across application versions
-   - This integration ensures that Chen's financial application data (from software like Quicken or YNAB) is properly backed up alongside related documents, maintaining the relationship between transactions and supporting documentation
+5. **Financial Software Integration**: Create seamless integration with personal accounting applications to back up database files, reports, and application states. This allows Chen to preserve not just financial documents but also the state of their financial software, ensuring continuity and consistency in financial record-keeping even in the event of system failure.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Document classification must be testable with standard financial document types
-- Retention policy application must be verifiable throughout simulated tax years
-- Yearly archiving must be tested for completeness and consistency
-- Receipt optimization must be validated with various image qualities and formats
-- Software integration must be tested with common financial application data formats
+- All components must have isolated unit tests with dependency injection for external systems
+- Document classification must be tested with various financial document formats and types
+- Calendar-based policies must be verifiable through time simulation
+- Annual archiving must be tested for completeness and immutability
+- Image optimization must be verifiable with standardized receipt samples
+- Software integration must be testable with common financial application formats
 
 ### Performance Expectations
-- Classify 1000+ financial documents per hour with 95%+ accuracy
-- Process retention policy application for 10,000+ documents in under 10 minutes
-- Complete yearly archive creation for 5,000 documents in under 30 minutes
-- Optimize and process 100 receipt images in under 5 minutes
-- Handle financial software databases up to 1GB with consistent performance
+- The system must efficiently handle personal financial archives of up to 100,000 documents
+- Document classification must achieve at least 90% accuracy for common financial records
+- Calendar policy applications must process rules at a rate of at least 1000 documents per minute
+- Annual archiving must complete within 30 minutes for typical household finances
+- Receipt optimization must process at least 5 images per second with quality improvement
+- Software data integration must add less than 30 seconds overhead to backup operations
 
 ### Integration Points
-- Financial document formats (PDF, CSV, OFX, QFX, etc.)
-- Personal finance software data files (Quicken, YNAB, Mint, etc.)
-- Image processing libraries for receipt optimization
-- OCR systems for text extraction
-- Calendar and tax deadline databases
+- Personal finance software (Quicken, YNAB, Mint, etc.)
+- Document scanning and capture tools
+- OCR and image processing libraries
+- Tax preparation software 
+- Cloud storage providers for off-site backup
+- Digital signature and verification systems
 
 ### Key Constraints
-- Must maintain absolute data integrity for financial records
-- System must operate within personal computing resource limitations
-- All operations must be secure for sensitive financial information
-- Storage format must remain accessible for long-term record keeping (7+ years)
-- Must respect privacy and data security for family financial information
+- The implementation must work across Windows, macOS, and mobile platforms
+- All operations must maintain perfect data fidelity with original documents
+- The system must accommodate both native digital documents and scanned paper records
+- Storage formats must be accessible for the long term (10+ years) without proprietary dependencies
+- Processing must be optimized for typical home computing environments
+- System must operate with strict privacy protections for sensitive financial data
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The system must provide these core capabilities:
+1. **Incremental Backup Engine**: A core module handling financial document change detection, efficient delta storage, and versioned backup creation with strong encryption capabilities.
 
-1. **Document Classification Engine**
-   - Format-specific parsers for financial documents
-   - Metadata extraction and indexing
-   - Hierarchical organization implementation
-   - Custom rule processing
+2. **Financial Document Analyzer**: Advanced classification algorithms that categorize financial records based on content, format, issuer, and date information.
 
-2. **Retention Management**
-   - Calendar-aware policy definition
-   - Tax deadline integration
-   - Automatic policy adjustment
-   - Threshold detection and handling
+3. **Calendar-based Policy Manager**: A sophisticated rules engine that applies and adjusts retention policies based on tax deadlines, fiscal years, and regulatory requirements.
 
-3. **Archiving System**
-   - Year-end bundling mechanism
-   - Tax-year organization
-   - Verification and completeness checking
-   - Summary generation and annotation
+4. **Archiving System**: Tools for creating complete, verified yearly snapshots of financial records with cryptographic integrity protection and efficient storage.
 
-4. **Receipt Processing**
-   - Image enhancement algorithms
-   - Text extraction and recognition
-   - Storage optimization
-   - Transaction correlation
+5. **Receipt Optimization Framework**: Image processing capabilities specifically designed for financial documents, including perspective correction, enhancement, noise reduction, and text extraction.
 
-5. **Application Integration**
-   - Financial software data parsing
-   - Consistency verification
-   - Schema change handling
-   - Transaction history preservation
+6. **Financial Application Connector**: Adapters for interfacing with personal finance software to backup application data, settings, and states beyond simple file-level backup.
+
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by various tools (though implementing a UI is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate classification of various financial document types
-- Proper application of retention policies based on tax calendars
-- Successful creation and verification of yearly archives
-- Effective optimization and processing of receipt images
-- Reliable backup and restoration of financial software data
+- Financial document classification with accurate categorization
+- Calendar-aware retention with proper policy application
+- Annual archiving with complete record preservation
+- Receipt image optimization with quality improvement
+- Financial software integration with application state preservation
+- Overall backup integrity and security
 
 ### Critical User Scenarios
-- Monthly processing of bank statements, credit card statements, and receipts
-- Approach of tax season with automatic retention policy adjustments
-- Year-end archiving of complete financial records
-- Capturing and processing receipts from everyday purchases
-- Backing up financial software after significant transaction entry
+- Complete annual tax preparation cycle with document retrieval
+- Migration between financial software applications
+- Recovery from data loss with full financial record restoration
+- Audit response requiring historical document access
+- Document search across multiple years of financial records
+- Multi-device synchronization of financial document archives
 
 ### Performance Benchmarks
-- Classify 100 mixed financial documents in under 5 minutes with 95% accuracy
-- Update retention status of 5,000 documents based on tax calendar in under 5 minutes
-- Create verified yearly archive for 1,000 documents in under 10 minutes
-- Process and optimize 20 receipt images in under 2 minutes
-- Backup and verify financial software data (100MB) in under 5 minutes
+- Initial backup of 10,000 financial documents completing in under 1 hour
+- Incremental backup completing in under 5 minutes for daily financial updates
+- Document classification achieving 95% accuracy for standard financial documents
+- Receipt optimization improving quality by at least 30% while reducing storage by 40%
+- Annual archiving processing at least 2,000 documents per minute
+- Search operations returning results in under 3 seconds for specific document queries
 
 ### Edge Cases and Error Conditions
-- Ambiguous or unusual financial document formats
-- Documents with conflicting retention requirements
-- Incomplete document sets for yearly archiving
-- Very poor quality receipt images
-- Corrupted or inconsistent financial software databases
-- Multiple financial software versions with schema changes
+- Handling of corrupted or incomplete financial documents
+- Recovery from interrupted backups during archiving operations
+- Proper functioning with unusual or non-standard financial document formats
+- Correct behavior with documents spanning multiple fiscal years
+- Appropriate handling of encrypted or password-protected financial records
+- Graceful operation during financial software database corruption
 
 ### Required Test Coverage Metrics
-- 95% code coverage for document classification components
-- 100% coverage for retention policy implementation
-- 95% coverage for yearly archiving system
-- 90% coverage for receipt optimization
-- 95% coverage for financial software integration
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify all external system interfaces
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Financial documents are automatically classified with 95% or better accuracy into appropriate categories
-2. Retention policies correctly adjust based on tax calendars and preserve documents for required periods
-3. Yearly archives provide complete, verified collections of financial records organized by tax year
-4. Receipt images are optimized for legibility and storage efficiency while maintaining their evidential value
-5. Financial software data is properly backed up and can be restored with complete transaction history
-6. All financial records can be quickly located when needed for tax preparation or financial review
-7. The system operates efficiently on personal computing hardware without excessive resource usage
-8. Sensitive financial information is properly secured throughout the backup lifecycle
-9. The system accommodates the full range of document types in personal financial management
-10. The implementation passes all test suites with the required coverage metrics
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates effective document classification for common financial record types.
+3. Calendar-aware retention correctly applies policies based on tax deadlines and fiscal periods.
+4. Annual archiving creates complete, immutable snapshots of yearly financial records.
+5. Receipt image optimization improves quality while reducing storage requirements.
+6. Financial software integration preserves application states and databases.
+7. All performance benchmarks are met under the specified load conditions.
+8. Code quality meets professional standards with appropriate documentation.
 
-To get started with implementation:
-1. Set up a Python virtual environment: `uv venv`
-2. Activate the environment: `source .venv/bin/activate`
-3. Install development dependencies
-4. Implement the core modules following the requirements
-5. Create comprehensive tests for all functionality
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

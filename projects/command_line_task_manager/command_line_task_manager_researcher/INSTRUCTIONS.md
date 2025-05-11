@@ -1,167 +1,152 @@
-# TermTask for Academic Researchers
+# ResearchTrack CLI - Command-Line Task Management for Academic Research
 
 ## Overview
-A specialized command-line task management system designed for academic researchers conducting computational experiments. This variant focuses on research reproducibility through bibliographic reference linking, dataset versioning, computational environment tracking, academic documentation export, and experiment parameter logging.
+A specialized command-line task management system designed for academic researchers conducting computational research. The system enables meticulous tracking of research tasks with detailed notes, associates analytical steps with specific research questions and datasets, and provides comprehensive documentation capabilities to ensure research reproducibility.
 
 ## Persona Description
 Dr. Patel conducts computational research requiring complex data processing steps and needs to document her methodology precisely. Her primary goal is to track research tasks with detailed notes and associate analytical steps with specific research questions and datasets.
 
 ## Key Requirements
+1. **Bibliographic Reference Linking**: Implement a sophisticated system to associate tasks with academic sources, citations, and literature. This feature is critical for Dr. Patel as it allows her to maintain clear connections between research activities and their theoretical foundations, track which papers influenced specific methodological decisions, and generate properly formatted citations for methods sections in publications.
 
-1. **Bibliographic Reference Management**
-   - Link tasks to academic sources and papers
-   - Import citations from BibTeX, RIS, and DOI
-   - Associate specific claims or methods with research tasks
-   - Generate bibliography for completed task sequences
-   - This feature is critical because it allows Dr. Patel to maintain scientific rigor by connecting each research task to its theoretical foundation in the literature, ensuring all work is properly attributed and substantiated.
+2. **Dataset Versioning Integration**: Create functionality to track which data version was used for each analysis task. This capability enables Dr. Patel to maintain a precise record of data provenance for each analysis step, reproduce results using the exact same datasets months or years later, and document dataset lineage throughout the research process for publication.
 
-2. **Dataset Version Control**
-   - Track which data version was used for specific analyses
-   - Record dataset metadata and provenance information
-   - Link analysis results back to source datasets
-   - Support for dataset checksums and validation
-   - This capability is essential because data reproducibility depends on precise tracking of which dataset version was used for each analysis, allowing Dr. Patel to recreate results exactly and trace unexpected outcomes to their data source.
+3. **Computational Environment Snapshots**: Develop a mechanism to document the complete system state for reproducibility, including software versions, dependencies, and configurations. This feature allows Dr. Patel to capture the exact computational environment used for analyses, ensure experiments can be reproduced in identical conditions, and satisfy increasing journal requirements for computational reproducibility.
 
-3. **Computational Environment Snapshots**
-   - Document system state for reproducibility
-   - Capture package versions, environment variables, and configurations
-   - Support for containerization integration (Docker, Singularity)
-   - Clone environments for experiment replication
-   - This feature is vital because computational research reproducibility requires detailed knowledge of the exact computational environment, allowing Dr. Patel to recreate her analysis setup precisely and share reproducible workflows with colleagues.
+4. **Academic Markdown Export**: Build export functionality that generates properly formatted methods sections for academic publications. This capability enables Dr. Patel to automatically document her methodology in a publication-ready format, save significant time in manuscript preparation, and ensure methodological details are complete and accurate in publications.
 
-4. **Academic Documentation Export**
-   - Generate methods sections for publications in academic formats
-   - Export task sequences as reproducible protocols
-   - Support LaTeX, Markdown, and plain text outputs
-   - Include statistical parameters and processing details
-   - This functionality is critical because it automates the tedious and error-prone process of documenting computational methods for publication, ensuring Dr. Patel's methods sections are complete, accurate, and sufficiently detailed for peer review.
-
-5. **Experiment Tracking with Parameters**
-   - Log experimental parameters for each analysis run
-   - Track variations between experiment iterations
-   - Record result metrics and statistical outputs
-   - Visualize parameter impact on research outcomes
-   - This feature is essential because it creates a systematic record of experimental conditions and outcomes, allowing Dr. Patel to optimize her research methodology and demonstrate the robustness of findings through methodical parameter variation.
+5. **Experiment Tracking**: Implement detailed tracking of experimental parameters, variations, and result logging. This system helps Dr. Patel organize different experimental conditions and their outcomes, identify patterns across multiple experiment runs, and maintain a comprehensive record of all research activities for future reference and publication.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mocked citation databases for testing bibliographic functions
-- Simulated datasets with version history for testing dataset tracking
-- Virtual environment generation for testing environment snapshots
-- Document rendering verification for testing academic exports
-- Parameter variation simulation for testing experiment tracking
+- Bibliographic reference handling must be testable with standard citation formats
+- Dataset version tracking must be verifiable with simulated dataset changes
+- Environment snapshot capture must be testable on different systems
+- Markdown export must produce consistent output given identical inputs
+- Experiment parameter tracking must be verifiable with complex parameter sets
+- All components must be unit testable with mock research data
 
 ### Performance Expectations
-- Support for linking 1000+ bibliographic references
-- Handle dataset versioning for multi-terabyte datasets
-- Environment snapshots should complete in under 30 seconds
-- Documentation export for complex methods in under 5 seconds
-- Support tracking 100+ parameters per experiment across 1000+ experiment runs
+- The system must handle research projects with 1000+ analysis tasks
+- Bibliographic database operations must efficiently manage 10,000+ references
+- Environment snapshots must be generated in <5 seconds
+- Markdown export must process large methods sections (10,000+ words) in <3 seconds
+- Experiment tracking must handle at least 1,000 distinct parameter combinations
 
 ### Integration Points
-- Citation management systems (BibTeX, Zotero, Mendeley)
-- Dataset versioning systems (DVC, Git LFS)
-- Container management (Docker, Singularity)
-- Document preparation systems (LaTeX, Markdown)
-- Statistical analysis environments (R, Python scientific stack)
+- Reference management systems (BibTeX, EndNote, Zotero)
+- Dataset version control systems (Git, DVC)
+- Computational environment managers (conda, venv, Docker)
+- Markdown processing and academic formatting tools
+- Experiment parameter management systems
+- Statistical analysis packages
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Cannot modify research data or analysis results
-- Must maintain backwards compatibility with previous research records
-- Storage efficiency for large experiment history databases
-- Support for air-gapped research environments
+- The implementation must work across different operating systems
+- All functionality must be accessible via programmatic API without UI components
+- Citation format handling must comply with major academic style guides
+- Environment snapshots must be compact yet complete
+- The system must maintain consistent performance with large research projects
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for academic researchers includes:
+1. **Research Task Management**: A core module handling CRUD operations for research tasks with detailed metadata, notes, and associations to research questions.
 
-1. **Research Task Management Engine**
-   - Create, read, update, and delete research tasks
-   - Organize tasks by research questions and hypotheses
-   - Track task dependencies and research workflows
-   - Support for collaborative research projects
-   - Persistence with data integrity guarantees
+2. **Bibliographic System**: Functionality for managing, linking, and formatting academic references associated with research tasks, supporting major citation formats.
 
-2. **Bibliographic Reference System**
-   - Manage academic citations and references
-   - Link references to specific research tasks
-   - Import and normalize citation data
-   - Export formatted citations for publications
-   - Search and filter reference collection
+3. **Dataset Versioning**: Components for tracking dataset versions, including provenance, transformations, and usage across different analysis tasks.
 
-3. **Dataset Management Framework**
-   - Track dataset versions and provenance
-   - Record dataset metadata and schema information
-   - Associate datasets with specific analysis tasks
-   - Calculate and verify dataset checksums
-   - Monitor dataset usage across research projects
+4. **Environment Documentation**: Logic for capturing, storing, and reproducing computational environment details, including package versions, configurations, and system information.
 
-4. **Environment Management System**
-   - Capture computational environment details
-   - Record software dependencies and versions
-   - Document hardware specifications
-   - Support for environment replication
-   - Detect and report environment differences
+5. **Academic Export Engine**: Tools for generating properly formatted academic content from task data, with support for different journal formats and citation styles.
 
-5. **Experimental Protocol System**
-   - Define experimental workflows as task sequences
-   - Record parameter settings for each experimental run
-   - Track experimental outcomes and metrics
-   - Support for parameter sweeps and optimization
-   - Analyze result patterns across parameter variations
+6. **Experiment Tracking Framework**: A structured system for defining experimental parameters, tracking variations, and recording results with appropriate metadata.
 
-6. **Academic Documentation Engine**
-   - Generate structured methods documentation
-   - Format documentation for academic publications
-   - Include appropriate level of technical detail
-   - Support for documentation templates
-   - Export in multiple academic formats
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Bibliographic references are correctly linked to research tasks
-- Dataset versions are accurately tracked and validated
-- Computational environments are completely captured and can be reproduced
-- Academic documentation correctly reflects research methodology
-- Experiment parameters and results are properly associated and recorded
+- Research task creation, retrieval, updating, and deletion with comprehensive metadata
+- Bibliographic reference management with proper formatting
+- Dataset version tracking with provenance information
+- Computational environment snapshot capture and verification
+- Academic markdown export with proper formatting
+- Experiment parameter tracking and result association
 
 ### Critical User Scenarios
-- Planning and executing a new research experiment
-- Reproducing a previous analysis with the same environment and parameters
-- Generating methods section for an academic publication
-- Tracking parameter variations across multiple experimental runs
-- Collaborating on research tasks with precise methodology sharing
+- Complete research workflow from literature review to data analysis to publication
+- Reproducing previous analyses with identical conditions
+- Documenting methodology for publication
+- Exploring variations in experimental parameters
+- Maintaining provenance of research insights
+- Tracking the evolution of research questions and approaches
 
 ### Performance Benchmarks
-- Reference management system can handle 5,000+ citations
-- Dataset versioning works efficiently with 10TB+ datasets
-- Environment snapshots complete in under 30 seconds
-- Documentation generation for complex methods takes under 5 seconds
-- Parameter tracking system can handle 100+ dimensions efficiently
+- Task operations must complete in <50ms for individual operations
+- Bibliographic operations must efficiently handle libraries with 10,000+ references
+- Dataset versioning must handle datasets up to 100GB (metadata only, not storage)
+- Environment snapshots must be generated in <5 seconds
+- Markdown export must process at least 100 pages of content per second
+- Experiment tracking must handle at least 100 parameter variations per second
 
 ### Edge Cases and Error Conditions
-- Handling incomplete or corrupted citation data
-- Managing conflicting dataset versions
-- Recovering from interrupted environment snapshots
-- Generating documentation with missing experimental details
-- Tracking experiments with changing parameter definitions
-- Operating in offline research environments
+- Handling conflicting or inconsistent bibliographic information
+- Recovery from incomplete environment captures
+- Proper management of large or complex datasets
+- Maintaining accuracy with frequent changes to research direction
+- Appropriate handling of unusual citation formats
+- Graceful degradation with extremely large research projects
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for data integrity operations
-- Comprehensive integration tests for system interoperability
-- Performance tests for large dataset and reference operations
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Format verification for exported academic content
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully links research tasks to their theoretical foundations through citation management
-- Dataset versioning creates complete reproducibility for data-intensive research
-- Environment snapshots enable exact replication of computational conditions
-- Generated methods documentation meets academic publication standards
-- Experiment tracking provides insights into parameter effects on research outcomes
-- The time required to document research methodology is reduced by at least 40%
-- The system enhances research reproducibility as measured by successful replication of previous experiments
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system effectively links research tasks to bibliographic references with proper citation formatting.
+3. Dataset versions are accurately tracked and associated with specific analysis tasks.
+4. Computational environment details are captured with sufficient detail for reproducibility.
+5. Academic markdown export generates properly formatted methods sections for publications.
+6. Experiment tracking successfully manages parameters, variations, and results.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation supports the complete research workflow from planning to publication.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

@@ -1,10 +1,10 @@
 # Technical Documentation Site Generator
 
-A specialized static site generator optimized for creating comprehensive technical documentation portals with consistent branding and flexible content structures.
+A specialized static site generator tailored for creating and maintaining comprehensive technical documentation portals with API references, version control, and interactive code examples.
 
 ## Overview
 
-This project is a Python library for generating technical documentation websites from structured content files. It focuses on converting technical documentation into well-organized, searchable websites with features specifically designed for technical writers managing complex documentation across multiple software versions and products.
+This project implements a Python library for generating technical documentation websites from structured markup files. It focuses on the needs of technical writers who maintain documentation for software projects, providing tools for API reference generation, versioning, code highlighting, interactive examples, and technical diagram creation - all from simple text-based source files.
 
 ## Persona Description
 
@@ -12,137 +12,214 @@ Sarah creates comprehensive documentation for open-source software projects and 
 
 ## Key Requirements
 
-1. **API Reference Generation**: Transform code comments and docstrings into navigable API reference documentation. This feature is crucial for Sarah to ensure that developers can efficiently find function and class definitions without her manually maintaining separate API documentation that can drift out of sync with the code.
+1. **API Reference Generation**: Ability to extract code documentation (docstrings, type hints, function signatures) and convert it to navigable, searchable API references.
+   - Critical for Sarah because it ensures documentation stays in sync with actual code and saves significant time compared to manually documenting APIs.
+   - Must support popular documentation formats (e.g., Sphinx-style, Google-style, NumPy-style docstrings).
 
-2. **Documentation Versioning**: Support multiple versions of documentation for different software releases within the same site structure. This allows Sarah to maintain documentation for legacy versions while continuing to update for new releases, ensuring users of all versions have access to appropriate documentation.
+2. **Documentation Versioning**: Support for maintaining and displaying multiple versions of documentation corresponding to different software releases.
+   - Essential for Sarah because users need access to documentation specific to the version they're using, while she needs to maintain updates across all supported versions.
+   - Must include version selection UI metadata and proper URL structuring to separate versioned content.
 
-3. **Integrated Code Snippet Highlighting**: Provide syntax highlighting with language detection, line numbering, and copy functionality for code examples. Technical documentation requires extensive code samples, and proper formatting helps readers distinguish code from explanatory text and understand syntactical elements through color highlighting.
+3. **Code Snippet Highlighting**: Advanced syntax highlighting for code blocks with language detection, line numbering, and highlighting specific lines.
+   - Important for Sarah because properly formatted code examples improve readability and comprehension in technical documentation.
+   - Must support a wide range of programming languages with accurate syntax highlighting.
 
-4. **Interactive Code Examples**: Embed runnable code samples where users can modify parameters and see results. This feature transforms passive documentation into an interactive learning experience, allowing readers to experiment with API usage patterns and better understand the behavior of documented components.
+4. **Interactive Code Examples**: Ability to embed runnable code samples where readers can modify parameters and see results.
+   - Valuable for Sarah because interactive examples help users understand API usage and experimentation without leaving the documentation.
+   - Should support common languages used in examples with appropriate execution environments.
 
-5. **Technical Diagram Generation**: Convert text-based diagram descriptions (like Mermaid or PlantUML syntax) into visual diagrams. Architectural and workflow diagrams are essential for technical documentation, and keeping them as text makes them version-controllable while automatically rendering them as images improves readability.
+5. **Technical Diagram Generation**: Convert text-based diagram descriptions (e.g., Mermaid, PlantUML syntax) into visual diagrams.
+   - Critical for Sarah because diagrams are essential for explaining complex systems, but maintaining them as images is cumbersome compared to text-based formats in version control.
+   - Must generate high-quality, accessible diagram images from text descriptions.
 
 ## Technical Requirements
 
-- **Testability Requirements**:
-  - All generation steps must be individually testable with discrete inputs and outputs
-  - Diagram generation must validate input syntax and produce consistent output
-  - API reference extraction must handle edge cases in code formatting and documentation styles
-  - Versioning system must properly isolate and organize content for each version
-  - All transformations from source to output must be deterministic and reproducible
+### Testability Requirements
+- All components must be individually testable with clear interfaces
+- Mock external systems (diagram renderers, code runners) for testing
+- Support snapshot testing for generated HTML output
+- Validate correct structure and cross-referencing in generated output
+- Performance benchmarks should be established and tested for build times with large documentation sets
 
-- **Performance Expectations**:
-  - Complete site generation for a 500-page documentation set should complete in under 5 minutes
-  - Incremental builds should only process changed files and complete in under 30 seconds
-  - Interactive examples must render and execute within 2 seconds of user modification
-  - Large API references with 1000+ objects should render without pagination issues
+### Performance Expectations
+- Must process 1000+ markdown files in under 60 seconds
+- API extraction should handle libraries with 500+ functions/classes efficiently
+- Incremental builds should complete in under 5 seconds for small changes
+- Diagram generation should process 50+ diagrams in under 30 seconds
+- Search index generation must be optimized for quick lookups even with large documentation sets
 
-- **Integration Points**:
-  - Source code repositories for API reference extraction (local files or GitHub API)
-  - Version control systems to extract versioning information
-  - Diagram rendering engines (Mermaid, PlantUML, etc.)
-  - Interactive code execution environments
-  - Search indexing for documentation content
+### Integration Points
+- Code parsing tools for extracting API documentation from source code
+- External diagram rendering services or libraries
+- Version control systems for extracting versioning information
+- Code execution environments for interactive examples
+- Content distribution networks for optimized asset delivery
+- Search indexing mechanisms
 
-- **Key Constraints**:
-  - All content processing must be possible without internet access for offline building
-  - No server-side components for diagram rendering or code execution (client-side only)
-  - Generated sites must be deployable as static files to any web server
-  - Must support company-specific style guides and branding elements
-
-IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- Must work with both local file systems and version control repositories as content sources
+- Must generate static HTML that works without server-side processing
+- Must guarantee content accuracy across versioned documentation
+- Must ensure accessibility compliance in generated output
+- Output should be optimized for both online viewing and PDF generation
 
 ## Core Functionality
 
-The core functionality must include:
+The Technical Documentation Site Generator should provide a comprehensive Python library with the following core capabilities:
 
-1. **Content Processing Pipeline**:
-   - Parse multiple markup formats with custom extensions for technical content
-   - Extract metadata for versioning, navigation, and categorization
-   - Process special syntax for API references, code blocks, and diagrams
-   - Apply templates for consistent rendering across content types
+1. **Content Processing Pipeline**
+   - Parse and process Markdown and reStructuredText files
+   - Extract metadata (title, description, version, etc.) from frontmatter
+   - Apply transformations for diagrams, code blocks, and special syntax
+   - Support for documentation-specific extensions and shortcodes
 
-2. **Documentation Structure Management**:
-   - Organize content hierarchically (sections, chapters, pages)
-   - Handle cross-references between content pieces, including across versions
-   - Generate navigation structures (sidebar, breadcrumbs, etc.)
-   - Create indexes and table of contents for each documentation section
+2. **API Documentation Extraction**
+   - Parse Python source code to extract docstrings, type hints, and signatures
+   - Generate structured API reference documentation from code
+   - Maintain relationship between code and documentation for traceability
+   - Support different docstring formats and styles
 
-3. **Technical Content Enhancements**:
-   - Extract and format API details from source code
-   - Transform text-based diagram syntax into SVG or other visual formats
-   - Implement syntax highlighting for multiple programming languages
-   - Create interactive elements for code examples
+3. **Versioning System**
+   - Track and manage multiple documentation versions
+   - Generate version-specific output with appropriate navigation
+   - Support for version aliases (latest, stable, etc.)
+   - Maintain shared content across versions with version-specific overrides
 
-4. **Publishing System**:
-   - Generate static HTML, CSS, and JavaScript for all content
-   - Bundle assets efficiently for deployment
-   - Create verification tools to check for broken links and references
-   - Support incremental rebuilds to minimize generation time
+4. **Interactive Components**
+   - Transform code blocks with special syntax into interactive elements
+   - Generate necessary assets for client-side code execution
+   - Process and render technical diagrams from text descriptions
+   - Create visualization helpers for API usage examples
 
-5. **Versioning Management**:
-   - Track and organize multiple documentation versions
-   - Generate version selectors and appropriate navigation
-   - Maintain URL structures that include version information
-   - Support deprecation notices and version compatibility notes
+5. **Site Generation and Structure**
+   - Build consistent navigation structure from content hierarchy
+   - Generate search indexes for client-side search functionality
+   - Create sitemaps, redirects, and other navigation aids
+   - Support for themes and customizable templates
+   - Incremental build system that processes only changed files
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**:
-  - Accurate API reference generation from various code styles and documentation formats
-  - Proper versioning of content with correct relationships between versions
-  - Functional code snippet highlighting with language detection and formatting
-  - Successful rendering of diagrams from text specifications
-  - Working interactive code examples with proper execution
+### Key Functionalities to Verify
 
-- **Critical User Scenarios**:
-  - Documentation writer adds new version with updates to existing content
-  - Technical content includes complex nested structures (lists within code blocks, etc.)
-  - API reference generation from incomplete or inconsistently formatted code
-  - Handling of special characters and symbols in technical documentation
-  - Cross-referencing between different documentation sections and versions
+1. **Content Transformation Accuracy**
+   - Test conversion of various markup formats to HTML
+   - Verify preservation of structure and formatting
+   - Confirm proper generation of navigation elements
+   - Validate cross-references and links
 
-- **Performance Benchmarks**:
-  - Full build time for documentation sets of various sizes (100, 500, 1000 pages)
-  - Incremental build time when changing different content types
-  - Load and execution time for interactive code examples
-  - Memory usage during build process for large documentation sets
+2. **API Documentation Extraction**
+   - Test extraction from various Python codebases with different docstring styles
+   - Verify accuracy of function signatures, parameters, and return types
+   - Test handling of complex nested structures and inheritance
+   - Confirm proper linking between related API elements
 
-- **Edge Cases and Error Conditions**:
-  - Malformed markup or syntax in source content
-  - Invalid or unparseable diagram specifications
-  - Missing code references for API documentation
-  - Circular references in documentation structure
-  - Version conflicts or overlapping version specifications
+3. **Version Management**
+   - Verify correct segregation of content by version
+   - Test version selection mechanisms and redirects
+   - Confirm proper handling of shared vs. version-specific content
+   - Test upgrade and downgrade paths between versions
 
-- **Required Test Coverage**:
-  - 95% code coverage for core library functions
-  - 100% coverage for API reference extraction logic
-  - 100% coverage for versioning management features
-  - Comprehensive tests for all supported markup formats and extensions
+4. **Interactive Elements**
+   - Test rendering of various diagram types from text descriptions
+   - Verify generation of interactive code blocks
+   - Test handling of different programming languages
+   - Confirm accessibility of interactive elements
 
-IMPORTANT: 
+5. **Build Performance**
+   - Benchmark build times for various repository sizes
+   - Test incremental build performance
+   - Verify memory usage stays within acceptable bounds
+   - Test search index generation and query performance
+
+### Critical User Scenarios
+
+1. Adding a new version of documentation while maintaining older versions
+2. Updating API documentation after code changes
+3. Converting complex diagrams from text descriptions to visual format
+4. Creating and testing interactive code examples
+5. Performing targeted rebuilds after small content changes
+
+### Performance Benchmarks
+
+- Full builds of 1000+ pages should complete in under 60 seconds
+- Incremental builds should complete in under 5 seconds for small changes
+- Memory usage should not exceed 1GB for typical documentation repos
+- Search indexing should process 100 pages/second
+- API extraction should handle 10,000+ functions in under 30 seconds
+
+### Edge Cases and Error Conditions
+
+- Test handling of malformed markdown/reStructuredText
+- Verify proper error reporting for invalid diagram syntax
+- Test behavior with missing or corrupt source code for API docs
+- Verify graceful degradation when interactive features can't be generated
+- Test with extremely large files and deeply nested structures
+- Validate handling of special characters and internationalization
+
+### Required Test Coverage Metrics
+
+- Minimum 90% code coverage for core functionality
+- 100% coverage for API documentation extraction
+- 100% coverage for version management logic
+- Comprehensive integration tests for the entire build pipeline
+- Performance tests must cover both small and large documentation sets
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+The Technical Documentation Site Generator will be considered successful if it:
 
-1. A technical writer can convert a repository of Markdown and reStructuredText files into a fully featured documentation site without manual HTML editing
-2. API reference documentation stays synchronized with source code through automated extraction
-3. Multiple documentation versions can coexist with clear navigation between them
-4. Code examples are properly highlighted and interactive examples work in a static environment
-5. Text-based diagram specifications are correctly rendered as visual diagrams
-6. The complete build process for a 500-page documentation set completes in under 5 minutes
-7. All tests pass with at least 95% code coverage
-8. The generated site can be deployed to any static hosting service without additional processing
+1. Correctly extracts API documentation from Python source code and generates accurate, navigable references
+2. Properly manages multiple versions of documentation with clear navigation between versions
+3. Renders code snippets with correct syntax highlighting and line numbers
+4. Successfully creates interactive code examples that can be modified and executed by users
+5. Generates high-quality technical diagrams from text-based descriptions
+6. Builds documentation sites efficiently, with proper incremental build support
+7. Produces accessible, standards-compliant HTML output
+8. Maintains consistent structure and styling across different documentation sections
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
 
 To set up your development environment:
-```
-uv venv
-source .venv/bin/activate
-```
+
+1. Create a virtual environment using UV:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: When testing, you must generate the pytest_results.json file:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+This file is MANDATORY proof that all tests pass and must be included with your implementation.

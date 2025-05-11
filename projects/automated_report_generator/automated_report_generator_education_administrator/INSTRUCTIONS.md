@@ -1,10 +1,10 @@
-# Educational Performance Analytics Platform
+# Educational Performance Analytics System
 
-A specialized adaptation of PyReport designed for education administrators who need to generate differentiated student performance reports that present appropriate data in context for teachers, parents, and district officials.
+A specialized automated report generation framework for school administrators to create differentiated student performance reports for teachers, parents, and district officials.
 
 ## Overview
 
-The Educational Performance Analytics Platform is a Python library that creates a comprehensive system for analyzing student performance data and generating audience-specific reports. It integrates with student information systems, tracks historical trends, visualizes learning progress, maps performance to curriculum standards, and ensures privacy compliance while delivering insights tailored to different educational stakeholders.
+The Educational Performance Analytics System is a Python-based library designed to generate comprehensive, audience-specific student performance reports. It integrates with student information systems, processes academic and demographic data, and creates tailored reports that present educational outcomes in contextually appropriate formats for different stakeholders while maintaining strict student privacy standards.
 
 ## Persona Description
 
@@ -12,131 +12,196 @@ Jennifer is a school administrator who needs to generate student performance rep
 
 ## Key Requirements
 
-1. **Student Information System Integration**: Develop connectors for major student information systems with historical data aggregation that tracks academic performance, attendance, behavior, and demographic information over time.
-   * *Importance*: Student data is scattered across multiple systems; automated integration eliminates manual data compilation and ensures all relevant information is included in performance analysis while maintaining historical context for tracking long-term progress.
+1. **Student Information System Integration**: Implement secure connectors to extract data from student information systems with historical trend tracking capabilities.
+   - *Critical for Jennifer because*: Manually extracting data from educational databases is extremely time-consuming and error-prone, especially when dealing with multiple years of student performance data across different subjects and grade levels.
 
-2. **Personalized Learning Progress Visualization**: Create dynamic visualization tools that illustrate individual student growth trajectories across subjects, highlighting strengths, weaknesses, and progress toward personalized learning goals.
-   * *Importance*: Understanding each student's unique learning journey is critical for personalized education; visual progress tracking helps teachers identify intervention needs and helps parents understand their child's development in relation to individual capabilities and goals.
+2. **Personalized Learning Progress Visualization**: Create visualizations that effectively communicate individual student growth and achievement relative to learning objectives.
+   - *Critical for Jennifer because*: Understanding each student's unique learning journey requires contextualizing current performance within their personal history, not just comparing against fixed standards or peer averages.
 
-3. **Curriculum Alignment Mapping**: Implement a system that maps performance metrics to educational standards and curriculum objectives, showing mastery levels for specific learning outcomes across student cohorts.
-   * *Importance*: Abstract test scores become meaningful when connected to specific learning objectives; curriculum mapping transforms raw assessment data into actionable insights about which standards need additional focus and which instructional approaches are most effective.
+3. **Curriculum Standards Alignment**: Develop a mapping system that links student performance metrics to educational standards and curriculum requirements.
+   - *Critical for Jennifer because*: Educational accountability requires demonstrating how student outcomes align with mandated standards, and manually maintaining these connections across changing curriculum frameworks is practically impossible.
 
-4. **Multi-Audience Templating**: Develop a templating system that automatically adjusts language, detail level, data visualization complexity, and contextual information based on the intended audience (educators, families, administrators, or officials).
-   * *Importance*: Different stakeholders need different perspectives on student data; audience-specific templating ensures that teachers receive detailed instructional guidance, parents get accessible explanations, and administrators see broader patterns without manual reformatting.
+4. **Multi-Audience Templating**: Build a sophisticated templating system that adjusts detail, terminology, and data presentation based on the report recipient's role.
+   - *Critical for Jennifer because*: Different stakeholders need fundamentally different views of the same underlying data—teachers need actionable instructional insights, parents need accessible progress updates, and officials need compliance verification.
 
-5. **FERPA-Compliant Privacy Controls**: Create comprehensive privacy management that enforces appropriate access restrictions, data aggregation, and anonymization based on recipient roles and permissions in compliance with educational privacy regulations.
-   * *Importance*: Student data privacy is legally mandated and ethically essential; automated compliance controls ensure that sensitive information is only shared with authorized parties and that aggregate data is properly anonymized for broader reporting contexts.
+5. **FERPA-Compliant Privacy Controls**: Implement rigorous privacy mechanisms that enforce educational privacy regulations while still providing meaningful reporting.
+   - *Critical for Jennifer because*: Student data privacy is legally mandated, and any breach could result in serious legal consequences while undermining parent and community trust in the school's data handling practices.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Student information system connectors must support mock interfaces for testing without live student data
-- All data transformations and calculations must be verifiable with predefined test datasets
-- Template rendering must support verification for all audience types
-- Privacy control mechanisms must be rigorously testable with simulated access scenarios
+- All SIS connectors must be testable with synthetic student data
+- Report generation must be verifiable with sample datasets of varying complexity
+- Privacy mechanisms must be testable against FERPA compliance standards
+- Audience-specific templating must be verifiable across different stakeholder types
 
 ### Performance Expectations
-- Must process academic data for a school district with up to 50,000 students within 30 minutes
-- Report generation for individual students must complete in under 10 seconds
-- Batch report generation for an entire school must complete within 15 minutes
-- System should handle at least 5 years of historical student data for trend analysis
+- Report generation must complete within 2 minutes for individual student reports
+- Batch processing must handle an entire school (1,000+ students) in under 30 minutes
+- System must efficiently process 5+ years of historical student data
+- Memory usage must remain reasonable even when processing district-wide datasets
 
 ### Integration Points
-- APIs for major student information systems (PowerSchool, Infinite Campus, etc.)
-- Support for assessment data from standardized testing platforms
-- Compatibility with learning management systems
-- Secure delivery mechanisms (portal access, encrypted email, secure PDF)
+- Standard connectors for major student information systems
+- Import capabilities for assessment data from various testing platforms
+- Integration with curriculum and standards frameworks
+- Export capabilities to PDF, secure web formats, and data exchange standards
 
 ### Key Constraints
-- Must maintain FERPA compliance for all student data handling
-- Must support operation within school district IT infrastructure limitations
-- Report generation must work with limited computational resources
-- All data storage and processing must meet educational data security requirements
+- Must maintain absolute compliance with FERPA and other educational privacy regulations
+- Must handle diverse grading systems and assessment frameworks
+- Must accommodate academic year transitions and student progression
+- Must support various educational models (traditional, standards-based, competency-based)
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Educational Performance Analytics Platform must provide the following core functionality:
+The Educational Performance Analytics System must provide the following core functionality:
 
-1. **Data Collection and Management**
-   - Student information system connectivity
-   - Assessment data integration and normalization
-   - Historical record management and archiving
-   - Data validation and quality control
+1. **Student Data Management**
+   - Securely extract and process student information
+   - Maintain historical performance records
+   - Handle demographic and contextual information
+   - Process both formative and summative assessment data
 
-2. **Academic Analysis Engine**
-   - Performance trending across grading periods
-   - Subject-specific proficiency assessment
-   - Cohort comparison with appropriate normalization
-   - Growth measurement against individual baselines
+2. **Educational Analytics Engine**
+   - Calculate growth and achievement metrics
+   - Map performance to curriculum standards
+   - Identify learning gaps and opportunities
+   - Generate appropriate interventions based on performance patterns
 
-3. **Curriculum and Standards Framework**
-   - Learning standard mapping and tracking
-   - Competency-based progress monitoring
-   - Skill gap identification across standards
-   - Curriculum effectiveness analysis
+3. **Audience-Specific Reporting**
+   - Create role-appropriate report templates
+   - Adjust terminology and detail level by audience
+   - Generate visualizations matched to recipient needs
+   - Support differentiated communication strategies
 
-4. **Audience-Specific Reporting**
-   - Role-based report templates and language
-   - Contextual explanation generation
-   - Visual complexity adaptation by audience
-   - Delivery channel optimization
+4. **Privacy Framework**
+   - Enforce FERPA compliance throughout the system
+   - Implement appropriate data masking and aggregation
+   - Control access based on legitimate educational interest
+   - Maintain audit trails for all data access
 
-5. **Privacy and Compliance System**
-   - Role-based access control enforcement
-   - Data anonymization for aggregate reporting
-   - Audit logging for all data access
-   - Consent management and parent portals
+5. **Longitudinal Analysis**
+   - Track student progress over multiple years
+   - Identify long-term trends and patterns
+   - Support cohort analysis and comparison
+   - Enable program effectiveness evaluation
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate extraction of student data from information systems
-- Correct calculation of all academic performance metrics
-- Proper mapping of performance to curriculum standards
-- Appropriate content customization for different audiences
-- Complete enforcement of privacy controls and data protection
+
+1. **Data Integration Reliability**
+   - Verify that connectors can accurately extract student data
+   - Test handling of diverse grading scales and assessment types
+   - Verify appropriate merging of data from multiple sources
+   - Confirm proper handling of historical data and academic year transitions
+
+2. **Analytical Accuracy**
+   - Verify all educational metrics against manually calculated values
+   - Test performance classification and grouping logic
+   - Verify standards alignment and mapping
+   - Confirm appropriate handling of missing assessment data
+
+3. **Multi-Audience Templating**
+   - Verify that each audience type receives appropriate content
+   - Test language adaptation for different stakeholders
+   - Confirm proper hiding/showing of sensitive information
+   - Verify visualization appropriateness for each audience
+
+4. **Privacy Protection**
+   - Verify FERPA compliance for all report types
+   - Test access controls and permission enforcement
+   - Confirm appropriate data aggregation for group reports
+   - Verify audit logging and access tracking
+
+5. **Report Generation Process**
+   - Test the complete pipeline from data extraction to final reports
+   - Verify report formatting and structure consistency
+   - Test performance with different dataset sizes
+   - Verify appropriate handling of edge cases (new students, transfers, etc.)
 
 ### Critical User Scenarios
-- End-of-term grade reporting for all students
-- Individual student progress conferences with parents
-- Curriculum effectiveness review by department chairs
-- District-wide performance reporting for school board
-- Intervention planning for students requiring additional support
+
+1. Generating individual student progress reports for parent-teacher conferences
+2. Creating classroom-level reports for teachers highlighting intervention needs
+3. Producing district-level performance reports for educational officials
+4. Generating year-over-year progress analysis for school improvement planning
+5. Creating standards mastery reports aligned with curriculum frameworks
 
 ### Performance Benchmarks
-- Data integration from 3+ different educational systems within 20 minutes
-- Report generation for 1,000 students in under 30 minutes
-- Real-time individual student report generation in under 5 seconds
-- System should support concurrent report access by at least 100 users
-- Historical analysis should process 5+ years of data in under 1 minute
+
+- Individual student report generation must complete in under 10 seconds
+- Class-level reports (30 students) must generate in under 30 seconds
+- Grade-level reports (150 students) must complete in under 2 minutes
+- School-wide reports (1,000+ students) must complete in under 15 minutes
+- District-level aggregations must process at least 10,000 students in under 30 minutes
 
 ### Edge Cases and Error Conditions
-- Handling of mid-year student transfers with incomplete records
-- Management of curriculum changes and standard revisions
-- Processing of accommodations and modified assessments
-- Adaptation to various grading systems and scales
-- Recovery from system interruptions during reporting periods
+
+- Handling of mid-year student transfers
+- Appropriate processing of incomplete assessment data
+- Correct operation during curriculum standard transitions
+- Handling of exceptional student scenarios (IEPs, accommodations)
+- Appropriate analysis for alternative assessment methods
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for privacy enforcement functions
-- 100% coverage of data transformation and calculation logic
-- Complete testing of template rendering for all audience types
-- Full verification of curriculum standard mapping
-- Comprehensive testing of system behavior with various data anomalies
+
+- Minimum 95% line coverage for all privacy-related code
+- 100% coverage of educational calculation functions
+- 100% coverage of templating and audience adaptation logic
+- Comprehensive coverage of error handling and edge cases
+- Integration tests for complete report generation workflows
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+A successful implementation of the Educational Performance Analytics System will meet the following criteria:
 
-1. Student performance data is accurately collected from major information systems with complete historical context
-2. Individual learning progress is effectively visualized showing growth over time in relation to personalized goals
-3. Performance metrics are properly mapped to curriculum standards showing mastery of specific learning objectives
-4. Reports are automatically customized with appropriate language, detail, and visualization for each audience type
-5. Privacy controls completely enforce FERPA compliance with proper access restrictions and anonymization
-6. The system handles data volume for typical school districts within performance parameters
-7. Teachers report that insights help inform instructional decisions and intervention planning
-8. Parents indicate improved understanding of their child's academic progress
-9. Administrators can identify curriculum effectiveness patterns and resource allocation needs
-10. The solution reduces report preparation time by at least 80% compared to manual methods
+1. **Data Integration**: Successfully connects to and extracts accurate information from student information systems while maintaining data integrity.
 
-To get started with this project, use `uv venv` to setup a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+2. **Audience Adaptation**: Effectively translates the same underlying student data into contextually appropriate formats for teachers, parents, and officials.
+
+3. **Standards Alignment**: Accurately maps student performance to curriculum standards and educational requirements.
+
+4. **Privacy Compliance**: Guarantees 100% compliance with FERPA and other educational privacy regulations.
+
+5. **Insight Generation**: Provides meaningful, actionable insights about student performance that inform educational decisions.
+
+6. **Efficiency**: Reduces the time required to generate student performance reports by at least 75% compared to manual methods.
+
+7. **Scalability**: Handles reporting needs from individual student level up to district-wide analysis without performance degradation.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,139 +1,141 @@
-# Museum Collections Metadata Management System
+# Museum Collection Metadata Management System
 
 ## Overview
-A comprehensive metadata management system for museum collections that implements institutional standards, tracks exhibition history, maps object relationships, documents conservation status, and controls public access. The system enables efficient cataloging of digitized artifacts while maintaining institutional metadata standards and supporting research access.
+A specialized metadata organization system for museum digital collections managers who need to implement institutional metadata standards while making diverse artifact collections accessible to researchers and the public.
 
 ## Persona Description
 Elena is responsible for digitizing and cataloging artifacts across multiple museum departments. She needs to implement institutional metadata standards while making the collections accessible to researchers and the public.
 
 ## Key Requirements
+1. **Institutional authority control**: Implement standardized terminology enforcement across different museum departments and collections. This is essential for maintaining consistency in naming, classification, and description of artifacts despite varying departmental practices and specialized vocabularies.
 
-1. **Institutional Authority Control**
-   - Enforces standardized terminology and metadata conventions across different departments
-   - Critical for Elena because it ensures consistency across the entire museum's digital collections despite departmental differences in cataloging traditions
-   - Must implement controlled vocabularies, thesauri, and naming conventions that align with museum standards while supporting department-specific terminology where necessary
+2. **Exhibition history tracking**: Develop a system to document when and where physical items have been displayed, including exhibition metadata and contextual information. This provides crucial provenance information and helps manage artifact exposure and conservation requirements.
 
-2. **Exhibition History Tracking**
-   - Documents when and where physical items have been displayed, including loan history
-   - Essential for Elena's collection management as it maintains the complete exhibition provenance of each artifact and supports future exhibition planning
-   - Must record comprehensive details including dates, locations, exhibition themes, display conditions, and any conservation treatments applied before or after display
+3. **Multi-object relationship mapping**: Create functionality to connect related artifacts across various collections and departments. This enables thematic exploration of the museum's holdings and reveals connections between items that might otherwise remain isolated in departmental silos.
 
-3. **Multi-Object Relationship Mapping**
-   - Creates connections between related artifacts across different collections and departments
-   - Vital for Elena's work as it reveals the contextual relationships between items that might otherwise remain isolated in departmental silos
-   - Must support various relationship types (e.g., same creator, same historical period, part of same collection, thematically related) with appropriate metadata for each connection
+4. **Conservation documentation**: Build mechanisms to link condition reports with visual documentation of artifacts. This is critical for monitoring artifact preservation status and planning conservation interventions.
 
-4. **Conservation Documentation Linking**
-   - Associates condition reports and conservation activities with digital representations
-   - Crucial for Elena's preservation responsibilities as it maintains the complete conservation history alongside the digital object
-   - Must track condition assessments, conservation treatments, material analyses, and restoration activities with comprehensive documentation and before/after imagery
-
-5. **Public Access Filtering**
-   - Controls which metadata fields are visible to different user groups
-   - Indispensable for Elena's role in making collections accessible while protecting sensitive information
-   - Must support different access levels (staff, researchers, public) with field-level control over metadata visibility and appropriate restrictions for culturally sensitive materials
+5. **Public access filtering**: Implement functionality to determine which metadata fields are visible to different user groups based on institutional policies. This balances making collections accessible while protecting sensitive information about artifacts, donors, or acquisition details.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Authority control functions must be verifiable against institutional standards
-  - Exhibition history tracking must maintain complete temporal records
-  - Relationship mapping must be testable for various connection types
-  - Conservation documentation must maintain verifiable links to physical records
-  - Access control mechanisms must enforce appropriate restrictions
+### Testability Requirements
+- All terminology control and standardization functions must be independently testable
+- Use test fixtures with sample museum collection data from multiple departments
+- Support simulation of exhibition history and conservation documentation
+- Enable isolated testing of access control and filtering mechanisms
 
-- **Performance Expectations**
-  - Must efficiently handle museum collections with 500,000+ artifacts
-  - Authority control lookups should complete in under 200ms
-  - Relationship queries should return results in under 2 seconds
-  - Must support concurrent metadata operations from multiple departments
+### Performance Expectations
+- Process metadata for at least 10,000 artifacts efficiently
+- Support museum collections with up to 1 million items
+- Search operations should complete in under 3 seconds
+- Handle complex relationship queries across departmental boundaries
 
-- **Integration Points**
-  - Institutional collection management systems
-  - Museum authority files and controlled vocabularies
-  - Conservation documentation systems
-  - Exhibition planning and loan management systems
-  - Public-facing digital collection interfaces
+### Integration Points
+- Multiple media formats for artifact documentation (images, 3D scans, videos)
+- Institutional controlled vocabularies and thesauri
+- Conservation and condition documentation standards
+- Exhibition management systems
+- Access control and privacy frameworks
 
-- **Key Constraints**
-  - Must comply with museum metadata standards (CIDOC CRM, SPECTRUM)
-  - Must preserve all versions of metadata with change history
-  - Must handle multimedia representing 3D objects (multiple views, 3D scans)
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- System must respect departmental autonomy while enforcing institutional standards
+- Data structures must accommodate diverse artifact types across disciplines
+- All operations should be non-destructive to original documentation
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for museum collections with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Metadata Standardization and Authority Control**
-   - Implement controlled vocabularies and naming conventions
-   - Validate metadata against institutional standards
-   - Reconcile terminology across different departments
+1. **Institutional Metadata Standardization**
+   - Enforce controlled vocabulary usage across departments
+   - Normalize inconsistent terminology and classification
+   - Maintain departmental specialization while ensuring institutional cohesion
 
-2. **Exhibition and Display Documentation**
-   - Track complete exhibition history for physical objects
-   - Document loan activities and external display
-   - Record display conditions and configurations
+2. **Exhibition and Display Management**
+   - Track physical exhibition history of artifacts
+   - Document display contexts and interpretive frameworks
+   - Monitor cumulative exposure for conservation purposes
 
-3. **Object Relationship Management**
-   - Create and maintain connections between related artifacts
-   - Document the nature and significance of each relationship
-   - Enable navigation across departmental collections
+3. **Collection Relationships and Connections**
+   - Map connections between related artifacts
+   - Identify thematic groupings across departments
+   - Support curatorial narrative development
 
-4. **Conservation Status and Treatment**
-   - Link condition reports to digital representations
-   - Document conservation activities and outcomes
-   - Track material analyses and preservation recommendations
+4. **Conservation Status Management**
+   - Link condition documentation to artifact records
+   - Track conservation treatments and interventions
+   - Associate visual documentation with condition reports
 
-5. **Access Control and Visibility Management**
-   - Define appropriate access levels for different user groups
-   - Control field-level visibility of sensitive metadata
-   - Implement cultural protocols for restricted materials
+5. **Access Control and Public Interface**
+   - Manage varied access levels for different user types
+   - Filter sensitive metadata for public presentations
+   - Support scholarly access while protecting institutional interests
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Correct enforcement of authority control across departments
-  - Complete tracking of exhibition history with all relevant details
-  - Accurate mapping of relationships between connected objects
-  - Proper linking of conservation documentation with digital assets
-  - Appropriate filtering of metadata based on access levels
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Cataloging newly digitized artifacts according to institutional standards
-  - Recording an item's inclusion in a new exhibition
-  - Establishing relationships between newly discovered related objects
-  - Documenting conservation treatment with before/after documentation
-  - Preparing metadata for public access while protecting sensitive information
+1. **Authority Control**
+   - Test enforcement of controlled vocabularies
+   - Verify handling of departmental variations
+   - Test normalization of legacy terminology
 
-- **Performance Benchmarks**
-  - Authority control validation must process at least 10 records per second
-  - Relationship queries must efficiently traverse connections across large collections
-  - Access control filtering must not significantly impact retrieval performance
-  - System must scale to handle collections growing by 50,000+ items annually
+2. **Exhibition Tracking**
+   - Test recording of complete exhibition histories
+   - Verify association of contextual exhibition information
+   - Test calculation of cumulative exposure metrics
 
-- **Edge Cases and Error Conditions**
-  - Objects with conflicting attributions or uncertain provenance
-  - Items requiring special cultural protocols or access restrictions
-  - Complex relationships spanning multiple departments or institutions
-  - Artifacts with extensive conservation histories
-  - Collection items with incomplete or legacy metadata
+3. **Relationship Mapping**
+   - Test creation and maintenance of artifact relationships
+   - Verify cross-departmental relationship discovery
+   - Test thematic grouping and narrative construction
 
-- **Required Test Coverage Metrics**
-  - Minimum 95% code coverage for authority control mechanisms
-  - 100% coverage for access control and filtering functions
-  - Comprehensive coverage of relationship mapping logic
-  - Complete verification of exhibition history tracking
+4. **Conservation Documentation**
+   - Test linking of condition reports to artifacts
+   - Verify association of visual documentation
+   - Test tracking of conservation history
+
+5. **Access Control**
+   - Test filtering of metadata for different user groups
+   - Verify protection of sensitive information
+   - Test generation of appropriately redacted public records
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully enforces institutional terminology standards across all departments.
-2. Exhibition histories are completely and accurately documented for all displayed items.
-3. Relationships between related objects are properly mapped and navigable.
-4. Conservation documentation is comprehensively linked to digital representations.
-5. Access controls appropriately restrict sensitive metadata based on user type.
-6. The system maintains consistent metadata standards while accommodating departmental variations.
-7. Performance benchmarks are met for collections with 500,000+ items.
-8. The system handles complex objects and relationships appropriately.
-9. All operations maintain complete audit trails and version history.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. Institutional authority control successfully standardizes terminology across departments
+3. Exhibition history tracking comprehensively documents display contexts
+4. Multi-object relationship mapping effectively connects related artifacts
+5. Conservation documentation properly links condition reports and visual documentation
+6. Public access filtering appropriately controls metadata visibility
+7. All operations maintain institutional data integrity
+8. All tests pass when run with pytest
+9. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

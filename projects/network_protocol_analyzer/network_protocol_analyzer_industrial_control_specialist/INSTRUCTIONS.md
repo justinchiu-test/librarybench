@@ -1,130 +1,172 @@
-# NetScope for Industrial Control Systems
+# Industrial Control Systems Protocol Analyzer
 
 ## Overview
-A specialized network protocol analyzer focused on monitoring and securing industrial control systems (ICS) and SCADA environments, enabling specialists to ensure operational integrity, detect safety issues, and maintain security boundaries in critical infrastructure networks.
+A specialized network protocol analysis library focused on industrial control systems (ICS) and SCADA environments, providing industrial protocol decoding, safety boundary monitoring, timing anomaly detection, air-gap verification, and baseline deviation alerting for critical operational technology networks.
 
 ## Persona Description
 Hannah monitors network traffic for industrial control systems (ICS) and SCADA environments. She needs to ensure these critical systems remain secure while identifying potential safety issues in their communication patterns.
 
 ## Key Requirements
-1. **Industrial protocol decoders for specialized formats (Modbus, DNP3, BACnet, etc.)**
-   - Implement comprehensive parsers for industrial protocols including Modbus TCP/RTU, DNP3, EtherNet/IP, PROFINET, BACnet, IEC 61850, and OPC UA
-   - Develop specialized field decoders for device-specific implementations and vendor extensions
-   - Create contextual interpretation of values based on their function in industrial processes
-   - Include metadata enrichment mapping commands to physical I/O points where possible
-   - Support for both standard implementations and common vendor-specific variations
 
-2. **Safety boundary monitoring ensuring critical commands stay within operational limits**
-   - Implement rule-based validation of command values against defined operational parameters
-   - Develop detection algorithms for commands that could place systems in unsafe states
-   - Create visualization of command trends approaching safety boundaries
-   - Include alerting mechanisms for potential safety violations
-   - Support for defining safety envelopes based on process-specific constraints
+1. **Industrial Protocol Decoders**  
+   Create a module that parses and analyzes specialized industrial formats like Modbus, DNP3, BACnet, Profinet, and other ICS protocols. This is critical for Hannah because industrial protocols differ significantly from IT protocols, and understanding their specific commands and parameters is essential for monitoring the security and operational integrity of critical infrastructure systems.
 
-3. **Timing anomaly detection identifying potential disruptions to real-time operations**
-   - Implement high-precision timing analysis for cyclic industrial communications
-   - Develop statistical modeling of normal timing patterns for control systems
-   - Create detection algorithms for jitter, delays, and communication interruptions
-   - Include correlation between timing anomalies and process impacts
-   - Support for defining timing requirements based on specific industrial processes
+2. **Safety Boundary Monitoring**  
+   Implement functionality to verify that critical commands stay within operational limits and predefined safety parameters. This feature is essential for Hannah to detect potentially dangerous control commands that could cause physical damage, safety hazards, or operational disruptions in industrial environments, providing an early warning system for both security and safety incidents.
 
-4. **Air-gap verification confirming isolation between IT and OT networks**
-   - Implement traffic pattern analysis to detect potential air-gap violations
-   - Develop fingerprinting techniques to identify IT protocols appearing in OT networks
-   - Create visualization of network segmentation with violation highlights
-   - Include historical tracking of boundary integrity over time
-   - Support for defining customized boundary rules based on specific security architectures
+3. **Timing Anomaly Detection**  
+   Develop capabilities to identify deviations from normal timing patterns in industrial communications that could disrupt real-time operations. This is crucial for Hannah because many industrial processes are time-sensitive, and delays or irregular communication patterns can indicate cyber attacks, equipment failures, or conditions that could lead to operational disruptions.
 
-5. **Baseline deviation alerting when industrial systems communicate in unusual patterns**
-   - Implement behavioral baselining of normal communication patterns for industrial devices
-   - Develop anomaly detection for changes in communication frequency, timing, or content
-   - Create visualization of deviation severity with historical context
-   - Include root cause analysis assistance to identify potential sources of deviations
-   - Support for defining expected behavior profiles for device classes and specific assets
+4. **Air-gap Verification**  
+   Build a system to confirm proper isolation between IT networks and operational technology (OT) networks. This allows Hannah to verify that critical industrial systems maintain proper network segregation, ensuring that potential compromise of corporate IT networks doesn't create vectors for attacks against sensitive control systems that could impact safety or production.
+
+5. **Baseline Deviation Alerting**  
+   Create functionality to detect when industrial systems communicate in unusual patterns compared to their established baselines. This feature is vital for Hannah to identify subtle signs of compromise, misconfiguration, or emerging technical problems in industrial systems that often maintain very consistent and predictable communication patterns during normal operations.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- Industrial protocol decoders must be testable with captured traffic from common ICS devices
-- Safety boundary monitoring must be verifiable using predefined scenarios with unsafe commands
-- Timing analysis must be testable with high-precision timing measurements
-- Air-gap verification must be tested against scenarios with various boundary violations
-- Baseline deviation detection must be verifiable with normal and anomalous traffic patterns
+- All components must be testable with ICS protocol datasets
+- Industrial protocol decoders must be verifiable against protocol specifications
+- Safety boundary monitoring must be testable with predefined safe/unsafe values
+- Timing analysis must be validated with precise timing reference datasets
+- Baseline deviation detection must be verifiable against known normal/abnormal patterns
 
 ### Performance Expectations
-- Protocol decoders must process industrial protocol traffic at line rate for typical 100Mbps ICS networks
-- Safety boundary analysis must deliver results within 100ms of receiving relevant commands
-- Timing analysis must measure communication patterns with at least 1ms precision
-- All analysis components must operate with deterministic performance suitable for OT environments
-- System should handle continuous monitoring of at least 50 industrial devices simultaneously
+- Process at least 24 hours of ICS traffic data in under 10 minutes
+- Support real-time analysis of multiple control system networks simultaneously
+- Decode industrial protocols with minimal latency (< 100ms per message)
+- Detect timing anomalies with microsecond precision
+- Generate alerts within 2 seconds of detecting significant deviations
 
 ### Integration Points
-- Import capabilities for PCAP files from specialized industrial network taps
-- Integration with industrial firewalls and data diodes
-- Export formats compatible with industrial security monitoring systems
-- APIs for integration with SIEM and industrial monitoring platforms
-- Optional integration with engineering workstations for protocol definition updates
+- Import traffic from standard PCAP/PCAPNG files and industrial protocol analyzers
+- Support for reading industrial protocol specifications and device profiles
+- Export findings in formats compatible with industrial security systems
+- Integration with process historians for correlation with operational data
+- Support for importing safety thresholds from industrial risk assessments
 
 ### Key Constraints
-- All analysis must be possible offline without external service dependencies
-- System must not introduce any additional traffic onto monitored industrial networks
-- Analysis components must maintain deterministic resource usage to avoid affecting monitoring systems
-- Must support the limited computing resources often available in industrial environments
-- Must handle proprietary and non-standard protocol implementations common in industrial systems
+- Must function in air-gapped environments without external dependencies
+- Analysis should not impact operational network performance
+- Must handle proprietary and vendor-specific protocol variations
+- Should operate with minimal CPU/memory footprint on industrial systems
+- Must support both modern and legacy (20+ years old) industrial protocols
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Industrial Control Systems version of NetScope must provide specialized analysis capabilities focused on the unique requirements of operational technology environments. The system should enable ICS specialists to decode industrial protocols, verify safety parameters, monitor timing characteristics, validate security boundaries, and detect anomalous communication patterns.
 
-Key functional components include:
-- Industrial protocol decoding and interpretation framework
-- Safety boundary validation system
-- Real-time timing analysis for deterministic communications
-- Security boundary monitoring tools
-- Behavioral baselining and anomaly detection for industrial systems
+The Industrial Control Systems Protocol Analyzer should provide the following core functionality:
 
-The system should provide both detailed technical analysis for troubleshooting and security investigation, as well as summary reports suitable for communicating with operations management. All components should be designed with the critical nature of industrial systems in mind, prioritizing non-interference and high reliability.
+1. **Industrial Protocol Analysis Engine**
+   - Parse and decode common industrial protocols (Modbus, DNP3, BACnet, etc.)
+   - Interpret protocol-specific commands and parameters
+   - Support for proprietary protocol extensions
+   - Detailed analysis of control operations and their implications
+
+2. **Safety and Security Analysis**
+   - Verification of command parameters against operational limits
+   - Detection of potentially hazardous command sequences
+   - Identification of unauthorized control attempts
+   - Analysis of command timing and sequencing safety
+
+3. **Real-time Communication Analysis**
+   - Precise timing measurement of industrial communications
+   - Detection of jitter, delays, and communication interruptions
+   - Analysis of polling patterns and response times
+   - Identification of timing-based attack patterns
+
+4. **Network Segmentation Verification**
+   - Detection of traffic crossing IT/OT boundaries
+   - Verification of proper network isolation
+   - Identification of potential air-gap violations
+   - Analysis of data flows between network segments
+
+5. **Behavioral Baseline Monitoring**
+   - Establishment of normal communication patterns
+   - Statistical analysis of protocol usage over time
+   - Detection of anomalous communication patterns
+   - Correlation of communications with operational states
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate decoding of all supported industrial protocols and field values
-- Reliable detection of commands exceeding defined safety parameters
-- Precise measurement of timing characteristics with millisecond accuracy
-- Comprehensive identification of traffic violating network segmentation boundaries
-- Effective detection of anomalous behavior compared to established baselines
+- Accuracy of industrial protocol parsing and interpretation
+- Correctness of safety boundary detection
+- Precision of timing anomaly identification
+- Effectiveness of air-gap verification
+- Reliability of baseline deviation detection
 
 ### Critical User Scenarios
-- Monitoring live industrial networks for security and safety issues
-- Investigating unusual communications after a process disruption
-- Validating security boundaries after network or system changes
-- Establishing baseline behaviors for new industrial equipment
-- Performing security assessments of industrial networks
+- Analyzing Modbus traffic controlling critical infrastructure
+- Detecting out-of-range control values that could cause safety issues
+- Identifying unusual timing patterns in PLC communications
+- Verifying that no unauthorized traffic crosses IT/OT boundaries
+- Alerting on unusual communication patterns from a factory controller
 
 ### Performance Benchmarks
-- Decode industrial protocol traffic at a minimum of 10,000 packets per second
-- Complete safety boundary analysis in under 100ms for critical commands
-- Measure timing characteristics with precision of 1ms or better
-- Process 24 hours of industrial network traffic for baseline analysis in under 30 minutes
-- Generate alerts for anomalous behavior within 1 second of detection
+- Decode at least 1,000 industrial protocol messages per second
+- Complete safety boundary analysis in real-time with no processing backlog
+- Detect timing anomalies with less than 100 microsecond resolution
+- Process network segmentation verification for 100 devices in under 30 seconds
+- Establish baseline patterns from 7 days of traffic data in under 30 minutes
 
 ### Edge Cases and Error Conditions
-- Correct handling of fragmented industrial protocol messages
-- Appropriate processing of protocol violations common in legacy equipment
-- Graceful handling of proprietary protocol extensions
-- Resilience against malformed packets and protocol corruptions
-- Proper management of intermittent connections typical in some industrial environments
-- Accurate analysis despite clock synchronization issues in distributed systems
+- Handling proprietary or undocumented protocol extensions
+- Processing degraded or partial communications during system issues
+- Analyzing extremely time-sensitive protocols (microsecond precision)
+- Dealing with protocol violations and malformed messages
+- Supporting legacy systems with unusual communication patterns
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for all industrial protocol parsers
-- Complete coverage of safety boundary validation logic
-- Comprehensive tests for timing analysis with various precision requirements
-- Full suite of tests for air-gap verification with different violation scenarios
-- Complete validation of baseline deviation detection with diverse anomaly types
+- Minimum 90% code coverage for core functionality
+- 95% coverage for industrial protocol decoders
+- 95% coverage for safety boundary monitoring
+- 90% coverage for timing anomaly detection
+- 95% coverage for baseline deviation alerting
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Industrial protocol decoders correctly interpret at least 99% of messages in test captures
-- Safety boundary monitoring correctly identifies at least 98% of unsafe commands in test scenarios
-- Timing analysis accurately detects timing anomalies with at least 95% sensitivity and specificity
-- Air-gap verification correctly identifies at least 99% of boundary violations in test scenarios
-- Baseline deviation detection identifies at least 95% of anomalous communication patterns
-- All analysis components maintain deterministic performance under maximum load conditions
-- System can be deployed in industrial environments without disrupting critical operations
+
+The Industrial Control Systems Protocol Analyzer implementation will be considered successful when:
+
+1. It correctly decodes and interprets at least 5 major industrial protocols with proper command analysis
+2. It successfully identifies control commands that exceed safe operational boundaries
+3. It detects timing anomalies that could impact real-time industrial operations
+4. It verifies network segmentation and alerts on potential air-gap violations
+5. It establishes communication baselines and identifies deviations that could indicate security or operational issues
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

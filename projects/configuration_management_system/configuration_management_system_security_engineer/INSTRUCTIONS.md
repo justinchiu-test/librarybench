@@ -1,154 +1,158 @@
-# Secure Configuration Management Framework
+# Security-Focused Configuration Management System
 
 ## Overview
-A security-focused configuration management system that prioritizes regulatory compliance, sensitive data protection, and comprehensive audit capabilities. The system enforces security policies across all configuration settings and provides detailed tracking of configuration changes with security impact annotations.
+A specialized configuration management system designed to ensure configurations adhere to security standards and regulatory requirements. The system provides robust compliance validation, sensitive value encryption, comprehensive audit trails, granular access controls, and integration with security scanners to proactively identify security vulnerabilities in configurations.
 
 ## Persona Description
 Marcus works on a security team responsible for ensuring that all configurations across the organization adhere to regulatory and internal security standards. His primary goal is to audit configuration changes for security implications and enforce encryption of sensitive values.
 
 ## Key Requirements
+1. **Compliance Rule Engine that Validates Configurations Against Security Policies** - Provides a powerful rule engine that evaluates configuration settings against a comprehensive set of security policies, identifying non-compliant configurations and policy violations. This is critical for Marcus because his organization must adhere to multiple regulatory frameworks (GDPR, HIPAA, SOC2, PCI-DSS), and manual verification of compliance across thousands of configuration values is impractical.
 
-1. **Compliance Rule Engine that Validates Configurations Against Security Policies**
-   - Implement a rule engine that evaluates configurations against customizable security policies
-   - Support complex policy rules with dependencies and conditional logic
-   - Critical for Marcus to ensure all system configurations comply with regulatory requirements like GDPR, HIPAA, PCI-DSS, and internal security standards
+2. **Sensitive Value Encryption with Key Rotation Management** - Implements automatic encryption for sensitive configuration values (passwords, API keys, tokens) with sophisticated key management that supports regular key rotation without service disruption. This is essential because Marcus's organization has experienced breaches in the past due to unencrypted sensitive values in configuration files checked into version control.
 
-2. **Sensitive Value Encryption with Key Rotation Management**
-   - Develop encryption capabilities for storing and retrieving sensitive configuration values
-   - Include key rotation mechanisms to maintain cryptographic security over time
-   - Essential for Marcus to protect credentials, API keys, and other sensitive data from unauthorized access while enabling secure operational use
+3. **Configuration Change Audit Trails with Security Impact Annotations** - Maintains a detailed, tamper-proof audit trail of all configuration changes with annotations describing the potential security impact of each change, supporting forensic investigations and compliance reporting. This functionality allows Marcus to quickly investigate security incidents, provide evidence during audits, and track the introduction of security-relevant configuration changes.
 
-3. **Configuration Change Audit Trails with Security Impact Annotations**
-   - Create comprehensive audit logging for all configuration changes
-   - Add security impact analysis capabilities that annotate changes with risk assessments
-   - Vital for Marcus to track who made what changes, when, and what security implications those changes might have
+4. **Attribute-based Access Control for Security-Sensitive Configuration Sections** - Enforces fine-grained, attribute-based access control rules that restrict which users can modify security-critical configuration sections based on their role, department, and security clearance level. This prevents unauthorized personnel from modifying security controls, addressing a key concern for Marcus as the company scales its engineering team globally.
 
-4. **Attribute-based Access Control for Security-sensitive Configuration Sections**
-   - Implement fine-grained access controls based on configuration attributes and user roles
-   - Support security-specific permissions that limit access to sensitive configuration sections
-   - Necessary for Marcus to enforce the principle of least privilege across all configuration operations
-
-5. **Security Scanning Integration that Tests Configurations Against Vulnerability Databases**
-   - Build an API for integrating with security scanning tools and vulnerability databases
-   - Provide mechanisms to check configurations for known security vulnerabilities
-   - Crucial for Marcus to proactively identify and address potential security weaknesses in configurations
+5. **Security Scanning Integration that Tests Configurations Against Vulnerability Databases** - Integrates with security vulnerability databases and scanning tools to proactively identify security risks in configurations before they're deployed, such as use of deprecated encryption algorithms or known vulnerable software versions. This allows Marcus to shift security verification left in the development process, preventing vulnerable configurations from reaching production.
 
 ## Technical Requirements
+- **Testability Requirements**: All security rules must be individually testable. Mock vulnerability databases must be provided for testing scanner integration. Encryption and key rotation functionality must be testable with deterministic keys for reproducible tests.
 
-### Testability Requirements
-- All security validation rules must have comprehensive test coverage with both positive and negative test cases
-- Encryption mechanisms must be tested against known cryptographic standards
-- Access control mechanisms must have thorough testing for permission boundaries and edge cases
-- Audit functionality must verify complete capture of all configuration operations
-- Vulnerability scanning integration must be tested with mock security databases
+- **Performance Expectations**: Security rule validation must complete within 3 seconds even for complex configurations with thousands of properties. Encryption/decryption operations must add no more than 100ms overhead to configuration access.
 
-### Performance Expectations
-- Encryption/decryption operations must complete within 100ms
-- Policy validation should evaluate 1000+ rules in under 1 second
-- Audit logging must not impact system performance by more than 5%
-- Access control decisions must be made within 50ms
-- Security scans must process configurations at a rate of at least 10MB/second
+- **Integration Points**:
+  - Must integrate with external key management systems (HashiCorp Vault, AWS KMS, etc.)
+  - Must support OVAL and STIX for vulnerability description
+  - Must provide hooks for integration with SIEM systems
+  - Must generate reports compatible with common compliance frameworks
 
-### Integration Points
-- Must integrate with SIEM systems for audit log forwarding
-- Support for external key management services (KMS) and hardware security modules (HSM)
-- Interfaces for connecting to vulnerability databases and security scanning tools
-- Integration with identity providers for authentication and authorization
-- API endpoints for security reporting and compliance verification
+- **Key Constraints**:
+  - Must support air-gapped environments for high-security deployments
+  - Must maintain FIPS 140-2 compliance for cryptographic operations
+  - Must not expose sensitive values in logs or error messages
+  - Must maintain backward compatibility for encrypted values during key rotation
 
-### Key Constraints
-- All cryptographic operations must use approved algorithms (AES-256, RSA-2048+)
-- Data at rest and in transit must always be encrypted
-- The system must be usable in air-gapped environments
-- No security-critical operations should be performed client-side
-- Must maintain an immutable audit trail that cannot be tampered with
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality required for this security-focused configuration management system includes:
 
-The Secure Configuration Management Framework should implement:
+1. **Security Policy Rule Engine**:
+   - DSL for expressing security compliance rules
+   - Rule evaluation engine that processes configurations against rules
+   - Rule versioning and lifecycle management
+   - Compliance reporting with violation details
 
-1. A policy engine that:
-   - Defines security policies using a declarative language
-   - Validates configurations against these policies
-   - Supports complex rule dependencies and conditions
-   - Provides clear explanations for policy violations
+2. **Sensitive Value Protection**:
+   - Transparent encryption/decryption of sensitive values
+   - Support for multiple encryption algorithms
+   - Key rotation mechanism with zero downtime
+   - Key access auditing and security controls
 
-2. An encryption system that:
-   - Securely stores sensitive configuration values
-   - Manages encryption keys with rotation capabilities
-   - Provides transparent access to authorized users
-   - Logs all encryption/decryption operations
+3. **Audit and Change Tracking**:
+   - Comprehensive, tamper-evident logging of all configuration operations
+   - Security impact classification for configuration changes
+   - Historical configuration state reconstruction
+   - Compliance reporting for audit purposes
 
-3. A comprehensive audit system that:
-   - Records all configuration operations with complete metadata
-   - Analyzes changes for security impact
-   - Supports non-repudiation through cryptographic signatures
-   - Provides advanced query capabilities for investigations
+4. **Access Control System**:
+   - Attribute-based access control model
+   - Fine-grained permission rules for configuration sections
+   - Integration with enterprise identity systems
+   - Privilege escalation workflows for emergency access
 
-4. An attribute-based access control system that:
-   - Enforces granular permissions based on user attributes and configuration properties
-   - Implements security-specific roles and permissions
-   - Prevents unauthorized access to sensitive configurations
-   - Logs all access attempts, including denied ones
+5. **Security Vulnerability Scanning**:
+   - Integration with vulnerability databases (CVE, NVD)
+   - Configuration pattern matching against known vulnerabilities
+   - Risk scoring for identified issues
+   - Remediation guidance generation
 
-5. A security scanning framework that:
-   - Checks configurations against known vulnerability patterns
-   - Integrates with external security databases
-   - Provides risk scoring for potential vulnerabilities
-   - Suggests remediation steps for identified issues
+6. **Security Metadata Management**:
+   - Tagging system for security-relevant configuration items
+   - Classification of configuration data sensitivity
+   - Dependency tracking for security impact analysis
+   - Expiration and review date tracking for credentials
 
 ## Testing Requirements
+The implementation must include comprehensive pytest tests that validate all aspects of the system:
 
-### Key Functionalities to Verify
-- Security policies correctly validate configurations and reject non-compliant settings
-- Encryption properly protects sensitive values and supports key rotation
-- Audit system captures all configuration changes with accurate metadata
-- Access controls correctly enforce permissions based on user attributes and configuration sensitivity
-- Security scanning correctly identifies vulnerable configurations
+- **Key Functionalities to Verify**:
+  - Accurate evaluation of security compliance rules
+  - Proper encryption and decryption of sensitive values
+  - Complete and accurate audit trails of configuration changes
+  - Correct enforcement of access control policies
+  - Accurate identification of security vulnerabilities in configurations
 
-### Critical User Scenarios
-- Security policy violations are detected and reported with clear explanations
-- Encrypted values are securely stored and can only be accessed by authorized users
-- All configuration changes are comprehensively logged with security impact annotations
-- Users can only access configuration sections appropriate to their role and permissions
-- Vulnerability scans detect known security issues in configurations
+- **Critical User Scenarios**:
+  - Adding new security compliance rules
+  - Rotating encryption keys without service disruption
+  - Investigating configuration changes during a security incident
+  - Managing access permissions for security-sensitive configurations
+  - Scanning configurations for newly discovered vulnerabilities
 
-### Performance Benchmarks
-- Policy validation performance remains consistent with increasing rule complexity
-- Encryption operations scale linearly with the number of sensitive values
-- Audit logging does not significantly impact system performance under load
-- Access control decisions remain fast regardless of permission complexity
-- Security scanning completes full configuration audits within acceptable timeframes
+- **Performance Benchmarks**:
+  - Security rule validation must complete within 3 seconds for 10,000 configuration items
+  - Encryption operations must process 1,000 sensitive values per second
+  - Audit logging must handle 500 operations per second
+  - Access control decisions must be made within 50ms
+  - Vulnerability scanning must process configurations at a rate of 5MB per second
 
-### Edge Cases and Error Conditions
-- System handles attempted security bypasses and escalation attempts gracefully
-- Encryption system remains secure even if database is compromised
-- Audit system preserves logs even during system failures
-- Access control maintains security during partial system outages
-- Security scanning correctly handles malformed or deceptive configurations
+- **Edge Cases and Error Conditions**:
+  - Handling conflicting security rules
+  - Recovering from key management service outages
+  - Detecting tampering with audit logs
+  - Managing access control during identity system outages
+  - Handling malformed vulnerability database entries
 
-### Required Test Coverage Metrics
-- Security-critical code paths must have 100% test coverage
-- Cryptographic functions must be verified against standard test vectors
-- Access control edge cases must be explicitly tested
-- Audit functionality must verify capture of all operation types
-- Integration points with security systems must have comprehensive tests
+- **Required Test Coverage Metrics**:
+  - Minimum 95% line coverage for security-critical modules
+  - 100% coverage of encryption/decryption code paths
+  - All security rules must have both positive and negative test cases
+  - All error handling paths must be tested
+  - All access control scenarios must be verified
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. All configurations adhere to defined security policies with zero compliance violations
-2. Sensitive configuration values are properly encrypted with no unauthorized access possible
-3. Configuration audit trails provide complete visibility into all changes with security annotations
-4. Access controls properly enforce the principle of least privilege with no permission escalation possible
-5. Security scanning successfully identifies potential vulnerabilities in configurations
-6. The system meets all regulatory requirements for configuration security
-7. All security operations are properly logged and available for forensic analysis
-8. The system can be integrated into existing security workflows and toolchains
+1. All security compliance rules are correctly evaluated against configurations.
+2. Sensitive values are properly encrypted, with support for key rotation.
+3. Comprehensive audit trails are maintained for all configuration changes.
+4. Access control correctly limits modification of security-sensitive configurations.
+5. Security vulnerability scanning correctly identifies potential issues.
+6. All specified performance benchmarks are met consistently.
 
-To set up your development environment:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+To set up the development environment:
+
+1. Navigate to the project directory
+2. Create a virtual environment using `uv venv`
+3. Activate the environment with `source .venv/bin/activate`
+4. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```
+
+The pytest_results.json file must be submitted as evidence that all tests pass successfully.

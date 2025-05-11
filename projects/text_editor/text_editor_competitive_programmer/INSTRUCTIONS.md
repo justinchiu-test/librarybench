@@ -1,128 +1,181 @@
-# Competitive Programming Editor Library
+# Competitive Programming Text Editor
+
+A specialized text editor library optimized for competitive programming with advanced code templating and testing capabilities.
 
 ## Overview
-A specialized text editor library designed for competitive programmers, focusing on rapid code generation, testing, and optimization. This implementation prioritizes efficiency with templates, test case validation, timing-aware features, algorithm libraries, and keystroke optimization to maximize performance in time-constrained programming competitions.
+
+This project implements a text editor library specifically designed for competitive programmers who need extremely efficient text manipulation with minimal keystrokes and specialized features for algorithmic problem-solving. It provides code templates, input/output testing, timing-aware features, algorithm libraries, and keystroke efficiency analysis.
 
 ## Persona Description
+
 Miguel participates in programming competitions where editing speed directly impacts performance. He needs extremely efficient text manipulation with minimal keystrokes and specialized features for algorithmic problem-solving.
 
 ## Key Requirements
-1. **Code Template System**: Implement a sophisticated template management system with parameterized snippets for common algorithmic patterns (graph algorithms, dynamic programming, etc.). This is critical for Miguel to quickly scaffold solutions during competitions where starting from a proven template can save precious minutes compared to writing from scratch.
 
-2. **Test Case Runner and Validator**: Create a framework for defining, running, and validating test cases against solution code. This allows Miguel to quickly verify his solutions against sample inputs/outputs and custom test cases without leaving the editor, saving time during competitions where rapid iteration is essential.
+1. **Code Template System**: Implement a flexible template system with parameterized snippets for common algorithmic patterns. This is critical for Miguel to rapidly insert optimized implementations of standard algorithms (sorting, searching, graph traversal, etc.) without writing them from scratch during time-constrained competitions.
 
-3. **Competition Timer Integration**: Develop a timing system that tracks remaining competition time, problem-specific time investments, and estimated completion timelines. This helps Miguel manage his time effectively during competitions where strategic time allocation between problems can significantly impact overall performance.
+2. **Input/Output Testing Panel**: Develop functionality to quickly validate code solutions against test cases, showing both expected and actual outputs. This allows Miguel to immediately verify his solutions during practice and competitions, catching edge cases or logical errors before submission.
 
-4. **Algorithm Library with Search**: Build a searchable reference library of common competitive programming algorithms and data structures with complexity analysis. This enables Miguel to quickly lookup and adapt optimal solutions for standard algorithmic problems, which is crucial when facing familiar problem patterns under time pressure.
+3. **Timing-Aware Features**: Create competition-specific timing features that adapt to contest duration and problem constraints. This helps Miguel manage his time effectively during competitions, prioritizing problems appropriately and ensuring he doesn't spend too long on any single challenge.
 
-5. **Keystroke Efficiency Analyzer**: Create a system that monitors common editing patterns and suggests shorter command sequences or templates to improve efficiency. This addresses Miguel's need to continually optimize his coding speed, as even small efficiency improvements can compound into significant time savings across a competition.
+4. **Algorithm Library**: Implement a searchable collection of common competitive programming algorithms and data structures with instant access. This provides Miguel with reference implementations of complex algorithms (dynamic programming, network flow, etc.) that can be quickly adapted to specific problems.
+
+5. **Keystroke Efficiency Analyzer**: Develop a system that analyzes coding patterns and suggests shorter command sequences for common operations. This helps Miguel continuously improve his coding efficiency by identifying repetitive patterns that could be automated or shortened.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - Template instantiation must be testable with various parameter combinations
-  - Test case validation must provide consistent results for identical inputs
-  - Timer functionality must be testable with simulated competition scenarios
-  - Algorithm search must be testable for accuracy and relevance of results
-  - Keystroke efficiency suggestions must be measurable for improvement potential
 
-- **Performance Expectations**:
-  - Template instantiation should complete in under 100ms
-  - Test case execution should be bounded by user-defined time limits
-  - All operations should prioritize responsiveness over completeness when approaching time limits
-  - Search operations should return results in under 200ms
-  - The system should startup in under 1 second to not waste competition time
+### Testability Requirements
+- Template expansion must be verifiable with predetermined inputs and expected outputs
+- Testing functionality must be mockable with fixed input/output examples
+- Timing features must be testable with simulated contest durations
+- Algorithm library access must be testable through defined retrieval operations
+- Keystroke efficiency analysis must be testable with recorded keystroke sequences
 
-- **Integration Points**:
-  - Support for multiple programming languages common in competitions
-  - Integration with standard input/output for test case processing
-  - Support for importing/exporting templates and algorithm libraries
-  - Integration with execution environments for different languages
-  - Compatibility with common competitive programming platforms' time limits
+### Performance Expectations
+- Template expansion must complete in under 10ms
+- Test case execution must support problems with up to 1 million operations in under 1 second
+- Time tracking must have millisecond precision
+- Algorithm library searches must return results in under 50ms
+- Keystroke analysis must process at least 10,000 operations per second
 
-- **Key Constraints**:
-  - Must operate with minimal resource usage to leave processing power for solution execution
-  - Must support extremely rapid text manipulations without latency
-  - Must handle code templates for multiple languages with correct syntax
-  - All features must be accessible without requiring mouse interaction
-  - Must scale to accommodate large algorithm libraries without performance degradation
+### Integration Points
+- Code execution environment for testing solutions
+- Algorithm database for storing and retrieving implementations
+- Performance profiling for solution optimization
+- Input/output validation against expected results
+- Keystroke recording and analysis system
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- Must work entirely through API calls without requiring mouse interaction
+- All operations must be optimized for minimal keystrokes
+- Solution testing must run in sandboxed environment for security
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Template Management System**: Components for defining, storing, retrieving, and instantiating code templates with parameter substitution.
+The library should implement a text editor core with the following functionality:
 
-2. **Code Execution Engine**: A system for running code against test cases and validating outputs.
+1. A template system that:
+   - Stores and manages parameterized code snippets
+   - Supports quick template insertion with parameter substitution
+   - Allows template customization and creation
+   - Organizes templates by algorithm type and complexity
 
-3. **Competition Timer**: Mechanisms for tracking time constraints and usage patterns.
+2. A testing system that:
+   - Executes code against provided test cases
+   - Compares outputs with expected results
+   - Measures execution time and memory usage
+   - Highlights differences between actual and expected outputs
 
-4. **Algorithm Reference Library**: A structured, searchable database of algorithms with metadata.
+3. A timing management system that:
+   - Tracks time spent on each problem
+   - Adapts to competition-specific time constraints
+   - Provides time-based recommendations for problem prioritization
+   - Alerts when time thresholds are reached
 
-5. **Editing Pattern Analysis**: Tools for monitoring edit operations and suggesting optimizations.
+4. An algorithm library that:
+   - Provides organized access to common competitive programming algorithms
+   - Supports searching and filtering by algorithm characteristics
+   - Includes usage examples and complexity information
+   - Allows quick adaptation to specific problems
 
-6. **Language-Specific Support**: Handlers for syntax and execution requirements of different programming languages.
-
-The library should use efficient data structures for rapid text manipulation and prioritize keyboard-driven operations. It should provide programmatic interfaces for all functions without requiring a graphical interface, allowing it to be used in various competition environments or integrated with preferred editors.
+5. A keystroke efficiency system that:
+   - Records and analyzes editing patterns
+   - Identifies repeated operations that could be optimized
+   - Suggests shortcuts or macros for common sequences
+   - Tracks efficiency improvements over time
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of template instantiation with various parameters
-  - Correctness of test case validation across different languages
-  - Precision of timing functionality under various constraints
-  - Relevance and accuracy of algorithm library search results
-  - Effectiveness of keystroke efficiency suggestions
 
-- **Critical User Scenarios**:
-  - Solving time-constrained algorithmic problems from start to submission
-  - Rapidly iterating through test cases to debug edge cases
-  - Searching for and adapting algorithm implementations under pressure
-  - Managing multiple competition problems with different time allocations
-  - Improving coding speed through template usage and keystroke optimization
+### Key Functionalities to Verify
+- Templates correctly expand with provided parameters
+- Testing system accurately validates solutions against test cases
+- Timing features properly track and manage competition time constraints
+- Algorithm library successfully retrieves appropriate implementations
+- Keystroke analyzer correctly identifies optimization opportunities
 
-- **Performance Benchmarks**:
-  - Template system should handle at least 100 templates with retrieval in under 200ms
-  - Test case execution should support at least 20 cases per second for simple problems
-  - Algorithm search should return relevant results in under 300ms
-  - Text operations should complete in under 50ms even for large files
-  - Memory usage should remain under 200MB even with large algorithm libraries loaded
+### Critical User Scenarios
+- Solving a competitive programming problem from start to finish
+- Using templates to quickly implement standard algorithms
+- Testing a solution against multiple test cases with varying inputs
+- Finding and adapting an algorithm from the library
+- Improving editing efficiency based on keystroke analysis
 
-- **Edge Cases and Error Conditions**:
-  - Handling malformed templates or invalid parameters
-  - Recovering from infinite loops or excessive resource usage in test execution
-  - Dealing with ambiguous search queries in the algorithm library
-  - Managing concurrent operations during intense coding sessions
-  - Handling very large input/output test cases
+### Performance Benchmarks
+- Template expansion should handle at least 100 templates per second
+- Test execution should support at least 100 test cases in rapid succession
+- Timing system should maintain accurate tracking with less than 10ms deviation
+- Algorithm library should support a collection of at least 100 algorithms with sub-50ms retrieval
+- Keystroke analysis should process at least 1000 keystrokes per second
 
-- **Required Test Coverage**:
-  - 95% line coverage for template management functionality
-  - 90% coverage for test case execution and validation
-  - 90% coverage for timing and competition management features
-  - 85% coverage for algorithm library and search functions
-  - 90% coverage for keystroke efficiency analysis
+### Edge Cases and Error Conditions
+- Handling template expansion with invalid parameters
+- Managing test cases that cause infinite loops or excessive resource usage
+- Dealing with competition timing in various formats and constraints
+- Handling very large algorithm implementations
+- Analyzing complex or unusual keystroke patterns
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 90% code coverage across all core modules
+- 100% coverage of template expansion code
+- Complete coverage of all public API methods
+- All algorithm types in the library must have test coverage
+- All timing and tracking features must have verification tests
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. Competitive programmers can significantly reduce solution development time using the template system.
+1. The template system enables rapid insertion of common algorithms with parameter customization
+2. The testing system accurately validates solutions against provided test cases
+3. The timing features effectively manage competition time constraints
+4. The algorithm library provides quick access to optimized implementations
+5. The keystroke efficiency analyzer successfully identifies opportunities for improvement
 
-2. Test case validation accurately identifies correct and incorrect solutions.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Time management features help optimize problem-solving strategy during competitions.
+## Environment Setup
 
-4. Algorithm library provides relevant, easily adaptable implementations for common problems.
+To set up the development environment:
 
-5. Keystroke efficiency analysis leads to measurable improvements in coding speed.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. The system remains responsive and low-overhead even during intense coding sessions.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the reliability and effectiveness of the implementation for competitive programming scenarios.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

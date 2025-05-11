@@ -1,142 +1,157 @@
-# Financial Regulatory Compliance DSL Framework
-
-A domain-specific language toolkit specialized for encoding and validating financial regulatory compliance rules.
+# Financial Regulatory DSL Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing and executing domain-specific languages focused on financial regulatory compliance. It enables compliance officers to express complex regulatory constraints in a natural way while ensuring these rules are correctly translated into trading system validations. The framework includes tools for rule definition, validation, conflict detection, and integration with financial transaction systems.
+A specialized Domain Specific Language toolkit designed for financial institutions to create, validate, and implement regulatory compliance rules. This toolkit enables compliance officers and financial analysts to express complex regulatory constraints in a natural language-like syntax while ensuring these rules are correctly translated into trading system validations without requiring deep programming knowledge.
 
 ## Persona Description
-
 Sophia works at a large investment bank where complex regulatory compliance rules need to be encoded into trading systems. Her primary goal is to create a domain-specific language that allows compliance officers to express regulatory constraints in a natural way while ensuring these rules are correctly translated into trading system validations.
 
 ## Key Requirements
+1. **Financial regulation template library with jurisdiction-specific rule patterns**: A comprehensive collection of templates for common regulatory requirements across different jurisdictions (US SEC, EU MiFID, etc.) that can be customized and combined. This is critical because it allows compliance officers to quickly implement new regulations without creating rules from scratch and ensures consistency across similar regulatory requirements.
 
-1. **Financial regulation template library with jurisdiction-specific rule patterns**
-   - Implement a comprehensive template library that encapsulates common regulatory patterns across different jurisdictions (e.g., SEC, FINRA, MiFID II, Basel III)
-   - This feature is critical as it allows compliance officers to quickly apply standardized regulatory frameworks without having to redefine common rule patterns, significantly reducing the risk of incomplete compliance coverage.
+2. **Rule contradiction and conflict detection with resolution suggestions**: An analysis engine that can identify when two or more rules contradict or overlap, with intelligent suggestions for resolution. This is essential because financial institutions must navigate complex and sometimes conflicting regulations across multiple jurisdictions, and undetected conflicts could lead to compliance failures.
 
-2. **Rule contradiction and conflict detection with resolution suggestions**
-   - Develop an analysis system that can identify when newly added rules contradict existing ones or create logical conflicts
-   - This capability is essential because financial regulations are complex and often overlapping; compliance officers need automated assistance to ensure rule sets remain logically consistent, avoiding situations where transactions are both required and forbidden by different rules.
+3. **Natural language approximation for financial compliance terminology**: A syntax that closely resembles natural language specific to financial compliance, allowing non-technical compliance officers to read, verify, and author rules. This is vital because it reduces the translation errors between regulatory text and implementation and empowers domain experts to directly participate in rule creation.
 
-3. **Natural language approximation for financial compliance terminology**
-   - Create a domain-specific grammar that closely mirrors the terminology and phrasing used in actual financial regulations
-   - This feature enables compliance officers to express rules in familiar language, reducing translation errors between regulatory documents and executable code, which is vital for accurate implementation of compliance requirements.
+4. **Auditability through rule provenance and version tracking**: Built-in capabilities to track the origin, justification, and evolution of each rule, including which regulation inspired it and how it has changed over time. This is crucial for demonstrating compliance to regulators, understanding the reasoning behind historical decisions, and maintaining an audit trail for governance purposes.
 
-4. **Auditability through rule provenance and version tracking**
-   - Implement a comprehensive tracking system that records the origin of each rule, including references to specific regulations, and maintains a complete version history
-   - Auditability is non-negotiable in highly regulated financial environments; this feature provides the required documentation trail for regulatory examinations and demonstrates due diligence in compliance processes.
-
-5. **Integration with financial transaction systems via standardized interfaces**
-   - Design flexible integration interfaces that allow the rules engine to connect with various financial transaction systems
-   - This integration capability ensures that compliance rules are actually enforced at transaction time, closing the gap between rule definition and practical application across diverse trading platforms and systems.
+5. **Integration with financial transaction systems via standardized interfaces**: Predefined interfaces to connect with trading platforms, risk management systems, and transaction processing pipelines. This is necessary because rules must be applied to actual financial operations in real-time to prevent non-compliant transactions and generate required reports.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Unit tests must verify each template against known regulatory examples
+  - Integration tests must validate rule application on sample transaction datasets
+  - Conflict detection algorithms must be verified against known conflicting rule sets
+  - Performance tests must confirm rule evaluation speed meets trading system requirements
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- Each rule must be independently testable with specific test cases
-- The conflict detection system must be verifiable with deliberately conflicting rule sets
-- Integration points must support mock transaction systems for testing compliance validation
-- Test coverage must include both syntactic and semantic validation of rule definitions
-- Performance tests must verify rule evaluation speed meets transaction processing requirements
+- **Performance Expectations**:
+  - Rule validation must complete in under 50ms per transaction for high-frequency trading compatibility
+  - Conflict detection for a ruleset of 1000+ rules must complete in under 60 seconds
+  - System must scale to handle 10,000+ unique rules without significant performance degradation
+  - Memory footprint must remain under 1GB for full ruleset operation
 
-### Performance Expectations
-- Rule evaluation must complete within 50ms for simple rules and 200ms for complex rule chains
-- The system must support concurrent evaluation of at least 100 rule sets
-- Parsing and compilation of new rules must complete within 3 seconds
-- Conflict detection analysis must complete within 30 seconds for up to 1000 interdependent rules
-- Memory usage must not exceed 1GB during normal operation
+- **Integration Points**:
+  - Standardized interfaces for connecting to trading platforms (FIX protocol)
+  - API for regulatory reporting systems
+  - Import/export functionality for common compliance formats (XML, JSON)
+  - Integration with regulatory update feeds to flag potentially affected rules
 
-### Integration Points
-- Standardized API for financial transaction system integration (REST, gRPC)
-- Database connectors for rule storage and retrieval (SQL and NoSQL options)
-- Authentication and authorization integration for rule management
-- Event system for rule evaluation logging and audit trail
-- Export capabilities for compliance reports and documentation
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All rule logic must be expressible through the DSL without requiring custom code
+  - Rule definitions must be storable as human-readable text files
+  - System must not require modification to process new regulation types
 
-### Key Constraints
-- All rule definitions and evaluations must be deterministic and reproducible
-- The system must operate without external network dependencies during rule evaluation
-- Rule execution must be thread-safe and support concurrent transaction processing
-- No UI components; all functionality must be exposed through APIs
-- The system must be deployable in high-security environments with air-gapped configurations
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Financial Regulatory DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for financial regulations
+2. A template system for creating and customizing regulatory rule patterns
+3. A rule validation engine that can apply rules to financial transaction data
+4. Conflict detection algorithms that identify contradictions between rules
+5. A rule management system for version control and provenance tracking
+6. Standardized interfaces for integration with financial systems
+7. A natural language processing component to translate between regulatory text and DSL syntax
+8. Export mechanisms for deploying rules to production environments
+9. Documentation generators that produce human-readable explanations of implemented rules
+10. Test utilities for verifying rule correctness against sample data
 
-1. **Rule Definition Language**: A grammar and parser for defining financial compliance rules that closely mirrors regulatory language while maintaining formal logic structure.
-
-2. **Rule Compilation**: Translation of high-level rule definitions into executable validation logic that can be applied to financial transactions.
-
-3. **Rule Evaluation Engine**: An efficient interpreter or compiler that applies defined rules to transaction data and determines compliance status.
-
-4. **Conflict Detection**: Analysis tools that examine rule sets for logical contradictions, overlaps, redundancies, or gaps in compliance coverage.
-
-5. **Template System**: Reusable rule patterns that encapsulate common regulatory requirements across different jurisdictions.
-
-6. **Version Control**: Comprehensive tracking of rule changes, including who made changes, when, and references to specific regulations.
-
-7. **Transaction Validation**: Interfaces for applying rule sets to financial transactions before execution, with clear pass/fail results and explanations.
-
-8. **Audit Trail**: Complete logging of all rule definitions, changes, and evaluation results for compliance documentation.
+The system should enable compliance officers to define rules such as:
+- Trading limits and thresholds
+- Prohibited transaction types
+- Required approvals and validations
+- Reporting triggers
+- Cross-border transaction requirements
+- Client classification rules
+- Disclosure requirements
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into executable rule representations
+  - Accurate detection of rule conflicts and contradictions
+  - Proper application of rules to transaction data
+  - Correct version tracking and provenance information
+  - Successful integration with external systems through defined interfaces
 
-### Key Functionalities to Verify
-- Accurate parsing of rule definitions from domain-specific syntax
-- Correct detection of rule conflicts and contradictions
-- Proper enforcement of rules against sample transactions
-- Accurate tracking of rule provenance and version history
-- Successful integration with mock financial transaction systems
+- **Critical User Scenarios**:
+  - Compliance officer creates new rule from regulatory text
+  - Analyst identifies and resolves conflicts between multi-jurisdictional rules
+  - Audit team retrieves provenance information for compliance verification
+  - Risk team updates existing rules to accommodate regulatory changes
+  - System applies complex rule combinations to high-volume transaction streams
 
-### Critical User Scenarios
-- Compliance officer defines new regulatory rules using the DSL
-- System detects conflicts between newly added and existing rules
-- Rule set is applied to a batch of financial transactions
-- Audit report is generated showing rule enforcement and violations
-- Rule templates are instantiated for a specific jurisdiction
+- **Performance Benchmarks**:
+  - Parse and compile 100 rules in under 10 seconds
+  - Validate 10,000 transactions against 500 rules in under 5 minutes
+  - Detect conflicts in a ruleset of 1000 rules in under 60 seconds
+  - Memory usage must not exceed 1GB during normal operation
 
-### Performance Benchmarks
-- Rule evaluation throughput of at least 500 transactions per second
-- Conflict detection analysis completed in under 1 minute for 1000 rules
-- Rule compilation completed in under 5 seconds
-- System maintains performance with rule sets containing up to 10,000 individual rules
-- Memory usage remains below specified limits during peak operation
+- **Edge Cases and Error Conditions**:
+  - Handling of circular rule references
+  - Graceful degradation when transaction volume exceeds capacity
+  - Recovery from invalid rule definitions
+  - Detection of subtly contradictory rules (not just direct conflicts)
+  - Behavior when integration endpoints are unavailable
 
-### Edge Cases and Error Conditions
-- Handling of circular rule references and dependencies
-- Proper response to malformed or ambiguous rule definitions
-- Graceful degradation under extremely high transaction volumes
-- Recovery from partial rule set compilation failures
-- Handling of transactions that trigger multiple conflicting rules
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of rule parser and interpreter
+  - 100% coverage of conflict detection algorithms
+  - 95% coverage of system integration components
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core rule parsing and evaluation logic
-- 100% coverage of rule conflict detection algorithms
-- 95% coverage of template instantiation logic
-- 90% coverage for transaction validation interfaces
-- 100% test coverage for rule provenance and version tracking
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Compliance officers can define regulatory rules using domain-specific terminology with minimal technical assistance.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to express real-world financial regulations in the DSL
+4. Rule conflicts are correctly identified with appropriate resolution suggestions
+5. Performance benchmarks are met for rule processing and transaction validation
+6. Integration with standard financial interfaces is demonstrated
+7. The natural language approximation makes rules readable by non-technical compliance staff
+8. Full auditability is maintained through comprehensive provenance tracking
 
-2. The system automatically detects and reports rule conflicts with actionable resolution suggestions.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Rules are successfully applied to financial transactions with clear validation results and explanations.
+## Setup Instructions
+To set up the development environment:
 
-4. The audit trail provides comprehensive documentation of rule provenance, changes, and enforcement actions.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. The system maintains required performance levels under production transaction volumes.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. Rule templates reduce implementation time for new regulations by at least 60%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. Integration with financial transaction systems prevents non-compliant transactions from executing.
-
-8. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

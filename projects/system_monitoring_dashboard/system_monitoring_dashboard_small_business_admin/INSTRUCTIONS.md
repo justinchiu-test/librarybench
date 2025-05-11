@@ -1,10 +1,10 @@
-# Small Business Monitoring Dashboard
+# Small Business Monitoring Solution
 
-A lightweight, resource-efficient system monitoring solution designed specifically for growing e-commerce businesses with limited IT resources.
+A lightweight system monitoring solution tailored for small business IT administrators needing to track critical servers and services without enterprise-grade resources.
 
 ## Overview
 
-The Small Business Monitoring Dashboard is a specialized implementation of the PyMonitor system that focuses on providing essential server and service monitoring capabilities without requiring significant system resources or technical expertise. It's designed for businesses that can't afford enterprise monitoring solutions but still need reliable insights into their critical infrastructure.
+This implementation of PyMonitor focuses on creating a resource-efficient, easy-to-deploy monitoring system that requires minimal technical expertise to set up and maintain. It prioritizes simple alerting, non-technical reporting for management, and service monitoring without imposing significant overhead on production systems.
 
 ## Persona Description
 
@@ -12,153 +12,206 @@ Marcus manages IT infrastructure for a growing e-commerce business with limited 
 
 ## Key Requirements
 
-1. **Small Footprint Agent with Minimal Resource Impact** - Implement a lightweight monitoring agent that consumes less than 2% of CPU and 100MB of memory on production systems. This is critical for Marcus as he cannot afford to degrade the performance of production servers that directly impact customer experience and sales.
+1. **Small Footprint Agent**
+   - Implement a monitoring agent with minimal CPU and memory utilization (less than 2% CPU and 50MB RAM)
+   - Enable throttling capabilities to reduce resource impact during high system load
+   - Allow for customizable collection intervals to balance monitoring detail with system impact
+   - Support for silent installation and background operation with minimal dependencies
+   - This is critical because production systems in small businesses often cannot afford dedicated monitoring resources.
 
-2. **Business Hours Alerting Profiles** - Create a flexible alerting system that can apply different threshold rules during business and non-business hours. Marcus needs this because performance issues during peak business hours require immediate attention, while after-hours alerts can be less sensitive to avoid unnecessary emergency responses.
+2. **Business Hours Alerting Profiles**
+   - Create configurable alerting schedules with different thresholds for work hours vs. off-hours
+   - Support emergency vs. non-emergency classification of alerts based on time of day
+   - Allow definition of business holidays and special operating hours
+   - Provide escalation paths that differ based on business hours
+   - This is critical because small businesses have limited IT staff who need to prioritize work-hour issues and only be disturbed after-hours for emergencies.
 
-3. **Non-Technical Summary Reports** - Develop a reporting module that can generate easy-to-understand system health reports for sharing with non-technical management. This allows Marcus to communicate system status effectively to business stakeholders who need visibility into IT operations but lack technical knowledge.
+3. **Non-Technical Summary Reports**
+   - Generate executive-friendly system health reports using clear language and visual indicators
+   - Include uptime statistics and reliability metrics in business terms (e.g., "99.9% availability")
+   - Provide cost-impact estimates for system issues when possible
+   - Support scheduled delivery of reports to management
+   - This is critical because IT administrators in small businesses must regularly justify expenses and communicate system status to non-technical management.
 
-4. **Service Availability Checks** - Implement functionality to monitor availability of critical business applications and payment processing services beyond basic system metrics. For an e-commerce business, these service-level checks are essential as they directly impact revenue generation and customer satisfaction.
+4. **Service Availability Checks**
+   - Monitor critical business applications (web servers, databases, payment processing)
+   - Track external service dependencies like payment gateways or shipping APIs
+   - Measure application responsiveness from an end-user perspective
+   - Detect service failures with specific error indicators, not just binary up/down status
+   - This is critical because small businesses rely heavily on a few key applications and services that directly impact revenue generation.
 
-5. **Single-Admin Deployment Capability** - Design an installation and configuration system that doesn't require specialized knowledge or a team of administrators to set up. As the sole IT administrator, Marcus needs to be able to deploy and configure the monitoring system without external assistance or extensive training.
+5. **Single-Admin Deployment**
+   - Design a straightforward setup process with minimal configuration requirements
+   - Provide sensible defaults appropriate for small business environments
+   - Include clear documentation with step-by-step instructions
+   - Limit technical jargon and assumptions about specialized knowledge
+   - This is critical because small businesses often have a single IT person responsible for all systems who cannot afford extensive training or complex deployment processes.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be unit-testable with pytest
-- Metrics collection must support mocking for testing without actual system impacts
-- Alert logic must be testable with simulated threshold breaches
-- Service checks must support mock services for validation
+- All components must be testable in isolation using pytest
+- Mock external dependencies (servers, services, email) for testing
+- Include test fixtures that simulate various system load scenarios
+- Support parametrized tests for different alert thresholds and scheduling scenarios
+- Allow for simulated time progression for testing time-based features
 
 ### Performance Expectations
-- Agent must use less than 2% CPU and 100MB RAM on monitored systems
-- Collection intervals should be configurable but default to once per minute
-- Database storage should efficiently handle 30 days of metrics with pruning mechanisms
-- Report generation should complete in under 30 seconds regardless of data volume
+- Monitoring agent must use less than 2% CPU and 50MB RAM on monitored systems
+- Report generation must complete in under 30 seconds
+- Alert triggers must fire within 15 seconds of threshold violation
+- Database storage requirements should not exceed 1GB for 1 month of history
+- API endpoints must respond in under 500ms
 
 ### Integration Points
-- Email integration for alerts and reports
-- Webhook support for connecting to business systems
-- SMTP server configuration for email delivery
-- HTTP/HTTPS for service availability checks
-- Standard Python libraries for system metrics collection
+- Email server integration for alerts and reports
+- HTTP/HTTPS service checks for web applications
+- Database connectivity checks for data services
+- ICMP/ping for basic network availability
+- REST API endpoints for service health checks
 
 ### Key Constraints
-- Must work across Linux, Windows, and macOS systems common in small business environments
-- Database storage must be lightweight (SQLite, file-based, etc.)
-- All components must be deployable by a single administrator
-- No dependencies on external monitoring services or cloud platforms
-- Must operate with minimal configuration on standard networks
+- Must run on Windows, Linux, and macOS servers
+- Cannot require administrator/root privileges for basic monitoring
+- Must operate without cloud dependencies
+- Cannot rely on specialized hardware
+- Should not require additional software installations beyond Python and minimal dependencies
+- Database must be a simple file-based solution (SQLite)
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Small Business Monitoring Dashboard must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Resource-Efficient Metrics Collection**
-   - CPU, memory, disk, and network utilization monitoring
-   - Process-level metrics for key business applications
-   - Service status checks for web servers, databases, and payment systems
-   - Configurable collection intervals with adaptive sampling
+1. **Lightweight Agent Module**
+   - Self-throttling system metric collection (CPU, memory, disk, network)
+   - Service availability monitoring through protocol-appropriate checks
+   - Local storage of metrics with data retention policies
+   - Self-updating capabilities from a central repository
 
-2. **Business-Aware Alerting System**
-   - Time-sensitive threshold configuration (business hours vs. non-business hours)
-   - Multi-channel notifications (email, log, webhook)
-   - Alert severity classification and routing
-   - Alert acknowledgment and resolution tracking
+2. **Alert Management Module**
+   - Time-aware alerting with business hours configuration
+   - Multiple notification methods (email, SMS, log)
+   - Alert suppression for maintenance windows
+   - Threshold configuration with different severity levels
 
-3. **Management Reporting System**
-   - Business-focused system health summaries
-   - Resource utilization trends with predictive warnings
-   - Service availability statistics and uptime reporting
-   - Incident history and resolution metrics
+3. **Reporting Module**
+   - Regular system health summaries for technical and non-technical audiences
+   - Uptime and reliability statistics
+   - Performance trend analysis
+   - Exportable formats (PDF, email-friendly HTML)
 
-4. **Simplified Administration**
-   - Configuration through simple YAML/JSON files
-   - Default templates for common small business setups
-   - Validation of configuration before deployment
-   - Automated agent deployment to monitored systems
+4. **Deployment Helper**
+   - Configuration wizard with reasonable defaults
+   - System requirements verification
+   - Service installation utilities
+   - Update mechanism
 
-5. **Historical Data Management**
-   - Efficient storage of historical metrics
-   - Data retention policies with configurable timeframes
-   - Data summarization for long-term trend analysis
-   - Export capabilities for compliance and audit purposes
+5. **API Layer**
+   - RESTful endpoints for accessing monitoring data
+   - Authentication and authorization
+   - Query interface for historical metrics
+   - Webhook support for integration with other systems
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Metrics collection accuracy compared to known system states
-- Alert triggering based on threshold configurations
-- Report generation with expected content and format
-- Service availability detection for both healthy and failed services
-- Configuration loading and validation
+### Key Functionalities to Verify
+- Agent correctly collects system metrics with minimal resource impact
+- Business hours alerting respects configured schedules and thresholds
+- Reports accurately summarize system status in non-technical language
+- Service checks correctly identify availability issues
+- Single-admin deployment process functions as expected
 
 ### Critical User Scenarios
-- Setting up monitors for standard e-commerce components
-- Receiving and managing alerts during business hours vs. after hours
-- Generating management reports on schedule and on-demand
-- Adding new services to the monitoring configuration
-- Deploying monitoring to new systems in the environment
+- Setting up monitoring on a new server with minimal configuration
+- Receiving appropriate alerts during and outside business hours
+- Generating and distributing executive reports
+- Detecting and responding to service outages
+- Adjusting thresholds to reduce alert noise
 
 ### Performance Benchmarks
-- CPU and memory usage of the agent under various system loads
-- Database storage efficiency for 1, 7, and 30 days of metrics
-- Alert latency from threshold breach to notification delivery
-- Report generation time for various time ranges and metrics
-- Configuration changes propagation time
+- Agent impact must stay below 2% CPU and 50MB RAM
+- Alert delivery must occur within 15 seconds of threshold violation
+- Report generation must complete in under 30 seconds
+- System must support monitoring at least 25 services
+- Database should handle 30 days of metrics without exceeding 1GB
 
-### Edge Cases and Error Handling
-- Network failures between monitoring components
-- Database corruption or access issues
-- Invalid configuration scenarios
-- System resource exhaustion on monitored hosts
-- Handling of rapidly flapping service states
+### Edge Cases and Error Conditions
+- Handling network outages between monitoring components
+- Properly managing disk space when storage is limited
+- Graceful degradation when resources are constrained
+- Recovering from incomplete or corrupted configurations
+- Managing alert storms during widespread outages
 
-### Required Test Coverage
-- 95% code coverage for core monitoring functionality
-- 100% coverage of alert logic and threshold evaluation
-- 100% coverage of configuration parsing and validation
-- 90% coverage of reporting functionality
+### Test Coverage Metrics
+- Minimum 85% code coverage for core functionality
+- 100% coverage of alert logic and scheduling
+- 100% coverage of report generation
+- 100% coverage of deployment helpers
+- 90% coverage of API endpoints
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. A single administrator can deploy the complete monitoring solution within 1 hour to a standard small business environment
-2. System resource utilization stays below 2% CPU and 100MB RAM on all monitored systems
-3. Critical service outages are detected and reported within 1 minute during business hours
-4. Management reports are understandable by non-technical stakeholders without explanation
-5. Alert thresholds can be separately configured for business hours and non-business hours
-6. All functionality can be managed through configuration files without requiring code changes
-7. Historical data retention and management operates automatically without administrator intervention
-8. All components pass their respective test suites with required coverage levels
+1. **Minimal Resource Utilization**
+   - Demonstrable resource usage under 2% CPU and 50MB RAM on target systems
+   - Validation through performance tests
 
----
+2. **Effective Business Hours Alerting**
+   - Properly categorized alerts based on business hours configuration
+   - Correct threshold application based on time of day
+
+3. **Management-Ready Reporting**
+   - Reports that effectively communicate system health to non-technical stakeholders
+   - Validated through test fixtures with predefined metrics and expected outputs
+
+4. **Comprehensive Service Monitoring**
+   - Accurate detection of service availability issues
+   - Appropriate detail in service status reporting
+
+5. **Simplified Deployment Process**
+   - Complete setup with minimal steps
+   - Default configurations appropriate for small business environments
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

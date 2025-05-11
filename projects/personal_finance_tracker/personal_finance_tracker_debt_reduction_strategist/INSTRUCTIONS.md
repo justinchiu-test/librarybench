@@ -1,171 +1,162 @@
-# Debt Elimination Financial Management System
+# Debt Reduction Strategy System
 
 ## Overview
-A specialized financial management system designed specifically for individuals focused on systematically eliminating debt. This solution provides advanced debt payoff strategy comparisons, interest savings calculations, milestone tracking, refinancing analysis, and credit score impact estimation to support a structured debt elimination journey.
+A specialized financial system designed for individuals focused on systematically eliminating debt. The system provides comprehensive debt tracking, optimized payoff strategies, progress visualization, refinancing analysis, and credit health monitoring to support a structured approach to becoming debt-free.
 
 ## Persona Description
 Sophia is focused on systematically eliminating her student loans and credit card debt. She needs tools to track multiple debt accounts, optimize payoff strategies, and stay motivated through a multi-year debt elimination journey.
 
 ## Key Requirements
-1. **Debt snowball/avalanche comparison showing different payoff strategy outcomes**
-   - Implementation of multiple debt payoff methodologies (snowball, avalanche, hybrid, etc.)
-   - Side-by-side comparison of different strategies with visual timeline representation
-   - Calculation of total interest paid, time to debt-free, and psychological factors
-   - Dynamic recalculation based on changing debt parameters and additional payments
-   - Critical for selecting the optimal debt elimination strategy based on both financial and psychological factors
+1. **Debt snowball/avalanche comparison showing different payoff strategy outcomes**  
+   Sophia needs to evaluate different debt reduction approaches to choose the most effective strategy for her situation. The system must model both emotional (debt snowball, paying smallest balances first) and mathematical (debt avalanche, paying highest interest rates first) approaches, showing detailed projections of total interest paid, payoff dates, and monthly payment allocations under each scenario.
 
-2. **Interest saved calculations demonstrating the impact of extra payments**
-   - Detailed amortization schedules for each debt account
-   - Real-time calculation of interest savings from additional payments
-   - Visualization of payment impact on total interest and payoff timeline
-   - What-if scenarios for lump sum or increased monthly payment options
-   - Essential for motivating continued debt payments by clearly showing financial benefits of extra contributions
+2. **Interest saved calculations demonstrating the impact of extra payments**  
+   To stay motivated, Sophia needs to see the concrete impact of additional payments toward her debt. The system should calculate and visualize how much interest she saves and how much her payoff timeline shortens when she makes extra payments, providing immediate positive reinforcement for financial sacrifices made to accelerate debt elimination.
 
-3. **Payoff milestone celebrations with visual progress indicators and achievement tracking**
-   - Customizable milestone definition at meaningful debt reduction points
-   - Progress tracking with percentage-based and fixed-sum achievements
-   - Historical debt reduction visualization showing progress over time
-   - Achievement system with records of debt elimination victories
-   - Necessary for maintaining motivation throughout a long-term debt payoff journey by celebrating progress
+3. **Payoff milestone celebrations with visual progress indicators and achievement tracking**  
+   Sophia's debt journey will take several years, requiring sustained motivation through small victories. The system must define meaningful milestones (paying off individual accounts, reaching percentage-based goals, etc.), track progress toward these achievements, and provide engaging visualizations that celebrate successes and maintain momentum throughout the debt reduction process.
 
-4. **Refinancing scenario modeling to evaluate consolidation opportunities**
-   - Comparison tools for existing debt versus refinanced options
-   - Interest rate, term, and fee analysis for refinancing decisions
-   - Break-even calculations for refinancing costs versus interest savings
-   - Integration with overall debt elimination strategy when refinancing occurs
-   - Vital for making informed decisions about debt consolidation and refinancing opportunities
+4. **Refinancing scenario modeling to evaluate consolidation opportunities**  
+   As Sophia's credit improves, she needs to evaluate opportunities to refinance or consolidate existing debts. The system should model different refinancing scenarios, comparing current payment structures against consolidation options with various terms, interest rates, and fees to determine if refinancing would accelerate her debt-free timeline or reduce total interest paid.
 
-5. **Credit score impact estimation based on debt reduction patterns and credit utilization**
-   - Credit utilization ratio tracking and projection
-   - Payment history monitoring for all debt accounts
-   - Credit score factor analysis and improvement recommendations
-   - Projected credit score changes based on debt reduction activity
-   - Important for understanding the relationship between debt management and credit score improvement
+5. **Credit score impact estimation based on debt reduction patterns and credit utilization**  
+   Sophia's credit score is critical for future refinancing opportunities and financial flexibility. The system needs to estimate credit score changes based on debt paydown activities, account age preservation, credit utilization reduction, and payment consistency, helping her understand how debt reduction strategies affect her overall credit health.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Financial calculations must be deterministic and unit-testable
-  - Strategy comparison algorithms must be testable with known outcomes
-  - Time-based projections must support accelerated timelines for testing
-  - Credit score modeling must be verifiable against industry models
-  - Performance testing must validate system behavior with large debt portfolios
+- **Testability Requirements:**
+  - Debt payoff calculators must be verified against known payoff schedules
+  - Refinancing models must be tested with varying interest rates and terms
+  - Credit score estimation algorithms must align with known credit scoring factors
+  - Progress tracking must be verified through simulated multiyear scenarios
 
-- **Performance Expectations**
-  - Support for at least 50 concurrent debt accounts
-  - Fast recalculation of payoff strategies (under 1 second)
-  - Efficient generation of amortization schedules for long-term loans
-  - Quick comparison of multiple refinancing scenarios
-  - Responsive operation during what-if scenario modeling
+- **Performance Expectations:**
+  - System must instantly recalculate payoff schedules when parameters change
+  - Comparison of multiple payoff strategies must complete in under 2 seconds
+  - System must handle at least 50 different debt accounts simultaneously
+  - Historical tracking must support 10+ years of payment history
 
-- **Integration Points**
-  - Import capabilities for existing loan and credit card statements
-  - Standardized data formats for third-party debt information
-  - Export functionality for comprehensive debt management reports
-  - Credit score data integration options
-  - Financial goal and budgeting system integration
+- **Integration Points:**
+  - Import functionality for existing debt accounts (CSV/Excel/direct connections)
+  - Export capabilities for payoff plans and progress reports
+  - Support for payment reminders and scheduled transactions
+  - Integration with debt payment history for accurate tracking
 
-- **Key Constraints**
-  - Accuracy requirements of 2 decimal places for all financial calculations
-  - Strict adherence to financial lending mathematics
-  - Clear separation of actual versus projected financial data
-  - Transparent methodology for credit score impact estimates
-  - Sensible default values with customization options
+- **Key Constraints:**
+  - Calculations must handle variable interest rates and payment terms
+  - All interest calculations must be accurate to the penny
+  - System must support various loan types with different compounding methods
+  - Privacy measures must protect sensitive financial information
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide these core components:
+The system must implement these core components:
 
-1. **Debt Account Management**
-   - Account setup with relevant debt parameters
-   - Balance, interest rate, minimum payment, and term tracking
-   - Payment recording and balance updates
-   - Historical debt record management
+1. **Debt Account Management System:**
+   - Multi-account tracking with detailed terms and conditions
+   - Balance, interest rate, and payment history recording
+   - Minimum payment calculation and tracking
+   - Payment allocation rules and processing
+   - Account status monitoring (current, late, paid)
 
-2. **Payoff Strategy Engine**
-   - Strategy implementation (snowball, avalanche, custom)
-   - Payment allocation optimization
-   - Strategy comparison and analysis
-   - Payment schedule generation
+2. **Strategy Optimization Engine:**
+   - Debt snowball implementation (smallest balance first)
+   - Debt avalanche implementation (highest interest first)
+   - Custom hybrid strategy support
+   - Payment allocation recommendations
+   - Strategy comparison with detailed metrics
 
-3. **Amortization and Interest Calculator**
-   - Detailed amortization schedule generation
-   - Interest and principal allocation calculation
-   - Early/extra payment impact analysis
-   - Total interest calculation and comparison
+3. **Progress Tracking and Motivation System:**
+   - Milestone definition and monitoring
+   - Progress visualization with meaningful metrics
+   - Achievement recognition and recording
+   - Historical trend analysis
+   - Motivational statistics (interest saved, time saved)
 
-4. **Milestone and Progress Tracking**
-   - Milestone definition and management
-   - Progress calculation and visualization
-   - Achievement recording and history
-   - Motivational statistics and metrics
+4. **Refinancing Analysis Tools:**
+   - Consolidation scenario modeling
+   - Cost-benefit analysis of refinancing options
+   - Fee impact assessment
+   - Term comparison and optimization
+   - Break-even calculations for refinancing decisions
 
-5. **Refinancing and Consolidation Analysis**
-   - Scenario modeling for debt consolidation
-   - Cost-benefit analysis for refinancing
-   - Break-even calculation for refinancing costs
-   - Integration with existing debt strategy
-
-6. **Credit Impact Estimation**
-   - Credit utilization tracking and projection
-   - Credit factor analysis and scoring
+5. **Credit Health Monitoring:**
+   - Credit utilization tracking and optimization
+   - Payment consistency monitoring
    - Debt-to-income ratio calculation
-   - Payment history monitoring
+   - Credit score factor analysis
+   - Credit improvement recommendations
 
 ## Testing Requirements
-- **Key Functionalities for Verification**
-  - Accuracy of debt payoff strategy implementations
-  - Precision of interest saved calculations
-  - Correctness of milestone progress tracking
-  - Proper evaluation of refinancing scenarios
-  - Accuracy of credit score impact estimations
+- **Key Functionalities to Verify:**
+  - Calculation accuracy for different debt payoff strategies
+  - Interest savings calculations for additional payments
+  - Milestone tracking and progress reporting
+  - Refinancing scenario analysis and comparison
+  - Credit score impact estimations
 
-- **Critical User Scenarios**
-  - Setting up multiple debt accounts with varying parameters
-  - Comparing snowball vs. avalanche payoff strategies
-  - Making extra payments and seeing interest savings
-  - Evaluating a debt consolidation refinancing option
-  - Tracking progress through a debt reduction journey
+- **Critical User Scenarios:**
+  - Setting up a debt reduction plan with multiple accounts
+  - Making an extra payment and seeing the updated payoff timeline
+  - Reaching and celebrating a debt payoff milestone
+  - Evaluating a refinancing offer against the current payoff strategy
+  - Monitoring credit score factors as debt is systematically reduced
 
-- **Performance Benchmarks**
-  - Support for at least 50 debt accounts with rapid calculations
-  - Generation of 30-year amortization schedules in under 2 seconds
-  - Comparison of 5+ payoff strategies simultaneously in under 3 seconds
-  - Analysis of 10+ refinancing scenarios in under 5 seconds
-  - Real-time recalculation of debt metrics when parameters change
+- **Performance Benchmarks:**
+  - Strategy comparisons must handle up to 20 debt accounts in under 3 seconds
+  - System must support 10+ years of payment projections with sub-second calculation
+  - Payment changes must trigger recalculations completing in under 1 second
+  - Refinancing comparisons must evaluate 10+ scenarios simultaneously
 
-- **Edge Cases and Error Conditions**
-  - Handling of variable interest rate debts
-  - Management of irregular payment schedules
-  - Adaptation to missed or late payments
-  - Proper handling of debt payoffs and account closures
-  - Recovery from incorrectly entered debt information
-  - Graceful handling of refinancing with fees and complex terms
+- **Edge Cases and Error Conditions:**
+  - Handling variable interest rate projections
+  - Managing accounts with deferred interest
+  - Processing payments that affect multiple debt accounts
+  - Recovering from missed or late payments
+  - Adapting to accounts transferred to different creditors
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage across all modules
-  - 100% coverage for financial calculation functions
-  - Comprehensive test suite for strategy comparison algorithms
-  - Thorough validation of refinancing analysis calculations
-  - Complete testing of credit score estimation models
+- **Required Test Coverage Metrics:**
+  - Debt calculation functions: minimum 95% coverage
+  - Strategy comparison algorithms: minimum 90% coverage
+  - Refinancing analysis tools: minimum 90% coverage
+  - Credit score estimation: minimum 85% coverage
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Debt payoff strategies match expected results from financial models
-- Interest saved calculations are accurate to 2 decimal places
-- Payoff milestones correctly track progress against debt reduction goals
-- Refinancing analysis provides clear cost-benefit comparisons
-- Credit score impact estimates align with industry credit scoring models
-- All financial calculations match expected results with high precision
-- System accommodates a wide range of debt types and parameters
-- Strategy comparisons show clear differences between approaches
-- Performance meets or exceeds all benchmark requirements
-- Test coverage meets or exceeds specified metrics
+- The system accurately models both snowball and avalanche debt reduction strategies
+- Interest savings are correctly calculated and visualized for extra payments
+- Meaningful milestones are tracked and celebrated throughout the debt reduction journey
+- Refinancing opportunities are properly evaluated against current payoff strategies
+- Credit score impacts are reasonably estimated based on debt reduction activities
+- All calculations maintain penny-perfect accuracy
+- System performance meets or exceeds the specified benchmarks
+- All tests pass without manual intervention
 
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

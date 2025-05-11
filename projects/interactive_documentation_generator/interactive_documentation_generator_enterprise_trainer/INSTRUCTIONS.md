@@ -1,126 +1,159 @@
 # Role-Based Enterprise Documentation System
 
+A specialized documentation generation platform that delivers personalized, role-specific technical documentation for enterprise software training and deployment.
+
 ## Overview
-A specialized documentation generation system tailored for enterprise IT training that creates role-specific documentation paths, integrates with enterprise authentication, tracks training progress, customizes terminology for organizational context, and verifies compliance with regulatory requirements.
+
+The Role-Based Enterprise Documentation System enables IT trainers to generate and manage customized documentation paths for different roles within large organizations. It adapts content based on job functions, tracks training progress, enforces enterprise security controls, and ensures compliance with organizational terminology and regulatory requirements.
 
 ## Persona Description
+
 Barbara develops training materials for large enterprise software deployments. She needs to create role-specific documentation that adapts to different technical roles within the organization while maintaining consistency across all materials.
 
 ## Key Requirements
-1. **Role-Based Content Paths** - Implement a documentation generation system that can automatically create customized documentation collections specific to different job functions (e.g., administrator, developer, security officer, end-user). This is critical for Barbara because it ensures that each role receives precisely the information they need without overwhelming them with irrelevant details, making training more efficient and effective.
 
-2. **Enterprise Authentication Integration** - Develop a security layer that integrates with enterprise authentication systems (LDAP, Active Directory, SAML) to control access to sensitive configuration and implementation details based on user roles. This is essential because Barbara's documentation often contains privileged information about system configurations that should only be accessible to authorized personnel with specific responsibilities and clearances.
+1. **Role-Based Content Paths** - The system must generate customized documentation paths tailored to specific job functions within the organization. This is essential for Barbara because enterprise deployments involve diverse roles (administrators, end-users, developers, security teams) with different knowledge requirements, and delivering role-appropriate content maximizes training effectiveness while preventing information overload.
 
-3. **Training Progress Tracking** - Create a system to define checkpoints within documentation and track learner progress through training materials, including knowledge verification points. This is vital for Barbara because it allows her to monitor training effectiveness across large organizations, identify stuck points, and provide targeted assistance to ensure all IT staff achieve required competencies.
+2. **Enterprise Authentication Integration** - The system must integrate with corporate identity management systems to restrict access to sensitive configuration details based on authorized roles. This is critical for Barbara as enterprise documentation often contains confidential settings and security information that must only be accessible to authorized personnel, ensuring compliance with organizational security policies.
 
-4. **Organization-Specific Terminology Customization** - Design a terminology management system that can automatically replace standard terms with company-specific language throughout documentation. This feature is crucial as it helps Barbara create documentation that resonates with employees by using their familiar internal terminology, reducing confusion and accelerating comprehension during large deployments.
+3. **Training Progress Tracking** - The documentation system must provide checkpoints throughout the content with knowledge verification and track completion status for each user. As a trainer responsible for ensuring competency across the organization, Barbara needs this feature to identify knowledge gaps, provide targeted assistance, and report on training completion to stakeholders.
 
-5. **Compliance Verification** - Implement a framework to tag documentation sections with relevant regulatory requirements (HIPAA, SOX, GDPR, etc.) and verify that all mandated procedures are adequately documented. This is important for Barbara because the enterprises she works with often operate in regulated industries where incomplete documentation of compliance procedures creates significant legal and operational risks.
+4. **Organization-Specific Terminology Customization** - The tool must support replacement of standard technical terms with company-specific terminology throughout all documentation. This is vital for Barbara because large enterprises often develop their own technical vocabulary, and mapping standard terms to company-specific language ensures documentation is immediately understandable and relevant to the organizational context.
+
+5. **Compliance Verification** - The system must verify that all relevant regulatory and policy requirements are covered in appropriate documentation sections. For Barbara, ensuring documentation addresses all compliance requirements (security standards, industry regulations, internal policies) is essential to prevent compliance gaps during software deployment that could expose the organization to risk.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All role-based content generation must be testable with defined role profiles
-  - Authentication integration must be testable with mock authentication providers
-  - Progress tracking must be verifiable with simulated learning journeys
-  - Terminology customization must be testable with defined term mapping sets
-  - Compliance verification must be validated against regulatory requirement test cases
 
-- **Performance Expectations**
-  - Documentation generation for a single role must complete in under 30 seconds
-  - System should handle documentation sets of up to 10,000 pages efficiently
-  - Terminology replacements should process 1MB of content in under 5 seconds
-  - Content path generation should scale to support at least 50 distinct role profiles
-  - Authentication verification should add no more than 500ms latency to operations
+### Testability Requirements
+- All components must be testable in isolation with pytest fixtures
+- Role-based content generation must be verifiable with parameterized tests
+- Authentication integration must be testable with mock identity providers
+- Progress tracking must be verifiable with simulated user sessions
+- Compliance coverage must be testable against defined requirement matrices
 
-- **Integration Points**
-  - Enterprise authentication systems (LDAP, Active Directory, SAML, OAuth)
-  - Learning Management Systems (LMS) for progress tracking
-  - Document management systems for storage and versioning
-  - Compliance management systems for requirement mapping
-  - HR systems for role definition and assignment (optional)
+### Performance Expectations
+- Documentation generation for a complete enterprise system must complete in under 2 minutes
+- Role-based filtering must apply instantaneously (< 100ms) when changing user contexts
+- Progress tracking data must be retrievable in under 500ms even with 10,000+ users
+- Terminology replacement must not add more than 10% overhead to document generation
 
-- **Key Constraints**
-  - All sensitive content must be encrypted at rest
-  - Access controls must be enforced at the content fragment level
-  - The system must work in air-gapped environments without internet access
-  - All operations must be logged for audit purposes
-  - Content must be exportable to standard formats (PDF, HTML, SCORM)
+### Integration Points
+- Enterprise identity management systems (LDAP, Active Directory, SAML)
+- Learning Management Systems (LMS) for progress tracking
+- Compliance management systems for requirement mapping
+- Enterprise glossary/terminology management systems
+- Existing enterprise documentation repositories
+
+### Key Constraints
+- All functionality must be implementable without UI components
+- Must process and protect sensitive enterprise configuration information
+- Must scale to support documentation for systems with 1000+ configuration options
+- Must support at least 20 distinct organizational roles
+- Must handle training programs with at least 50 distinct learning modules
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide a Python library with the following core modules:
 
-1. **Role Manager**: Define and manage role profiles with associated permissions and content accessibility.
+The system must provide:
 
-2. **Content Assembler**: Generate role-specific documentation collections based on role profiles and content tagging.
+1. A role definition engine that maps job functions to documentation content requirements
+2. A content filtering system that generates role-appropriate documentation views
+3. An authentication integration layer for secure access control
+4. A progress tracking framework with knowledge verification points
+5. A terminology management system with organization-specific vocabulary mapping
+6. A compliance verification system that maps documentation sections to regulatory requirements
+7. A documentation generation pipeline that applies all these filters to create customized documentation
 
-3. **Authentication Connector**: Integrate with enterprise authentication systems to verify user identities and role assignments.
-
-4. **Progress Tracker**: Monitor and record user progression through documentation materials, including completion of knowledge checkpoints.
-
-5. **Terminology Customizer**: Replace standard terminology with organization-specific terms throughout documentation.
-
-6. **Compliance Validator**: Tag and verify that documentation meets regulatory and policy requirements.
-
-7. **Export Engine**: Generate output in various formats while maintaining role-based access controls.
-
-These modules should be designed with clean interfaces, allowing them to work together while maintaining the ability to use them independently or integrate with existing enterprise systems.
+These components should work together to create a documentation system that delivers the right information to the right people at the right time, while maintaining security, consistency, and compliance across the enterprise.
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Correct assembly of role-specific content collections
-  - Proper functioning of authentication integration
-  - Accurate tracking of progress through documentation
-  - Comprehensive terminology replacement throughout content
-  - Correct identification of compliance coverage and gaps
 
-- **Critical User Scenarios**
-  - Generation of role-specific training documentation
-  - User authentication and access control enforcement
-  - Progression through a complete training curriculum
-  - Organization-wide terminology customization
-  - Compliance audit preparation and verification
+The implementation must include tests for:
 
-- **Performance Benchmarks**
-  - Process 5,000-page documentation set in under 5 minutes
-  - Support 100+ simultaneous users tracking progress
-  - Handle terminology dictionaries with 1,000+ term mappings efficiently
-  - Generate compliant documentation for 20+ regulatory frameworks
-  - Support 50+ distinct role profiles without performance degradation
+### Key Functionalities Verification
+- Role-based content correctly filters information based on job functions
+- Authentication integration properly restricts access to sensitive content
+- Progress tracking accurately records completion status and assessment results
+- Terminology replacement consistently applies organization-specific terms
+- Compliance verification identifies gaps in regulatory coverage
 
-- **Edge Cases and Error Conditions**
-  - Invalid or conflicting role definitions
-  - Authentication system unavailability
-  - Corrupted or incomplete progress tracking data
-  - Ambiguous or contextual terminology replacements
-  - Conflicting compliance requirements across regulations
-  - Handling of content with missing role tags
+### Critical User Scenarios
+- A new employee accesses role-appropriate training documentation
+- An administrator creates role definitions for a new department
+- A compliance officer verifies documentation coverage for a new regulation
+- A trainer generates progress reports for different teams
+- A technical writer adds new content with role-specific variations
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% line coverage across all modules
-  - 100% coverage for authentication and access control logic
-  - 100% coverage for compliance verification functionality
-  - 95%+ coverage for role-based content assembly
-  - 90%+ coverage for terminology replacement system
+### Performance Benchmarks
+- Documentation generation completes within time limits for large enterprise systems
+- Role-based filtering applies instantly when user context changes
+- Progress tracking retrieval performs efficiently with large user bases
+- Terminology replacement adds minimal overhead to document processing
 
-IMPORTANT: 
+### Edge Cases and Error Handling
+- Handling users with multiple roles or unusual permission combinations
+- Processing content with complex or nested role restrictions
+- Managing terminology conflicts or ambiguous term mappings
+- Dealing with incomplete compliance requirement definitions
+- Handling authentication edge cases (token expiration, permission changes)
+
+### Required Test Coverage
+- Minimum 90% test coverage for all components
+- 100% coverage for authentication and access control functions
+- Integration tests for all external system interfaces
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. It correctly generates role-specific documentation for at least 10 distinct enterprise roles
-2. Authentication integration successfully restricts access to sensitive content based on user roles
-3. Progress tracking accurately records completion of documentation sections and knowledge checkpoints
-4. Terminology customization correctly replaces standard terms with organization-specific terminology
-5. Compliance verification identifies documentation gaps for defined regulatory requirements
-6. The system functions without a user interface while providing APIs for UI integration
-7. Performance meets or exceeds the defined benchmarks for enterprise-scale documentation
-8. All tests pass with the specified coverage metrics
+The implementation will be considered successful if:
 
-To set up a development environment for this project, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. The system can generate different documentation versions for at least 5 distinct organizational roles
+2. Authentication integration successfully restricts access based on user roles and permissions
+3. Progress tracking captures completion status and knowledge verification results
+4. Terminology replacement consistently maps standard terms to organization-specific language
+5. Compliance verification successfully identifies documentation gaps for defined requirements
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. From within the project directory, create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report to generate the required report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion.

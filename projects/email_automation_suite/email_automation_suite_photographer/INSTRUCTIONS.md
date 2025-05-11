@@ -1,175 +1,184 @@
-# PhotoMailFlow - Event Photography Email Management System
+# Photographer Email Automation Suite
 
 ## Overview
-PhotoMailFlow is a specialized email automation system designed for event photographers who need to efficiently manage client inquiries, bookings, pre-event communications, gallery deliveries, and print sales. The system streamlines photography business operations through intelligent email management, event scheduling, client preparation, and sales follow-up to maximize both client satisfaction and business profitability.
+PhotoMail is a specialized email automation library designed for professional event photographers who need to manage client communications throughout the booking, event preparation, and photo delivery process. It enables streamlined management of inquiries, bookings, pre-event coordination, photo delivery, and print order opportunities, allowing photographers to maintain excellent client service while focusing on their creative work.
 
 ## Persona Description
 Elena photographs weddings and events, managing inquiries, bookings, and client galleries through email. Her primary goal is to streamline her booking process and client communications while ensuring timely delivery of photos and following up on sales opportunities.
 
 ## Key Requirements
 
-1. **Booking Inquiry Management and Availability System**
-   - Implement automatic inquiry response with service information and pricing
-   - Check calendar availability against inquiry dates
-   - Create customized package information based on event type and requirements
-   - Track inquiry-to-booking conversion rates
-   - This feature is critical because responding quickly to inquiries with accurate availability and pricing information significantly increases booking rates, while saving hours of manual calendar checking and response composition.
+1. **Booking Inquiry Management System**
+   - Process and categorize incoming booking inquiries
+   - Check availability against existing bookings for requested dates
+   - Generate appropriate responses with package information and pricing
+   - This feature is critical because it enables quick, professional responses to potential clients, increasing booking conversion rates while accurately managing the photographer's calendar and preventing double-bookings
 
-2. **Event Countdown and Preparation Sequence**
+2. **Event Countdown Communication Sequence**
    - Create automated communication sequences leading up to booked events
-   - Send scheduled questionnaires to gather event details at optimal times
-   - Provide customized preparation guidance based on event type
-   - Send reminders for critical pre-event milestones
-   - This feature is essential because thorough pre-event preparation prevents mishaps, manages client expectations, and reduces last-minute questions, while ensuring Elena has all necessary information for successful event coverage.
+   - Distribute pre-event questionnaires and collect essential event details
+   - Send timely reminders about final payments and preparation information
+   - This feature is essential because it ensures clients are well-prepared for their photo sessions, all necessary information is collected in advance, and the photographer has the details needed for successful event coverage
 
-3. **Photo Gallery Delivery Automation and Access Tracking**
-   - Generate personalized gallery delivery emails with access credentials
-   - Track when clients access their galleries for the first time
-   - Send reminder sequences for galleries approaching expiration
-   - Monitor which photos clients view and favorite
-   - This feature is vital because timely gallery delivery with proper tracking enhances client satisfaction while providing valuable data on client preferences that can inform sales opportunities.
+3. **Photo Gallery Delivery Automation**
+   - Generate and send personalized gallery access information
+   - Track when clients view their galleries for the first time
+   - Monitor overall engagement with delivered photos
+   - This feature is vital because it streamlines the delivery of final photos to clients, creates a professional delivery experience, and provides insights into how clients are engaging with their images
 
-4. **Print Sales Follow-Up Based on Gallery Engagement**
-   - Analyze client gallery browsing patterns to identify print sale opportunities
-   - Create targeted follow-up emails highlighting favorited or frequently viewed images
-   - Send strategically timed discount offers or package promotions
-   - Track conversion rates from follow-up emails to print orders
-   - This feature is crucial because strategic, well-timed follow-ups based on actual client behavior dramatically increase print sales revenue, often doubling or tripling post-event income.
+4. **Print Order Opportunity Follow-up System**
+   - Create targeted follow-up sequences based on gallery engagement
+   - Generate personalized product suggestions based on viewed images
+   - Track conversion from gallery views to print orders
+   - This feature is important because it increases post-delivery sales through timely, relevant follow-ups that are triggered by client behavior, maximizing the revenue potential of each client relationship
 
-5. **Seasonal Promotion Scheduling for Booking Optimization**
-   - Schedule promotional email campaigns for traditionally slow booking periods
-   - Target past clients with anniversary or seasonal session opportunities
-   - Create referral incentive campaigns with tracking
-   - Monitor and analyze promotional campaign effectiveness
-   - This feature is invaluable because it helps balance the business throughout the year, filling low-season gaps with appropriate promotions while leveraging existing client relationships to generate new business.
+5. **Seasonal Promotion Scheduling**
+   - Plan and schedule promotional campaigns for booking slow periods
+   - Target appropriate client segments based on past booking patterns
+   - Track campaign performance and booking conversions
+   - This feature helps maintain consistent business throughout the year by proactively filling calendar gaps with targeted promotions to the right client segments at optimal times
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All email templates must be testable with mock client data
-- Calendar availability checking must be verifiable with test bookings
-- Gallery access tracking must be testable with simulated client behavior
-- Email sequence timing must be verifiable with accelerated test scenarios
-- Promotion effectiveness metrics must produce consistent, verifiable results
+- All email generation functions must be testable with mock client and booking data
+- Calendar availability checking must be verifiable with test booking scenarios
+- Event countdown sequence logic must be testable with simulated timelines
+- Gallery engagement tracking must produce consistent results with test access data
+- Campaign targeting must be testable with sample client segments
 
 ### Performance Expectations
-- Email template rendering must complete in under 200ms
-- Calendar availability checks must complete in under 500ms
-- The system must handle a client base of at least 200 active clients
-- Gallery tracking must support monitoring of at least 50 simultaneous active galleries
-- Promotional emails must support sending to at least 1,000 recipients per campaign
+- Inquiry processing should handle at least 50 inquiries per day efficiently
+- Event communication sequences should manage at least 100 active events simultaneously
+- Gallery delivery should process at least 20 full event galleries per day
+- Client engagement tracking should monitor at least 500 active galleries
+- The system should efficiently manage data for at least 1000 past and future clients
 
 ### Integration Points
-- IMAP/SMTP support for connecting to standard email providers
-- Calendar integration for availability management
-- Gallery hosting platform API integration
-- Payment processor webhook capability for sales tracking
-- CRM integration options for extended client relationship management
+- IMAP and SMTP libraries for email retrieval and sending
+- Template engine for dynamic content generation
+- SQLite or similar database for client and booking information
+- Calendar system for availability management
+- Basic analytics tools for engagement tracking
 
 ### Key Constraints
-- Client gallery access links must be secure and private
-- The system must function without reliance on specific gallery hosting platforms
-- Email operations must be fault-tolerant to prevent missed client communications
-- Storage requirements must be moderate for small business use
-- The system must maintain high deliverability rates for all emails
+- All communications must maintain consistent brand voice and professional presentation
+- Gallery delivery must handle sensitive access credentials securely
+- The system must respect client privacy and data protection regulations
+- Email sending must be rate-limited to prevent being flagged as spam
+- The implementation must be economical in terms of computational resources
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-PhotoMailFlow must provide a comprehensive API for email management focused on photography business needs:
+The core of the Photographer Email Automation Suite should provide:
 
-1. **Email Processing Engine**
-   - Connect to email accounts via IMAP/SMTP
-   - Apply classification rules to incoming inquiries and client messages
-   - Generate appropriate response templates based on message content
-   - Track response times and communication history
+1. **Inquiry Management Module**
+   - Processing incoming booking inquiries with automated parsing
+   - Checking calendar availability for requested dates
+   - Generating appropriate response templates with package information
+   - Tracking inquiry status and follow-up requirements
 
-2. **Event Management System**
-   - Track booked events, their details, and timelines
-   - Manage pre-event questionnaires and preparation sequences
-   - Monitor event-specific requirements and special requests
-   - Maintain post-event delivery schedules and deadlines
+2. **Booking Management System**
+   - Handling booking confirmations and contract processes
+   - Managing deposits and payment tracking
+   - Creating event profiles with all relevant details
+   - Supporting booking modifications and special requests
 
-3. **Client Database**
-   - Store client profiles with contact information and preferences
-   - Track event history and image preferences
-   - Maintain communication history and engagement metrics
-   - Analyze purchase patterns and opportunity indicators
+3. **Event Preparation Engine**
+   - Orchestrating pre-event communication sequences
+   - Distributing and collecting questionnaires and shot lists
+   - Sending preparation guidelines and logistics information
+   - Managing final confirmations before events
 
-4. **Gallery and Delivery Management**
-   - Track gallery creation and delivery status
-   - Monitor client engagement with delivered photos
-   - Manage gallery access, expiration, and renewal
-   - Identify trending images and client favorites for sales targeting
+4. **Gallery Delivery System**
+   - Creating and distributing gallery access credentials
+   - Tracking client engagement with delivered photos
+   - Monitoring download and viewing patterns
+   - Supporting client selections and favorites
 
-5. **Business Analytics Engine**
-   - Monitor inquiry-to-booking conversion rates
-   - Track print sales and upsell effectiveness
-   - Analyze seasonal booking patterns
-   - Generate actionable reports on business performance
+5. **Sales Opportunity Manager**
+   - Identifying print and product opportunities based on engagement
+   - Generating targeted follow-up communications
+   - Managing promotional campaigns and special offers
+   - Tracking conversion from gallery views to product orders
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Email template variable substitution must work correctly across all photography templates
-- Calendar availability checking must accurately reflect booked and blocked dates
-- Pre-event sequence timing must correctly adjust based on event date changes
-- Gallery access tracking must correctly identify client viewing patterns
-- Sales opportunity detection must accurately identify high-potential clients
+- Inquiry response generation with accurate availability information
+- Event countdown sequence timing and content appropriateness
+- Gallery delivery notification generation and tracking functionality
+- Print opportunity follow-up based on engagement triggers
+- Seasonal campaign targeting and delivery to appropriate segments
 
 ### Critical User Scenarios
-- A potential client inquires about a wedding date and receives accurate availability
-- A booked client receives the appropriate pre-event preparation sequence
-- A completed event gallery is delivered and client engagement is tracked
-- A client who viewed specific images multiple times receives targeted print offers
-- A past client receives seasonal promotion during a typically slow booking period
+- Processing a new booking inquiry with availability checking
+- Managing communications for an upcoming event through the full countdown sequence
+- Delivering a completed photo gallery and tracking client engagement
+- Generating follow-up communications based on gallery viewing patterns
+- Creating and sending targeted seasonal promotions to fill calendar gaps
 
 ### Performance Benchmarks
-- System must handle at least 50 new inquiries per week with automated responses
-- Gallery tracking must support at least 2,000 images across active galleries
-- Email sequence scheduling must handle at least 20 concurrent client journeys
-- Sales opportunity detection must analyze at least 10,000 gallery interactions daily
-- Promotional campaign management must support at least 12 scheduled campaigns
+- Inquiry processing should complete within 200ms per inquiry
+- Event sequence generation should handle 100+ simultaneous active events
+- Gallery tracking should monitor engagement for at least 500 active galleries
+- The system should efficiently process email for a business handling 200+ events per year
+- Database operations should complete within 200ms for typical queries
 
 ### Edge Cases and Error Conditions
-- System must handle date changes for booked events
-- Calendar conflicts must be identified and flagged appropriately
-- The system must gracefully handle email server connection failures
-- Gallery hosting platform API interruptions must not affect core email functionality
-- Client data must be recoverable in case of system failure
+- Handling inquiries for dates with partial availability
+- Managing rescheduled events and updated communication sequences
+- Dealing with delivery failures or access issues with galleries
+- Processing unusual engagement patterns that don't fit standard follow-up triggers
+- Handling conflicts between automated promotions and existing bookings
 
 ### Required Test Coverage Metrics
-- Unit test coverage must exceed 90% for all core modules
-- Integration tests must verify all system components working together
-- Performance tests must validate system under high-season load scenarios
-- Security tests must verify client data and gallery access protection
-- Regression tests must ensure functionality is preserved across updates
+- Minimum 90% code coverage across all modules
+- 100% coverage of availability checking functions
+- 100% coverage of event sequence generation logic
+- 100% coverage of gallery engagement tracking
+- Minimum 95% coverage of follow-up trigger conditions
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-A successful implementation of PhotoMailFlow will meet the following criteria:
+- Booking inquiry responses are correctly generated with accurate availability information
+- Event countdown sequences execute according to appropriate timelines
+- Gallery delivery notifications are properly generated and engagement is accurately tracked
+- Print opportunity follow-ups are triggered based on correct engagement patterns
+- Seasonal promotions are appropriately targeted to relevant client segments
+- All performance benchmarks are met under load testing
+- The system correctly handles all specified edge cases and error conditions
 
-1. **Efficiency Improvements**
-   - Reduce time spent on email management by at least 75%
-   - Decrease response time to inquiries by at least 90%
-   - Automate at least 90% of routine client communications
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Business Impact**
-   - Increase booking conversion rate by at least 30%
-   - Improve print sales revenue by at least 50%
-   - Reduce seasonal booking fluctuations by at least 25%
-   - Increase client satisfaction scores by at least 40%
+## Getting Started
+To set up the development environment:
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-3. **Technical Quality**
-   - Pass all specified test requirements with >90% coverage
-   - Meet or exceed all performance expectations
-   - Provide a clean, well-documented API that could be extended
-   - Operate reliably without unexpected crashes or data loss
-   - Maintain security of client information and gallery access
+CRITICAL: When testing your implementation, you MUST run tests with pytest-json-report and provide the pytest_results.json file:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
 
-4. **User Experience**
-   - Enable creation of new email templates in under 5 minutes
-   - Allow setup of new event types and sequences in under 15 minutes
-   - Provide clear visibility into business metrics and opportunities
-   - Generate useful analytics that drive business decisions
-
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+Providing the pytest_results.json file is MANDATORY for demonstrating that your implementation meets the requirements.

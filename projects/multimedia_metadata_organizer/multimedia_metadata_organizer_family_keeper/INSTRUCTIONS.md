@@ -1,138 +1,140 @@
-# Family Heritage Metadata Organization System
+# Family Archive Metadata Management System
 
 ## Overview
-A specialized metadata management system designed for organizing and preserving family multimedia archives spanning multiple generations. The system enables relationship tagging, generational timelines, voice recognition, collaborative annotation, and event correlation to create a comprehensive, accessible family history archive.
+A specialized metadata organization system for family memory keepers who need to digitize, organize, and make accessible decades of family photos, videos, and audio recordings across multiple generations.
 
 ## Persona Description
 Miguel is digitizing and organizing decades of family photos, videos, and audio recordings spanning multiple generations. He wants to create a comprehensive family archive that preserves memories and makes them accessible to relatives.
 
 ## Key Requirements
+1. **Family relationship tagging**: Develop a system that creates connections between individuals across different media types and maintains a family relationship graph. This is essential for navigating the archive by person and understanding the relationships between people appearing in different media over time.
 
-1. **Family Relationship Tagging**
-   - Creates and maintains connections between individuals across different media types and time periods
-   - Critical for Miguel because it establishes the family context for each item and enables browsing by person, relationship, or family branch
-   - Must support complex family structures including marriages, divorces, adoptions, and multigenerational relationships while adapting to changes over time
+2. **Generational timeline visualization**: Create functionality to organize media chronologically and by generation, showing family history through multimedia elements. This is crucial for understanding the historical context of family events and how family members relate to each other across time.
 
-2. **Generational Timeline Visualization**
-   - Organizes media chronologically within family generational context
-   - Essential for Miguel as it provides historical perspective and shows the progression of family history through visual and audio elements
-   - Must handle uncertain dates, date ranges, and organize concurrent events happening to different family branches
+3. **Voice recognition**: Implement capabilities to help identify family members in audio recordings and oral histories. This is important for preserving knowledge about who is speaking in recordings, especially for older media where this information might otherwise be lost.
 
-3. **Voice Recognition for Audio Identification**
-   - Identifies family members in audio recordings based on voice characteristics
-   - Valuable for Miguel's preservation of oral histories and voice recordings that might otherwise lose context about who is speaking
-   - Must create voice profiles for family members and assist with identifying speakers in historical recordings
+4. **Collaborative annotation**: Build a mechanism allowing remote family members to contribute identifications, stories, and context to media items. This enables the entire family to participate in building the archive and preserves knowledge that might otherwise be lost.
 
-4. **Collaborative Annotation**
-   - Enables remote family members to contribute identifications and contextual information
-   - Important for Miguel because it distributes the work of identification and leverages collective family knowledge
-   - Must track contribution sources, resolve conflicting information, and synchronize annotations across the collection
-
-5. **Family Event Correlation**
-   - Links media to significant dates and events in family history
-   - Crucial for Miguel's goal of preserving context, as it connects media to marriages, births, graduations, holidays, and other milestone events
-   - Must support both formal events (weddings, funerals) and informal gatherings, with the ability to define custom event types
+5. **Family event correlation**: Create a system that connects media to significant dates in family history such as weddings, births, holidays, and other milestones. This provides crucial context for understanding the significance of photos and recordings.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - All relationship mapping functions must be independently testable
-  - Timeline organization must be verifiable with sample family structures and dated media
-  - Voice recognition components must be testable with sample audio files
-  - Collaborative annotation mechanisms must verify conflict resolution
-  - Event correlation must be testable with simulated family timelines
+### Testability Requirements
+- All metadata management functions must be independently testable
+- Mock voice recognition services for testing without audio processing
+- Use test fixtures with sample family media and relationship data
+- Support isolated testing of collaborative functions
 
-- **Performance Expectations**
-  - Must efficiently handle family archives with 10,000+ media items
-  - Voice analysis should process audio files at faster than real-time rate
-  - Search and retrieval operations should return results in under 2 seconds
-  - Must scale efficiently as the family archive grows over decades
+### Performance Expectations
+- Handle archives with up to 100,000 media items efficiently
+- Process metadata updates in real-time for collaborative features
+- Support incremental batch processing for large import operations
+- Optimize for occasional use by non-technical family members
 
-- **Integration Points**
-  - Standard media metadata formats (EXIF, XMP, ID3)
-  - Calendar and date handling for event correlation
-  - Audio processing for voice recognition
-  - Genealogical data formats for family relationship information
+### Integration Points
+- Multiple media formats (photos, videos, audio recordings, documents)
+- Standard metadata formats (EXIF, IPTC, XMP, ID3)
+- Voice processing and recognition services
+- Calendar systems for event correlation
+- Family tree data structures and relationship calculations
 
-- **Key Constraints**
-  - Must be non-destructive to original files and metadata
-  - Must handle uncertain, incomplete, or conflicting family information
-  - Must respect privacy preferences for sensitive family content
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- Must preserve original metadata while adding family-specific enrichment
+- Operations must be robust against incomplete or conflicting information
+- Must support privacy controls for sensitive family information
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for family archives with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Family Relationship Management**
-   - Create and maintain a family tree structure
-   - Tag individuals across different media types
-   - Track relationships and their changes over time
+1. **Family Member Identification and Relationships**
+   - Create and manage person entities across the archive
+   - Define and visualize family relationships
+   - Track appearances of individuals across different media types
 
-2. **Temporal Organization**
-   - Organize media chronologically with generational context
-   - Handle uncertain dates and date ranges
-   - Create timelines of family events and associated media
+2. **Temporal Organization and Timelines**
+   - Normalize dates across different formats and metadata standards
+   - Organize media chronologically and by generation
+   - Connect media to significant family events and milestones
 
 3. **Audio and Voice Processing**
-   - Analyze and identify speakers in audio recordings
-   - Create voice profiles for family members
-   - Link oral histories to relevant individuals
+   - Process audio recordings to extract speaker information
+   - Associate voices with identified family members
+   - Transcribe and index spoken content for searching
 
-4. **Collaborative Features**
-   - Enable distributed contribution of identifications and context
-   - Track the source of contributed information
-   - Resolve conflicts in family metadata
+4. **Collaborative Metadata Enhancement**
+   - Support distributed annotation and identification
+   - Reconcile potentially conflicting information from multiple sources
+   - Track contribution provenance and confidence levels
 
-5. **Event and Context Association**
-   - Define and categorize family events
-   - Associate media with relevant events
-   - Capture contextual information about gatherings and milestones
+5. **Family Context and Event Correlation**
+   - Define and manage significant family events
+   - Associate media with relevant events and milestones
+   - Support searching and filtering by event context
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate creation and maintenance of family relationship networks
-  - Correct chronological organization with generational context
-  - Successful voice identification in audio recordings
-  - Proper handling of collaborative contributions and conflict resolution
-  - Accurate association of media with family events
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Adding a newly discovered collection of old family photos
-  - Identifying unknown individuals through collaborative input
-  - Creating a timeline of a specific family branch
-  - Associating media with a significant family event
-  - Searching for all media containing a specific family member
+1. **Family Relationship Management**
+   - Test creation and maintenance of family relationship graphs
+   - Verify correct relationship calculations (e.g., "great-aunt", "second cousin")
+   - Test identification and tracking of individuals across media
 
-- **Performance Benchmarks**
-  - Relationship queries must resolve in under 1 second even for complex family structures
-  - Voice analysis must process audio faster than real-time
-  - Timeline generation must handle 10,000+ items efficiently
-  - System must scale to accommodate growing archives over decades
+2. **Timeline Functionality**
+   - Test chronological organization with various date formats
+   - Verify generational grouping and visualization data
+   - Test handling of uncertain or estimated dates
 
-- **Edge Cases and Error Conditions**
-  - Incomplete or uncertain date information
-  - Conflicting identifications from multiple family members
-  - Complex family structures with multiple marriages and blended families
-  - Media featuring individuals before they joined the family
-  - Historical recordings with poor audio quality
+3. **Voice Recognition Integration**
+   - Test voice identification functionality with sample recordings
+   - Verify association of identified voices with family members
+   - Test handling of uncertain identifications
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage for core metadata processing
-  - 100% coverage for relationship mapping functions
-  - Comprehensive coverage of date handling and timeline generation
-  - Complete verification of collaborative contribution mechanisms
+4. **Collaborative Features**
+   - Test concurrent metadata additions from multiple sources
+   - Verify conflict resolution mechanisms
+   - Test provenance tracking for contributed information
+
+5. **Event Correlation**
+   - Test association of media with family events
+   - Verify filtering and searching by event context
+   - Test handling of recurring events (e.g., annual holidays)
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully organizes media by individual, relationship, and family branch.
-2. Generational timelines accurately represent family history through multimedia elements.
-3. Voice recognition correctly identifies speakers in at least 80% of clear audio recordings.
-4. Collaborative annotation mechanisms successfully integrate contributions from multiple family members.
-5. Media is correctly associated with significant events in family history.
-6. The system handles incomplete information and uncertain dates gracefully.
-7. Search operations efficiently find media based on people, relationships, events, or dates.
-8. The system maintains data integrity with no modification of original files.
-9. Performance benchmarks are met for archives with 10,000+ media items.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system can accurately track and visualize family relationships across media
+3. Generational timeline organization works correctly with various date formats
+4. Voice recognition integration successfully helps identify speakers in recordings
+5. Collaborative annotation functions support distributed family contributions
+6. Family event correlation successfully connects media to significant dates
+7. All tests pass when run with pytest
+8. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,150 +1,179 @@
-# Theater Production Content Management System
+# Theater Group Content Management System
 
 ## Overview
-A specialized content management system designed for community theater groups that enables collaborative content editing with fine-grained permissions, production scheduling, cast management, and ticketing integration. This system focuses on delegating content responsibilities while maintaining consistent branding across the theatrical organization.
+A specialized content management system designed for theater groups to manage productions, cast information, events, and ticket sales. This system enables theater directors to delegate specific content responsibilities to different team members while maintaining consistent branding and design across the entire site.
 
 ## Persona Description
 Marcus manages a community theater group and needs to update their website with new productions, cast information, and ticket sales. His primary goal is to delegate specific content responsibilities to different team members while maintaining consistent branding and design across the entire site.
 
 ## Key Requirements
 
-1. **Role-based Content Editing with Section Permissions**
-   - Implement a granular permission system that allows different team members to edit specific content sections
-   - Critical for Marcus because it enables him to delegate responsibilities (e.g., letting the costume designer update their section while preventing unauthorized edits to other areas) while maintaining overall site consistency
+1. **Role-based content editing with section-specific permissions**
+   - Critical for Marcus to delegate responsibilities to different team members (e.g., production manager updates show details, marketing coordinator handles ticket promotions)
+   - Must support granular permissions for specific content areas without allowing access to the entire system
+   - Should include approval workflows for content that requires director oversight before publication
 
-2. **Event Calendar with Production Scheduling**
-   - Create a robust calendar system for managing rehearsals, performances, and other theater events
-   - Essential for Marcus to coordinate the complex scheduling needs of a theater company, including multiple overlapping production timelines, venue availability, and public performances
+2. **Event calendar with rehearsal and performance scheduling**
+   - Essential for managing complex production schedules including rehearsals, performances, and special events
+   - Must distinguish between internal events (rehearsals, tech runs) and public events (performances, open houses)
+   - Should support recurring event patterns, exceptions, and rescheduling with notification capabilities
 
-3. **Cast and Crew Directory Management**
-   - Develop a system for managing performer and staff profiles with production history
-   - Important for showcasing the talented individuals involved in productions while maintaining an organized historical record of past participants and their roles
+3. **Cast and crew directory with bio management tools**
+   - Important for showcasing talent and recognizing contributions of volunteers and performers
+   - Must support self-service updates where cast/crew can edit their own profiles within guidelines
+   - Should include role history tracking to build performance history for each individual
 
-4. **Ticket Sales Tracking with Seat Visualization**
-   - Implement a ticketing data management system with seat selection capabilities
-   - Necessary for Marcus to monitor ticket sales, track available seating, and manage the theater's revenue stream for different productions and performance dates
+4. **Ticket sales tracking with seat selection visualization**
+   - Critical for managing venue capacity and ticket availability for each performance
+   - Must track sales, reservations, and attendance for financial and planning purposes
+   - Should visualize seat selection status for venues with assigned seating
 
-5. **Production Media Gallery**
-   - Create a media organization system categorized by production with video integration
-   - Crucial for archiving and showcasing the visual elements of each production, allowing the theater to build a historical record and marketing materials for promoting shows
+5. **Media gallery organized by production with video hosting integration**
+   - Necessary for archiving and promoting productions through photos, videos, and press materials
+   - Must organize media by production with appropriate metadata and searching
+   - Should support integration with video platforms for rehearsal recordings and production highlights
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each role permission combination must be independently testable
-- Calendar and scheduling functions must support time manipulation for testing
-- Directory and gallery components must be testable with mock data
-- Ticketing modules must support simulated sales scenarios
-- API endpoints must be testable without UI dependencies
+- All components must have unit tests with at least 85% code coverage
+- Integration tests must verify the permission system correctly restricts and allows appropriate access
+- Performance tests must ensure calendar operations scale with complex event schedules
+- Mock authentication system for testing role-based permissions
 
 ### Performance Expectations
-- Directory searches must return results in < 100ms even with 1000+ cast/crew profiles
-- Calendar operations should support at least 5 years of historical and future events
-- Media gallery must handle at least 10,000 assets with efficient retrieval
-- Permission checks should add minimal overhead (< 20ms) to content operations
-- System should handle concurrent editing by at least 20 team members
+- Calendar operations must complete within 200ms regardless of event volume
+- Media gallery must handle at least 1000 assets per production without performance degradation
+- Directory searches must return results within 500ms even with complex filtering
+- Ticket system must support at least 100 concurrent seat selection operations
 
 ### Integration Points
-- Calendar data export in iCal and other standard formats
-- Ticketing data interchange with external sales platforms
-- Media storage interface with configurable backends
-- Directory data import/export for season program generation
-- Role-based authentication system integration
+- Authentication system for role-based access control
+- Calendar export in iCal/Google Calendar format
+- Email notification system for schedule changes and approvals
+- API for ticket sales integration with external payment processors
 
 ### Key Constraints
-- Authorization must be separate from content management logic
-- All operations must be performable via API without UI
-- No direct database implementation dependencies
-- Content structure must maintain consistent branding regardless of editor
-- System must function with minimal dependencies beyond Python standard library
+- All user data must be securely stored with appropriate encryption
+- Media storage must support a variety of file formats with proper validation
+- System must maintain audit logs for all content changes for accountability
+- Calendar system must handle timezone considerations for touring productions
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Theater Production CMS includes:
+The system must provide a Python library with the following core components:
 
-1. **Permission and Role Management**
-   - Define granular content section permissions
-   - Manage user roles with inheritance capabilities
-   - Role assignment and permission verification
-   - Audit trail of content changes by role
+1. **User and Permission Management**
+   - Role definition and assignment system
+   - Section-based permission control
+   - Content approval workflows
+   - Audit logging for content operations
 
-2. **Event and Production Management**
-   - Calendar-based event creation and editing
-   - Production timeline with multiple event types
-   - Rehearsal vs. performance scheduling
-   - Recurring event patterns and exceptions
+2. **Production Management**
+   - Production data model with all relevant metadata
+   - Season and programming structure
+   - Show description and information management
+   - Performance schedule coordination
 
-3. **Directory Services**
-   - Cast and crew profile management
-   - Production-specific role assignments
-   - Biography and credit management
-   - Searchable directory with filtering options
+3. **Calendar and Scheduling System**
+   - Advanced event management with categorization
+   - Recurring event pattern support
+   - Conflict detection and resolution
+   - Public/private event distinction
 
-4. **Ticketing System**
-   - Seat inventory management
-   - Sales tracking and reporting
-   - Seat selection data representation
-   - Performance-specific pricing and availability
+4. **Cast and Crew Directory**
+   - Biography data model with role history
+   - Self-service profile management
+   - Role assignment and tracking
+   - Directory search and filtering
 
-5. **Media Asset Management**
-   - Production-categorized media organization
-   - Video hosting integration capabilities
-   - Metadata and tagging for assets
-   - Gallery generation and organization
+5. **Ticketing Infrastructure**
+   - Venue and seating chart management
+   - Ticket inventory and availability tracking
+   - Reservation and sales recording
+   - Performance attendance reporting
+
+6. **Media Asset Management**
+   - Production-oriented media organization
+   - Metadata tagging and categorization
+   - Gallery and collection creation
+   - Video integration and embedding
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Role-based access control for content sections
-- Calendar creation and manipulation with event scheduling
-- Directory entry creation, updating, and production association
-- Ticket sales data recording and seat availability tracking
-- Media upload, categorization, and retrieval
+- Role-based permissions correctly limit access to appropriate content sections
+- Calendar correctly handles complex scheduling patterns including conflicts
+- Directory accurately maintains biographical information and role history
+- Ticket system properly tracks availability and prevents double-booking
+- Media assets are correctly organized by production with appropriate metadata
 
 ### Critical User Scenarios
-- Assigning section-specific editing permissions to team members
-- Creating a new production with complete schedule of rehearsals and performances
-- Adding and managing cast and crew for a specific production
-- Tracking ticket sales and remaining seats for multiple performances
-- Organizing production photos and videos by production and category
+- Adding a new production with complete information and schedule
+- Delegating content responsibilities to different team members
+- Managing cast changes and updating associated content
+- Setting up a new venue with custom seating arrangement
+- Creating a comprehensive media archive for a past production
 
 ### Performance Benchmarks
-- Directory search response time with growing cast/crew database
-- Calendar query performance with multi-year data
-- Gallery retrieval performance with large media collections
-- Permission verification overhead during content operations
-- Concurrent editing operations by multiple users
+- Calendar system must handle a season with 200+ events in under 500ms
+- Directory searches must complete in under 300ms with 100+ cast/crew members
+- Media gallery must load metadata for 500+ assets in under 1 second
+- Permission checks must not add more than 50ms overhead to content operations
 
 ### Edge Cases and Error Conditions
-- Handling permission conflicts between roles
-- Managing schedule conflicts for venues and participants
-- Handling duplicate cast/crew entries and merging profiles
+- Handling scheduling conflicts and overlapping events
+- Managing cast changes mid-production
+- Recovering from incomplete content submissions
+- Handling duplicate biographical information
 - Managing sold-out performances and waiting lists
-- Recovering from failed media uploads or corrupted assets
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of permission-gated operations
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for all permission combinations
+- Minimum 85% code coverage across all modules
+- 100% coverage of permission control logic
+- 100% coverage of ticket availability calculations
+- 100% coverage of calendar conflict detection
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Content editing permissions can be assigned by section with proper isolation
-2. Productions can be scheduled with complete rehearsal and performance calendars
-3. Cast and crew directory can be managed with production-specific associations
-4. Ticket sales and seat availability can be accurately tracked across performances
-5. Media assets can be organized and retrieved by production and category
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. Permission boundaries are enforced correctly in all scenarios
-9. All tests pass, demonstrating the functionality works as expected
+1. The permission system correctly enforces role-based access to different content sections
+2. The calendar system accurately manages complex production schedules with public/private distinction
+3. The directory maintains comprehensive cast/crew information with role history
+4. The ticketing system tracks availability and prevents booking conflicts
+5. The media system organizes assets by production with appropriate metadata
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

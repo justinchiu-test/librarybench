@@ -1,168 +1,153 @@
-# TermTask for Technical Writers
+# DocTask CLI - Command-Line Task Management for Technical Documentation
 
 ## Overview
-A specialized command-line task management system designed for technical writers who create and maintain documentation for complex software systems. This variant focuses on documentation structure management, screenshot integration, style guide validation, translation tracking, and reader feedback incorporation to streamline the documentation workflow.
+A specialized command-line task management system designed for technical writers creating documentation for complex software systems. The system enables tracking of content creation tasks across multiple documents and platforms, organization of documentation tasks by product component, and comprehensive tracking of dependencies between related content pieces.
 
 ## Persona Description
 Sam creates documentation for complex software systems and needs to track content creation tasks across multiple documents and platforms. His primary goal is to organize documentation tasks by product component and track dependencies between related content pieces.
 
 ## Key Requirements
+1. **Documentation Structure Viewer**: Implement a hierarchical visualization system that shows content organization, relationships, and identifies gaps in documentation coverage. This feature is critical for Sam as it provides a clear overview of the entire documentation ecosystem, helps identify missing or outdated content areas that require attention, and aids in planning comprehensive documentation that covers all product components.
 
-1. **Documentation Structure Visualization**
-   - Display content hierarchy showing documents and sections
-   - Identify documentation gaps and outdated content
-   - Visualize relationships between content pieces
-   - Track documentation coverage across product components
-   - This feature is critical because it gives Sam a comprehensive view of the documentation ecosystem, helping identify missing content, prioritize updates for outdated sections, and ensure consistent coverage across the entire product.
+2. **Screenshot/Image Capture Integration**: Create functionality to capture, organize, and embed visual content directly within task completion workflows. This capability enables Sam to efficiently document user interfaces and processes with visual evidence, maintain consistent image quality and formatting across documentation, and streamline the often time-consuming process of creating and managing documentation visuals.
 
-2. **Screenshot and Image Management**
-   - Capture and organize screenshots directly within tasks
-   - Tag images with metadata for easy searching
-   - Track image updates when UI changes occur
-   - Link screenshots to specific documentation sections
-   - This capability is essential because technical documentation heavily relies on visual aids, and Sam needs to efficiently capture, organize, and maintain screenshots as products evolve, ensuring documentation remains visually accurate.
+3. **Style Guide Compliance Checking**: Develop automated verification of completed documentation against organizational style standards and writing guidelines. This feature allows Sam to ensure consistency across all documentation products, identify and correct style issues before publication, and maintain high-quality standards even when multiple writers contribute to the documentation set.
 
-3. **Style Guide Compliance Checking**
-   - Validate documentation against style guide rules
-   - Highlight style inconsistencies and terminology issues
-   - Track common style issues for writer education
-   - Generate style compliance reports for documentation sets
-   - This feature is vital because it ensures documentation consistency across large content sets, maintains brand voice and terminology standards, and helps Sam identify recurring style issues to improve his writing.
+4. **Translation Tracking**: Implement a system for managing multilingual documentation with status tracking for each language variant. This functionality helps Sam coordinate translation efforts across multiple languages, maintain awareness of which content requires updating in each language when source documents change, and ensure consistent documentation availability across all supported languages.
 
-4. **Translation Management System**
-   - Track content translations across multiple languages
-   - Identify documentation requiring translation updates
-   - Monitor translation progress and completeness
-   - Generate reports on translation coverage and status
-   - This functionality is critical because Sam works on multilingual documentation, and needs to efficiently track which content needs translation, coordinate with translation teams, and ensure all language versions remain synchronized.
-
-5. **Reader Feedback Integration**
-   - Create tasks from user questions and comments
-   - Categorize feedback by documentation area and type
-   - Track documentation improvements based on feedback
-   - Measure documentation effectiveness through feedback metrics
-   - This feature is essential because it transforms user input into actionable improvements, helps prioritize documentation work based on user needs, and provides metrics on documentation effectiveness.
+5. **Reader Feedback Integration**: Build a mechanism that converts user questions and feedback into actionable documentation tasks. This system enables Sam to improve documentation based on actual user needs, identify areas where existing documentation is unclear or insufficient, and prioritize documentation efforts based on quantifiable user challenges.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock documentation structure for testing hierarchy visualization
-- Virtual screenshot system for testing image management
-- Sample style guide rules for testing compliance checking
-- Simulated translation database for testing multilingual tracking
-- Synthetic reader feedback for testing feedback processing
+- Documentation structure analysis must be testable with sample content hierarchies
+- Screenshot capture must be verifiable without actual UI interactions
+- Style checking must be testable against predefined style rules
+- Translation tracking must be verifiable with simulated language variants
+- Feedback processing must be testable with sample user comments
+- All components must be unit testable with appropriate mocking
 
 ### Performance Expectations
-- Support for documentation hierarchies with 10,000+ pages
-- Handle 5,000+ screenshots with metadata and searching
-- Style guide checking for 1,000+ page document sets in under 5 minutes
-- Translation tracking across 20+ languages for all content
-- Process and categorize 1,000+ reader feedback items per day
+- Structure visualization must handle documentation sets with 10,000+ pages
+- Screenshot management must efficiently handle 5,000+ images
+- Style checking must validate documents at a rate of at least 100 pages per second
+- Translation tracking must maintain performance with 20+ language variants
+- Feedback processing must handle 1,000+ user comments per day
+- The system must support at least 50 simultaneous documentation projects
 
 ### Integration Points
-- Documentation platforms (static site generators, CMSes)
-- Image capture and manipulation tools
-- Style checking and linting tools
-- Translation management systems
-- User feedback channels (forums, email, surveys)
+- Documentation management systems
+- Image capture and processing tools
+- Style checking libraries and custom rules
+- Translation management platforms
+- Feedback collection channels
+- Content publishing systems
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Cannot modify documentation source without explicit approval
-- Support for standard documentation formats (Markdown, AsciiDoc, etc.)
-- Minimal external dependencies for portability
-- Must handle large documentation sets efficiently
+- The implementation must work with multiple documentation formats (Markdown, AsciiDoc, etc.)
+- All functionality must be accessible via programmatic API without UI components
+- The system must maintain content relationships across documentation reorganizations
+- Processing must be efficient enough for real-time style feedback
+- Storage must be optimized for large numbers of visual assets
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for technical writers includes:
+1. **Documentation Task Management**: A core module handling CRUD operations for documentation tasks with advanced metadata including component relationships, content type, audience, and platform.
 
-1. **Documentation Task Management Core**
-   - Create, read, update, and delete documentation tasks
-   - Organize tasks by product, component, and document type
-   - Track task dependencies and blocking relationships
-   - Support for documentation workflows and approval processes
-   - Persistence with version history and change tracking
+2. **Content Structure Analysis**: Components for parsing, analyzing, and visualizing documentation hierarchies, relationships, and coverage metrics.
 
-2. **Documentation Structure Engine**
-   - Parse and analyze documentation file structures
-   - Build hierarchical representation of content
-   - Identify content gaps and outdated sections
-   - Visualize content relationships and dependencies
-   - Track documentation coverage metrics
+3. **Visual Asset Management**: A system for capturing, processing, storing, and embedding screenshots and other visual content with appropriate metadata.
 
-3. **Image Management System**
-   - Capture and store screenshots with metadata
-   - Organize images by product area and purpose
-   - Track image-to-documentation relationships
-   - Support image comparison for detecting UI changes
-   - Implement image search and retrieval
+4. **Style Compliance Engine**: Logic for checking content against configurable style rules, terminology standards, and formatting guidelines.
 
-4. **Style Compliance Framework**
-   - Define and store style guide rules
-   - Implement rule checking against documentation
-   - Generate style compliance reports
-   - Track common style issues by writer and content area
-   - Support for custom terminology dictionaries
+5. **Translation Coordination**: Functionality to track content variants across languages, synchronize updates, and manage translation workflows.
 
-5. **Translation Coordination System**
-   - Track content translation status across languages
-   - Identify content requiring translation updates
-   - Monitor translation workflows and deadlines
-   - Calculate translation completeness metrics
-   - Generate translation status reports
+6. **Feedback Processing**: Mechanisms to collect, categorize, and convert user feedback into actionable documentation tasks with prioritization.
 
-6. **Feedback Processing Engine**
-   - Collect and normalize reader feedback
-   - Categorize feedback by type and content area
-   - Create actionable tasks from feedback items
-   - Track documentation improvements from feedback
-   - Analyze feedback patterns and trends
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Documentation structure is correctly visualized and analyzed
-- Screenshots are properly captured, stored, and linked to content
-- Style guide compliance checking accurately identifies issues
-- Translation status is correctly tracked across languages
-- Reader feedback is properly processed into actionable tasks
+- Documentation task creation, retrieval, updating, and deletion with component associations
+- Content structure analysis with accurate gap identification
+- Screenshot capture and management with proper metadata
+- Style checking against configurable rule sets
+- Translation tracking across multiple languages
+- Feedback conversion to actionable tasks
 
 ### Critical User Scenarios
-- Planning a new documentation section with proper structure
-- Updating screenshots across multiple documents after a UI change
-- Checking a large documentation set for style compliance
-- Coordinating translation updates after content changes
-- Processing reader feedback to improve documentation quality
+- Planning and tracking documentation for a new product release
+- Identifying documentation gaps and prioritizing content creation
+- Managing visual assets across multiple documentation sets
+- Ensuring style consistency throughout large documentation projects
+- Coordinating translation efforts for multilingual documentation
+- Improving documentation based on user feedback patterns
 
 ### Performance Benchmarks
-- Documentation structure analysis for 5,000+ files in under 30 seconds
-- Screenshot management operations (capture, store, retrieve) in under 2 seconds
-- Style checking 100-page document in under 10 seconds
-- Translation status updates processed in real-time (< 1 second)
-- Feedback categorization and task creation in under 3 seconds per item
+- Task operations must complete in <50ms for individual operations
+- Structure analysis must process documentation sets with 10,000+ pages
+- Screenshot management must handle libraries with 5,000+ images
+- Style checking must validate at least 100 pages per second
+- Translation tracking must efficiently handle 20+ language variants
+- Feedback processing must convert 50+ comments per second
 
 ### Edge Cases and Error Conditions
-- Handling malformed documentation structures
-- Managing broken image references or corrupted screenshots
-- Processing documents with severe style issues
-- Tracking partial or in-progress translations
-- Handling ambiguous or conflicting reader feedback
-- Operating with large legacy documentation sets
+- Handling complex circular references in documentation structures
+- Managing failed screenshot captures gracefully
+- Appropriate behavior with conflicting or ambiguous style rules
+- Maintaining translation relationships through major content restructuring
+- Proper processing of unusual or malformed user feedback
+- Graceful degradation with extremely large documentation projects
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for documentation parsing and structure analysis
-- Comprehensive integration tests for tool connections
-- Performance tests for large documentation sets
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Storage optimization must be explicitly verified
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully visualizes documentation structure and identifies gaps
-- Screenshot management streamlines the process of maintaining visual documentation
-- Style guide compliance checking ensures consistent documentation quality
-- Translation tracking ensures multilingual documentation remains synchronized
-- Reader feedback is efficiently transformed into documentation improvements
-- Technical writer productivity increases by at least 25%
-- Documentation quality metrics show measurable improvement
-- Reader reported issues decrease by at least 30% after implementation
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system effectively visualizes documentation structure with accurate gap identification.
+3. Screenshot capture and management is integrated with task workflows.
+4. Style checking verifies content against configurable organizational guidelines.
+5. Translation tracking manages content status across multiple language variants.
+6. Reader feedback is successfully converted into actionable documentation tasks.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation supports the complete documentation management lifecycle.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

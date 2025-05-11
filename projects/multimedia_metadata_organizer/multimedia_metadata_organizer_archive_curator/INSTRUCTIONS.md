@@ -1,137 +1,140 @@
-# Historical Media Archive Metadata Enhancement System
+# Historical Archive Metadata Management System
 
 ## Overview
-A specialized metadata management system for historical archives that standardizes, enriches, and organizes metadata for historical photo collections. The system implements period-appropriate taxonomies, extracts handwritten notations, performs historical geocoding, tracks provenance, and generates academic citations to make archives more accessible for scholarly research.
+A specialized metadata system for historical archive curators who need to establish standardized cataloging practices for photograph collections spanning over a century. The system focuses on enhancing incomplete metadata using historically accurate information and making collections academically valuable.
 
 ## Persona Description
 Dr. Chen manages a university's historical photograph collection spanning over a century of images with inconsistent or missing metadata. He needs to establish standardized cataloging practices and enhance existing metadata to make the collection academically valuable.
 
 ## Key Requirements
+1. **Period-appropriate taxonomies**: Implement historically accurate categorization schemes that allow classification using terminology appropriate to the time period of each photograph. This is crucial for maintaining historical accuracy and enabling proper contextual searching of archives.
 
-1. **Period-Appropriate Taxonomies**
-   - Implements historically accurate categorization schemes that reflect the terminology and classification systems of different time periods
-   - Critical for Dr. Chen because it preserves historical context and allows researchers to understand materials within their original frameworks rather than imposing modern classifications anachronistically
-   - Must support multiple overlapping taxonomy systems that can evolve over different historical periods
+2. **Handwritten notation extraction**: Develop functionality to digitize and associate handwritten notes from physical photographs with their digital counterparts. This preserves crucial context that may not exist in other metadata and captures information from the original archivists or photographers.
 
-2. **Handwritten Notation Extraction**
-   - Digitizes and associates handwritten notes from physical photographs with their digital counterparts
-   - Essential for Dr. Chen's work as these annotations often contain irreplaceable contextual information from the time of creation or from historical archivists
-   - Must preserve the original text while making it searchable and linking it to the appropriate digital asset
+3. **Historical geocoding**: Create a system to match outdated place names with their modern equivalents, allowing location-based searches using either historical or contemporary geographic references. This is essential for placing photographs in their proper geographic context despite changing boundaries and place names.
 
-3. **Historical Geocoding**
-   - Maps historical place names, boundaries, and locations to their modern equivalents
-   - Crucial for Dr. Chen's research as it allows spatial organization of collections that reference places that may have changed names, boundaries, or ceased to exist
-   - Must handle ambiguity and changes in political geography over time
+4. **Provenance tracking**: Build a comprehensive system for documenting acquisition sources and chain of ownership for each item in the collection. This is vital for establishing authenticity and fulfilling academic requirements for citation and verification.
 
-4. **Provenance Tracking**
-   - Documents the acquisition source, chain of ownership, and authentication information for each item
-   - Vital for Dr. Chen to maintain academic credibility and establish the authenticity of historical materials
-   - Must create verifiable records that meet scholarly standards for historical research
-
-5. **Academic Citation Generator**
-   - Creates properly formatted citations according to various academic style guides
-   - Indispensable for Dr. Chen as it facilitates scholarly use of the archive and ensures proper attribution
-   - Must support multiple citation formats (Chicago, MLA, APA, etc.) and incorporate all relevant metadata
+5. **Academic citation generator**: Implement functionality to create properly formatted references for scholarly use following various academic citation styles. This facilitates the use of the archive in academic publications and ensures proper attribution.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - All taxonomy classification functions must be independently testable
-  - Handwritten text extraction algorithms must be testable with sample images
-  - Historical geocoding must be verifiable against known historical-to-modern location mappings
-  - Provenance tracking must maintain verifiable chains with complete audit trails
-  - Citation generation must produce output that validates against style guide specifications
+### Testability Requirements
+- All metadata enhancement functions must be independently testable
+- Mock external OCR services for handwritten notation extraction testing
+- Create test fixtures with sample historical metadata of varying completeness
+- Ensure all database operations are transactional to allow test isolation
 
-- **Performance Expectations**
-  - Must efficiently process and organize collections of at least 100,000 historical items
-  - Batch processing operations should handle at least 1,000 items per hour
-  - Search operations across complex historical metadata should return results in under 3 seconds
+### Performance Expectations
+- Process metadata for at least 500 images per minute
+- Handle collections with up to 1 million items efficiently
+- Search operations should complete in under 3 seconds even with complex historical queries
+- Batch operations should be resumable in case of interruption
 
-- **Integration Points**
-  - Standard archival metadata formats (Dublin Core, MODS, EAD)
-  - Historical gazetteer and place name databases
-  - Academic citation style guides and formats
-  - Authentication and provenance documentation standards
+### Integration Points
+- Common image file formats (JPEG, TIFF, PNG) and their metadata structures
+- Standard metadata formats (EXIF, IPTC, XMP, Dublin Core)
+- OCR services for handwritten notation digitization
+- Geocoding and historical mapping services
+- Academic citation formats (Chicago, MLA, APA, etc.)
 
-- **Key Constraints**
-  - Must preserve all original metadata, even when enhancing or correcting it
-  - Must maintain clear distinction between original and added/enhanced metadata
-  - Must handle incomplete historical records gracefully
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- Must preserve original metadata even when enhancing or correcting it
+- Storage requirements must be optimized for large historical collections
+- Must support both modern and historical date formats and calendars
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for historical archives with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Historical Metadata Standardization**
-   - Normalize inconsistent historical metadata to standard formats
-   - Map varied terminology to controlled vocabularies while preserving original terms
-   - Establish consistent dating conventions for items with uncertain temporality
+1. **Historical Taxonomy Management**
+   - Define and manage period-appropriate classification schemes
+   - Map historical terms to modern equivalents for cross-period searching
+   - Support hierarchical taxonomies with proper historical relationships
 
-2. **Taxonomy Implementation and Management**
-   - Create and maintain period-appropriate classification systems
-   - Apply multiple taxonomies to the same item for different research perspectives
-   - Track the historical evolution of classification systems
+2. **Metadata Enhancement and Standardization**
+   - Extract existing metadata from various file formats
+   - Normalize inconsistent metadata using configurable rules
+   - Enhance incomplete metadata through inference and external sources
 
-3. **Supplementary Information Extraction**
-   - Process and associate handwritten annotations with digital assets
-   - Extract contextual information from physical media characteristics
-   - Link related historical materials across formats
+3. **Handwritten Notation Processing**
+   - Interface with OCR services to digitize handwritten notes
+   - Associate transcribed text with the correct digital image
+   - Handle uncertainty in transcription with confidence scoring
 
-4. **Geospatial and Temporal Organization**
-   - Map historical locations to modern coordinates
-   - Resolve ambiguous or changed place names
-   - Create temporal relationships between items across time periods
+4. **Geographic and Temporal Context**
+   - Resolve historical place names to both historical and modern geospatial data
+   - Handle ambiguous or changing geographic boundaries
+   - Normalize various date formats and calendar systems
 
-5. **Academic Accessibility**
-   - Generate properly formatted citations for scholarly use
-   - Document provenance and authentication information
-   - Create metadata that facilitates academic research and discovery
+5. **Provenance and Academic Integration**
+   - Track acquisition sources and ownership changes
+   - Generate citations in multiple academic formats
+   - Create metadata exports suitable for academic databases
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate implementation of period-appropriate taxonomies
-  - Successful extraction and association of handwritten notations
-  - Correct mapping of historical locations to modern equivalents
-  - Complete and accurate provenance tracking
-  - Properly formatted academic citations in multiple styles
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Processing a newly acquired collection of historical photographs
-  - Enhancing metadata for previously cataloged materials
-  - Resolving conflicting historical information across multiple sources
-  - Tracking the chain of custody for sensitive historical materials
-  - Preparing collection metadata for academic publication
+1. **Taxonomy Implementation**
+   - Verify correct application of period-appropriate taxonomies
+   - Test classification of items across different historical periods
+   - Verify taxonomy mapping for cross-period searching
 
-- **Performance Benchmarks**
-  - Taxonomy classification must process at least 10 items per second
-  - Historical geocoding must resolve at least 90% of identifiable locations
-  - Search operations must scale efficiently with collection size
-  - System must handle collections of 100,000+ historical items
+2. **Metadata Processing**
+   - Test extraction and normalization from various file formats
+   - Verify handling of incomplete or inconsistent metadata
+   - Test inference of missing metadata
 
-- **Edge Cases and Error Conditions**
-  - Items with conflicting or contradictory historical information
-  - Materials with extremely limited original metadata
-  - Locations that have undergone multiple name or boundary changes
-  - Items with uncertain dating or attribution
-  - Materials with complex or uncertain provenance
+3. **Notation Extraction**
+   - Test OCR integration with various handwriting samples
+   - Verify correct association of transcribed text with images
+   - Test confidence scoring for uncertain transcriptions
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage for core metadata processing
-  - 100% coverage for provenance tracking functions
-  - Comprehensive coverage of historical geocoding edge cases
-  - Complete verification of citation formats against style guides
+4. **Geographic Functions**
+   - Test resolution of historical place names
+   - Verify handling of changing geographic boundaries
+   - Test searches using both historical and modern place names
+
+5. **Provenance and Citation**
+   - Verify tracking of complex acquisition histories
+   - Test generation of citations in multiple academic formats
+   - Test export compatibility with academic systems
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully normalizes and enhances metadata for at least 95% of collection items.
-2. Period-appropriate taxonomies are correctly implemented and applied across the collection.
-3. Handwritten notations are successfully extracted and associated with their digital counterparts.
-4. Historical locations are accurately mapped to their modern equivalents with at least 90% accuracy.
-5. Provenance information is completely and accurately tracked for all items.
-6. Generated academic citations conform precisely to specified style guides.
-7. The system maintains clear distinction between original and enhanced metadata.
-8. Performance benchmarks are met for collections of 100,000+ items.
-9. The system gracefully handles items with limited or conflicting historical information.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system can accurately apply period-appropriate taxonomies
+3. Handwritten notation extraction works with reasonable accuracy
+4. Historical geocoding successfully maps between historical and modern place names
+5. Provenance tracking maintains complete chains of ownership
+6. Citation generation works correctly in multiple academic formats
+7. All tests pass when run with pytest
+8. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

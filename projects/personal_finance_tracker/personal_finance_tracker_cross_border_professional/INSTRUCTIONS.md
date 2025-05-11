@@ -1,172 +1,162 @@
 # Multi-Currency International Finance Management System
 
 ## Overview
-A comprehensive financial management system designed for professionals working across international borders who need to track finances in multiple currencies, manage complex international tax obligations, monitor accounts in different countries, and optimize financial decisions across national boundaries.
+A specialized financial management system designed for professionals who work across international boundaries, dealing with multiple currencies, international tax obligations, and financial accounts in different countries. The system provides comprehensive tools for multi-currency management, international tax compliance, cross-border financial reporting, and optimizing global financial decisions.
 
 ## Persona Description
 Priya works internationally and deals with multiple currencies, international tax obligations, and financial accounts in different countries. She needs to track assets and liabilities across national boundaries while optimizing for complex international tax situations.
 
 ## Key Requirements
-1. **Multi-currency support with historical exchange rate tracking and conversion**
-   - Support for tracking accounts and transactions in multiple currencies
-   - Historical exchange rate data storage and retrieval
-   - Real-time and user-defined exchange rate application
-   - Currency gain/loss calculation and tracking
-   - Critical for maintaining an accurate picture of finances spread across different currencies and understanding the impact of currency fluctuations on overall wealth
+1. **Multi-currency support with historical exchange rate tracking and conversion**  
+   Priya regularly transacts in multiple currencies and needs to understand her financial position in both local currencies and her base currency. The system must maintain historical exchange rate data, automatically convert transactions between currencies, track realized and unrealized currency gains/losses, and provide a consolidated financial view with appropriate currency translation for reporting and analysis.
 
-2. **Country-specific tax rule application for different income streams**
-   - Support for multiple tax jurisdictions simultaneously
-   - Income source categorization by country of origin
-   - Tax treaty benefit application and tracking
-   - Foreign tax credit calculation and optimization
-   - Essential for properly managing tax obligations across multiple countries and avoiding double taxation while remaining compliant
+2. **Country-specific tax rule application for different income streams**  
+   With income sources in multiple countries, Priya faces complex tax situations governed by different national regulations. The system needs to categorize income according to source country, apply appropriate country-specific tax rules (rates, deductions, credits), account for tax treaties between countries, and optimize tax positions while ensuring compliance with all applicable jurisdictions.
 
-3. **Foreign account reporting compliance for tax requirements like FBAR or FATCA**
-   - Tracking of foreign account balances for reporting thresholds
-   - Documentation of account information required for compliance
-   - Record-keeping for historical account values on reporting dates
-   - Automated report generation for common foreign account disclosures
-   - Necessary for meeting complex international reporting requirements and avoiding substantial penalties for non-compliance
+3. **Foreign account reporting compliance for tax requirements like FBAR or FATCA**  
+   As someone with financial accounts in multiple countries, Priya must comply with foreign account reporting requirements such as the US Foreign Bank Account Report (FBAR) and Foreign Account Tax Compliance Act (FATCA). The system must track foreign account balances, monitor reporting thresholds, generate required reporting information, and provide alerts for filing deadlines to ensure compliance and avoid penalties.
 
-4. **International cost-of-living adjustments when moving between assignments**
-   - Cost of living indexing for different locations
-   - Budget adaptation when relocating internationally
-   - Purchasing power parity calculations
-   - Expense normalization across different economies
-   - Vital for understanding the real impact of expenses and income in different locations and making appropriate financial decisions during transitions
+4. **International cost-of-living adjustments when moving between assignments**  
+   Priya periodically relocates between countries and needs to adjust her financial planning based on different cost-of-living environments. The system should provide location-based budget calibration, automatically adjust spending categories based on local norms, compare purchasing power between locations, and help maintain consistent lifestyles across international moves despite varying local costs.
 
-5. **Remittance optimization identifying the most cost-effective ways to move money internationally**
-   - Comparison of money transfer methods and costs
-   - Timing optimization for currency exchanges
-   - Fee and spread tracking for international transfers
-   - Historical analysis of transfer costs and savings
-   - Important for minimizing the substantial costs associated with moving money across borders and between currencies
+5. **Remittance optimization identifying the most cost-effective ways to move money internationally**  
+   Priya frequently transfers money between accounts in different countries and currencies. The system must analyze and compare various transfer methods (bank wires, fintech platforms, cryptocurrency), track transfer fees and exchange rate margins, recommend optimal timing for transfers based on currency trends, and select the most cost-effective method for each international money movement.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Currency conversion calculations must be deterministic and unit-testable
-  - Tax calculations must be verifiable against known international tax scenarios
-  - Exchange rate applications must be testable with historical rate data
-  - Reporting threshold monitoring must be verifiable for compliance testing
-  - Transfer optimization algorithms must demonstrate cost savings
+- **Testability Requirements:**
+  - Currency conversion functions must be tested with historical exchange rate data
+  - Tax calculations must be validated against official country-specific rules
+  - Foreign account reporting thresholds must be accurately monitored
+  - Remittance option comparisons must be testable with varied market conditions
 
-- **Performance Expectations**
-  - Support for high-volume transaction history in multiple currencies
-  - Fast recalculation when exchange rates or tax rules change
-  - Efficient handling of complex tax calculations across jurisdictions
-  - Quick comparison of money transfer alternatives
-  - Responsive operation even with accounts in many countries
+- **Performance Expectations:**
+  - System must handle at least 10 different currencies simultaneously
+  - Tax calculations must complete in under 3 seconds for multi-country scenarios
+  - Foreign account balance tracking must support daily updates across 20+ accounts
+  - Cost-of-living comparisons must process in under 2 seconds between any countries
 
-- **Integration Points**
-  - Import capabilities for bank and financial institution data worldwide
-  - Access to historical and current exchange rate data
-  - Country-specific tax rule databases
-  - Cost of living index information
-  - Money transfer service rate information
+- **Integration Points:**
+  - Exchange rate data source integration
+  - International tax rule database with regular updates
+  - Foreign account data aggregation
+  - Remittance service rate and fee information
 
-- **Key Constraints**
-  - High accuracy requirements for currency conversion (4+ decimal places)
-  - Clear identification of assumptions in tax calculations
-  - Transparent methodology for all cost comparisons
-  - Regular updates to reflect changing regulations
-  - Proper handling of timezone differences for transaction timing
+- **Key Constraints:**
+  - Currency conversion must be accurate to at least 4 decimal places
+  - Tax calculations must adapt to changing international tax laws
+  - All date handling must properly account for different time zones
+  - System must maintain audit trails for cross-border transactions
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide these core components:
+The system must implement these core components:
 
-1. **Multi-Currency Account Management**
-   - Account creation in any currency
-   - Currency-aware transaction recording
-   - Balance calculation with exchange rate application
-   - Currency gain/loss tracking and analysis
+1. **Multi-Currency Management System:**
+   - Currency definition and configuration
+   - Historical exchange rate database
+   - Automatic currency conversion
+   - Unrealized/realized gain/loss tracking
+   - Base currency reporting with appropriate translations
 
-2. **International Tax Management**
-   - Multi-jurisdiction tax tracking
-   - Income source and type categorization
+2. **International Tax Engine:**
+   - Country-specific tax rule repository
+   - Source-based income categorization
+   - Multi-jurisdiction tax calculation
+   - Tax treaty application
    - Foreign tax credit optimization
-   - Tax treaty benefit application
 
-3. **Compliance Reporting**
-   - Foreign account balance monitoring
-   - Reporting threshold alerts
-   - Historical record maintenance
-   - Report generation for tax authorities
+3. **Foreign Account Compliance Tracker:**
+   - Account registry with jurisdictional tagging
+   - Balance history tracking in original and base currencies
+   - Threshold monitoring for reporting requirements
+   - Filing deadline management
+   - Compliance report generation
 
-4. **Global Cost of Living Analysis**
-   - Location-based cost indexing
-   - Budget adjustment for relocations
-   - Expense normalization across countries
+4. **Global Cost-of-Living Analyzer:**
+   - Location-based expense normalization
+   - Budget adaptation for different countries
    - Purchasing power comparison
+   - Lifestyle maintenance calculation
+   - Relocation financial planning
 
-5. **International Money Movement**
+5. **Cross-Border Transfer Optimizer:**
    - Transfer method comparison
-   - Fee and exchange rate tracking
-   - Timing optimization suggestions
-   - Transfer history and cost analysis
-
-6. **Reporting and Analytics**
-   - Consolidated net worth across currencies
-   - Currency exposure visualization
-   - Tax efficiency metrics
-   - International financial performance analysis
-   - Location-based financial comparisons
+   - Fee and exchange rate analysis
+   - Timing recommendation based on market conditions
+   - Transfer history tracking
+   - Recurring transfer optimization
 
 ## Testing Requirements
-- **Key Functionalities for Verification**
-  - Accuracy of multi-currency calculations and conversions
-  - Correct application of international tax rules
-  - Proper identification of reportable foreign accounts
-  - Precision of cost-of-living adjustments
-  - Effective optimization of international money transfers
+- **Key Functionalities to Verify:**
+  - Accurate currency conversion using historical exchange rates
+  - Correct application of country-specific tax rules to various income streams
+  - Proper monitoring of foreign account balances for reporting requirements
+  - Accurate cost-of-living adjustments between different locations
+  - Optimal selection of money transfer methods based on costs and exchange rates
 
-- **Critical User Scenarios**
-  - Managing accounts and transactions across multiple currencies
-  - Calculating tax obligations in several countries simultaneously
-  - Tracking foreign accounts for reporting compliance
-  - Adjusting budgets when relocating internationally
-  - Comparing options for transferring money between countries
+- **Critical User Scenarios:**
+  - Recording income in a foreign currency and viewing consolidated financial reports
+  - Calculating tax obligations for income earned across multiple countries
+  - Tracking foreign account balances and determining reporting requirements
+  - Adjusting a budget when relocating from one country to another
+  - Transferring money between accounts in different countries in the most cost-effective way
 
-- **Performance Benchmarks**
-  - Support for at least 10 different currencies simultaneously
-  - Calculation of tax implications across 5+ jurisdictions in under 10 seconds
-  - Generation of complete foreign account reports in under 5 seconds
-  - Cost of living comparison between 10+ locations in under 3 seconds
-  - Analysis of 20+ money transfer options in under 5 seconds
+- **Performance Benchmarks:**
+  - Currency conversions must process 1,000+ transactions in under 5 seconds
+  - Tax calculations must handle 5+ countries' rules simultaneously
+  - Foreign account monitoring must track up to 50 accounts across 10+ countries
+  - Cost-of-living comparisons must be available for at least 100 major global cities
 
-- **Edge Cases and Error Conditions**
-  - Handling of currencies with extreme exchange rate volatility
-  - Management of countries with complex or unusual tax treaties
-  - Adaptation to retroactive tax law changes
-  - Recovery from incomplete exchange rate data
-  - Proper handling of accounts in countries with currency controls
-  - Graceful management of conflicting tax rules across jurisdictions
+- **Edge Cases and Error Conditions:**
+  - Handling currencies with extreme value differences or redenominations
+  - Managing conflicting tax rules between countries
+  - Adapting to changing reporting thresholds for foreign accounts
+  - Processing relocations to countries with limited cost-of-living data
+  - Optimizing transfers during periods of high currency volatility
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage across all modules
-  - 100% coverage for currency conversion and tax calculation functions
-  - Comprehensive test suite for compliance reporting logic
-  - Thorough validation of cost-of-living adjustment calculations
-  - Complete testing of money transfer optimization algorithms
+- **Required Test Coverage Metrics:**
+  - Currency conversion functions: minimum 95% coverage
+  - Tax calculation modules: minimum 90% coverage
+  - Foreign account reporting functions: minimum 95% coverage
+  - Remittance optimization algorithms: minimum 90% coverage
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Currency conversions match expected results with precision to 4 decimal places
-- Tax calculations align with tax treaty provisions and country-specific rules
-- Foreign account reporting correctly identifies accounts meeting thresholds
-- Cost-of-living adjustments accurately reflect location-based differences
-- Money transfer optimizations demonstrably reduce costs of international transfers
-- All financial calculations maintain consistency across currencies
-- System adapts to changing exchange rates and tax regulations
-- Reporting output meets requirements for tax authority submission
-- Performance meets or exceeds all benchmark requirements
-- Test coverage meets or exceeds specified metrics
+- The system accurately handles multiple currencies with proper exchange rate conversion
+- Tax obligations are correctly calculated according to country-specific rules
+- Foreign account reporting requirements are properly tracked and monitored
+- Cost-of-living adjustments accurately reflect differences between locations
+- Money transfers between countries are optimized for cost-effectiveness
+- All calculations maintain accuracy across different international scenarios
+- System performance meets or exceeds the specified benchmarks
+- All tests pass without manual intervention
 
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

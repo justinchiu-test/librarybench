@@ -1,139 +1,142 @@
-# Forensic Multimedia Metadata Management System
+# Digital Evidence Metadata Management System
 
 ## Overview
-A specialized metadata management system for law enforcement that maintains strict chain of custody for digital media evidence. The system provides tamper-evident verification, detailed access logging, case organization, PII detection, and court exhibit preparation to ensure digital evidence integrity and admissibility in legal proceedings.
+A specialized metadata organization system for law enforcement evidence technicians who need to maintain strict chain of custody for digital media evidence while organizing case-related media in a format suitable for court proceedings.
 
 ## Persona Description
 Officer Rodriguez processes digital media evidence for law enforcement cases. He needs to maintain strict chain of custody while organizing case-related media in a way that's presentable in court proceedings.
 
 ## Key Requirements
+1. **Tamper-evident metadata verification**: Implement cryptographic mechanisms to ensure that media files and their metadata have not been modified since acquisition. This is critical for maintaining evidence integrity and admissibility in court, where any modification could render evidence invalid.
 
-1. **Tamper-Evident Metadata Verification**
-   - Validates that files and their metadata have not been modified since acquisition
-   - Critical for Officer Rodriguez because evidence integrity is fundamental to admissibility in court, and any modifications could render evidence unusable
-   - Must calculate and verify cryptographic hashes of both file content and metadata to detect even minor alterations
+2. **Chain of custody logging**: Create a comprehensive system to document every access and modification with officer credentials, timestamps, and actions taken. This provides an unbroken record of evidence handling that can withstand legal scrutiny and is essential for court admissibility.
 
-2. **Chain of Custody Logging**
-   - Records every access, view, and modification with complete user credentials and timestamps
-   - Essential for Officer Rodriguez's legal requirements as it documents exactly who handled evidence, when, and what actions they performed
-   - Must create immutable, cryptographically signed audit trails that meet legal standards for evidence handling
+3. **Case hierarchy organization**: Develop a structured system linking evidence to specific cases, charges, and legal statutes. This enables efficient organization of evidence across complex investigations with multiple subjects, charges, and related cases.
 
-3. **Case Hierarchy Organization**
-   - Structures evidence within a framework of cases, charges, and applicable legal statutes
-   - Crucial for Officer Rodriguez's workflow as it connects evidence to specific legal contexts and facilitates discovery processes
-   - Must support complex legal case structures with multiple defendants, charges, and related cases
+4. **Automatic PII detection**: Build functionality to identify and protect personally identifiable information in media metadata and content. This ensures compliance with privacy regulations and prevents inadvertent disclosure of sensitive information.
 
-4. **Automatic PII Detection**
-   - Identifies personally identifiable information in media content for potential redaction
-   - Vital for Officer Rodriguez's compliance with privacy laws and victim protection requirements
-   - Must detect faces, license plates, addresses, identification documents, and other sensitive information that may require protection
-
-5. **Court Exhibit Preparation**
-   - Generates properly redacted and formatted files suitable for legal proceedings
-   - Indispensable for Officer Rodriguez's role in supporting prosecutors by creating admissible, properly sanitized evidence presentations
-   - Must maintain verifiable connections between original evidence and court-ready exhibits with complete documentation of any applied redactions
+5. **Court exhibit preparation**: Create tools to generate properly redacted and formatted files suitable for legal proceedings. This streamlines the creation of court-ready exhibits that meet specific jurisdictional requirements and procedural rules.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Cryptographic verification functions must be independently testable
-  - Chain of custody mechanisms must create verifiable, immutable audit trails
-  - Case organization structures must maintain referential integrity
-  - PII detection algorithms must be testable with sample media files
-  - Exhibit preparation must preserve evidence integrity while applying redactions
+### Testability Requirements
+- All cryptographic verification functions must be independently testable
+- Chain of custody functions must support comprehensive audit testing
+- Use test fixtures with sample evidence metadata and access patterns
+- Support simulation of access attempts with various authentication levels
 
-- **Performance Expectations**
-  - Must efficiently handle cases with 10,000+ media items
-  - Hash verification should process at least 5 files per second
-  - Search operations across case hierarchies should return results in under 2 seconds
-  - Must maintain responsive performance even with comprehensive audit logging
+### Performance Expectations
+- Process verification for at least 100 evidence items per minute
+- Support evidence collections with up to 100,000 items per case
+- All operations must maintain tamper-evident logs
+- Court exhibit generation should complete in under 30 seconds per item
 
-- **Integration Points**
-  - Standard forensic metadata formats and hash algorithms
-  - Law enforcement case management systems
-  - Legal statutes and charge classification systems
-  - Digital signature and certificate systems for verification
+### Integration Points
+- Common media file formats (images, videos, audio) and their metadata
+- Cryptographic hashing and signature verification systems
+- Legal case management data structures
+- PII detection algorithms and pattern matching
+- Standard court exhibit formats and requirements
 
-- **Key Constraints**
-  - Must never modify original evidence files under any circumstances
-  - Must maintain complete isolation between cases to prevent cross-contamination
-  - Must implement robust access controls with multi-factor authentication
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- All operations must maintain cryptographic integrity
+- System must function in air-gapped environments
+- Access patterns must follow principle of least privilege
+- All actions must be non-destructive to original evidence
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for digital evidence with these core capabilities:
+The system must provide a Python library that enables:
 
 1. **Evidence Integrity Management**
-   - Calculate and verify cryptographic hashes for all files and metadata
-   - Detect any alterations to files or metadata since acquisition
-   - Maintain original evidence in unmodified state
+   - Generate and verify cryptographic hashes for media files
+   - Track and verify metadata integrity separately from content
+   - Detect and alert on any unauthorized modifications
 
-2. **Chain of Custody Documentation**
-   - Record complete details of every system interaction
-   - Document all user access with authentication details
-   - Create immutable audit trails for evidence handling
+2. **Chain of Custody Tracking**
+   - Log all access attempts and actions with authentication details
+   - Maintain immutable access history for each evidence item
+   - Generate chain of custody reports for court submissions
 
-3. **Case Organization and Relationship Mapping**
-   - Structure evidence within legal case hierarchies
-   - Link evidence to specific charges and statutes
-   - Track relationships between related cases and evidence
+3. **Case Organization and Classification**
+   - Structure evidence hierarchically by case, subject, and charge
+   - Link evidence to applicable legal statutes
+   - Support complex relationships between related cases
 
-4. **Privacy and Sensitive Content Management**
-   - Detect personally identifiable information in media content
-   - Flag sensitive content requiring special handling
-   - Support appropriate redaction while maintaining evidence value
+4. **Privacy and Compliance**
+   - Detect PII in metadata and media content
+   - Apply appropriate redaction based on case requirements
+   - Track compliance with relevant legal and departmental policies
 
 5. **Legal Presentation Preparation**
-   - Generate court-ready exhibits from original evidence
-   - Apply necessary redactions while documenting all changes
-   - Prepare evidence packages for legal proceedings
+   - Generate court-ready exhibits from raw evidence
+   - Apply appropriate redactions and annotations
+   - Package evidence for different legal proceedings
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate detection of any modifications to evidence or metadata
-  - Complete and immutable chain of custody documentation
-  - Proper organization of evidence within case hierarchies
-  - Successful identification of PII and sensitive content
-  - Correct preparation of court exhibits with appropriate redactions
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Processing newly acquired digital evidence into the system
-  - Verifying the integrity of previously stored evidence
-  - Tracking all access to sensitive case materials
-  - Preparing evidence packages for court proceedings
-  - Searching for specific evidence across multiple related cases
+1. **Tamper Detection**
+   - Test detection of file modifications
+   - Test detection of metadata alterations
+   - Test verification of cryptographic signatures
 
-- **Performance Benchmarks**
-  - Hash verification must process files at a minimum rate of 5 per second
-  - Chain of custody logging must not impact system performance
-  - Case hierarchy queries must resolve in under 2 seconds
-  - System must scale to handle cases with 10,000+ media items
+2. **Chain of Custody**
+   - Test logging of all access and modifications
+   - Verify complete chain from acquisition to presentation
+   - Test detection of authentication issues
 
-- **Edge Cases and Error Conditions**
-  - Evidence files with corrupted or missing metadata
-  - Attempted unauthorized access to case materials
-  - Complex case structures with multiple defendants and charges
-  - Media containing mixed sensitive and non-sensitive content
-  - Evidence requiring special handling (e.g., contraband images)
+3. **Case Organization**
+   - Test hierarchical organization of evidence
+   - Verify linking to cases, charges, and statutes
+   - Test handling of evidence spanning multiple cases
 
-- **Required Test Coverage Metrics**
-  - 100% code coverage for integrity verification functions
-  - 100% coverage for chain of custody mechanisms
-  - Minimum 95% coverage for PII detection algorithms
-  - Comprehensive coverage of exhibit preparation processes
-  - Complete verification of access control mechanisms
+4. **PII Protection**
+   - Test detection of various PII types in metadata
+   - Verify appropriate redaction and protection
+   - Test handling of different jurisdictional requirements
+
+5. **Exhibit Preparation**
+   - Test generation of court exhibits in various formats
+   - Verify appropriate redaction in exhibits
+   - Test compliance with court submission requirements
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system detects 100% of modifications to evidence files or metadata.
-2. Chain of custody records are complete, immutable, and meet legal standards.
-3. Evidence is properly organized within case hierarchies with correct legal references.
-4. PII detection identifies at least 95% of personally identifiable information.
-5. Court exhibits maintain evidential integrity while applying appropriate redactions.
-6. The system prevents unauthorized access and maintains complete audit trails.
-7. Performance benchmarks are met for cases with 10,000+ media items.
-8. The system handles complex case structures and sensitive content appropriately.
-9. All operations maintain isolation between unrelated cases and evidence.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. Tamper-evident verification successfully detects any modifications to evidence
+3. Chain of custody logging maintains a complete and verifiable record of all access
+4. Case hierarchy organization correctly links evidence to legal contexts
+5. PII detection identifies and protects sensitive information
+6. Court exhibit preparation generates properly formatted and redacted outputs
+7. All operations maintain cryptographic integrity of evidence
+8. All tests pass when run with pytest
+9. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

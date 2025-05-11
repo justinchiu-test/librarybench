@@ -1,150 +1,173 @@
 # Multi-Location Restaurant Content Management System
 
 ## Overview
-A specialized content management system for restaurant chains that enables centralized brand control with location-specific customization, variable menu management, promotion scheduling, franchise compliance tracking, and brand asset management. This system focuses on maintaining brand consistency while allowing for necessary local variations.
+A specialized content management system designed for restaurant chains to manage multiple locations while maintaining brand consistency. This system enables marketing directors to coordinate promotions across locations while allowing individual restaurant managers to update their specific details and local specials.
 
 ## Persona Description
 Priya oversees marketing for a regional restaurant chain with multiple locations, each needing location-specific content while maintaining brand consistency. Her primary goal is to coordinate promotions across locations while allowing individual restaurant managers to update their specific details and local specials.
 
 ## Key Requirements
 
-1. **Multi-location Management with Centralized and Local Control**
-   - Implement a hierarchical content management system with granular permission levels
-   - Critical for Priya because it allows her to maintain consistent branding and messaging across all locations while empowering individual restaurant managers to customize content relevant to their specific location
+1. **Multi-location management with centralized and local content control**
+   - Critical for Priya to maintain consistent brand messaging while enabling location-specific customization
+   - Must implement hierarchical content inheritance where global templates can be locally customized
+   - Should include approval workflows for local content changes to ensure brand compliance
 
-2. **Menu System with Location-specific Pricing Variations**
-   - Create a menu management system that supports price variations by location
-   - Essential for accommodating different pricing strategies based on local market conditions, overhead costs, and competitive landscapes while maintaining consistent menu items and descriptions
+2. **Menu system with pricing variations by location**
+   - Essential for managing menu items that may have different pricing or availability across locations
+   - Must support product information management with location-specific overrides
+   - Should include seasonal and limited-time offer management
 
-3. **Promotion Scheduler with Location-specific Override Options**
-   - Develop a promotion planning system with both chain-wide and location-specific capabilities
-   - Important for coordinating marketing campaigns across the entire chain while allowing individual locations to opt-out or customize promotions based on local preferences or inventory constraints
+3. **Promotion scheduler with location-specific override options**
+   - Important for coordinating marketing campaigns across multiple locations with local adaptations
+   - Must support planning and scheduling of promotions with start/end dates
+   - Should include location targeting and exclusion capabilities
 
-4. **Franchise-specific Dashboard Showing Content Update Compliance**
-   - Implement a monitoring system for tracking location adherence to required content updates
-   - Necessary for ensuring all locations comply with mandatory content changes (like seasonal menus or corporate promotions) while identifying which restaurants require follow-up
+4. **Franchise-specific dashboard showing content update compliance**
+   - Necessary for monitoring whether individual locations are keeping their content current
+   - Must track required updates and their implementation status across locations
+   - Should highlight non-compliant locations and pending required changes
 
-5. **Brand Asset Library with Usage Guidelines Enforcement**
-   - Create a digital asset management system with usage rule enforcement
-   - Crucial for protecting brand integrity by providing location managers with approved assets and ensuring they are used correctly according to brand guidelines
+5. **Brand asset library with usage guidelines enforcement**
+   - Valuable for maintaining visual consistency while providing location managers with approved assets
+   - Must organize and tag brand assets for appropriate contexts and usage
+   - Should include validation against brand guidelines for local customizations
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Multi-location permission system must be testable with various hierarchy scenarios
-- Menu pricing variations must be verifiable across different locations
-- Promotion scheduling must support time-based testing with override conditions
-- Compliance tracking must be testable with simulated update scenarios
-- Asset usage enforcement must verify guideline adherence
+- All components must have unit tests with at least 90% code coverage
+- Integration tests must verify the content inheritance system functions correctly
+- Performance tests must ensure system scales with increasing number of locations
+- Mock approval workflows for testing content validation
 
 ### Performance Expectations
-- Content hierarchy must support at least 100 locations with < 300ms access time
-- Menu system must handle 500+ items with location-specific variations efficiently
-- Promotion scheduler should process chain-wide updates in < 30 seconds
-- Compliance dashboard should generate reports in < 10 seconds
-- Asset library should support at least 10,000 brand assets with fast retrieval
+- Location-specific content must load within 300ms regardless of chain size
+- Menu updates must propagate to affected locations within 5 minutes
+- Promotion creation must support at least 50 concurrent campaigns
+- Dashboard metrics must calculate within 10 seconds for chains up to 100 locations
 
 ### Integration Points
-- Point-of-sale systems for menu pricing synchronization
-- Marketing calendar for promotion coordination
-- Notification system for compliance alerts
-- Digital asset processing pipeline
-- Analytics platform for content performance
+- POS systems for menu and pricing synchronization
+- Reservation platforms for location-specific availability
+- Marketing automation tools for promotion distribution
+- Analytics systems for performance tracking
 
 ### Key Constraints
-- No UI components, only API endpoints and business logic
-- Support for complex hierarchical permissions model
-- Robust content versioning and approval workflows
-- Clear audit trails for all content changes
-- Scalability for growing number of locations
+- Brand guidelines must be programmatically enforceable
+- Location data must be synchronized across multiple platforms
+- System must scale to support chains with up to 500 locations
+- Performance must not degrade with increased content volume
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Multi-Location Restaurant CMS includes:
+The system must provide a Python library with the following core components:
 
-1. **Hierarchical Content Management**
-   - Organization structure definition with inheritance rules
-   - Permission model with central and local control
-   - Content approval workflows with stakeholder roles
-   - Change notification and distribution system
+1. **Multi-Location Management**
+   - Location data model with hierarchy and relationships
+   - Content inheritance and override mechanisms
+   - Location-specific customization controls
+   - Global and local permission management
 
-2. **Location-aware Menu Management**
-   - Menu item definition with core and variable attributes
-   - Location-specific pricing and availability rules
-   - Seasonal and time-based menu variations
-   - Nutritional and allergen information tracking
+2. **Menu Management**
+   - Product information management
+   - Location-specific pricing and availability
+   - Seasonal and limited-time offer handling
+   - Nutritional information and allergen tracking
 
-3. **Promotion Planning System**
-   - Campaign definition with scheduling parameters
-   - Location targeting and exemption capabilities
-   - Promotion assets and messaging management
+3. **Promotion Coordination**
+   - Campaign creation and scheduling
+   - Location targeting and exclusion rules
+   - Promotion asset management
    - Performance tracking and reporting
 
 4. **Compliance Monitoring**
-   - Update requirement definition and distribution
-   - Implementation tracking and verification
-   - Reporting and notification system
-   - Escalation workflow for non-compliance
+   - Update requirement definition
+   - Implementation status tracking
+   - Compliance reporting and alerts
+   - Required action notifications
 
 5. **Brand Asset Management**
-   - Asset categorization and metadata organization
-   - Usage guideline definition and linkage
-   - Usage verification and enforcement
-   - Version control and update distribution
+   - Asset organization and categorization
+   - Usage context definition
+   - Guideline rule implementation
+   - Validation and approval workflow
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Content creation and distribution across location hierarchy
-- Menu management with price variations by location
-- Promotion scheduling with both central and local controls
-- Compliance tracking for required content updates
-- Asset management with usage guideline enforcement
+- Content inheritance correctly applies global changes while preserving local customizations
+- Menu system accurately manages items with location-specific pricing and availability
+- Promotion scheduler correctly targets appropriate locations with proper timing
+- Compliance dashboard accurately reflects update status across locations
+- Brand asset system enforces usage guidelines for local customizations
 
 ### Critical User Scenarios
-- Updating core brand messaging with location-specific adaptations
-- Managing menu price changes across multiple locations
-- Scheduling a chain-wide promotion with location-specific variations
-- Tracking compliance with a mandatory menu update
-- Distributing new brand assets with usage guidelines
+- Creating a chain-wide menu update with location-specific pricing
+- Launching a promotional campaign with varying offers by location
+- Monitoring compliance with required content updates across locations
+- Providing new brand assets with usage guidelines to location managers
+- Setting up a new location with appropriate content inheritance
 
 ### Performance Benchmarks
-- Content distribution time across the location hierarchy
-- Menu update propagation to all applicable locations
-- Promotion scheduler performance with complex rules
-- Compliance dashboard generation time with full location data
-- Asset library search and retrieval response times
+- System must support up to 500 locations without performance degradation
+- Content updates must propagate to all affected locations within 10 minutes
+- Compliance calculations must complete within 30 seconds for the entire chain
+- Menu system must support at least 1,000 unique items with location variations
 
 ### Edge Cases and Error Conditions
-- Handling conflicting updates between central and local management
-- Managing menu items unavailable at specific locations
-- Resolving promotion conflicts or timing issues
-- Addressing persistent compliance failures
-- Managing guideline violations in asset usage
+- Handling conflicting location-specific overrides
+- Managing promotion conflicts and overlapping schedules
+- Recovering from incomplete content updates
+- Resolving brand guideline violations
+- Handling location openings and closings
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of permission-critical code paths
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for permission model vulnerabilities
+- Minimum 90% code coverage across all modules
+- 100% coverage of content inheritance logic
+- 100% coverage of promotion scheduling logic
+- 100% coverage of compliance calculation algorithms
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Content can be managed centrally while allowing location-specific variations
-2. Menu items can be maintained with location-specific pricing
-3. Promotions can be scheduled chain-wide with local customization options
-4. Compliance with required updates can be effectively tracked
-5. Brand assets can be distributed with enforced usage guidelines
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. The permission model correctly enforces central and local control boundaries
-9. All tests pass, demonstrating the functionality works as expected
+1. The multi-location system effectively manages content with appropriate inheritance and local customization
+2. The menu system correctly handles items with location-specific variations
+3. The promotion scheduler accurately coordinates campaigns across targeted locations
+4. The compliance dashboard correctly tracks and reports update status
+5. The brand asset library effectively enforces usage guidelines
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

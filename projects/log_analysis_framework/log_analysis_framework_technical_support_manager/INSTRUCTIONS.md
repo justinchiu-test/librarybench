@@ -1,7 +1,7 @@
-# Technical Support Log Analysis Framework
+# Customer Support Log Analysis Framework
 
 ## Overview
-A specialized log analysis framework designed for technical support managers to connect customer-reported issues with system logs, identify recurring problems, predict resolution times, prioritize engineering fixes, and integrate with support ticketing systems to improve customer support efficiency and satisfaction.
+A specialized log analysis framework designed for technical support managers to connect customer-reported problems with system logs. This system correlates internal errors with customer accounts, generates knowledge base content from recurring patterns, predicts resolution times, analyzes error trends, and integrates with support ticket systems to improve response efficiency and customer satisfaction.
 
 ## Persona Description
 Elena leads a customer support team handling technical issues for enterprise software. She needs to connect customer-reported problems with system logs to speed up resolution and identify recurring issues affecting multiple customers.
@@ -9,184 +9,173 @@ Elena leads a customer support team handling technical issues for enterprise sof
 ## Key Requirements
 
 1. **Customer Impact Correlation**
-   - Link internal errors to specific customer accounts
-   - Connect system-level issues with customer-reported symptoms
-   - Quantify the scope and severity of impact
-   - Track issue propagation across customer environments
-   - Provide customer-specific context for technical investigations
-   
-   *This feature is critical for Elena because understanding which customers are affected by internal system issues helps prioritize responses based on business impact, and correlation between technical logs and customer experiences enables more efficient troubleshooting.*
+   - Linking internal errors to specific customer accounts and organizations
+   - Severity assessment based on business impact and affected functionality
+   - Proactive detection of issues before customers report them
+   - This feature is critical because understanding which customers are affected by specific system issues enables prioritized response and proactive outreach, improving customer satisfaction and retention.
 
 2. **Knowledge Base Suggestion**
-   - Generate support documentation from recurring error patterns
-   - Identify common issues suitable for self-service resolution
-   - Extract solution steps from successful resolution cases
-   - Maintain links between known issues and their symptoms
-   - Suggest appropriate knowledge base articles for specific errors
-   
-   *Knowledge base integration is essential since it allows common issues to be documented systematically, helping Elena's team provide consistent solutions and enabling customers to resolve frequent problems through self-service, which improves satisfaction while reducing support volume.*
+   - Generating support documentation from recurring error patterns
+   - Automatic categorization and tagging of common issues
+   - Solution recommendation based on historical resolution patterns
+   - This feature is essential because codifying solutions to common problems improves first-response resolution rates and reduces support burden by enabling self-service for frequently occurring issues.
 
 3. **Resolution Time Prediction**
-   - Estimate ticket complexity based on log signatures
-   - Calculate likely resolution times for different issue types
-   - Identify factors that increase resolution complexity
-   - Predict resource requirements for complex issues
-   - Improve staffing and escalation planning
-   
-   *Prediction of resolution times is vital because it enables proper expectation setting with customers and optimizes resource allocation within the support team, helping Elena ensure that complex issues get appropriate attention while maintaining service level agreements.*
+   - Estimating ticket complexity based on log signatures
+   - Forecasting required effort and expertise level for issue resolution
+   - Prioritization recommendations based on resolution difficulty and customer impact
+   - This feature is vital because accurate time estimation enables better resource allocation and sets appropriate expectations with customers regarding issue resolution.
 
 4. **Error Frequency Trending**
-   - Prioritize engineering fixes based on customer impact
-   - Track issue occurrence rates over time
-   - Identify increasing or decreasing problem trends
-   - Correlate error patterns with software versions and updates
-   - Quantify support cost of recurring issues
-   
-   *Trend analysis is crucial since it helps identify which issues deserve engineering resources for permanent fixes, and tracking frequency over time helps Elena demonstrate the customer impact of technical issues to product management and development teams.*
+   - Prioritizing engineering fixes based on customer impact and occurrence rate
+   - Tracking error patterns across software versions and deployments
+   - Early warning system for emerging issues
+   - This feature is important because understanding the relative frequency and impact of different errors helps prioritize engineering resources for maximum customer benefit.
 
 5. **Support Ticket Integration**
-   - Connect log events directly to customer communication history
-   - Maintain bidirectional links between tickets and technical events
-   - Provide unified view of technical context and customer interactions
-   - Track issue status across support and engineering systems
-   - Enable integrated workflow from detection to resolution
-   
-   *Ticket system integration is important because it creates a complete picture of each issue that spans both technical details and customer communications, eliminating context switching for support engineers and providing a unified view of the issue lifecycle for Elena's team.*
+   - Connecting log events directly to customer communication history
+   - Contextual enrichment of support tickets with relevant system information
+   - Two-way synchronization between support actions and issue tracking
+   - This feature is necessary because seamless integration between technical logs and customer support workflows reduces context switching and enables support staff to work more efficiently.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Customer correlation algorithms must be testable with anonymized customer data
-- Knowledge base suggestion must validate against known solution articles
-- Resolution time prediction requires historical case resolution datasets
-- Trend analysis must be verifiable against known issue patterns
-- Ticket integration must be testable with mock ticketing system APIs
+- All correlation algorithms must be testable with synthetic log and ticket data
+- Knowledge base suggestion quality must be quantifiably measurable
+- Resolution time predictions must be verifiable against historical cases
+- Support system integration must be testable with mock ticket systems
 
 ### Performance Expectations
-- Process logs from at least 500 enterprise customer environments
-- Support analysis of at least 1 million events per day
-- Generate insights with latency under 5 seconds
-- Correlate customer impact within 30 seconds of issue detection
-- Handle historical analysis spanning at least 1 year of data
+- Process and analyze at least 10,000 log entries per minute
+- Support analysis of at least 100,000 historical support tickets for pattern recognition
+- Generate knowledge base suggestions in under 30 seconds
+- Provide real-time correlation between incoming logs and existing tickets
 
 ### Integration Points
-- Customer relationship management (CRM) systems
-- Support ticketing platforms
-- Knowledge base and documentation systems
-- Product telemetry and error reporting
-- Customer instance monitoring
-- Application performance monitoring tools
+- Support ticket system integration (Zendesk, ServiceNow, Jira Service Desk, etc.)
+- Knowledge base platform integration
+- Application logging systems and monitoring platforms
+- Customer communication channels (email, chat, portal)
 
 ### Key Constraints
-- Strict protection of customer-specific information
-- Support for multi-tenant and single-tenant customer deployments
-- No direct access to customer environments for analysis
-- Compatibility with various log collection mechanisms
-- All functionality exposed through Python APIs without UI requirements
+- Must protect customer privacy and sensitive information
+- Should not impact performance of production systems
+- Must handle multi-tenant environments with data isolation
+- Should function across diverse product deployments and configurations
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Technical Support Log Analysis Framework must provide the following core capabilities:
+The core functionality of the Customer Support Log Analysis Framework includes:
 
-1. **Log Collection and Integration**
-   - Ingest logs from multiple customer environments
-   - Process application, system, and infrastructure logs
-   - Normalize diverse log formats into consistent structures
-   - Maintain customer context throughout analysis
-   - Support both real-time and historical analysis
+1. **Customer Context Engine**
+   - Customer account mapping to system components and logs
+   - Usage pattern profiling and baseline establishment
+   - Severity and impact assessment based on customer context
+   - Proactive issue detection and alerting
 
-2. **Customer Impact Analyzer**
-   - Map system events to customer environments
-   - Correlate technical issues with customer-reported symptoms
-   - Calculate impact scope and severity metrics
-   - Track issue propagation patterns
-   - Generate customer-focused impact reports
+2. **Knowledge Management System**
+   - Issue pattern recognition and classification
+   - Solution template generation and refinement
+   - Self-service recommendation engine
+   - Effectiveness tracking for knowledge base articles
 
-3. **Knowledge Management System**
-   - Analyze resolution patterns for common issues
-   - Extract solution steps from successful cases
-   - Identify candidates for knowledge base articles
-   - Generate article templates from resolved issues
-   - Maintain associations between issues and solutions
+3. **Ticket Analytics**
+   - Resolution complexity modeling
+   - Time and effort estimation
+   - Skill matching for optimal agent assignment
+   - Backlog prediction and resource planning
 
-4. **Ticket Analytics Engine**
-   - Calculate complexity scores for support issues
-   - Predict resolution times based on issue characteristics
-   - Identify factors affecting resolution difficulty
-   - Analyze historical resolution patterns
-   - Generate staffing and escalation recommendations
+4. **Error Pattern Analysis**
+   - Frequency and impact measurement
+   - Version correlation and regression detection
+   - Customer-weighted prioritization
+   - Engineering recommendation generation
 
-5. **Trend Analysis Module**
-   - Track issue frequency and distribution over time
-   - Correlate error trends with software versions
-   - Calculate customer impact metrics
-   - Identify emerging or resolving issue patterns
-   - Generate prioritization recommendations for engineering
-
-6. **Ticketing System Connector**
-   - Maintain links between logs and support tickets
-   - Synchronize issue status across systems
-   - Provide technical context for customer communications
-   - Support integrated workflow across platforms
-   - Track issues from detection through resolution
+5. **Integration Framework**
+   - Bi-directional ticket system synchronization
+   - Contextual data enrichment for support workflows
+   - Activity tracking across support channels
+   - Unified issue history across technical and customer-facing systems
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate correlation between system logs and customer environments
-- Correct suggestion of knowledge base articles for specific issues
-- Reliable prediction of resolution times based on issue characteristics
-- Proper identification of error frequency trends over time
-- Effective integration with support ticketing workflows
+- Accurate correlation between system logs and affected customers
+- Reliable generation of knowledge base suggestions from error patterns
+- Precise prediction of resolution times based on issue characteristics
+- Effective trending of error frequencies with customer impact weighting
+- Seamless integration with support ticket workflows
 
 ### Critical User Scenarios
-- Identifying all customers affected by a newly detected system issue
-- Suggesting appropriate knowledge base articles for a common error
-- Predicting resolution complexity for an incoming support ticket
-- Analyzing which recurring issues have the highest customer impact
-- Correlating a customer-reported symptom with underlying system logs
+- Identifying all affected customers during a system outage
+- Creating knowledge base articles for newly discovered issues
+- Estimating staffing needs based on incoming error patterns
+- Prioritizing bug fixes based on customer impact analysis
+- Providing support agents with relevant technical context during customer interactions
 
 ### Performance Benchmarks
-- Process logs from at least 500 enterprise customers
-- Analyze at least 1 million daily events across all environments
-- Generate insights and correlations within 5 seconds
-- Identify customer impact within 30 seconds of issue detection
-- Support historical analysis spanning at least 1 year of data
+- Customer correlation: Match logs to affected customers in under 5 seconds
+- Knowledge base generation: Suggest article templates for common issues in under 30 seconds
+- Resolution prediction: Estimate resolution time with less than 20% average error
+- Trend analysis: Process 30 days of error logs for frequency analysis in under 3 minutes
+- Ticket integration: Synchronize technical context with ticket systems in near real-time (< 10 seconds)
 
 ### Edge Cases and Error Conditions
-- Handling of logs during customer software upgrades
-- Processing partial or corrupted log data from customer environments
-- Managing analysis with limited access to customer contexts
-- Correlation across different software versions and configurations
-- Handling of customer-specific customizations and environments
+- Handling customers with unique or highly customized deployments
+- Processing logs during major incidents with high error volumes
+- Managing incomplete customer context information
+- Dealing with novel error patterns with no historical resolution data
+- Adapting to support workflow changes or ticket system migrations
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for customer correlation algorithms
-- 100% coverage for knowledge base suggestion logic
-- Comprehensive testing of resolution time prediction
-- Thorough validation of trend analysis functionality
-- Full test coverage for ticketing system integration
+- Minimum 90% line coverage across all modules
+- 100% coverage of customer correlation and impact assessment logic
+- Comprehensive testing of knowledge base suggestion algorithms
+- Full testing of resolution time prediction with diverse issue types
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Customer impact correlation correctly identifies affected accounts within 5 minutes of issue detection
-- Knowledge base suggestions reduce ticket resolution times by at least 25% for common issues
-- Resolution time predictions are accurate within 20% of actual resolution times
-- Error trending correctly identifies top issues by customer impact with at least 90% accuracy
-- Support ticket integration reduces context-switching time by at least 30%
-- All analyses complete within specified performance parameters
-- Framework reduces overall mean time to resolution by at least 20%
 
-To set up the development environment:
+The implementation will be considered successful if:
+
+1. It accurately correlates system logs with affected customer accounts
+2. It reliably generates useful knowledge base suggestions from recurring error patterns
+3. It precisely predicts resolution times based on issue characteristics
+4. It effectively analyzes error frequency trends with appropriate customer impact weighting
+5. It seamlessly integrates with support ticket systems for bidirectional information flow
+6. It meets performance benchmarks for processing large volumes of logs and tickets
+7. It provides actionable insights for support team management and resource allocation
+8. It offers a well-documented API for integration with support platforms and knowledge bases
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+1. Set up a virtual environment using `uv venv`
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Install test dependencies with `uv pip install pytest pytest-json-report`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

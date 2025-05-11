@@ -1,183 +1,185 @@
 # Tactical Combat Simulation Framework
 
 ## Overview
-A specialized distributed simulation framework designed for military tactical trainers to develop realistic combat simulations with intelligent, adaptive adversaries. This framework enables complex scenario modeling with terrain awareness, realistic command and control with fog of war effects, comprehensive decision point analysis, and advanced AI opponents that adapt to trainee decisions.
+A distributed simulation framework specialized for military training that creates realistic combat simulations with intelligent adversaries. The framework enables training personnel to practice tactical decision-making in complex scenarios with adaptive opponents, fog of war conditions, and realistic command and control environments while efficiently utilizing available computing resources.
 
 ## Persona Description
 Major Chen develops training simulations for military personnel to practice decision-making in complex scenarios. His primary goal is to create realistic combat simulations with intelligent adversaries that adapt to trainee decisions while efficiently utilizing limited computing resources.
 
 ## Key Requirements
 
-1. **Adversarial AI with Adaptive Tactical Behavior**
-   - Implement intelligent opponent forces with realistic tactical doctrine
-   - Develop adversaries that adapt their strategies based on trainee actions
-   - Support different opponent profiles representing various military capabilities and tactics
-   - Enable progressive learning where AI improves through multiple encounters
-   - Critical for Major Chen because effective training requires opponents that present realistic challenges, avoid predictable patterns, and adapt their tactics in response to trainee decisions, simulating the unpredictability and adaptation of real combat situations
+1. **Adversarial AI with Adaptive Tactical Behavior**  
+   Implement sophisticated AI agents capable of employing diverse military tactics, adapting to trainee actions, and learning from previous encounters to present increasingly challenging and realistic opposition. This capability is critical for Major Chen because effective training requires opponents that can surprise trainees with intelligent counter-strategies rather than following predictable patterns, forcing personnel to continually reassess and adapt their own tactics.
 
-2. **Terrain-Aware Partitioning for Distributed Computation**
-   - Divide simulation space based on terrain features and tactical relevance
-   - Optimize computational resources for areas of high activity or importance
-   - Implement efficient synchronization between adjacent partitions
-   - Balance workload based on tactical situation evolution
-   - Critical for Major Chen because military simulations involve large geographic areas with varying levels of activity, and intelligent partitioning based on terrain and tactical considerations ensures computational resources are allocated efficiently to the most relevant areas
+2. **Terrain-Aware Partitioning for Distributed Computation**  
+   Develop an intelligent simulation partitioning system that divides the battlespace based on terrain features, unit concentrations, and engagement likelihood to optimize computational resource utilization. This feature is vital because military simulations often involve large operational areas with varying activity densities, and terrain-aware partitioning allows Major Chen to allocate limited computing resources to high-activity areas while maintaining simulation fidelity throughout the entire battlespace.
 
-3. **Realistic Command and Control Simulation with Fog of War**
-   - Model realistic information flow through command hierarchies
-   - Implement variable intelligence accuracy, delays, and uncertainty
-   - Simulate communication networks with realistic constraints and vulnerabilities
-   - Provide appropriate information visibility based on unit capabilities and position
-   - Critical for Major Chen because command decision-making in military operations is constrained by limited and uncertain information, and realistic simulation of these "fog of war" effects is essential for developing proper tactical decision-making skills
+3. **Realistic Command and Control Simulation with Fog of War**  
+   Create a comprehensive command and control system that realistically models information flow constraints, communication latencies, and incomplete battlefield awareness (fog of war). This functionality is essential because military decision-making is heavily influenced by information availability and uncertainty, and realistic simulation of these constraints ensures training scenarios develop critical skills in operating with imperfect information.
 
-4. **Decision Point Analysis for After-Action Review**
-   - Identify and record critical decision points during simulation
-   - Track alternative decision paths and their potential outcomes
-   - Provide detailed analysis of decision effectiveness and consequences
-   - Support comparative review of different tactical approaches
-   - Critical for Major Chen because effective learning requires thorough analysis of decisions and their consequences, and automated identification of critical decision points helps instructors conduct more effective after-action reviews that enhance learning outcomes
+4. **Decision Point Analysis for After-Action Review**  
+   Build analytical tools that identify critical decision points during scenario execution, track consequence chains, and provide structured data for comprehensive after-action reviews. This capability enables Major Chen to conduct effective debriefing sessions focused on key learning moments, helping trainees understand how specific decisions influenced scenario outcomes and providing objective data for performance evaluation.
 
-5. **Scenario Authoring Tools for Instructor Customization**
-   - Provide interfaces for creating and modifying tactical scenarios
-   - Enable adjustment of environmental conditions, force compositions, and objectives
-   - Support incremental difficulty progression for training programs
-   - Allow for scenario sharing and version control across training teams
-   - Critical for Major Chen because training requirements evolve based on mission needs and trainee capabilities, and flexible scenario authoring tools allow instructors to quickly develop and adapt training scenarios to address specific learning objectives or emerging tactical situations
+5. **Scenario Authoring Tools for Instructor Customization**  
+   Implement a flexible scenario definition system allowing military instructors to rapidly create and modify training scenarios with customized terrain, force compositions, mission objectives, and triggering events. This feature is important because different training objectives require specialized scenarios, and authoring tools allow Major Chen and other instructors to quickly develop targeted scenarios that address specific training needs without requiring programming expertise.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each component must have comprehensive unit tests with at least 90% code coverage
-- Integration tests verifying correct interaction between simulation subsystems
-- Validation tests comparing AI behavior against established tactical doctrine
-- Performance tests ensuring responsiveness under various scenario complexities
-- Reproducibility tests confirming identical results with the same random seeds
+- All AI decision-making processes must be reproducible and explainable
+- Scenario execution must be deterministic with fixed random seeds
+- Command and control information flow must be traceable and verifiable
+- Performance scaling must be measurable across varied computational resources
+- Scenario definition must be validated against doctrinal correctness
 
 ### Performance Expectations
-- Support for simulating operations across 100+ square kilometer areas
-- Model at least 1000 independent units with individual behaviors
-- Maintain simulation speed of at least 10x real-time for standard scenarios
-- Scale linearly with additional compute nodes up to at least 16 nodes
-- Respond to trainee decisions within 1 second
+- Must support simulations with at least 1,000 independent units across 100 square kilometers
+- Should achieve at least 10x real-time simulation speed for rapid scenario execution
+- Must handle terrain data with resolution of at least 10 meters
+- Should support at least 20 concurrent AI opponents with adaptive behavior
+- Decision point analysis should process complex scenarios within 5 minutes
 
 ### Integration Points
-- Import interfaces for terrain data and geographic information
-- APIs for custom AI tactical behavior implementation
-- Export capabilities for after-action review systems
-- Integration with training management databases
-- Extensibility for specialized weapon systems and sensors
+- Data interfaces for importing standard terrain formats (DTED, GeoTIFF)
+- API for customizing unit capabilities and behaviors
+- Extension points for specialized tactical doctrine implementation
+- Connectors for after-action review systems
+- Export capabilities for scenario results and analytics
 
 ### Key Constraints
-- All components must be implementable in pure Python
-- Distribution mechanisms must use standard library capabilities
-- The system must operate on secure, isolated networks without external dependencies
-- Memory efficiency to run on standard military computing hardware
-- All randomization must support seeding for reproducible training scenarios
+- Implementation must be in Python with no UI components
+- All simulation components must be deterministic when using fixed random seeds
+- System must operate efficiently on standard computing hardware
+- Memory usage must be optimized for large-scale battlespace simulations
+- Solution must respect security requirements for military training systems
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation should provide a Python library with the following core components:
+The Tactical Combat Simulation Framework needs to implement these core capabilities:
 
-1. **Combat Simulation Engine**
-   - Realistic modeling of unit capabilities and interactions
-   - Terrain effects on movement, observation, and engagement
-   - Weapon systems and their effects on different targets
-   - Environmental conditions and their tactical impacts
-   - Time management with variable simulation speed
+1. **Tactical AI System**
+   - Doctrine-based decision-making framework
+   - Hierarchical command structure implementation
+   - Adaptive response to changing battlefield conditions
+   - Learning mechanisms for opponent pattern recognition
+   - Multi-echelon coordination between AI units
 
-2. **Tactical AI Framework**
-   - Behavior tree implementation for tactical decision-making
-   - Reinforcement learning capabilities for adaptation
-   - Doctrine-based planning and execution
-   - Situational awareness modeling
-   - Multi-level command hierarchy simulation
-
-3. **Distribution System**
+2. **Distributed Simulation Engine**
    - Terrain-based domain decomposition
-   - Load balancing based on tactical activity
-   - Interest management for efficient communication
-   - State synchronization between partitions
-   - Fault tolerance for training reliability
+   - Dynamic load balancing across computing resources
+   - Efficient inter-domain communication
+   - Synchronized time advancement mechanisms
+   - Fault tolerance for node failures
 
-4. **Command and Control Simulation**
-   - Communication network modeling
-   - Information flow with appropriate delays and distortion
-   - Intelligence collection and dissemination
-   - Fog of war implementation based on unit capabilities
-   - Decision support systems simulation
+3. **Command and Control Framework**
+   - Realistic communication network modeling
+   - Information propagation with appropriate delays
+   - Sensor and reconnaissance simulation
+   - Order transmission and execution chains
+   - Command hierarchy with authority constraints
 
-5. **Scenario Management and Analysis**
-   - Scenario authoring and editing tools
-   - Decision point identification and tracking
-   - Alternative outcome analysis
-   - After-action review data generation
-   - Performance metrics for trainee evaluation
+4. **Analysis and Review System**
+   - Critical decision point identification
+   - Cause-effect tracking for outcome determination
+   - Performance metrics calculation
+   - Alternative outcome modeling
+   - Structured data generation for debriefing
+
+5. **Scenario Management Framework**
+   - Terrain and environment configuration
+   - Force composition and capability definition
+   - Mission objective specification
+   - Event triggering and scenario progression
+   - Validation against training requirements
+
+6. **Battlefield Simulation Components**
+   - Physical modeling for movement and engagement
+   - Weapons effects and damage assessment
+   - Supply and logistics tracking
+   - Weather and environmental conditions
+   - Special operations and electronic warfare
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-1. **Tactical AI Behavior**
-   - Realism of AI decision-making against tactical doctrine
-   - Appropriate adaptation to trainee actions
-   - Correct implementation of different tactical profiles
-   - Proper coordination between AI units
-
-2. **Terrain Integration**
-   - Accurate representation of terrain effects on operations
-   - Correct line-of-sight calculations
-   - Proper movement constraints based on terrain
-   - Appropriate cover and concealment effects
-
-3. **Distributed Simulation**
-   - Correct partitioning based on terrain and activity
-   - Proper synchronization between partitions
-   - Efficient resource utilization across nodes
-   - Fault tolerance during node failures
-
-4. **Command and Control**
-   - Realistic information flow through command hierarchy
-   - Appropriate fog of war effects based on capabilities
-   - Correct implementation of communication constraints
-   - Proper intelligence collection and reporting
-
-5. **Decision Analysis**
-   - Accurate identification of critical decision points
-   - Correct tracking of decision consequences
-   - Proper generation of after-action review data
-   - Appropriate comparison between tactical approaches
+- Realism and adaptability of AI tactical decision-making
+- Efficiency of terrain-aware computational partitioning
+- Accuracy of command and control information flow
+- Comprehensiveness of decision point analysis
+- Flexibility and usability of scenario authoring system
+- Performance scaling across distributed computing resources
 
 ### Critical User Scenarios
-1. Training a platoon in urban operations against an adaptive opposing force
-2. Conducting a battalion-level exercise across diverse terrain types
-3. Practicing command decision-making with degraded communications
-4. Analyzing alternative courses of action in complex tactical situations
-5. Developing escalating scenarios for progressive skill development
+- Conducting complex combined arms operations against adaptive opponents
+- Training command staff in battlefield management with realistic fog of war
+- Evaluating tactical doctrine effectiveness in varied terrain and conditions
+- Analyzing trainee decision-making processes in high-pressure scenarios
+- Creating customized scenarios for specific training objectives
+- Running rapid iterations of scenarios to explore outcome variations
 
 ### Performance Benchmarks
-1. Simulate a battalion-sized operation (800+ units) at 10x real-time speed
-2. Support at least 10 simultaneous human trainees interacting with the simulation
-3. Process and respond to trainee decisions within 1 second
-4. Generate comprehensive after-action review data within 5 minutes of exercise completion
-5. Scale efficiently to utilize at least 16 distributed processes
+- Simulation speed: minimum 10x real-time for full-scale operations
+- Scaling efficiency: minimum 80% parallel efficiency when scaling from 10 to 100 cores
+- AI response time: maximum 100ms for tactical decision-making
+- Terrain processing: maximum 60 seconds to load and process 100 km² at 10m resolution
+- Scenario execution: minimum 100 complete scenario executions per hour for statistical analysis
 
 ### Edge Cases and Error Conditions
-1. Handling complex terrain with many line-of-sight calculations
-2. Managing completely severed communications between units
-3. Responding to unexpected or unorthodox trainee tactics
-4. Recovering from node failures during training exercises
-5. Appropriately degrading performance under resource constraints
+- Handling of communication breakdown between units
+- Management of catastrophic force losses and mission failure
+- Detection of tactically impossible or doctrinally invalid scenarios
+- Adaptation to unexpected trainee decisions outside expected parameters
+- Recovery from computational node failures during simulation
 
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for core simulation logic
-- 100% coverage of tactical decision-making code
-- Comprehensive testing of terrain effects on operations
-- Performance tests across various scenario sizes and complexities
-- All command and control pathways fully tested
+### Test Coverage Requirements
+- Unit test coverage of at least 90% for all AI decision processes
+- Integration tests for command and control information flow
+- Performance tests for terrain-based partitioning
+- Validation against historical military operations where appropriate
+- Verification of decision point analysis against expert assessment
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully simulate battalion-level operations across complex terrain
-2. Demonstrate adaptive AI that responds realistically to trainee decisions
-3. Show appropriate fog of war effects based on unit capabilities and terrain
-4. Generate comprehensive decision point analysis for effective after-action reviews
-5. Enable instructors to create and modify scenarios without programming knowledge
-6. Complete all simulations at least 10x faster than real-time
-7. Validate AI tactical behavior against established military doctrine
+
+The implementation of the Tactical Combat Simulation Framework will be considered successful when:
+
+1. AI opponents demonstrate adaptive tactical behavior that challenges trainees with realistic and unpredictable responses
+2. Terrain-aware partitioning enables efficient simulation of large operational areas with appropriate detail levels
+3. Command and control simulation realistically models information flow constraints and fog of war effects
+4. Decision point analysis provides comprehensive and accurate insights for after-action reviews
+5. Scenario authoring capabilities allow military instructors to create customized training scenarios efficiently
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file must be included as proof that all tests pass and is a critical requirement for project completion.

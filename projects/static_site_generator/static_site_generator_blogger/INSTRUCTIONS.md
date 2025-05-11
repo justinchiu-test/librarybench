@@ -1,10 +1,10 @@
-# Personal Blog Generator
+# Personal Blogging Platform Generator
 
-A static site generator tailored specifically for independent bloggers who want to maintain full control over their content while minimizing technical overhead.
+A specialized static site generator designed for independent bloggers to create, manage, and publish content-focused websites with editorial planning features, social optimization, and media galleries.
 
 ## Overview
 
-This project is a Python library for generating personal blogs from simple markdown files, with a focus on content creation workflows, social media integration, and media-rich presentations. It allows bloggers to focus on writing while automating the technical aspects of running a professionally styled blog.
+This project implements a Python library for generating blog-centric static websites that prioritize content presentation, reading experience, and social sharing. It focuses on the needs of independent bloggers who want full ownership of their platform while maintaining a professional online presence with minimal technical overhead.
 
 ## Persona Description
 
@@ -12,138 +12,214 @@ Marcus writes a personal blog about urban gardening and sustainable living, shar
 
 ## Key Requirements
 
-1. **Content Calendar and Publishing System**: Implement a scheduling system for managing drafts, scheduling future posts, and organizing content by publication date. This is essential for Marcus to plan his editorial calendar, maintain a consistent publishing schedule, and separate work-in-progress from published content without needing a database.
+1. **Content Calendar with Publishing Management**: Implement a system for managing draft posts, scheduling future publications, and organizing content by status (draft, scheduled, published, archived).
+   - Critical for Marcus because it allows him to plan his editorial calendar, work on multiple posts simultaneously, and maintain a consistent publishing schedule without manual intervention.
+   - Must include metadata for publication dates, status tracking, and automated publishing pipeline.
 
-2. **Social Sharing Optimization**: Automatically generate appropriate metadata and preview information for social platforms when content is shared. As Marcus relies on social media to build his audience, having his posts display correctly with compelling previews when shared on platforms like Twitter, Facebook, and Pinterest is critical for engagement.
+2. **Social Sharing Optimization**: Generate appropriate metadata for optimal display when content is shared on social platforms, including Open Graph tags, Twitter Cards, and structured data.
+   - Essential for Marcus because social sharing drives significant traffic to his blog, and properly formatted previews with images and descriptions significantly increase click-through rates.
+   - Must generate platform-specific markup for major social networks with customizable templates.
 
-3. **Content Analytics Tools**: Provide reading time estimation, readability scoring, and content structure analysis to help improve article quality. These writing analytics help Marcus evaluate and improve his content before publishing, ensuring his articles are accessible to his target audience and properly structured for readability.
+3. **Reading Time Estimation and Readability Analysis**: Calculate estimated reading times for articles and provide readability metrics (like Flesch-Kincaid score) to help improve content structure.
+   - Important for Marcus because it helps readers set expectations for article length and helps him ensure his content remains accessible to his target audience.
+   - Should analyze text complexity, sentence structure, and word choice to provide actionable feedback.
 
-4. **Photo Gallery System**: Create responsive, optimized photo galleries with lazy loading and appropriate image sizing for different devices. Marcus's gardening blog is highly visual, with tutorials and examples often requiring multiple detailed images that must load efficiently across various devices without degrading performance.
+4. **Optimized Photo Gallery Templates**: Create specialized templates for photo galleries with lazy loading, responsive images for different screen sizes, and proper image optimization.
+   - Valuable for Marcus because his gardening content relies heavily on visual elements, and a good gallery experience improves engagement while maintaining performance.
+   - Must handle image resizing, format conversion, and delivery optimization.
 
-5. **Comments Integration**: Provide a system to integrate third-party commenting solutions or implement a static site commenting system. Community engagement is central to Marcus's blog, allowing readers to ask questions about gardening techniques, share their experiences, and build a community around sustainable living.
+5. **Comment System Integration**: Support for adding comments to static pages through third-party systems or implementing a static site commenting solution.
+   - Critical for Marcus because community engagement and discussion are central to his blog's purpose, and comments must work without requiring server-side processing.
+   - Should support multiple commenting platforms with consistent styling and moderation capabilities.
 
 ## Technical Requirements
 
-- **Testability Requirements**:
-  - Content generation must be deterministic and idempotent for consistent testing
-  - Image processing workflows must be testable with sample image inputs
-  - Scheduled content and draft management must be verifiable through file state
-  - Metadata generation for social sharing should be tested with expected output formats
-  - Comment system integration points must be testable with mock data
+### Testability Requirements
+- All components must be individually testable through well-defined interfaces
+- Implement fixtures for testing with sample blog content and images
+- Support snapshot testing for generated HTML output
+- Test suites must validate the structure and correctness of generated social metadata
+- Support mocking of time-dependent functions for testing scheduled publishing
 
-- **Performance Expectations**:
-  - Full site generation must complete in under 30 seconds for blogs with up to 500 posts
-  - Image optimization should reduce file sizes by at least 40% without visible quality loss
-  - Page load times should score at least 90 on Google PageSpeed Insights
-  - Incremental builds (changing/adding single post) should complete in under 5 seconds
+### Performance Expectations
+- Generate a 100-post blog with images in under 30 seconds
+- Image optimization pipelines should process 20+ images per second
+- Incremental builds should complete in under 3 seconds for content-only changes
+- Reading time and readability analysis should process 1000+ words in under 100ms
+- Generated sites should achieve 90+ scores on Google PageSpeed Insights (to be simulated in tests)
 
-- **Integration Points**:
-  - Third-party comment systems (e.g., Disqus, Isso, or custom static solutions)
-  - Social media platforms for metadata validation
-  - Image optimization libraries for gallery processing
-  - Content analysis tools for readability and structure checking
-  - RSS/Atom feed standards for content syndication
+### Integration Points
+- Social media platform metadata specifications
+- Third-party commenting systems APIs
+- Image optimization and transformation libraries
+- Content delivery networks for optimized asset delivery
+- Readability analysis algorithms and libraries
 
-- **Key Constraints**:
-  - All functionality must work without a database
-  - Comment system must not require server-side processing
-  - Image processing must be local without external API dependencies
-  - Generated sites must be deployable to any static hosting service
-  - Social sharing must work without client-side JavaScript
-
-IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- Must generate completely static HTML that works without any server-side processing
+- Must optimize images for web delivery while maintaining quality
+- Output must be fully accessible and SEO-optimized
+- Content management must work efficiently with standard version control systems
+- Site generation must be automatable for continuous deployment workflows
 
 ## Core Functionality
 
-The core functionality must include:
+The Personal Blogging Platform Generator should provide a comprehensive Python library with the following core capabilities:
 
-1. **Content Management System**:
-   - Process Markdown files with frontmatter for metadata
-   - Handle draft status and scheduled publication dates
-   - Organize posts by categories, tags, and series
-   - Maintain an editorial calendar with content status tracking
+1. **Content Processing System**
+   - Parse and process Markdown files with frontmatter for metadata
+   - Support for blog-specific formatting and shortcodes
+   - Handle draft status, publication dates, and scheduling
+   - Implement tagging, categorization, and content relationships
 
-2. **Media Processing Pipeline**:
-   - Optimize images for web delivery with appropriate compression
-   - Generate multiple image sizes for responsive design
-   - Create gallery layouts with consistent styling and navigation
-   - Support captions, alt text, and metadata for images
-
-3. **Social Media Integration**:
-   - Generate OpenGraph, Twitter Card, and other platform-specific metadata
-   - Create optimized share images and preview text
-   - Validate social metadata against platform requirements
-   - Generate appropriate schema.org markup for better search results
-
-4. **Content Enhancement Tools**:
-   - Calculate reading time based on content length and complexity
+2. **Content Analysis Tools**
+   - Calculate estimated reading times based on content length and complexity
    - Analyze readability using established metrics (Flesch-Kincaid, etc.)
-   - Check content structure for SEO best practices
-   - Suggest improvements for headings, paragraph length, and keyword usage
+   - Suggest improvements for title formats, headings, and paragraph structure
+   - Identify potential SEO improvements for content
 
-5. **Commenting System**:
-   - Provide integration points for third-party comment services
-   - Implement or connect to a static site commenting solution
-   - Support comment moderation through content files
-   - Generate appropriate markup for accessibility and SEO
+3. **Media Management**
+   - Process images for responsive delivery (multiple sizes, formats)
+   - Implement gallery templates with advanced features
+   - Optimize media files for web delivery
+   - Generate proper alt text and accessibility features
+
+4. **Social Integration**
+   - Generate platform-specific social sharing metadata
+   - Create preview cards for various platforms
+   - Support custom social images with text overlays
+   - Enable structured data for rich search results
+
+5. **Site Structure and Features**
+   - Build archive pages, tag pages, and category indexes
+   - Generate RSS/Atom feeds for subscription
+   - Implement related content suggestions
+   - Support for comments integration
+   - Create search indexes for client-side search
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**:
-  - Accurate conversion of markdown to HTML with proper styling
-  - Correct scheduling of posts based on publication dates
-  - Image optimization that maintains quality while reducing file size
-  - Proper generation of metadata for social sharing
-  - Functional integration with commenting systems
+### Key Functionalities to Verify
 
-- **Critical User Scenarios**:
-  - Blogger adds a new post with embedded images and schedules it for future publication
-  - Reader shares content on social media platforms and sees proper previews
-  - Blogger organizes content with tags and categories for proper navigation
-  - Blogger receives and moderates comments on published articles
-  - Blogger reviews content analytics to improve article structure
+1. **Content Processing and Publishing**
+   - Test conversion of markdown to properly formatted HTML
+   - Verify correct handling of publication dates and draft status
+   - Test scheduled publishing mechanism
+   - Confirm generation of archives, category pages, and tag pages
 
-- **Performance Benchmarks**:
-  - Build time for sites with varying numbers of posts (50, 200, 500)
-  - Image processing time for galleries of different sizes
-  - Page load performance with lazy-loaded images
-  - Time to first meaningful paint for content-heavy pages
+2. **Media Optimization and Galleries**
+   - Test image resizing and format conversion
+   - Verify responsive image generation
+   - Test gallery templates with various image counts and orientations
+   - Confirm proper lazy loading implementation
+   - Verify accessibility compliance for media content
 
-- **Edge Cases and Error Conditions**:
-  - Handling of non-standard image formats or corrupted images
-  - Processing of extremely long or short content
-  - Management of special characters and non-Latin scripts
-  - Recovery from interruptions during the build process
-  - Handling of malformed markdown or metadata
+3. **Metadata and Social Integration**
+   - Test generation of Open Graph and Twitter Card metadata
+   - Verify structured data correctness
+   - Test custom social image generation
+   - Confirm proper handling of various content types
 
-- **Required Test Coverage**:
-  - 90% code coverage for core library functions
-  - 100% coverage for social metadata generation
-  - 95% coverage for image processing pipeline
-  - 95% coverage for content scheduling and status management
+4. **Content Analysis**
+   - Test reading time calculations for various content lengths
+   - Verify readability scoring against established benchmarks
+   - Test content improvement suggestions
+   - Confirm correct operation with multilingual content
 
-IMPORTANT: 
+5. **Comment System Integration**
+   - Test integration with various commenting platforms
+   - Verify comment display templates
+   - Test comment counts and threading
+   - Confirm accessibility of comment sections
+
+### Critical User Scenarios
+
+1. Publishing a new blog post with images and seeing it properly displayed
+2. Scheduling multiple posts for future publication
+3. Creating and organizing photo galleries with many images
+4. Sharing content on social media with proper preview cards
+5. Analyzing content for readability and implementing improvements
+
+### Performance Benchmarks
+
+- Full site build with 100 posts should complete in under 30 seconds
+- Incremental builds should complete in under 3 seconds
+- Image processing should handle 50+ images in under 10 seconds
+- Search index generation should process content at 10+ posts/second
+- Memory usage should not exceed 500MB for typical blog sizes
+
+### Edge Cases and Error Conditions
+
+- Test handling of malformed markdown
+- Verify proper error reporting for missing images
+- Test behavior with extremely long posts or very short content
+- Verify graceful handling of special characters and Unicode
+- Test with missing metadata and incomplete front matter
+- Validate behavior with uncommon media types (SVG, WebP, etc.)
+
+### Required Test Coverage Metrics
+
+- Minimum 90% code coverage for core functionality
+- 100% coverage for publishing and scheduling logic
+- 100% coverage for social metadata generation
+- Integration tests for entire build pipeline
+- Performance tests for both small and large blogs
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+The Personal Blogging Platform Generator will be considered successful if it:
 
-1. A blogger can write content in markdown and generate a complete blog without touching HTML or CSS
-2. Content can be scheduled for future publication and managed as drafts before publishing
-3. Images are automatically optimized and properly displayed in responsive galleries
-4. Articles generate appropriate metadata when shared on social platforms
-5. Reading time and readability metrics help improve content quality
-6. Comments can be integrated without requiring server-side components
-7. All tests pass with at least 90% code coverage
-8. The generated site can be deployed to any static hosting service without modification
+1. Correctly manages content with drafts, scheduling, and automatic publishing
+2. Produces optimized HTML with proper social sharing metadata for various platforms
+3. Accurately calculates reading times and readability scores
+4. Successfully processes images for responsive galleries with proper optimization
+5. Effectively integrates commenting solutions with the static site workflow
+6. Builds sites efficiently with proper incremental build support
+7. Generates accessible, SEO-friendly HTML output
+8. Creates all necessary site structure elements (archives, categories, tags, feeds)
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
 
 To set up your development environment:
-```
-uv venv
-source .venv/bin/activate
-```
+
+1. Create a virtual environment using UV:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: When testing, you must generate the pytest_results.json file:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+This file is MANDATORY proof that all tests pass and must be included with your implementation.

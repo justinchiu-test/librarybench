@@ -1,185 +1,162 @@
-# Real-Time Manufacturing Query Engine
-
-A query language interpreter specialized for monitoring live production data with minimal impact on operational systems.
+# Manufacturing Operations Query Language Interpreter
 
 ## Overview
-
-The Real-Time Manufacturing Query Engine provides a specialized query system for monitoring manufacturing processes in real-time. This project variant focuses on enabling operational dashboard developers to query live production data, historical trends, and alert conditions without impacting operational systems, featuring sliding time windows, threshold monitoring, equipment hierarchy traversal, and statistical process control.
+This specialized Query Language Interpreter enables operational dashboard developers to efficiently query and analyze real-time manufacturing data alongside historical trends without impacting production systems. The interpreter provides optimized sliding time window computations, threshold monitoring capabilities, equipment hierarchy traversal, statistical process control functions, and production schedule integration, making it an ideal foundation for manufacturing monitoring displays.
 
 ## Persona Description
-
 Miguel creates real-time monitoring displays for manufacturing processes. He needs to query live production data, historical trends, and alert conditions without impacting operational systems.
 
 ## Key Requirements
+1. **Sliding time window computations showing recent metrics with configurable history**: Provides efficient calculations over moving time windows (last hour, shift, day, etc.) with configurable window sizes and update frequencies, enabling operators to monitor recent performance and identify developing issues without being overwhelmed by historical data or requiring full reprocessing for each update.
 
-1. **Sliding time window computations showing recent metrics with configurable history**
-   - Implement efficient sliding window operations with tunable size and overlap
-   - Support concurrent windows with different time spans (last hour, shift, day, week)
-   - Enable configurable update frequencies for different time windows
-   - Provide optimized memory usage for high-frequency sensor data
-   - Critical for Miguel to create dashboards showing both immediate conditions and recent trends without requiring separate queries for each time frame
+2. **Threshold monitoring expressions generating alerts based on query results**: Enables the definition of threshold conditions using complex expressions (statistical deviations, rate-of-change calculations, multi-variable correlations) that automatically generate alerts when exceeded, allowing for proactive monitoring of manufacturing conditions before they become critical failures.
 
-2. **Threshold monitoring expressions generating alerts based on query results**
-   - Develop a threshold expression system with multi-condition support
-   - Implement hysteresis to prevent alert flapping
-   - Support relative thresholds based on historical baselines
-   - Enable tiered alert levels with escalation rules
-   - Essential for automatically detecting and alerting on out-of-spec conditions across hundreds of production parameters
+3. **Equipment hierarchy traversal enabling drill-down from plant to specific sensors**: Implements a flexible equipment hierarchy model (enterprise → plant → area → line → machine → component → sensor) that allows queries to seamlessly aggregate data up the hierarchy or drill down for details, making it easy to identify which specific components are affecting overall system performance.
 
-3. **Equipment hierarchy traversal enabling drill-down from plant to specific sensors**
-   - Create a flexible equipment hierarchy model supporting plant→line→cell→equipment→sensor organization
-   - Support both upward and downward traversal in queries
-   - Enable dynamic grouping by equipment type, location, or function
-   - Provide aggregation operations at each hierarchy level
-   - Vital for organizing sensor data logically and enabling drill-down analysis from high-level KPIs to root causes
+4. **Statistical process control functions detecting manufacturing variations**: Incorporates specialized SPC (Statistical Process Control) calculations including control limits, capability indices, and rule violations (Western Electric, Nelson) that automatically identify abnormal process variations requiring attention, essential for maintaining consistent product quality.
 
-4. **Statistical process control functions detecting manufacturing variations**
-   - Implement core SPC algorithms (control charts, capability indices, run rules)
-   - Support both standard and custom control limits
-   - Enable multivariate SPC for correlated parameters
-   - Provide early trend detection before limit violations
-   - Important for identifying process drift, special cause variation, and quality issues before they lead to defects
-
-5. **Production schedule integration correlating measurements with planned operations**
-   - Develop methods to associate time series data with production schedule events
-   - Support filtering and grouping by product, batch, order, or recipe
-   - Enable automatic context switching based on current production
-   - Provide schedule-aware baseline comparisons
-   - Critical for understanding measurement variations in the context of production changes and properly attributing variations to specific products or processes
+5. **Production schedule integration correlating measurements with planned operations**: Connects real-time measurements with production schedule data (products, batches, changeovers, maintenance periods), enabling contextual analysis that distinguishes between normal variations due to planned changes and unexpected deviations requiring intervention.
 
 ## Technical Requirements
-
 ### Testability Requirements
-- All monitoring functions must be testable with pytest
-- Test threshold expressions with comprehensive simulated data scenarios
-- Verify hierarchy traversal with realistic manufacturing equipment trees
-- Test SPC functions against reference implementations and standard datasets
-- Validate schedule integration with realistic production plan data
+- Time window calculations must be testable with simulated real-time data streams
+- Threshold monitoring must be verified for various alert conditions and edge cases
+- Equipment hierarchy traversal must be tested with complex multi-level equipment structures
+- SPC functions must be validated against industry-standard statistical methods
+- Schedule integration must be tested for correlation accuracy during various production states
 
 ### Performance Expectations
-- Process high-frequency sensor data (up to 10,000 readings per second)
-- Update dashboards with sub-second refresh rates for current values
-- Support at least 100 concurrent dashboard sessions without performance degradation
-- Maintain real-time alert detection with less than 5-second latency
-- Query historical data spanning 1 year in under 10 seconds
+- Must process manufacturing data at rates exceeding 10,000 data points per second
+- Time window queries should return results in under 500ms regardless of historical data volume
+- Alert evaluations should complete within 250ms to ensure timely notifications
+- System should handle at least 1,000 simultaneous sensor streams without performance degradation
+- Query execution should avoid impacting operational systems through efficient resource utilization
 
 ### Integration Points
-- Connect with OPC UA, MQTT, and other industrial protocols
-- Interface with MES and production scheduling systems
-- Support historians and time-series databases
-- Integrate with alert management and notification systems
-- Provide compatible outputs for visualization libraries
+- Support for common industrial data protocols (OPC UA, MQTT, Modbus, etc.)
+- Integration with historian databases and time-series storage
+- Compatibility with production scheduling systems
+- Alert forwarding to notification systems and SCADA platforms
+- Data export for reporting and analysis tools
 
 ### Key Constraints
-- Maintain minimal impact on operational technology systems
-- Operate without requiring real-time database modifications
-- Function with limited bandwidth between OT and IT networks
-- Handle unpredictable communication interruptions
-- Process diverse data types from different equipment vendors
+- Must operate with minimal impact on production systems
+- Implementation must handle 24/7 continuous operation requirements
+- Real-time monitoring must maintain consistent performance
+- System must maintain data integrity during production changes
+- Security considerations for sensitive manufacturing data
 
-### Implementation Notes
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this Manufacturing Operations Query Language Interpreter includes:
 
-The Real-Time Manufacturing Query Engine must implement the following core functionality:
+1. **Real-Time Query Engine**:
+   - SQL-like language with manufacturing-specific extensions
+   - Time window operations with sliding and tumbling window support
+   - Equipment-aware query syntax for hierarchy traversal
+   - Optimized execution planning for time-series industrial data
 
-1. **Time Series Data Management**
-   - Efficiently process streaming sensor data
-   - Manage time windows with different spans and update frequencies
-   - Optimize storage and retrieval for manufacturing data patterns
-   - Handle data quality issues common in industrial sensors
+2. **Time Window Framework**:
+   - Efficient sliding window implementations
+   - Incremental update mechanisms to avoid full reprocessing
+   - Memory management optimized for long-running windows
+   - High-performance aggregation functions for numeric data
 
-2. **Query Language Processor**
-   - Implement specialized syntax for manufacturing analytics
-   - Support equipment hierarchy traversal in queries
-   - Enable schedule-aware filtering and grouping
-   - Optimize query execution for minimal impact on operational systems
+3. **Alert Management System**:
+   - Threshold expression evaluation engine
+   - Configurable alert generation with severity levels
+   - Hysteresis and debouncing to prevent alert floods
+   - Alert state tracking and notification management
 
-3. **Alert and Monitoring System**
-   - Process threshold expressions in real-time
-   - Implement hysteresis and debouncing for stable alerting
-   - Support complex multi-condition alert logic
-   - Manage alert state persistence and acknowledgment
+4. **Equipment Model**:
+   - Hierarchical equipment representation
+   - Efficient traversal and aggregation operations
+   - Asset metadata integration for context
+   - Change management during equipment reconfiguration
 
-4. **Statistical Analysis Engine**
-   - Implement SPC algorithms and control charts
-   - Calculate process capability and performance indices
-   - Support run rules and trend detection
-   - Enable correlation analysis between parameters
-
-5. **Production Context Management**
-   - Maintain current production schedule awareness
-   - Associate measurements with products and batches
-   - Track equipment states and operational modes
-   - Support context-specific baseline calculations
+5. **Statistical Analysis Framework**:
+   - Implementation of key SPC functions and rules
+   - Process capability calculations
+   - Statistical anomaly detection algorithms
+   - Trend and pattern recognition for manufacturing processes
 
 ## Testing Requirements
-
 ### Key Functionalities to Verify
-- Accuracy of sliding window calculations at different time spans
-- Reliable threshold detection and alert generation
-- Correct traversal and aggregation in equipment hierarchies
-- Proper implementation of SPC algorithms and run rules
-- Accurate correlation of measurements with production schedule events
+- Accuracy of sliding time window calculations for various window configurations
+- Correct triggering of alerts based on threshold conditions
+- Proper aggregation and drill-down through equipment hierarchies
+- Accuracy of SPC calculations compared to industry standards
+- Proper correlation of measurements with scheduled production activities
 
 ### Critical User Scenarios
-- Monitoring real-time production parameters with configurable time horizons
-- Detecting process drift and generating alerts before quality issues occur
-- Drilling down from plant-level KPIs to specific equipment issues
-- Comparing process behavior across different product runs
-- Analyzing historical trends to optimize manufacturing parameters
+- Monitoring real-time production metrics across multiple manufacturing lines
+- Detecting and alerting on process deviations before quality issues occur
+- Analyzing performance trends by equipment level or production area
+- Comparing current process metrics against statistical control limits
+- Distinguishing between planned production changes and unexpected variations
 
 ### Performance Benchmarks
-- Process at least 10,000 sensor readings per second
-- Maintain alert detection latency under 5 seconds
-- Support at least 100 concurrent dashboard sessions
-- Execute equipment hierarchy traversals across 10,000 nodes in under 3 seconds
-- Update sliding window calculations in less than 100ms
+- Sliding window computations should process at least 50,000 data points per second
+- Threshold evaluations should handle at least 5,000 concurrent conditions
+- Equipment hierarchy traversal should support structures with at least 10,000 nodes
+- SPC calculations should complete within 100ms for typical process datasets
+- System should maintain performance while processing at least 1,000 sensor streams simultaneously
 
 ### Edge Cases and Error Conditions
-- Handling sensor data gaps and communication interruptions
-- Processing messy data with outliers and noise
-- Managing rapid production schedule changes
-- Dealing with equipment addition or removal during operation
-- Recovering from system restarts without alert duplication
+- Behavior during equipment reconfiguration or hierarchy changes
+- Handling of communications interruptions with data sources
+- Proper management of schedule changes and production exceptions
+- Graceful degradation under extreme data volumes or system load
+- Appropriate treatment of missing or invalid sensor readings
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all modules
-- 100% coverage of alert detection and SPC functions
-- Test sliding windows with at least 20 different time spans and update frequencies
-- Verify hierarchy traversal with at least 5 levels of equipment nesting
-- Test schedule integration with at least 10 different production scenarios
+- Minimum 90% code coverage across all modules
+- 100% coverage for time window calculations and threshold evaluations
+- All SPC functions must have dedicated test cases with known outcomes
+- Equipment hierarchy operations must be tested with various structure types
+- Schedule integration must be tested for all production state transitions
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation will:
 
-The implementation will be considered successful if it meets the following criteria:
+1. Efficiently perform sliding time window calculations with configurable history periods, verified through performance testing with simulated data streams
+2. Correctly trigger alerts based on complex threshold conditions, validated through test scenarios with known violation patterns
+3. Properly traverse equipment hierarchies for aggregation and drill-down, confirmed with tests using complex equipment structures
+4. Accurately perform statistical process control calculations, verified against industry-standard SPC examples
+5. Successfully correlate measurements with scheduled production activities, demonstrated through tests with various production state changes
 
-1. **Functional Completeness**
-   - All five key requirements are fully implemented
-   - Sliding window calculations correctly track metrics across different time frames
-   - Threshold monitoring reliably detects and alerts on abnormal conditions
-   - Equipment hierarchy traversal enables effective drill-down analysis
-   - SPC functions accurately identify process variations
-   - Production schedule integration correctly correlates measurements with operations
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Performance and Scalability**
-   - Meets all performance benchmarks specified
-   - Operates with minimal impact on production systems
-   - Scales to handle manufacturing environments with thousands of sensors
-   - Supports concurrent dashboard usage by multiple users
-   - Maintains responsive queries against historical data
+## Environment Setup
 
-3. **Operational Reliability**
-   - Functions properly during communication interruptions
-   - Handles sensor errors and data quality issues gracefully
-   - Avoids false alerts and alert storms
-   - Maintains data consistency during production transitions
-   - Recovers automatically from system disruptions
+To set up your development environment:
 
-4. **Manufacturing Intelligence**
-   - Enables identification of improvement opportunities
-   - Supports root cause analysis of quality issues
-   - Provides actionable insights for process optimization
-   - Helps prevent production problems through early detection
-   - Enhances understanding of process capability and performance
+```bash
+# From within the project directory
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```bash
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

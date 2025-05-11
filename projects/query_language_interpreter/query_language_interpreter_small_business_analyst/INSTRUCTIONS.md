@@ -1,176 +1,162 @@
-# Business Intelligence Query Engine
-
-A query language interpreter optimized for small business analytics without dedicated database infrastructure.
+# E-Commerce Analytics Query Language Interpreter
 
 ## Overview
-
-The Business Intelligence Query Engine provides a lightweight but powerful query system for small business analysts to extract actionable insights from disparate data sources. This project variant focuses on enabling retail business analysis across CSV exports from various business systems without requiring specialized database expertise or infrastructure, with built-in retail metrics calculation and reporting features.
+This specialized Query Language Interpreter enables small business analysts to easily query and analyze sales data, customer information, and inventory across multiple CSV exports from different business systems without requiring dedicated database infrastructure. The interpreter includes built-in retail metrics, supports scheduled reporting, handles Excel formulas, automatically highlights anomalies, and provides multi-currency support.
 
 ## Persona Description
-
 Marcus manages analytics for a growing e-commerce business without dedicated database infrastructure. He needs to query sales data, customer information, and inventory across multiple CSV exports from different business systems.
 
 ## Key Requirements
+1. **Business metrics library with pre-defined calculations for common retail KPIs**: Provides built-in formulas for essential retail metrics (conversion rates, average order value, customer lifetime value, inventory turnover, etc.), saving analysts time and ensuring consistent calculation methods across all reports and analyses.
 
-1. **Business metrics library with pre-defined calculations for common retail KPIs**
-   - Implement calculations for standard retail metrics (conversion rate, average order value, customer lifetime value, inventory turnover)
-   - Support custom metric definitions using a simple syntax
-   - Include trending functions to compare metrics across time periods (YoY, MoM, WoW)
-   - Essential for Marcus to quickly assess business performance without manually coding complex calculations for each report
+2. **Scheduled query execution generating automated reports at regular intervals**: Enables setting up recurring queries that automatically run at specified times (daily, weekly, monthly), generating up-to-date reports without manual intervention, crucial for regular business monitoring and consistent decision-making.
 
-2. **Scheduled query execution generating automated reports at regular intervals**
-   - Develop a scheduling system to run predefined queries on a recurring basis
-   - Support various scheduling patterns (hourly, daily, weekly, monthly)
-   - Generate consistent report outputs in multiple formats (CSV, JSON, Excel)
-   - Critical for maintaining up-to-date business intelligence without manual effort, allowing Marcus to focus on analysis rather than data extraction
+3. **Excel-compatible formula translation allowing spreadsheet users to write familiar expressions**: Allows analysts to use Excel-style formulas (SUM, VLOOKUP, IF statements, etc.) within queries, minimizing the learning curve for business users with spreadsheet backgrounds and leveraging their existing formula knowledge.
 
-3. **Excel-compatible formula translation allowing spreadsheet users to write familiar expressions**
-   - Create a translation layer between Excel-style formulas and the query language
-   - Support common Excel functions (VLOOKUP, SUMIF, COUNTIF, pivot-table-like operations)
-   - Provide clear error messages that help spreadsheet users correct syntax issues
-   - Important for reducing the learning curve by enabling Marcus and his team to leverage their existing spreadsheet knowledge
+4. **Anomaly highlighting automatically flagging unusual patterns in business data**: Automatically identifies and highlights statistical outliers, unexpected trends, or suspicious patterns in sales, inventory, or customer behavior, enabling quick detection of data quality issues or business opportunities that require attention.
 
-4. **Anomaly highlighting automatically flagging unusual patterns in business data**
-   - Implement statistical methods for detecting outliers in business metrics
-   - Support different detection algorithms based on data characteristics and seasonality
-   - Prioritize anomalies by potential business impact
-   - Critical for proactively identifying issues or opportunities that might be missed in routine reporting
-
-5. **Multi-currency support with automatic conversion based on transaction dates**
-   - Enable storing and querying monetary values in multiple currencies
-   - Maintain historical exchange rates and apply correct rates based on transaction dates
-   - Support reporting in a normalized currency with transparent conversion
-   - Essential for Marcus's e-commerce business that processes transactions in multiple currencies while needing consolidated reporting
+5. **Multi-currency support with automatic conversion based on transaction dates**: Seamlessly handles transactions in different currencies, automatically converting amounts using appropriate historical exchange rates based on transaction dates, ensuring accurate financial reporting and analysis across international operations.
 
 ## Technical Requirements
-
 ### Testability Requirements
-- All functions must be unit-testable with pytest
-- Test all KPI calculations against reference values
-- Verify correct execution of scheduled queries using time mocking
-- Test currency conversions against historical exchange rates
-- Simulate anomaly detection with artificially generated datasets
+- All business metric calculations must be independently testable with precise expected outputs
+- Scheduled execution functionality must be testable through time simulation, without waiting for actual intervals
+- Excel formula translation must be verified against actual Excel outputs for equivalent expressions
+- Anomaly detection algorithms must be testable with predetermined datasets containing known anomalies
+- Currency conversion operations must be tested against historical exchange rate data
 
 ### Performance Expectations
-- Process CSV files up to 1GB in size without memory issues
-- Execute common business queries in under 5 seconds
-- Support incremental processing for scheduled reports
-- Handle at least 100,000 transactions in trending calculations
-- Process 5 years of historical data for seasonal anomaly detection
+- Must handle data volumes typical for small to medium businesses (up to 1 million transactions per year)
+- Query response times should not exceed 3 seconds for typical business analyses
+- Scheduled reports should generate within 5 minutes, even for complex cross-system analyses
+- Memory utilization should remain under 1GB even when processing multi-year datasets
+- Background scheduling should have minimal impact on system resources
 
 ### Integration Points
-- Import data from CSV, Excel, JSON, and simple API endpoints
-- Export results to business-friendly formats (Excel, CSV, JSON)
-- Connect with email systems for automated report distribution
-- Maintain compatibility with common data analysis tools
-- Support exchange rate data updates from external sources
+- CSV file import with robust handling of common formatting variations
+- Export capabilities for Excel, PDF, and CSV formats
+- Optional API for integration with business intelligence tools
+- Filesystem integration for scheduled report storage
+- Historical exchange rate data source for currency conversion
 
 ### Key Constraints
-- Must operate without requiring a database server installation
-- All operations must work on standard business hardware
-- Storage format must be accessible by non-technical users if needed
-- Preserve data relationships across disparate export files
-- Maintain backward compatibility with existing Excel reports
+- Must operate without external database dependencies
+- Implementation must work reliably on standard business workstations
+- All operations must produce results identical to those obtained through manual spreadsheet analysis
+- No internet connectivity requirements for core functionality (except exchange rate updates)
+- Financial calculations must maintain cent-level precision
 
-### Implementation Notes
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this E-Commerce Analytics Query Language Interpreter includes:
 
-The Business Intelligence Query Engine must implement the following core functionality:
+1. **Query Engine**:
+   - SQL-like syntax for data operations on CSV and JSON business data
+   - Support for joining data across different business system exports
+   - Excel-compatible function support within query expressions
+   - Execution planning optimized for business analytics patterns
 
-1. **Data Import and Management**
-   - Parse and normalize data from various business system exports
-   - Maintain metadata about different data sources and relationships
-   - Handle incremental data updates efficiently
-   - Preserve historical data for trend analysis
+2. **Business Metrics Library**:
+   - Pre-defined calculations for standard retail and e-commerce KPIs
+   - Customizable metric definitions with parameter support
+   - Hierarchical metrics with drill-down capabilities
+   - Documentation and formula explanation for each metric
 
-2. **Query Language Processor**
-   - Implement SQL-like syntax with business-oriented extensions
-   - Support Excel-compatible formula translation
-   - Provide a library of retail-specific functions and aggregations
-   - Enable joining data across different business system exports
+3. **Scheduling Framework**:
+   - Configuration system for defining recurring query schedules
+   - Report generation and storage in various formats
+   - Execution history logging and failure handling
+   - Resource utilization controls for background processing
 
-3. **Business Metrics Engine**
-   - Calculate standard and custom retail KPIs
-   - Implement trend analysis functions
-   - Support segmentation and cohort analysis
-   - Enable comparative analysis across time periods
+4. **Anomaly Detection System**:
+   - Statistical models for identifying outliers in business data
+   - Configurable sensitivity and detection thresholds
+   - Multiple detection algorithms for different data patterns
+   - Contextual analysis considering business cycles and seasonality
 
-4. **Scheduling and Automation**
-   - Manage recurring query execution
-   - Track query dependencies for efficient updating
-   - Generate consistent report outputs
-   - Support notifications and distribution
-
-5. **Analysis Helpers**
-   - Implement anomaly detection algorithms
-   - Support currency normalization functions
-   - Provide data quality checks and warnings
-   - Enable "what-if" scenario modeling
+5. **Currency Management**:
+   - Exchange rate data management with historical tracking
+   - Automatic currency conversion in query operations
+   - Currency-aware aggregations and calculations
+   - Reporting with multiple currency views
 
 ## Testing Requirements
-
 ### Key Functionalities to Verify
-- Correct calculation of all predefined retail KPIs
-- Accurate translation of Excel-style formulas
-- Proper execution of scheduled queries at specified intervals
-- Reliable anomaly detection across different data patterns
-- Accurate currency conversion based on historical rates
+- Accuracy of all business metric calculations compared to industry standards
+- Correct execution of scheduled queries according to defined intervals
+- Precise translation of Excel formulas into equivalent query operations
+- Accurate identification of known anomalies in test datasets
+- Correct currency conversions using historical exchange rates
 
 ### Critical User Scenarios
-- Generating a weekly sales report with year-over-year comparisons
-- Creating a customer segmentation analysis based on purchase patterns
-- Identifying inventory issues by comparing sales velocity to stock levels
-- Analyzing profit margins across product categories with multi-currency transactions
-- Detecting unusual patterns in customer returns or abandoned carts
+- Analyzing sales performance across product categories and time periods
+- Tracking inventory levels and identifying potential stockout situations
+- Evaluating customer segments based on purchase history and value
+- Generating end-of-month financial reports with multi-currency data
+- Identifying unusual transactions or patterns requiring investigation
 
 ### Performance Benchmarks
-- Complete import of 100MB CSV file in under 30 seconds
-- Execute KPI dashboard queries in under 5 seconds
-- Process historical trend analysis for 3 years of data in under 60 seconds
-- Generate scheduled reports with minimal performance impact on the system
-- Respond to ad-hoc queries while scheduled operations are running
+- Query execution time must not exceed 3 seconds for typical business reports on datasets up to 500MB
+- Scheduled report generation must complete within 5 minutes, even for complex reports
+- Memory usage must remain under 1GB during normal operation
+- CPU utilization during background operations must not exceed 20% of available resources
+- Dataset import operations must process at least 10,000 records per second
 
 ### Edge Cases and Error Conditions
-- Handling inconsistent CSV formats from different export systems
-- Processing incomplete data when business systems change
-- Managing currency conversions during periods of high exchange rate volatility
-- Detecting anomalies correctly despite seasonal variations
-- Continuing scheduled operations despite temporary data source failures
+- Handling inconsistent or missing data in business exports
+- Proper management of currency conversions with missing exchange rates
+- Graceful degradation when scheduled query execution fails
+- Appropriate handling of Excel formulas without direct query equivalents
+- Correct behavior with fiscal year boundaries and accounting periods
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all core functions
-- 100% coverage of KPI calculation functions
-- All Excel formula translations tested against actual Excel outputs
-- Anomaly detection tested against datasets with known anomalies
-- Currency conversion tested with historical exchange rate data
+- Minimum 90% code coverage across all modules
+- 100% coverage for financial calculation and currency conversion functions
+- All business metrics must have dedicated test cases with known correct results
+- All error handling paths must be explicitly tested
+- Performance tests must verify system behavior with maximum expected data volumes
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation will:
 
-The implementation will be considered successful if it meets the following criteria:
+1. Enable accurate calculation of standard retail business metrics, verified through tests comparing results to industry-standard definitions
+2. Support scheduled execution of queries with configurable intervals, demonstrated by tests using simulated time progression
+3. Correctly translate Excel-style formulas into query operations, validated through comparison with actual Excel calculations
+4. Identify anomalies in business data with configurable sensitivity, verified using datasets with known outliers
+5. Properly handle multi-currency data with accurate conversion based on transaction dates, confirmed through tests with historical exchange rate data
 
-1. **Functional Completeness**
-   - All five key requirements are fully implemented
-   - Business metric calculations match reference values in test scenarios
-   - Scheduled queries execute reliably at specified intervals
-   - Excel formulas translate correctly to equivalent query operations
-   - Anomaly detection finds significant deviations while minimizing false positives
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Performance Goals**
-   - Meets all performance benchmarks specified
-   - Schedules and executes daily reports in under 10 minutes
-   - Supports interactive query response times (under 10 seconds) for typical operations
-   - Handles the expected data volumes without memory issues
+## Environment Setup
 
-3. **Usability for Target Persona**
-   - Successfully imports data from all common business system exports
-   - Generates reports matching the format of existing manual processes
-   - Provides clear error messages for common input issues
-   - Requires minimal technical expertise for routine operations
+To set up your development environment:
 
-4. **Quality and Reliability**
-   - Successfully passes all automated tests
-   - Maintains data integrity across processing steps
-   - Produces consistent results with identical inputs
-   - Detects and handles common data quality issues
+```bash
+# From within the project directory
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```bash
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

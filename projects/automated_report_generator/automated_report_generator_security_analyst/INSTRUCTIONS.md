@@ -1,10 +1,10 @@
-# Security Posture Intelligence Platform
+# Security Posture Reporting Framework
 
-A specialized adaptation of PyReport designed for cybersecurity professionals who need to transform complex security data into actionable intelligence reports with appropriate detail levels for different audiences.
+A specialized automated report generation framework for IT security analysts to transform complex security data into actionable intelligence for both executive leadership and technical teams.
 
 ## Overview
 
-The Security Posture Intelligence Platform is a Python library that automates the collection, analysis, and reporting of cybersecurity data. It integrates with security tools, performs risk scoring, maps findings to compliance requirements, tracks remediation progress, and generates audience-appropriate reports that translate technical security data into business-relevant insights.
+The Security Posture Reporting Framework is a Python-based library designed to generate comprehensive security reports that effectively communicate an organization's security status to diverse audiences. It integrates data from various security tools, calculates risk metrics, maps findings to compliance requirements, and produces tailored reports with appropriate detail levels for different stakeholders.
 
 ## Persona Description
 
@@ -12,131 +12,196 @@ Jamal works in cybersecurity and needs to generate security posture reports for 
 
 ## Key Requirements
 
-1. **Security Tool Integration**: Develop connectors for common security platforms (SIEM systems, vulnerability scanners, threat intelligence feeds) that normalize and correlate data from disparate sources into a unified security posture view.
-   * *Importance*: Security data is scattered across multiple tools and formats; automated integration eliminates manual data compilation, ensures comprehensive visibility across the security landscape, and enables Jamal to provide complete security posture assessments rather than tool-specific snapshots.
+1. **Security Tool Integration**: Implement connectors for various security systems including SIEM platforms, vulnerability scanners, and threat intelligence services to consolidate security data.
+   - *Critical for Jamal because*: Security data exists in multiple disconnected systems, and manually extracting and normalizing this information is extremely time-consuming and error-prone, potentially causing critical vulnerabilities to be overlooked.
 
-2. **Risk Scoring Algorithms**: Create customizable risk assessment algorithms that prioritize security findings based on threat severity, asset value, exploitability, and potential business impact using configurable risk frameworks.
-   * *Importance*: Organizations face thousands of potential security issues; intelligent risk scoring helps focus limited resources on the highest-impact vulnerabilities, transforming overwhelming security data into prioritized action plans that address the most significant business risks first.
+2. **Risk Scoring Framework**: Develop algorithms that prioritize security findings based on business impact, exploitability, and threat landscape to focus attention on the most critical issues.
+   - *Critical for Jamal because*: Organizations face thousands of potential vulnerabilities and security events, and without sophisticated prioritization, security teams waste time on low-impact issues while critical threats may go unaddressed.
 
-3. **Compliance Requirement Mapping**: Implement a system that automatically maps security findings to specific regulatory requirements (PCI-DSS, HIPAA, SOC2, etc.) and tracks compliance status across different frameworks.
-   * *Importance*: Modern organizations must satisfy multiple compliance mandates; automated mapping shows exactly how security issues affect regulatory posture, helping Jamal demonstrate compliance status to auditors while focusing remediation efforts on gaps that affect multiple frameworks simultaneously.
+3. **Compliance Mapping System**: Create a mapping system that links security findings to specific regulatory requirements and frameworks (NIST, ISO, GDPR, etc.) to track compliance status.
+   - *Critical for Jamal because*: Modern organizations must comply with multiple overlapping regulations, and manually tracking how specific security controls satisfy various frameworks is practically impossible without systematic support.
 
-4. **Remediation Lifecycle Tracking**: Develop tracking mechanisms that follow vulnerability lifecycles from discovery through remediation, with historical analysis of resolution times and effectiveness metrics.
-   * *Importance*: Effective security requires closing vulnerability loops; lifecycle tracking provides accountability for remediation activities, helps identify systemic weaknesses in the resolution process, and enables Jamal to show progress trends that demonstrate security program maturity to leadership.
+4. **Remediation Lifecycle Tracking**: Build functionality to track vulnerability lifecycles from discovery through remediation, including historical trending of security issues over time.
+   - *Critical for Jamal because*: Effective security management requires understanding not just current vulnerabilities but how quickly issues are being resolved, recurring patterns, and progress trends that indicate the effectiveness of security programs.
 
-5. **Audience-Based Detail Adjustment**: Create reporting templates that automatically adjust technical depth, visualization complexity, and terminology based on the intended audience's technical expertise and role-specific concerns.
-   * *Importance*: Security insights must be actionable for diverse stakeholders; audience-tailored reports ensure executives receive business-focused summaries while technical teams get detailed remediation guidance, allowing Jamal to communicate effectively across the organization without creating multiple manual reports.
+5. **Technical Detail Adaptation**: Implement a system that adjusts the level of technical detail in reports based on the audience, from executive summaries to detailed technical findings.
+   - *Critical for Jamal because*: Security communication fails when executives receive overly technical reports they cannot understand or when technical teams receive oversimplified summaries without actionable details, making audience-appropriate reporting essential.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Security tool connectors must support mock interfaces for testing without live security systems
-- Risk scoring algorithms must be verifiable with predefined vulnerability datasets
-- Compliance mapping must be validated against current regulatory requirements
-- Report generation must be testable for all audience types
+- All security tool connectors must be testable with synthetic vulnerability and incident data
+- Risk scoring algorithms must be verifiable with standardized test cases
+- Compliance mapping must be testable against regulatory framework requirements
+- Report generation must be verifiable for different audience types
 
 ### Performance Expectations
-- Must process security data from at least 10 different security tools and platforms
-- Risk assessment algorithms must evaluate up to 10,000 vulnerabilities in under 5 minutes
-- Compliance mapping across 5+ regulatory frameworks must complete in under 3 minutes
-- Report generation including all visualizations must complete in under 2 minutes
+- System must efficiently process data from 10+ security tools simultaneously
+- Risk calculation must handle 10,000+ vulnerabilities in under 1 minute
+- Report generation must complete within 2 minutes for comprehensive security reports
+- Historical analysis must efficiently process years of vulnerability and incident data
 
 ### Integration Points
-- APIs for common security platforms (Qualys, Tenable, Splunk, etc.)
-- Threat intelligence feed ingestion and normalization
-- CMDB and asset management system integration
-- Ticketing/workflow system integration for remediation tracking
+- Standard connectors for common security tools (SIEM, vulnerability scanners, etc.)
+- Import capabilities for threat intelligence feeds
+- Compatibility with governance, risk, and compliance (GRC) platforms
+- Export capabilities to PDF, interactive HTML, and security dashboards
 
 ### Key Constraints
-- Must maintain security of sensitive vulnerability data
-- No external data transmission without explicit configuration
-- Report content must be accurately filtered based on user authorization
-- System must operate within security-restricted environments
+- Must maintain security of sensitive vulnerability information
+- Must support air-gapped environments with limited connectivity
+- Must adapt to evolving threat landscape and compliance requirements
+- Must function with incomplete data from some security systems
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Security Posture Intelligence Platform must provide the following core functionality:
+The Security Posture Reporting Framework must provide the following core functionality:
 
-1. **Security Data Collection**
-   - Multi-tool API integration and authentication
-   - Data normalization and deduplication
-   - Incremental synchronization and change detection
-   - Historical data retention and versioning
+1. **Security Data Acquisition**
+   - Connect to and extract data from various security systems
+   - Normalize diverse security findings into a common format
+   - Correlate related findings across different tools
+   - Handle incremental updates and delta reporting
 
-2. **Risk Analysis Engine**
-   - Customizable risk scoring frameworks
-   - Asset criticality and business context incorporation
-   - Threat context enrichment from intelligence sources
-   - Trend analysis and emerging risk identification
+2. **Risk Assessment Engine**
+   - Calculate risk scores based on multiple factors
+   - Prioritize findings by potential business impact
+   - Incorporate threat intelligence for context
+   - Track risk levels over time
 
-3. **Compliance Management Framework**
-   - Control mapping across regulatory frameworks
-   - Gap analysis and remediation prioritization
-   - Evidence collection and documentation
-   - Audit preparation and response support
+3. **Compliance Management**
+   - Map security controls to compliance requirements
+   - Track compliance status across multiple frameworks
+   - Identify compliance gaps and recommendations
+   - Support evidence collection for audits
 
-4. **Remediation Intelligence System**
-   - Vulnerability lifecycle tracking
-   - Resolution effectiveness measurement
-   - Resource allocation optimization
-   - Trend analysis for process improvement
+4. **Remediation Tracking**
+   - Monitor vulnerability lifecycles from discovery to resolution
+   - Calculate key metrics (mean time to remediate, aging, etc.)
+   - Track accountability for remediation tasks
+   - Identify recurring or persistent issues
 
-5. **Adaptive Reporting Framework**
-   - Audience profile configuration and management
-   - Technical depth adjustment by recipient
-   - Visualization selection based on data and audience
-   - Terminology translation between technical and business language
+5. **Audience-Specific Reporting**
+   - Generate executive summaries with business-focused metrics
+   - Create detailed technical reports for security teams
+   - Produce role-specific reports for IT operations, development, etc.
+   - Support both periodic reporting and ad-hoc queries
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate data collection from each supported security tool
-- Correct risk calculation based on configured scoring algorithms
-- Proper mapping of findings to compliance framework requirements
-- Appropriate tracking of remediation status and lifecycle
-- Effective content customization for different audience profiles
+
+1. **Data Integration Reliability**
+   - Verify that connectors can accurately extract data from various security tools
+   - Test handling of inconsistent or conflicting security findings
+   - Verify appropriate normalization of diverse vulnerability formats
+   - Confirm proper correlation of related findings from different sources
+
+2. **Risk Assessment Accuracy**
+   - Verify risk scoring algorithms against industry standards
+   - Test prioritization with various vulnerability and threat scenarios
+   - Verify appropriate incorporation of business context
+   - Confirm consistent risk evaluation across similar findings
+
+3. **Compliance Mapping Correctness**
+   - Verify mapping of security controls to regulatory requirements
+   - Test compliance status determination for different frameworks
+   - Verify identification of compliance gaps
+   - Confirm appropriate evidence association for audit support
+
+4. **Remediation Tracking Functionality**
+   - Verify accurate tracking of vulnerability lifecycles
+   - Test calculation of remediation performance metrics
+   - Verify historical trending and comparison features
+   - Confirm appropriate identification of recurring issues
+
+5. **Audience Adaptation**
+   - Verify appropriate detail levels for different audience types
+   - Test language adaptation between technical and executive reports
+   - Confirm inclusion of necessary context for each audience
+   - Verify consistent metrics across different report types
 
 ### Critical User Scenarios
-- Monthly security posture reporting to executive leadership
-- Detailed remediation guidance for security operations teams
-- Compliance status reporting for audit preparation
-- Trend analysis for security program effectiveness
-- Incident-specific reporting during security events
+
+1. Generating a quarterly executive security posture report
+2. Creating a technical vulnerability report for the IT operations team
+3. Producing a compliance status report for an upcoming audit
+4. Generating a remediation performance report showing security team effectiveness
+5. Creating an incident response report following a security event
 
 ### Performance Benchmarks
-- Processing of vulnerability data from 5 major security tools should complete in under 10 minutes
-- Risk scoring for an enterprise environment with 10,000 assets should complete in under 5 minutes
-- Report generation with audience-appropriate content should complete in under 2 minutes
-- System should handle organizations with at least 20,000 active vulnerabilities
-- Compliance mapping against 7 common frameworks should complete in under 3 minutes
+
+- Vulnerability data processing must handle 10,000+ findings in under 1 minute
+- Risk calculation must complete within 30 seconds for all enterprise assets
+- Compliance mapping must process 1,000+ controls in under 1 minute
+- Report generation must complete within 2 minutes for comprehensive reports
+- Historical analysis must process 2+ years of security data efficiently
 
 ### Edge Cases and Error Conditions
-- Handling of conflicting vulnerability data from different tools
-- Management of zero-day vulnerabilities without established CVE scores
-- Processing of security tool outages and data gaps
-- Adaptation to new compliance requirements and regulatory changes
-- Appropriate handling of exceptionally high-risk security findings
+
+- Handling of zero-day vulnerabilities without established scoring
+- Appropriate processing when security tools provide incomplete data
+- Correct operation during active security incidents
+- Handling of conflicts between different security tool findings
+- Appropriate analysis for new systems with limited security history
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for risk scoring algorithms
+
+- Minimum 95% line coverage for all code
+- 100% coverage of risk scoring algorithms
 - 100% coverage of compliance mapping functions
-- Complete testing of report generation for all audience profiles
-- Full verification of data security mechanisms
-- Comprehensive testing of remediation lifecycle tracking
+- Comprehensive coverage of error handling and data validation
+- Integration tests for complete report generation workflows
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+A successful implementation of the Security Posture Reporting Framework will meet the following criteria:
 
-1. Security data is accurately collected and normalized from at least 5 different security tools
-2. Risk scores effectively prioritize vulnerabilities based on business impact and threat context
-3. Security findings are correctly mapped to compliance requirements across multiple frameworks
-4. Remediation activities are tracked throughout their lifecycle with appropriate metrics
-5. Reports are automatically tailored to different audiences with appropriate technical depth
-6. The system handles typical enterprise security data volume within performance parameters
-7. Security teams report that outputs provide actionable intelligence for remediation
-8. Executives gain clear understanding of security posture from business-focused reports
-9. The solution reduces security reporting time by at least 80% compared to manual methods
-10. Compliance teams can effectively demonstrate regulatory status using generated reports
+1. **Data Consolidation**: Successfully integrates security data from multiple tools into a unified view of organizational security posture.
 
-To get started with this project, use `uv venv` to setup a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+2. **Risk Prioritization**: Effectively identifies and highlights the most critical security issues based on business impact and threat context.
+
+3. **Compliance Visibility**: Clearly communicates compliance status across multiple regulatory frameworks with gap identification.
+
+4. **Remediation Intelligence**: Provides meaningful metrics and insights about vulnerability management effectiveness and trends.
+
+5. **Audience Adaptation**: Successfully tailors security communication to different stakeholders with appropriate detail levels and terminology.
+
+6. **Efficiency**: Reduces the time required to generate security reports by at least 75% compared to manual methods.
+
+7. **Actionability**: Ensures all reports contain clear, prioritized action items that drive security improvement.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

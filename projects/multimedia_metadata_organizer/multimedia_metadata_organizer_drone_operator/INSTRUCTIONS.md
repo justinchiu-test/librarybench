@@ -1,139 +1,141 @@
 # Drone Survey Metadata Management System
 
 ## Overview
-A specialized metadata management system for drone operators that organizes aerial imagery with precise spatial and technical metadata. The system enables flight mission organization, temporal sequence analysis, sensor calibration tracking, client deliverable packaging, and coordinate system transformation to support professional aerial survey operations.
+A specialized metadata organization system for drone operators who capture aerial imagery for land surveys, construction monitoring, and agricultural assessment, with a focus on maintaining precise spatial metadata for technical analysis.
 
 ## Persona Description
 Kwame captures aerial imagery for land surveys, construction monitoring, and agricultural assessment. He needs to organize thousands of geotagged images and maintain their precise spatial metadata for technical analysis.
 
 ## Key Requirements
+1. **Flight mission organization**: Create a system to group images by specific survey operations and flight parameters. This is essential for maintaining proper context for each capture and ensuring images are associated with the correct mission parameters and client projects.
 
-1. **Flight Mission Organization**
-   - Groups images by specific survey operations and flight parameters
-   - Critical for Kwame because it establishes the operational context for each image and enables efficient management of large volumes of imagery from different projects
-   - Must track comprehensive flight metadata including mission objectives, flight paths, altitude profiles, weather conditions, and UAV specifications
+2. **Temporal sequence visualization**: Develop functionality to show changes to the same location over multiple surveys and time periods. This is critical for monitoring projects over time and identifying changes in terrain, construction progress, or crop health.
 
-2. **Temporal Sequence Visualization**
-   - Enables analysis of changes to the same location captured over multiple surveys
-   - Essential for Kwame's monitoring projects as it reveals temporal patterns and changes in sites over time
-   - Must accurately align images from different dates based on spatial coordinates and create ordered sequences that highlight progressive changes
+3. **Sensor calibration metadata tracking**: Build mechanisms to ensure measurement accuracy across different equipment and environmental conditions. This is crucial for maintaining data integrity and enabling precise measurements from aerial imagery.
 
-3. **Sensor Calibration Metadata Tracking**
-   - Maintains detailed records of sensor specifications and calibration status
-   - Vital for Kwame's data quality as it ensures measurement accuracy and enables appropriate corrections based on known sensor characteristics
-   - Must track camera/sensor models, calibration dates, distortion parameters, spectral sensitivities, and changes in calibration over time
+4. **Client deliverable packaging**: Implement tools for preparing data in formats specific to different industries and client requirements. This streamlines the delivery process and ensures clients receive properly formatted data that integrates with their systems.
 
-4. **Client Deliverable Packaging**
-   - Prepares survey data in formats specific to different industries and applications
-   - Crucial for Kwame's client service as it creates properly formatted deliverables that meet the technical requirements of different sectors
-   - Must support various output formats including GIS-ready data, construction monitoring reports, agricultural analysis packages, and raw data exports with appropriate metadata
-
-5. **Coordinate System Transformation**
-   - Converts between different geographic reference standards and projections
-   - Indispensable for Kwame's technical accuracy as it ensures compatibility with client systems and local survey standards
-   - Must support multiple coordinate reference systems, datum transformations, and industry-specific projection standards
+5. **Coordinate system transformation**: Create functionality supporting multiple geographic reference standards and conversions between them. This is essential for working with clients across different industries who may use different coordinate systems and projections.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Flight grouping functions must be testable with sample mission datasets
-  - Temporal sequence alignment must be verifiable with known coordinate sets
-  - Calibration tracking must maintain verifiable parameter history
-  - Output format generation must validate against industry specifications
-  - Coordinate transformations must be testable against known reference points
+### Testability Requirements
+- All spatial processing and coordinate transformation functions must be independently testable
+- Use test fixtures with sample drone imagery metadata and flight logs
+- Support simulation of temporal sequences and mission patterns
+- Enable isolated testing of sensor calibration calculations
 
-- **Performance Expectations**
-  - Must efficiently handle projects with 10,000+ high-resolution images
-  - Spatial operations should process at least 100 images per second
-  - Coordinate transformations should complete in under 50ms per point
-  - Must support batch processing of entire missions without memory exhaustion
+### Performance Expectations
+- Process metadata for at least 5,000 high-resolution aerial images efficiently
+- Handle projects with up to 100,000 images across multiple missions
+- Support batch processing of large image sets for client deliverables
+- Spatial queries should complete in under 3 seconds
 
-- **Integration Points**
-  - Drone flight logging systems and telemetry data
-  - GIS and spatial data infrastructure
-  - Photogrammetry and image processing pipelines
-  - Industry-specific data formats and standards
-  - Sensor and camera calibration systems
+### Integration Points
+- Common aerial imagery formats and their metadata
+- GPS and EXIF geolocation standards
+- Drone flight log formats from major manufacturers
+- GIS and mapping coordinate systems and projections
+- Industry-specific data formats for various client sectors
 
-- **Key Constraints**
-  - Must preserve original geospatial metadata without modification
-  - Must maintain sub-meter accuracy for spatial references
-  - Must handle very large image files (100MB+) efficiently
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- System must maintain geospatial precision throughout all operations
+- Operations must preserve original metadata while enhancing with derived data
+- Storage requirements must be optimized for large high-resolution image collections
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for drone survey operations with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Flight and Mission Management**
-   - Organize imagery by missions, flights, and operational parameters
-   - Track comprehensive flight metadata and conditions
-   - Group related imagery for efficient project management
+1. **Mission and Flight Management**
+   - Organize imagery by flight mission and operation
+   - Associate flight logs with captured imagery
+   - Track drone settings and environmental conditions
 
-2. **Geospatial Data Processing**
-   - Maintain precise location information for all imagery
-   - Transform between different coordinate systems and projections
-   - Support spatial queries and location-based organization
+2. **Spatial and Temporal Organization**
+   - Organize captures by precise geographic location
+   - Track temporal sequences of the same location
+   - Support time-series analysis of geographic areas
 
-3. **Temporal Analysis Support**
-   - Align images of the same location across different time periods
-   - Track changes in features over multiple surveys
-   - Create ordered sequences showing site evolution
+3. **Calibration and Accuracy Control**
+   - Track sensor calibration data for each mission
+   - Account for environmental factors affecting measurements
+   - Validate measurement accuracy across equipment changes
 
-4. **Technical Metadata Management**
-   - Track sensor specifications and calibration parameters
-   - Document data quality and accuracy metrics
-   - Maintain complete technical provenance for all imagery
+4. **Client Delivery Preparation**
+   - Format data according to client-specific requirements
+   - Support industry-standard export formats
+   - Generate appropriate metadata for client systems
 
-5. **Deliverable Generation**
-   - Create client-specific data packages and formats
-   - Apply appropriate transformations for different industries
-   - Maintain metadata integrity in exported products
+5. **Coordinate and Projection Handling**
+   - Transform between different coordinate systems
+   - Support multiple map projections
+   - Maintain spatial accuracy during transformations
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Correct organization of images by flight mission parameters
-  - Accurate alignment of temporal sequences based on spatial coordinates
-  - Proper tracking of sensor calibration metadata and history
-  - Successful generation of industry-specific deliverable formats
-  - Precise transformation between different coordinate systems
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Processing a complete drone survey mission into the system
-  - Creating a temporal sequence showing site changes over multiple surveys
-  - Tracking and applying sensor calibration parameters to ensure data accuracy
-  - Generating client deliverables for specific industry requirements
-  - Converting survey data between different coordinate reference systems
+1. **Mission Organization**
+   - Test grouping of images by flight mission
+   - Verify association of flight parameters with imagery
+   - Test organization across multiple projects and clients
 
-- **Performance Benchmarks**
-  - Flight organization must process complete missions (1,000+ images) in under 30 seconds
-  - Temporal sequence alignment must handle at least 100 images per second
-  - Coordinate transformations must maintain sub-meter accuracy
-  - System must scale efficiently to projects with 10,000+ high-resolution images
+2. **Temporal Analysis**
+   - Test sequence organization of the same location over time
+   - Verify detection of changes between captures
+   - Test handling of irregular capture intervals
 
-- **Edge Cases and Error Conditions**
-  - Images with missing or corrupted GPS metadata
-  - Surveys conducted with multiple drone/sensor combinations
-  - Extreme terrain with significant elevation changes
-  - Temporal sequences with variable image resolution or coverage
-  - Projects requiring unusual coordinate systems or projections
+3. **Calibration Management**
+   - Test tracking of sensor calibration data
+   - Verify adjustment for environmental factors
+   - Test validation of measurement accuracy
 
-- **Required Test Coverage Metrics**
-  - Minimum 95% code coverage for geospatial functions
-  - 100% coverage for coordinate transformation algorithms
-  - Comprehensive coverage of temporal alignment logic
-  - Complete verification of deliverable format generation
+4. **Deliverable Preparation**
+   - Test generation of client-specific formats
+   - Verify proper metadata inclusion in deliverables
+   - Test batch processing for large deliveries
+
+5. **Coordinate Handling**
+   - Test transformation between coordinate systems
+   - Verify maintenance of spatial accuracy
+   - Test handling of edge cases in projections
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully organizes imagery by flight mission with complete operational context.
-2. Temporal sequences accurately align images from different time periods based on spatial coordinates.
-3. Sensor calibration metadata is comprehensively tracked and applied to ensure measurement accuracy.
-4. Client deliverables are correctly formatted according to industry-specific requirements.
-5. Coordinate transformations maintain sub-meter accuracy across different reference systems.
-6. The system efficiently handles projects with 10,000+ high-resolution geotagged images.
-7. Spatial queries and filtering operations complete in under 2 seconds for large datasets.
-8. Metadata integrity is maintained throughout all transformations and exports.
-9. The system gracefully handles edge cases including missing data and unusual configurations.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. Flight mission organization correctly groups images by survey operations
+3. Temporal sequence visualization effectively shows changes over time
+4. Sensor calibration metadata tracking ensures measurement accuracy
+5. Client deliverable packaging correctly formats data for different industries
+6. Coordinate system transformation supports multiple geographic reference standards
+7. All operations maintain geospatial precision and accuracy
+8. All tests pass when run with pytest
+9. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

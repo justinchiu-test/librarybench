@@ -1,117 +1,181 @@
-# Hardware Blueprint Virtual Machine
+# DIY Computer Architecture Simulator
 
 ## Overview
-A specialized virtual machine designed as a blueprint for physical computer construction, providing clear mapping between virtual and physical components, signal timing visualization, minimal instruction set design, progressive complexity levels, and hardware description language integration.
+A specialized virtual machine emulator designed as a blueprint for physical computer construction, providing detailed simulation of fundamental computing components and their interactions while focusing on minimal, accessible designs that could feasibly be implemented with basic electronic components.
 
 ## Persona Description
 Jamal is interested in building his own physical computer from basic electronic components. He uses the virtual machine as a blueprint to understand the minimal required components and their interactions before investing in hardware.
 
 ## Key Requirements
-1. **Hardware component mapping showing how virtual elements correspond to physical parts**: Essential for Jamal to translate the emulated machine into actual circuits, providing a clear connection between software abstractions and their hardware implementations, including detailed specifications for components like registers, ALUs, memory units, and buses.
+1. **Hardware Component Mapping**: Implement a comprehensive system that clearly shows how virtual machine elements correspond to physical electronic components and circuits. This feature is critical for Jamal to understand exactly which hardware components he would need to purchase and how they would be connected when building a physical version of the simulated computer.
 
-2. **Signal timing visualization illustrating clock cycles and electrical signals**: Critical for understanding how digital circuits synchronize and communicate, showing clock signals, data transfers, control lines, and timing diagrams that represent the electrical behavior Jamal will need to implement in his physical computer build.
+2. **Signal Timing Visualization**: Create a detailed simulation of clock cycles, signal propagation, and electrical timing that illustrates the physical reality of digital circuits. This capability is essential for helping Jamal understand the temporal aspects of computer operation at the electronics level, particularly how synchronization works and why timing is crucial for reliable operation.
 
-3. **Minimal instruction set computer design focusing on essential operations**: Important for creating a realistically buildable computer by limiting complexity to a core set of instructions that can be implemented with reasonable effort using discrete components, while still providing sufficient functionality for basic computing tasks.
+3. **Minimal Instruction Set Computer Design**: Develop an implementation focusing on essential operations that could be reasonably built with discrete components, prioritizing simplicity over features. This minimal approach allows Jamal to start with a viable physical construction project that teaches fundamental concepts without overwhelming complexity or requiring advanced manufacturing capabilities.
 
-4. **Progressive complexity allowing incremental understanding from basic to advanced concepts**: Valuable for Jamal's learning journey, providing a path from simple concepts like binary arithmetic to more complex topics like addressing modes and interrupts, with each level being buildable and testable before moving to the next level of complexity.
+4. **Progressive Complexity Layers**: Structure the implementation to support incremental understanding and construction, from basic elements to more advanced features. This layered approach enables Jamal to build his physical computer in stages, starting with a working minimal system and gradually adding capabilities as his understanding and skills develop.
 
-5. **Hardware description language integration for transition to actual circuit design**: Necessary for bridging the gap between the virtual model and physical implementation, generating HDL descriptions that Jamal can use directly with FPGAs or as references for discrete component designs, making the transition from software to hardware more straightforward.
+5. **Hardware Description Language Integration**: Provide export capabilities to hardware description languages that can be used for FPGA programming or circuit design tools. This feature creates a bridge between the simulation and actual implementation, allowing Jamal to transfer his designs directly to tools used for physical hardware creation.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All virtual components must have clearly defined inputs, outputs, and state
-  - Signal timings must be precisely measurable and comparable to hardware specifications
-  - Instruction execution must be testable at the gate and signal level
-  - Hardware descriptions must be validated against reference implementations
-  - Each complexity level must be independently testable as a complete system
-
+  - All simulated components must have clearly defined inputs and outputs
+  - Signal timing must be deterministic and measurable
+  - Instruction execution must be verifiable at the gate level
+  - Hardware mappings must be validated against realistic component specifications
+  - Exported HDL must produce identical behavior to the simulation
+  
 - **Performance Expectations**:
-  - Simulation should operate at a speed suitable for learning (at least 100KHz equivalent)
-  - Signal visualization should provide nanosecond-level precision
-  - Hardware component mapping should be generated in under 1 second
-  - HDL export should complete in under 5 seconds for full design
-  - Should support simulation of designs with up to 1000 logic gates
+  - Simulation should run significantly faster than real hardware (minimum 100x)
+  - Signal propagation simulation must maintain accuracy at nanosecond resolution
+  - Complete system simulation should handle basic programs in seconds
+  - All component operations should be traceable with minimal overhead
+  - Export operations should complete within seconds even for complete designs
 
 - **Integration Points**:
-  - Hardware description language export (VHDL/Verilog)
-  - Component specification format for physical parts
-  - Signal trace export for timing analysis
-  - Circuit diagram generation for documentation
-  - Integration with common electronic design tools
+  - Export formats for common hardware description languages (Verilog, VHDL)
+  - Component libraries mapping to commonly available electronic parts
+  - Integration with electric circuit simulation tools
+  - Support for loading and saving partial designs
+  - Compatibility with standard logic simulation formats
 
 - **Key Constraints**:
-  - Must be implementable using basic electronic components
-  - Should prioritize buildability over performance or features
-  - Must provide detailed documentation suitable for hardware construction
-  - Should follow standard digital design practices
+  - Implementation must be in pure Python for maximum accessibility
+  - No dependencies beyond standard library to ensure easy deployment
+  - All designs must be implementable with commercially available components
+  - System complexity must remain within reasonable DIY construction capability
+  - Educational clarity takes precedence over simulation performance
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Component-Level Simulation**: Implement a detailed digital logic simulation that operates at the level of gates, flip-flops, and other basic building blocks, with complete visibility into all internal states and signals.
+The core functionality of this DIY computer architecture simulator includes:
 
-2. **Instruction Set Architecture**: Define a minimal but complete instruction set suitable for physical implementation, with clear encoding, decoding, and execution specifications at the hardware level.
+1. A gate-level simulation of fundamental digital logic components (AND, OR, NOT, NAND, etc.)
 
-3. **Clock and Signal Management**: Create an accurate clock generation and distribution system with proper timing relationships, signal propagation delays, and synchronization mechanisms that reflect real electronic behavior.
+2. A clock generation system with configurable timing parameters
 
-4. **Hardware Mapping System**: Develop a comprehensive mapping between virtual components and physical electronic parts, including specifications, connection requirements, and implementation notes.
+3. Basic circuit elements (flip-flops, registers, counters, multiplexers)
 
-5. **Complexity Progression**: Implement a staged design approach that breaks the computer into progressive implementation phases, each building on the previous while remaining functional on its own.
+4. A minimalist ALU implementation with essential operations
 
-6. **HDL Generation**: Provide automatic generation of hardware description language code from the virtual machine design, with optimizations appropriate for physical implementation.
+5. A simple but complete CPU design with fetch-decode-execute cycle
 
-7. **Testing and Verification**: Create thorough test systems for validating the correctness of both the virtual design and its hardware implementation, including test patterns and expected results.
+6. Basic memory subsystem with address decoding
+
+7. Simple I/O interfaces that could be connected to physical devices
+
+8. Instruction set implementation focused on buildable operations
+
+9. Signal propagation simulation with appropriate timing
+
+10. Component mapping to specific electronic parts
+
+11. Export capabilities to hardware description languages
+
+12. Progressive design stages from minimal to more complex implementations
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct operation of all digital logic components
+- **Key Functionalities that Must be Verified**:
+  - Correct operation of all basic logic gates
+  - Accurate signal timing and propagation
   - Proper execution of the complete instruction set
-  - Accurate timing of all clock and control signals
-  - Valid hardware component mappings with realistic specifications
-  - Correct HDL generation for all system components
+  - Correct memory addressing and data transfer
+  - Accurate mapping to physical component specifications
+  - Valid HDL export for implemented components
 
 - **Critical User Scenarios**:
-  - Simulating a complete instruction execution with signal-level detail
-  - Generating hardware specifications for physical construction
-  - Progressing through complexity levels with increasing functionality
-  - Exporting HDL for implementation on an FPGA
-  - Analyzing timing diagrams for critical path optimization
+  - Simulating basic programs to verify complete system functionality
+  - Tracing signal propagation through critical path components
+  - Generating parts lists for physical construction
+  - Exporting designs to HDL for FPGA implementation
+  - Incrementally building more complex systems from basic components
+  - Analyzing timing requirements for reliable operation
 
 - **Performance Benchmarks**:
-  - Simulate basic CPU operations at an equivalent of at least 100KHz
-  - Generate timing diagrams with nanosecond resolution
-  - Support systems with at least 64 bytes of memory in basic configurations
-  - Export complete HDL descriptions in under 5 seconds
-  - Handle designs with up to 1000 logic gates efficiently
+  - Simulation of basic computer operations at least 100x faster than physical hardware
+  - Signal timing accuracy within 1 nanosecond
+  - Support for designs with at least 1000 basic gates
+  - Complete system simulation running simple programs in under 5 seconds
+  - HDL export of complete designs in under 10 seconds
 
 - **Edge Cases and Error Conditions**:
-  - Detect and report timing violations and race conditions
-  - Identify fan-out limitations in hardware mappings
-  - Handle metastability issues in asynchronous interfaces
-  - Report power consumption concerns for physical implementation
-  - Identify potential signal integrity issues in the design
+  - Handling of timing hazards and race conditions
+  - Proper detection of electrical loading issues
+  - Appropriate handling of clock domain crossing
+  - Correct identification of fan-out limitations
+  - Graceful handling of physically impossible configurations
 
 - **Required Test Coverage Metrics**:
-  - 100% coverage of the core logic component simulations
-  - 100% coverage of the instruction set implementation
-  - 95% coverage of timing and signal propagation functionality
-  - 90% coverage of hardware mapping algorithms
-  - 95% coverage of HDL generation
+  - Minimum 90% line coverage for all components
+  - 100% coverage for basic gate implementations
+  - At least 95% branch coverage for timing simulation code
+  - Complete coverage of instruction execution paths
+  - At least 85% coverage for HDL export functionality
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Jamal can understand how each virtual component maps to physical hardware
-2. Signal timing visualizations accurately represent electrical behavior in the physical implementation
-3. The minimal instruction set design is complete enough for useful computation while remaining buildable
-4. Each progressive complexity level functions as a complete system on its own
-5. Generated HDL descriptions can be successfully implemented on actual hardware
-6. The simulation accurately predicts the behavior of the physical implementation
-7. Jamal can successfully build a working physical computer based on the virtual blueprint
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Accurately simulates a complete minimal computer at the gate level
+
+2. Provides clear mapping between simulated components and physical parts
+
+3. Demonstrates accurate signal timing and propagation
+
+4. Supports a minimal but complete instruction set suitable for physical implementation
+
+5. Enables incremental understanding from basic to advanced concepts
+
+6. Produces valid hardware description language exports
+
+7. Remains within the complexity boundaries of a feasible DIY project
+
+8. Provides sufficient detail to serve as a blueprint for physical construction
+
+9. Successfully executes basic programs in the simulated environment
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

@@ -1,160 +1,172 @@
-# Financial Process Automation Framework
+# Financial Process Workflow Automation Engine
 
 ## Overview
-A specialized workflow automation engine designed for finance operations analysts to orchestrate complex financial reporting and compliance processes. This system enables sophisticated data reconciliation, structured approval processes, comprehensive audit documentation, secure data handling, and automated month-end close procedures.
+A specialized workflow automation engine designed for finance operations, enabling cross-system data reconciliation, structured approval checkpoints, comprehensive compliance documentation, secure sensitive data handling, and orchestrated month-end close procedures. This system provides reliable automation for complex financial processes while ensuring accuracy, compliance, and security.
 
 ## Persona Description
 Dr. Patel oversees financial reporting and compliance processes involving data from multiple systems. He needs to automate complex data collection, reconciliation, and report generation workflows with strict accuracy requirements.
 
 ## Key Requirements
+1. **Cross-System Data Reconciliation**: Implement automatic comparison of figures from different sources. This feature is critical for Dr. Patel because his financial processes require data from multiple systems (ERP, CRM, banking portals, etc.) that must be precisely reconciled to ensure financial accuracy, with discrepancies highlighted for investigation.
 
-1. **Cross-System Data Reconciliation**
-   - Automatically compare figures from different sources
-   - Critical for Dr. Patel to ensure data consistency and accuracy across financial systems
-   - Must include extraction from disparate systems, normalization, variance detection, and reconciliation reporting
+2. **Approval Checkpoint Implementation**: Create verification requirements before proceeding with critical steps. Dr. Patel requires this capability because financial processes often involve significant transactions or reporting milestones that require explicit approval from authorized personnel before proceeding, ensuring proper oversight and compliance.
 
-2. **Approval Checkpoint Implementation**
-   - Require verification before proceeding with critical steps
-   - Essential for Dr. Patel to maintain financial controls and governance
-   - Must support multi-level approvals, delegation rules, authority validation, and audit trail generation
+3. **Compliance Documentation**: Develop generation of audit-ready records of all financial processes. This feature is vital for Dr. Patel as his organization faces rigorous regulatory requirements and audits, necessitating comprehensive documentation of all financial processes, approvals, and control points to demonstrate compliance.
 
-3. **Compliance Documentation**
-   - Generate audit-ready records of all financial processes
-   - Vital for Dr. Patel to meet regulatory requirements and pass external audits
-   - Must capture detailed execution records, supporting documents, control evidence, and policy adherence verification
+4. **Sensitive Data Handling**: Implement appropriate security measures for financial information. Dr. Patel needs this functionality because financial processes frequently involve highly sensitive data (account numbers, payment details, salary information), requiring robust security controls including encryption, masking, and access restrictions.
 
-4. **Sensitive Data Handling**
-   - Implement appropriate security measures for financial information
-   - Important for Dr. Patel to protect confidential financial data throughout processing
-   - Must include data classification, access control enforcement, encryption, masking, and secure audit logging
-
-5. **Month-End Close Orchestration**
-   - Coordinate complex sequences of financial procedures
-   - Critical for Dr. Patel to ensure timely and accurate financial closings
-   - Must support dependency management, task sequencing, deadline tracking, and exception handling
+5. **Month-End Close Orchestration**: Build coordination of complex sequences of financial procedures. This capability is essential for Dr. Patel because the month-end close involves dozens of interdependent tasks with strict timing requirements that must be completed in the correct sequence, with comprehensive verification at each stage.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Data reconciliation must be testable with synthetic financial datasets
+  - Approval processes must be verifiable with simulated authorization scenarios
+  - Compliance documentation must be testable for completeness and accuracy
+  - Sensitive data handling must be verifiable without exposure of actual sensitive information
+  - Month-end orchestration must be testable with complex dependency chains
 
-### Testability Requirements
-- Reconciliation algorithms must be verifiable with predefined test datasets
-- Approval workflows must be testable with simulated approver interactions
-- Compliance documentation must produce consistent, verifiable outputs
-- Security measures must be testable without exposing sensitive mechanisms
-- Close orchestration must be verifiable with simulated timeline scenarios
+- **Performance Expectations**:
+  - Data reconciliation should process standard financial datasets in under 30 seconds
+  - Approval workflow should respond to verification requests within 5 seconds
+  - Documentation generation should complete within 2 minutes for standard processes
+  - Sensitive data operations should add minimal overhead (< 10%)
+  - Month-end orchestration should support at least 100 interdependent tasks
 
-### Performance Expectations
-- Reconcile 100,000 transactions across systems in under 10 minutes
-- Process approval workflows with at least 20 steps without performance degradation
-- Generate compliance documentation packages in under 5 minutes
-- Apply security measures with no more than 5% performance overhead
-- Optimize month-end close sequences for at least 200 dependent tasks
+- **Integration Points**:
+  - Financial systems (ERP, accounting software, etc.)
+  - Banking and payment platforms
+  - Compliance and regulation databases
+  - Document management systems
+  - Digital signature and approval systems
+  - Data warehouses and reporting tools
+  - Email and notification systems
+  - Audit logging systems
 
-### Integration Points
-- Financial ERP systems (SAP, Oracle, etc.)
-- Accounting software and ledgers
-- Banking and payment systems
-- Document management systems
-- Regulatory reporting systems
-
-### Key Constraints
-- Must maintain data integrity throughout all processing steps
-- Must provide non-repudiation for approvals and authorizations
-- Must support full auditability of all operations
-- Must comply with relevant financial regulations (SOX, IFRS, GAAP, etc.)
-- Must operate within established change management processes
+- **Key Constraints**:
+  - All functionality must be implemented as libraries and APIs, not as applications with UIs
+  - Must maintain detailed audit logs of all operations
+  - Must implement robust error handling with comprehensive validation
+  - Must ensure data consistency across all operations
+  - Must provide non-repudiation for approvals and authorizations
+  - Should support both automated and manual intervention points
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this Financial Process Workflow Automation Engine centers around accurate, secure financial process automation:
 
-The Financial Process Automation Framework should provide:
+1. **Workflow Definition System**: A Python API and YAML/JSON parser for defining financial process workflows with reconciliation steps, approval points, compliance requirements, and security controls.
 
-1. **Reconciliation Engine**
-   - Multi-source data extraction
-   - Normalization and standardization
-   - Matching and variance calculation
-   - Exception identification and reporting
-   
-2. **Approval Management System**
-   - Workflow definition and enforcement
-   - Authority validation and verification
-   - Delegation and escalation management
-   - Audit trail generation
-   
-3. **Documentation Generation System**
-   - Evidence collection and organization
-   - Document assembly and formatting
-   - Control attestation management
-   - Compliance verification
-   
-4. **Security Framework**
-   - Classification and sensitivity management
-   - Access control enforcement
-   - Encryption and protection services
-   - Secure logging and monitoring
-   
-5. **Close Process Management**
-   - Task dependency modeling
-   - Schedule optimization
-   - Progress tracking and reporting
-   - Exception management and resolution
+2. **Data Reconciliation Framework**: Components that extract, transform, and compare financial data from multiple systems with configurable matching rules and discrepancy handling.
+
+3. **Approval Management Engine**: Modules that implement structured approval processes with appropriate authentication, authorization, delegation, and non-repudiation capabilities.
+
+4. **Compliance Documentation Generator**: A system for automatically capturing and organizing all relevant process information, approvals, validation results, and control evidences to support audit requirements.
+
+5. **Security Handler**: Components for managing sensitive financial data with appropriate encryption, masking, access controls, and security policy enforcement.
+
+6. **Month-End Coordinator**: Modules that define, schedule, and manage complex sequences of financial tasks with proper dependencies, validations, and checkpoints.
+
+7. **Execution Engine**: The core orchestrator that manages workflow execution, handles dependencies between steps, and coordinates the various components while maintaining workflow state.
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Accurate data reconciliation across multiple sources
+  - Proper implementation of approval checkpoints and authorization
+  - Complete and accurate compliance documentation generation
+  - Secure handling of sensitive financial information
+  - Correct orchestration of complex month-end procedures
 
-### Key Functionalities to Verify
-- Reconciliation correctly identifies and reports discrepancies between systems
-- Approval workflows properly enforce authorization requirements
-- Documentation generation accurately captures process execution evidence
-- Security measures effectively protect sensitive financial data
-- Close orchestration properly sequences and manages dependent tasks
+- **Critical User Scenarios**:
+  - End-to-end month-end closing process with all dependencies
+  - Multi-system financial data reconciliation with discrepancy resolution
+  - Approval workflow with delegations and escalations
+  - Compliance documentation generation for regulatory audit
+  - Secure processing of payment and account information
+  - Financial report generation with cross-system data integration
 
-### Critical User Scenarios
-- Reconciling general ledger balances with subsidiary systems
-- Processing financial approvals with appropriate authorization levels
-- Generating compliance documentation for external auditors
-- Handling sensitive financial data through multiple processing steps
-- Orchestrating a complete month-end financial close process
+- **Performance Benchmarks**:
+  - Data reconciliation within 30 seconds for standard datasets
+  - Approval response within 5 seconds
+  - Documentation generation within 2 minutes
+  - Minimal overhead for security operations
+  - Support for 100+ interdependent tasks in month-end close
 
-### Performance Benchmarks
-- Complete reconciliation of 50,000 transactions with 99.9% accuracy in under 5 minutes
-- Process a 10-step approval workflow with full documentation in under 2 minutes
-- Generate a complete audit documentation package in under 3 minutes
-- Apply all security measures with latency increase of no more than 100ms per operation
-- Calculate optimal execution path for 100 close tasks in under 10 seconds
+- **Edge Cases and Error Conditions**:
+  - Irreconcilable data discrepancies
+  - Missing approvals and authorization failures
+  - Incomplete source data for compliance documentation
+  - Security policy violations during data processing
+  - Dependency failures during month-end processes
+  - System unavailability during critical operations
+  - Transaction reversals and corrections
+  - Fiscal year transitions with special requirements
+  - Currency conversion and rounding issues
 
-### Edge Cases and Error Conditions
-- Handling irreconcilable discrepancies requiring manual intervention
-- Managing rejected approvals and approval deadlocks
-- Dealing with missing or incomplete documentation evidence
-- Responding to potential security policy violations
-- Handling dependencies affected by delayed or failed close tasks
-- Managing system outages during critical financial processes
+- **Test Coverage Metrics**:
+  - Minimum 95% line coverage for all core modules (higher than standard due to financial criticality)
+  - 100% coverage for data reconciliation logic
+  - 100% coverage for approval workflow and authorization
+  - 100% coverage for sensitive data handling
+  - All error handling paths must be tested
 
-### Required Test Coverage Metrics
-- Minimum 95% code coverage for all components
-- 100% coverage for financial calculation and security-critical code paths
-- All reconciliation algorithms must have dedicated test cases
-- All approval workflow paths must be verified by tests
-- Integration tests must verify end-to-end financial processes with simulated systems
-
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Financial Process Workflow Automation Engine will meet the following criteria:
 
-The implementation will be considered successful if:
+1. Cross-system data reconciliation that accurately compares financial figures from different sources, verified through tests with diverse reconciliation scenarios.
 
-1. It enables accurate reconciliation of financial data across multiple systems
-2. It properly enforces approval requirements for critical financial processes
-3. It generates comprehensive compliance documentation meeting audit requirements
-4. It securely handles sensitive financial information throughout processing
-5. It effectively orchestrates complex month-end close procedures
-6. All test requirements are met with passing pytest test suites
-7. It performs within the specified benchmarks for typical financial workloads
-8. It properly handles all specified edge cases and error conditions
-9. It integrates with existing financial systems through well-defined interfaces
-10. It enables finance operations analysts to automate processes while maintaining accuracy, compliance, and security
+2. Approval checkpoint implementation that correctly enforces verification requirements before critical steps, confirmed through tests with various authorization patterns.
+
+3. Compliance documentation that generates comprehensive audit-ready records, demonstrated through validation of documentation completeness against regulatory requirements.
+
+4. Sensitive data handling that implements appropriate security measures, validated through security testing without exposing actual sensitive information.
+
+5. Month-end close orchestration that properly coordinates complex sequences of financial procedures, verified through tests with representative task dependencies.
+
+6. Performance meeting or exceeding the specified benchmarks for processing speed, response time, and orchestration capacity.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup Instructions
+To set up the development environment:
+
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Install test dependencies:
+   ```
+   pip install pytest pytest-json-report
+   ```
+
+CRITICAL REMINDER: It is MANDATORY to run the tests with pytest-json-report and provide the pytest_results.json file as proof of successful implementation:
+```
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,154 +1,158 @@
-# Global Configuration Governance System
+# Geographic Configuration Management System
 
 ## Overview
-A configuration management system designed for global IT operations with region-specific requirements and compliance regulations. The system enables centralized management of configurations with geographic variations, scheduled changes with timezone awareness, and regulatory compliance mapping to ensure adherence to local requirements.
+A specialized configuration management system designed for global IT operations that need to manage configuration variations across geographic regions while maintaining corporate standards. This system provides regional configuration inheritance, scheduled configuration changes with timezone awareness, regulatory compliance mapping, deployment window automation, and infrastructure inventory integration.
 
 ## Persona Description
 Diego oversees IT systems for a global corporation with location-specific requirements and varying compliance regulations. His primary goal is to manage configuration variations across geographic regions while maintaining a core set of corporate standards.
 
 ## Key Requirements
+1. **Geographic Configuration Inheritance with Region-specific Overrides** - Implements a hierarchical configuration system with global defaults and progressively more specific regional overrides (continent, country, datacenter), allowing both standardization and regional adaptation. This is critical for Diego because his organization must maintain consistent core configurations while accommodating regional variations for performance optimization, legal compliance, and localization requirements.
 
-1. **Geographic Configuration Inheritance with Region-specific Overrides**
-   - Implement a hierarchical model with geographic inheritance (global → regional → country → site)
-   - Support region-specific overrides that maintain core standards while accommodating local needs
-   - Essential for Diego to ensure consistent corporate standards while adapting to regional requirements without duplicating configuration effort
+2. **Scheduled Configuration Changes with Timezone Awareness** - Provides robust scheduling functionality for configuration changes that accounts for timezone differences, regional business hours, and local holidays, ensuring changes deploy at appropriate local times. This feature is essential because Diego's global infrastructure requires updates that must be timed according to regional business hours to minimize disruption, with proper handling of timezone complexities.
 
-2. **Scheduled Configuration Changes with Timezone Awareness**
-   - Create a scheduling system for configuration changes that accounts for different timezones
-   - Include capabilities for coordinating changes across regions
-   - Critical for Diego to manage configuration updates that minimize business impact by respecting local business hours and peak usage times across global operations
+3. **Regulatory Compliance Mapping by Jurisdiction** - Maps configuration requirements to specific regulatory frameworks by jurisdiction, automatically applying the appropriate compliance rules based on geographic location. This addresses Diego's challenge of managing systems that must simultaneously comply with multiple regulatory regimes (GDPR in Europe, CCPA in California, LGPD in Brazil, etc.) without creating separate configuration silos for each region.
 
-3. **Regulatory Compliance Mapping by Jurisdiction**
-   - Develop a compliance mapping system that links configurations to specific regulatory requirements
-   - Support different regulatory frameworks by geographic location
-   - Vital for Diego to ensure all systems comply with local regulations such as GDPR in Europe, CCPA in California, and industry-specific requirements in different countries
+4. **Configuration Deployment Windows with Automated Scheduling** - Enforces configurable maintenance windows for each region with automated scheduling of configuration deployments to occur only during approved periods. This functionality is vital as Diego must ensure configuration changes adhere to strict change management policies that specify when changes can be made in each region, often with different rules for different system criticality levels.
 
-4. **Configuration Deployment Windows with Automated Scheduling**
-   - Build an automated scheduling system that enforces approved deployment windows
-   - Include capabilities for emergency deployments with appropriate approvals
-   - Necessary for Diego to ensure configuration changes occur only during authorized periods, reducing risk to business operations while providing flexibility for urgent changes
-
-5. **Infrastructure Inventory Integration Showing Configuration Status per Device**
-   - Implement integration with infrastructure inventory systems to track configuration status
-   - Support device-level configuration reporting and compliance status
-   - Crucial for Diego to maintain visibility across the global infrastructure and quickly identify non-compliant or out-of-date devices
+5. **Infrastructure Inventory Integration Showing Configuration Status per Device** - Integrates with infrastructure inventory systems to maintain an accurate mapping between configurations and the physical/virtual assets they apply to, with real-time status reporting. This gives Diego the visibility needed to manage configurations across thousands of devices globally, quickly identifying which systems have outdated configurations or failed deployments.
 
 ## Technical Requirements
+- **Testability Requirements**: Regional inheritance logic must be fully testable with mocked geographic data. Timezone and scheduling functionality must be testable with simulated time. Compliance mapping must be verifiable without requiring actual compliance databases.
 
-### Testability Requirements
-- Geographic inheritance must be fully testable with simulated regional hierarchies
-- Timezone scheduling must be tested against all supported timezones
-- Compliance mapping must verify configurations against mock regulatory requirements
-- Deployment window enforcement must be thoroughly tested for all scenarios
-- Inventory integration must be testable with mock inventory data
+- **Performance Expectations**: Configuration resolution with regional inheritance must complete within 200ms even for complex hierarchies. Scheduled operations must handle at least 10,000 devices across 24 timezones without scheduling conflicts or resource contention.
 
-### Performance Expectations
-- Geographic hierarchy operations must complete within 200ms regardless of depth
-- Scheduling operations must process 1000+ scheduled changes in under 1 second
-- Compliance verification must check 10,000+ configuration items against regulatory frameworks in under 10 seconds
-- Deployment window enforcement must make decisions in under 50ms
-- Inventory status updates must process 1000+ devices per second
+- **Integration Points**:
+  - Must integrate with common CMDB and asset management systems
+  - Must support standard calendar and scheduling protocols
+  - Must provide adapters for compliance databases
+  - Must integrate with change management and ticketing systems
 
-### Integration Points
-- Integration with enterprise inventory management systems
-- Support for regulatory compliance frameworks and validation tools
-- Hooks for change management and approval systems
-- Compatibility with monitoring and alerting infrastructure
-- Support for infrastructure-as-code platforms across regions
+- **Key Constraints**:
+  - Must support disconnected operation for remote sites
+  - Must handle high-latency connections between regions
+  - Must accommodate emergency changes outside normal windows
+  - Must operate correctly across international date line
 
-### Key Constraints
-- Must support offline operation for remote locations with limited connectivity
-- Geographic variations must not compromise core security requirements
-- Regulatory models must be updatable without system downtime
-- System must operate across diverse infrastructure (legacy and modern)
-- Must support multiple languages for global operations teams
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality required for this globally-distributed configuration management system includes:
 
-The Global Configuration Governance System should implement:
+1. **Geographic Hierarchy Model**:
+   - Global-to-local configuration inheritance
+   - Region-specific override resolution
+   - Location-based configuration retrieval
+   - Inheritance path visualization
 
-1. A geographic inheritance model that:
-   - Defines a hierarchy of configuration scopes (global, regional, country, site)
-   - Applies configurations through inheritance with appropriate overrides
-   - Resolves conflicts according to defined priority rules
-   - Tracks the source of each configuration setting for auditing
+2. **Timezone-aware Scheduling Engine**:
+   - International time handling with DST support
+   - Business hours definition by region
+   - Holiday calendar integration
+   - Local time translation and normalization
 
-2. A timezone-aware scheduling system that:
-   - Manages configuration change schedules across global timezones
-   - Coordinates related changes across regions
-   - Provides calendar views of planned changes by region
-   - Sends notifications to relevant stakeholders in their local timezone
+3. **Regulatory Compliance Framework**:
+   - Jurisdiction-to-regulation mapping
+   - Configuration rule definition by regulation
+   - Compliance validation by location
+   - Cross-jurisdiction conflict resolution
 
-3. A regulatory compliance framework that:
-   - Maps configuration requirements to specific regulations
-   - Verifies configurations against applicable regulatory standards
-   - Supports multiple concurrent regulatory frameworks
-   - Generates compliance reports by jurisdiction
+4. **Deployment Window Management**:
+   - Maintenance window definition and enforcement
+   - Change freeze calendar support
+   - Automated deployment scheduling
+   - Emergency override protocols
 
-4. A deployment window management system that:
-   - Defines allowed time periods for configuration changes
-   - Enforces restrictions based on business impact
-   - Provides override mechanisms for emergency situations
-   - Logs all deployments with full context and approvals
+5. **Infrastructure Inventory System**:
+   - Configuration-to-asset mapping
+   - Deployment status tracking
+   - Configuration version monitoring
+   - Asset group and collection management
 
-5. An inventory integration framework that:
-   - Connects with infrastructure inventory systems
-   - Tracks configuration status across all devices
-   - Identifies non-compliant or outdated devices
-   - Provides aggregated status views by region, type, or compliance status
+6. **Global Distribution Mechanism**:
+   - Efficient configuration distribution
+   - Bandwidth-aware synchronization
+   - Delta-based updates
+   - Conflict detection and resolution
 
 ## Testing Requirements
+The implementation must include comprehensive pytest tests that validate all aspects of the system:
 
-### Key Functionalities to Verify
-- Geographic inheritance correctly applies configurations across the hierarchy
-- Scheduled changes respect timezone differences and execute at appropriate local times
-- Compliance mapping correctly identifies regulatory requirements for each region
-- Deployment windows properly control when configuration changes can be applied
-- Inventory integration accurately reflects configuration status across devices
+- **Key Functionalities to Verify**:
+  - Correct resolution of configurations through geographic inheritance
+  - Proper scheduling of changes across multiple timezones
+  - Accurate application of regulatory requirements by jurisdiction
+  - Correct enforcement of deployment windows
+  - Accurate tracking of configuration status across infrastructure
 
-### Critical User Scenarios
-- Global configuration change properly propagates with appropriate regional variations
-- Scheduled maintenance window correctly executes in each timezone without overlap
-- Configuration change is validated against regional regulatory requirements
-- Change request outside approved window is blocked and requires appropriate override
-- Non-compliant devices are identified and reported through inventory integration
+- **Critical User Scenarios**:
+  - Deploying a global configuration change with regional variations
+  - Scheduling configuration updates across multiple timezones
+  - Ensuring configurations meet all applicable regulations
+  - Managing changes within approved maintenance windows
+  - Identifying systems with outdated or non-compliant configurations
 
-### Performance Benchmarks
-- Geographic model performance remains consistent with increasing hierarchy complexity
-- Scheduling system handles high volumes of changes across multiple timezones
-- Compliance verification scales efficiently with increasing regulatory complexity
-- Deployment window enforcement maintains performance during high-volume change periods
-- Inventory status updates remain performant with large device counts
+- **Performance Benchmarks**:
+  - Configuration resolution must handle 10,000 regional variations within 5 seconds
+  - Scheduling engine must process 1,000 scheduled changes per minute
+  - Compliance validation must complete for 500 rule checks within 3 seconds
+  - Window management must handle 100 concurrent window evaluations
+  - Inventory integration must process 1,000 status updates per second
 
-### Edge Cases and Error Conditions
-- System handles conflicts between regional overrides appropriately
-- Scheduling system manages daylight saving time transitions correctly
-- Compliance system addresses conflicting regulatory requirements gracefully
-- Deployment window system manages timezone edge cases properly
-- Inventory integration handles disconnected or unreachable devices gracefully
+- **Edge Cases and Error Conditions**:
+  - Handling conflicting regional overrides
+  - Managing changes across international date line
+  - Resolving conflicting regulatory requirements
+  - Processing changes during timezone transitions (DST)
+  - Recovering from interrupted global deployments
 
-### Required Test Coverage Metrics
-- Geographic inheritance logic must be tested with complex nested hierarchies
-- Timezone handling must be tested across all global timezones including DST transitions
-- Compliance verification must be tested against multiple regulatory frameworks
-- Deployment window enforcement must be tested for all edge cases and override scenarios
-- Inventory integration must be tested with diverse device types and statuses
+- **Required Test Coverage Metrics**:
+  - Minimum 90% line coverage for all modules
+  - 100% coverage of geographic resolution logic
+  - All timezone handling code must have DST transition tests
+  - All compliance rules must have validation tests
+  - All error recovery paths must be tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Configuration consistency is maintained globally while accommodating necessary regional variations
-2. Scheduled changes occur at appropriate times in each region's timezone without business disruption
-3. All regional configurations comply with their specific regulatory requirements
-4. Configuration changes adhere to defined deployment windows with appropriate controls
-5. Device configuration status is accurately tracked and reported through inventory integration
-6. The system enables efficient global governance while respecting regional autonomy
-7. Compliance reporting satisfies audit requirements across all jurisdictions
-8. Configuration deployment causes minimal business disruption through proper scheduling
+1. Geographic configuration inheritance correctly applies regional overrides while maintaining global standards.
+2. Scheduled configuration changes account for timezone differences and regional business hours.
+3. Regulatory compliance mapping correctly applies requirements by jurisdiction.
+4. Configuration deployment windows are properly enforced with automated scheduling.
+5. Infrastructure inventory integration accurately shows configuration status across all devices.
+6. All specified performance benchmarks are met consistently.
 
-To set up your development environment:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+To set up the development environment:
+
+1. Navigate to the project directory
+2. Create a virtual environment using `uv venv`
+3. Activate the environment with `source .venv/bin/activate`
+4. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```
+
+The pytest_results.json file must be submitted as evidence that all tests pass successfully.

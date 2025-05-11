@@ -1,167 +1,163 @@
-# Interactive Data Explorer for Social Media Research
+# Social Media Data Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for social media researchers analyzing conversation networks and content trends. This tool emphasizes network graph visualization, sentiment analysis, topic modeling, influence tracing, and demographic clustering to study digital social interactions.
+A specialized terminal-based data exploration framework designed for social media researchers who study interaction patterns across digital platforms. This tool enables analysis of conversation networks, content trends, community structures, and influence patterns in large-scale social data without requiring external visualization libraries or graphical interfaces.
 
 ## Persona Description
 Dr. Rivera studies social interaction patterns across digital platforms. She needs to explore conversation networks and content trends while identifying community structures and influence patterns in large-scale social data.
 
 ## Key Requirements
+1. **Network graph visualization** - Generate terminal-friendly visualizations of social connections with community detection algorithms to identify cohesive groups within larger networks. This capability is essential for researchers to understand the structure of social communities and how information flows between different groups.
 
-1. **Network Graph Visualization with Community Detection**
-   - Implement specialized network visualization with algorithms that identify and highlight community structures
-   - Critical because understanding social groupings and their interconnections is fundamental to social media research
-   - Must handle large-scale networks with tens of thousands of nodes and edges
-   - Should apply multiple community detection algorithms (modularity-based, clique-based, etc.) with configurable parameters
+2. **Sentiment analysis overlays** - Apply and visualize emotional tone measurements across different user groups and conversations, allowing researchers to identify emotional patterns in social interactions. Understanding the emotional content of communications helps researchers interpret interaction dynamics and community formation.
 
-2. **Sentiment Analysis Overlays**
-   - Create sentiment analysis tools that map emotional tones across different user groups and conversations
-   - Essential for understanding emotional context and reactions within social interactions
-   - Must support multiple sentiment classification methods with customizable lexicons and models
-   - Should visualize sentiment dynamics over time and across different community segments
+3. **Topic modeling tools** - Implement natural language processing techniques to identify conversation themes and their evolution over time, enabling researchers to track discourse trends and content shifts. This feature helps researchers understand what communities are discussing and how subjects of interest change over time.
 
-3. **Topic Modeling Tools**
-   - Develop natural language processing capabilities to identify conversation themes and track their evolution
-   - Important for discovering what subjects engage different communities and how these topics change over time
-   - Must implement standard topic modeling approaches (LDA, NMF) with customizable parameters
-   - Should visualize topic prevalence, relationships, and temporal shifts across conversations
+4. **Influence flow visualization** - Create representations showing how ideas propagate through social networks to identify key influencers and amplification pathways. This capability is critical for understanding information diffusion and analyzing how specific content spreads in social environments.
 
-4. **Influence Flow Visualization**
-   - Create specialized analytics to trace how ideas propagate through social networks
-   - Critical for understanding information diffusion and identifying key influencers
-   - Must track content sharing patterns, attribution chains, and temporal spread
-   - Should identify and characterize different influence mechanisms (broadcasting, viral spread, etc.)
-
-5. **Demographic Clustering**
-   - Implement tools that identify distinct user groups based on behavioral patterns
-   - Essential for segmenting users based on interaction styles, content preferences, and platform usage
-   - Must operate on behavioral signals without requiring explicit demographic data
-   - Should provide interpretable cluster characteristics for research insights
+5. **Demographic clustering** - Apply advanced clustering techniques to identify distinct user groups based on behavior patterns, content preferences, and interaction styles. This helps researchers segment populations for more nuanced analysis of different social groups' characteristics.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Graph algorithms must be verified against established network analysis libraries
+  - Sentiment analysis must be validated against human-labeled test datasets
+  - Topic models must produce consistent results on benchmark text corpora
+  - Influence metrics must correlate with established social influence measures
+  - Clustering algorithms must be evaluated using standard cohesion and separation metrics
 
-### Testability Requirements
-- All components must be testable via pytest with reproducible results
-- Network analysis algorithms must be validated against standard graph datasets
-- NLP components should be testable with established benchmark corpora
-- Influence propagation models must be verifiable with simulated diffusion scenarios
-- Clustering methods must demonstrate statistical validity and stability
+- **Performance Expectations**:
+  - Must handle networks with up to 100,000 nodes and 1 million edges
+  - Graph visualization generation within 10 seconds for networks up to 10,000 nodes
+  - Sentiment analysis processing 100,000 text items within 2 minutes
+  - Topic modeling for 50,000 documents within 5 minutes
+  - Memory usage must remain below 4GB even with large datasets
 
-### Performance Expectations
-- Must handle social network datasets with millions of interactions
-- Network visualization should render graphs with thousands of nodes interactively
-- Text analysis should process large corpora efficiently (millions of posts/messages)
-- Temporal analysis should span years of social media activity
-- All algorithms should scale sub-linearly with dataset size where possible
+- **Integration Points**:
+  - Support for common social media data formats (JSON, CSV, GraphML)
+  - Import capability for pre-processed text corpora and embeddings
+  - Export functionality for analysis results in standard formats
+  - Compatibility with external NLP models and resources
+  - Support for incremental data processing and analysis
 
-### Integration Points
-- Data import from common social media platforms and APIs
-- Support for standard social network data formats (GraphML, GEXF, edge lists)
-- Integration with text corpora and content repositories
-- Export capabilities for research publication and visualization
-- Compatibility with standard NLP libraries and models
+- **Key Constraints**:
+  - All visualizations must be terminal-compatible without external dependencies
+  - Privacy protection for sensitive user data in compliance with research ethics
+  - Handling of multilingual content and cultural context
+  - Must operate without sending data to external services
+  - Reproducible analysis with proper random seed management
 
-### Key Constraints
-- Must preserve privacy and ethical considerations in social data analysis
-- Should operate on anonymized data whenever possible
-- Must handle multilingual content gracefully
-- Should accommodate inconsistent and incomplete social media data
-- Must respect rate limits and terms of service for data sources
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Social Media Data Explorer must provide a comprehensive framework for social media research:
 
-The implementation must provide the following core capabilities:
+1. **Network Analysis and Community Detection**:
+   - Load and process social network data from various sources
+   - Calculate network metrics (centrality, density, clustering coefficients)
+   - Implement community detection algorithms (Louvain, Label Propagation, etc.)
+   - Generate network visualizations optimized for terminal display
+   - Identify key nodes and relationships in social graphs
 
-1. **Social Network Analysis Framework**
-   - Graph construction from various interaction types (mentions, replies, shares)
-   - Community detection using multiple algorithmic approaches
-   - Centrality and influence metrics calculation
-   - Temporal network evolution analysis
-   - Comparative analysis between different network segments
+2. **Text Analysis and Sentiment Processing**:
+   - Process and normalize social media text content
+   - Implement sentiment analysis using lexicon-based and machine learning approaches
+   - Calculate sentiment scores and emotional dimensions
+   - Detect sarcasm, irony, and other complex emotional expressions
+   - Visualize sentiment distribution across different communities
 
-2. **Social Text Analysis System**
-   - Sentiment classification with customizable models and lexicons
-   - Topic modeling with parameter optimization
-   - Content categorization and classification
-   - Temporal text analysis for trend detection
-   - Contextualized content analysis within network structures
+3. **Topic Discovery and Tracking**:
+   - Implement topic modeling techniques (LDA, NMF, BERTopic)
+   - Track topic evolution and shifts over time
+   - Identify emerging and declining conversation themes
+   - Link topics to specific communities and user groups
+   - Visualize topic distributions and relationships
 
-3. **Influence Analysis Engine**
-   - Information flow tracking through network pathways
-   - Influence attribution and quantification
-   - Diffusion pattern recognition and classification
-   - Temporal spread analysis with velocity metrics
-   - Influencer identification and characterization
+4. **Influence and Information Diffusion**:
+   - Model information propagation through social networks
+   - Identify key influencers and opinion leaders
+   - Calculate cascade sizes and velocities for content spread
+   - Detect amplification patterns and coordinated behavior
+   - Visualize information flow and influence pathways
 
-4. **User Behavior Analysis**
-   - Interaction pattern profiling and segmentation
-   - Temporal activity analysis across user groups
-   - Content preference modeling
-   - Platform-specific behavior analytics
-   - Demographic inference from behavioral signals
-
-5. **Visualization Generation System**
-   - Network graph rendering with community highlighting
-   - Sentiment and topic overlays on network structures
-   - Temporal evolution visualizations
-   - Influence flow path representation
-   - Cluster membership and characteristic visualization
+5. **User Behavior and Demographic Analysis**:
+   - Extract behavioral features from user activity patterns
+   - Implement clustering algorithms for user segmentation
+   - Identify distinct user groups based on behavior
+   - Characterize user segments by common attributes
+   - Generate profiles for different user communities
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Network visualization correctly represents community structures
+  - Sentiment analysis accurately captures emotional tone in text
+  - Topic modeling identifies coherent and meaningful themes
+  - Influence flow analysis correctly traces information propagation
+  - Demographic clustering produces meaningful user segments
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Analyzing community structure in a political discussion network
+  - Mapping sentiment distribution across different social groups
+  - Tracking topic evolution in a year-long conversation dataset
+  - Tracing the spread of specific information through a network
+  - Identifying distinct user types based on behavior patterns
 
-1. **Network Analysis Tests**
-   - Validation of community detection against benchmark networks
-   - Testing with networks of varying sizes and densities
-   - Verification of centrality and influence metrics
-   - Performance testing with large-scale social graphs
-   - Correctness testing for temporal network evolution
+- **Performance Benchmarks**:
+  - Process network with 100,000 nodes within 30 seconds
+  - Generate community visualization for 10,000 node network within 10 seconds
+  - Complete sentiment analysis for 100,000 tweets within 2 minutes
+  - Process topic modeling for 50,000 documents within 5 minutes
+  - Memory usage below 4GB during all operations
 
-2. **Text Analysis Tests**
-   - Validation of sentiment models against labeled datasets
-   - Testing of topic modeling with standard corpora
-   - Performance testing with large text collections
-   - Multilingual capability verification
-   - Temporal trend detection accuracy testing
+- **Edge Cases and Error Conditions**:
+  - Handling disconnected graph components
+  - Processing extremely short or non-standard text content
+  - Managing multilingual content in topic modeling
+  - Dealing with sparse or incomplete network data
+  - Handling temporal gaps in longitudinal data
 
-3. **Influence Tracking Tests**
-   - Validation of diffusion models with simulated cascades
-   - Testing with known influence patterns from case studies
-   - Verification of attribution accuracy
-   - Performance testing with complex propagation scenarios
-   - Edge case testing for unusual influence mechanisms
+- **Required Test Coverage Metrics**:
+  - 90% code coverage for all core functionality
+  - 100% coverage for data transformation and processing functions
+  - All algorithms validated against benchmark datasets
+  - Complete integration tests for all public APIs
+  - Performance tests for all computationally intensive operations
 
-4. **Behavioral Clustering Tests**
-   - Validation of clustering stability with resampling
-   - Testing with synthetic user behavior profiles
-   - Verification of cluster interpretability metrics
-   - Performance testing with large user populations
-   - Testing of inference validation methods
-
-5. **Visualization Tests**
-   - Verification of visual representation accuracy
-   - Testing of interactive scaling with large datasets
-   - Validation of information density and clarity metrics
-   - Performance testing of rendering algorithms
-   - Accessibility testing for color schemes and patterns
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Social Media Data Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Effective visualization of social network structures with accurate community detection
+2. Reliable sentiment analysis that captures emotional content in social media text
+3. Topic modeling that identifies coherent and meaningful conversation themes
+4. Clear visualization of influence flows and information propagation
+5. Meaningful clustering of users into distinct behavioral and demographic groups
 
-1. Accurately identifies and visualizes community structures within social networks
-2. Effectively maps sentiment patterns across different user groups and over time
-3. Discovers meaningful topics and tracks their evolution through conversations
-4. Traces how information and ideas propagate through social networks
-5. Identifies distinct user segments based on behavioral patterns without explicit demographic data
-6. Handles the scale and complexity of real-world social media datasets
-7. Provides statistically valid insights suitable for academic social media research
-8. Respects privacy and ethical considerations in all analytical operations
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the social media researcher's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

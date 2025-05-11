@@ -1,130 +1,172 @@
-# NetScope for Legal Compliance Monitoring
+# Regulatory Compliance Network Analysis Framework
 
 ## Overview
-A specialized network protocol analyzer designed for legal compliance officers, focusing on monitoring corporate networks for data protection regulation compliance, detecting sensitive information transmission, and ensuring proper encryption and boundary controls are in place.
+A specialized network protocol analysis library designed for legal compliance officers to detect sensitive information in network traffic, verify compliance boundaries, confirm appropriate encryption usage, map geographical data flows, and generate documentation for regulatory audits to ensure organizational compliance with data protection regulations.
 
 ## Persona Description
 Dr. Chen ensures corporate networks comply with data protection regulations and privacy laws. She needs to verify that sensitive information is properly secured and not transmitted in violation of compliance requirements.
 
 ## Key Requirements
-1. **Sensitive data detection identifying personally identifiable information in network traffic**
-   - Implement pattern recognition for PII (personally identifiable information) in network payloads
-   - Develop detection algorithms for structured sensitive data like credit card numbers, social security numbers, and healthcare information
-   - Create detection for unstructured sensitive content using NLP-based approaches
-   - Include risk scoring based on volume and type of sensitive data detected
-   - Support for customizable detection patterns to address organization-specific sensitive data
 
-2. **Compliance boundary verification ensuring regulated data stays within approved systems**
-   - Implement boundary definition and monitoring for regulated data zones
-   - Develop detection for unauthorized transmission of sensitive data across defined boundaries
-   - Create visualization of data flows with compliance boundary overlays
-   - Include chain of custody tracking for sensitive data as it moves between systems
-   - Support for different boundary definitions based on data classification and regulatory frameworks
+1. **Sensitive Data Detection System**  
+   Create a module that identifies personally identifiable information (PII) and other regulated data types within network traffic. This is critical for Dr. Chen because undetected sensitive data transmissions can lead to regulatory violations, data breaches, substantial fines, and reputation damage. The system must reliably detect various types of sensitive data even when fragmented across multiple packets.
 
-3. **Encryption verification confirming appropriate protocols are used for sensitive communications**
-   - Implement detection and classification of encryption protocols in network traffic
-   - Develop strength assessment for observed encryption methods
-   - Create compliance mapping between data types and required encryption levels
-   - Include certificate validation and management verification
-   - Support for encryption requirements from various regulatory frameworks (GDPR, HIPAA, PCI-DSS, etc.)
+2. **Compliance Boundary Verification**  
+   Implement functionality to ensure regulated data stays within approved systems and network boundaries. This feature is essential for Dr. Chen to verify that sensitive information doesn't flow to unauthorized systems, cloud services, or third parties without proper controls, which is a fundamental requirement of regulations like GDPR, HIPAA, and PCI-DSS.
 
-4. **Data transfer geographical mapping showing cross-border information flows**
-   - Implement geolocation analysis for network endpoints
-   - Develop visualization of international data flows with regulatory context
-   - Create detection for potentially problematic cross-border transfers
-   - Include documentation generation for cross-border transfer compliance
-   - Support for mapping against approved transfer mechanisms (Privacy Shield, SCCs, BCRs, etc.)
+3. **Encryption Verification System**  
+   Develop capabilities to confirm that appropriate encryption protocols and methods are used for sensitive communications. This is crucial for Dr. Chen because many regulations explicitly require encryption for protected data, and she must verify that all sensitive data is encrypted with approved methods and sufficient key strengths before transmission.
 
-5. **Regulatory reporting assistance generating documentation for compliance audits**
-   - Implement templated report generation for common regulatory frameworks
-   - Develop evidence collection and organization for compliance documentation
-   - Create audit trail generation with non-repudiation features
-   - Include historical compliance state tracking for trend analysis
-   - Support for custom reporting requirements based on specific regulatory needs
+4. **Data Transfer Geographical Mapping**  
+   Build a system to track and visualize cross-border information flows and data transfer paths. This allows Dr. Chen to identify international data transfers that may trigger additional regulatory requirements under frameworks like GDPR, which places restrictions on data transfers to countries without adequate privacy protections.
+
+5. **Regulatory Reporting Assistance**  
+   Create functionality to automatically generate documentation for compliance audits based on network analysis findings. This feature is vital for Dr. Chen to efficiently prepare evidence for internal audits, regulatory inspections, and compliance certifications, reducing manual effort while ensuring consistent, thorough documentation of compliance controls.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- Sensitive data detection must be testable with synthetic datasets containing known PII patterns
-- Boundary verification must be verifiable against predefined compliance zone definitions
-- Encryption analysis must be testable against traffic with known encryption characteristics
-- Geographical mapping must be verifiable with endpoints in known locations
-- Report generation must be validated against regulatory reporting requirements
+- All components must be testable with synthetic datasets containing mock sensitive data
+- Sensitive data detection must be verifiable against known PII patterns
+- Boundary verification must be testable against predefined network zones
+- Encryption analysis must be validated against compliance requirements
+- Geographical mapping must be verifiable with known IP geolocation data
 
 ### Performance Expectations
-- Analysis tools must process corporate network traffic at rates suitable for compliance monitoring
-- PII scanning should handle at least 100GB of traffic per day on standard hardware
-- Boundary analysis should process traffic in near real-time for active compliance monitoring
-- System should scale to handle enterprise networks with thousands of endpoints
-- Report generation should complete within minutes even for extensive compliance documentation
+- Process at least 1GB of network traffic data in under 15 minutes
+- Scan for at least 50 different types of sensitive data patterns simultaneously
+- Analyze TLS/SSL sessions for compliance within 5 seconds per session
+- Generate compliance reports for 24 hours of traffic in under 10 minutes
+- Support incremental analysis for continuous compliance monitoring
 
 ### Integration Points
-- Import capabilities for PCAP files and log data from enterprise security systems
-- Integration with data classification and DLP (Data Loss Prevention) systems
-- Export formats compatible with GRC (Governance, Risk, and Compliance) platforms
-- APIs for integration with SIEM and security orchestration systems
-- Support for feeding findings into ticketing and incident response workflows
+- Import traffic from standard PCAP/PCAPNG files and proxy logs
+- Export findings in formats compatible with GRC (Governance, Risk, Compliance) systems
+- Integration with data classification systems and policies
+- Support for importing compliance requirements from standard frameworks
+- API for integration with SIEM and security monitoring tools
 
 ### Key Constraints
-- All processing must maintain chain of custody appropriate for potential legal proceedings
-- Analysis must not create additional compliance risks (e.g., by copying sensitive data unnecessarily)
-- Must support operation in highly regulated environments with strict data handling requirements
-- Should accommodate both real-time monitoring and forensic investigation of historical traffic
-- Must maintain detailed audit logs of all compliance monitoring activities
+- Must handle HTTPS/TLS traffic with appropriate access to TLS session keys
+- Must protect discovered sensitive data from unauthorized access
+- Should function in highly regulated environments with strict security controls
+- Must provide detailed evidence of analysis methodology for audit defensibility
+- Should support multiple regulatory frameworks simultaneously (GDPR, HIPAA, PCI-DSS, etc.)
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Legal Compliance Monitoring version of NetScope must provide comprehensive analysis capabilities focused on regulatory compliance for network communications. The system should enable compliance officers to detect sensitive data transmission, verify compliance boundaries, validate encryption methods, map geographical data flows, and generate regulatory documentation.
 
-Key functional components include:
-- Sensitive data detection and classification framework
-- Compliance boundary definition and monitoring system
-- Encryption method validation tools
-- Geographical data flow mapping and analysis
-- Regulatory reporting and documentation generation
+The Regulatory Compliance Network Analysis Framework should provide the following core functionality:
 
-The system should balance technical depth with compliance relevance, providing both detailed evidence for specific compliance requirements and high-level summaries suitable for executive and regulatory reporting. All components should be designed with evidential integrity in mind, suitable for use in compliance processes and potential legal contexts.
+1. **Data Protection Analysis Engine**
+   - Scan network traffic for regulated data types (PII, PHI, PCI, etc.)
+   - Support for complex pattern matching including contextual validation
+   - Content analysis across fragmented packets and sessions
+   - Classification of discovered sensitive data by regulatory category
+
+2. **Boundary Control Verification**
+   - Monitor data flows across defined network boundaries
+   - Track sensitive data movement between systems and zones
+   - Verify compliance with data segregation requirements
+   - Identify unauthorized data transfers between environments
+
+3. **Cryptographic Compliance Analysis**
+   - Verify encryption protocol usage for sensitive data
+   - Validate cipher strengths against regulatory requirements
+   - Detect unencrypted transmission of regulated information
+   - Evaluate certificate validity and management practices
+
+4. **Geographical Compliance Mapping**
+   - Track international data transfers
+   - Map data flows against jurisdictional boundaries
+   - Identify transfers to regions with inadequate privacy protections
+   - Document legal basis for cross-border data movements
+
+5. **Compliance Documentation System**
+   - Generate evidence of compliance controls
+   - Document exceptions and potential violations
+   - Create audit-ready reports with time-stamped findings
+   - Maintain compliance verification artifacts
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate detection of various types of sensitive data in network traffic
-- Reliable identification of compliance boundary violations
-- Comprehensive validation of encryption methods against regulatory requirements
-- Precise mapping of geographical data flows with regulatory implications
-- Compliant generation of documentation suitable for regulatory audits
+- Accuracy of sensitive data detection
+- Correctness of compliance boundary verification
+- Effectiveness of encryption validation
+- Precision of geographical data flow mapping
+- Completeness of regulatory reporting
 
 ### Critical User Scenarios
-- Performing routine compliance monitoring of enterprise network traffic
-- Investigating potential data leakage or compliance violations
-- Preparing documentation for regulatory audits and certifications
-- Analyzing the compliance impact of new systems or integrations
-- Responding to regulatory inquiries about data handling practices
+- Identifying credit card numbers transmitted without proper encryption
+- Verifying patient health information remains within authorized healthcare systems
+- Confirming that personal data is encrypted with approved methods
+- Tracking customer data transfers between EU and non-EU countries
+- Generating documentation for an upcoming GDPR compliance audit
 
 ### Performance Benchmarks
-- Detect at least 95% of known PII patterns in test data with false positive rate below 5%
-- Process and analyze compliance boundaries for enterprise traffic (10GB) in under 30 minutes
-- Validate encryption compliance for at least 1000 connections per minute
-- Map geographical data flows for an enterprise environment in under 15 minutes
-- Generate comprehensive regulatory reports in under 5 minutes
+- Detect sensitive data with at least 95% accuracy and less than 5% false positives
+- Complete boundary compliance analysis for 24 hours of traffic in under 30 minutes
+- Verify encryption compliance for 1,000 TLS sessions in under 5 minutes
+- Generate geographical data flow maps from 1 week of traffic in under 20 minutes
+- Produce comprehensive audit reports within 10 minutes of analysis completion
 
 ### Edge Cases and Error Conditions
-- Appropriate handling of encrypted sensitive data
-- Correct analysis of obfuscated or encoded PII
-- Graceful management of edge cases in jurisdictional determination
-- Proper handling of complex multi-hop data transfers
-- Accurate processing of data pseudonymization and anonymization techniques
-- Appropriate handling of exceptions and authorized deviations from compliance policies
+- Handling partially encrypted or mixed-mode communications
+- Processing sensitive data split across multiple packets or sessions
+- Analyzing encrypted tunnels and VPN traffic
+- Dealing with custom or proprietary protocols carrying sensitive data
+- Managing conflicting requirements from multiple regulatory frameworks
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for all compliance-critical components
-- Complete coverage of PII detection patterns across different data types
-- Comprehensive tests for boundary detection with various network topologies
-- Full suite of tests for encryption validation against different regulatory standards
-- Complete validation of reporting with all supported regulatory frameworks
+- Minimum 90% code coverage for core functionality
+- 95% coverage for sensitive data detection
+- 95% coverage for compliance boundary verification
+- 90% coverage for encryption verification
+- 95% coverage for regulatory reporting generation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Sensitive data detection correctly identifies at least 95% of PII in test datasets
-- Compliance boundary verification correctly identifies at least 98% of boundary violations
-- Encryption validation correctly assesses the compliance status of at least 99% of connections
-- Geographical mapping accurately determines jurisdiction for at least 98% of data transfers
-- Generated reports satisfy the documentation requirements of applicable regulations
-- System provides legally defensible evidence suitable for regulatory proceedings
-- Compliance officers report at least 90% reduction in manual compliance analysis effort
+
+The Regulatory Compliance Network Analysis Framework implementation will be considered successful when:
+
+1. It accurately detects at least 95% of sensitive data types required by major regulations in test datasets
+2. It successfully verifies data transmission boundaries with correct identification of violations
+3. It correctly validates encryption usage against regulatory requirements with minimal false negatives
+4. It accurately maps geographical data flows including cross-border transfers requiring special handling
+5. It generates comprehensive compliance documentation sufficient for regulatory audit requirements
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

@@ -1,142 +1,161 @@
-# Supply Chain Constraint Definition Language
-
-A domain-specific language toolkit for expressing shipping rules, inventory policies, and optimization goals for complex logistics networks.
+# Supply Chain Optimization Language Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on supply chain optimization. It enables logistics planners to express shipping rules, inventory policies, and optimization goals without requiring knowledge of mathematical optimization techniques. The system emphasizes multi-objective optimization, constraint visualization, transportation network modeling, inventory policy templates, and scenario comparison.
+A specialized Domain Specific Language toolkit for defining, analyzing, and optimizing complex supply chain constraints and operations. This toolkit enables logistics planners to express sophisticated shipping rules, inventory policies, and optimization goals without requiring knowledge of mathematical optimization techniques, while providing powerful analysis and simulation capabilities.
 
 ## Persona Description
-
 Raj develops logistics planning systems for a global retail operation with complex supply chains. His primary goal is to create a constraint definition language that allows logistics planners to express shipping rules, inventory policies, and optimization goals without requiring knowledge of mathematical optimization techniques.
 
 ## Key Requirements
+1. **Multi-objective optimization goal definition with priority weighting**: The ability to define multiple, potentially competing optimization objectives (cost reduction, delivery speed, inventory minimization, etc.) with explicit priority weights and trade-off parameters. This is critical because real-world supply chain optimization rarely has a single goal, and the ability to balance multiple objectives with appropriate priorities allows logistics planners to align optimization with strategic business goals.
 
-1. **Multi-objective optimization goal definition with priority weighting**
-   - Implement a system for defining and balancing multiple competing objectives in supply chain optimization
-   - This capability is essential for Raj because real-world logistics problems rarely have single objectives. Supply chains must simultaneously optimize for cost, speed, reliability, and sustainability, among other factors. This feature enables planners to express complex trade-offs between competing goals using business terminology rather than mathematical formulations.
+2. **Constraint visualization showing impact on solution space**: Visual analysis tools that demonstrate how each constraint affects the solution space, identifying which constraints are most restrictive and where relaxation might yield significant benefits. This is essential because understanding constraint impacts helps planners focus improvement efforts on the most limiting factors and communicate the reasons for suboptimal solutions to stakeholders.
 
-2. **Constraint visualization showing impact on solution space**
-   - Develop a data representation system that can visualize how logistics constraints affect the available solution space
-   - Understanding the impact of constraints is critical for effective optimization. This feature helps Raj's logistics planners visualize how each constraint (e.g., delivery time windows, capacity limits) restricts possible solutions, allowing them to identify overly restrictive constraints and understand optimization results.
+3. **Transportation network modeling with route constraint definition**: Capabilities to model complex transportation networks with multi-modal options (road, rail, sea, air) and define constraints for routes including capacity limitations, transit times, availability windows, and cost structures. This is vital because transportation is typically the largest cost component in supply chains, and accurate modeling of network constraints enables significant cost savings and service improvements.
 
-3. **Transportation network modeling with route constraint definition**
-   - Create a modeling framework for defining transportation networks and route-specific constraints
-   - Supply chains operate across complex networks with varying transportation options. This capability allows Raj to model the specific characteristics of different routes and transportation modes, including capacity, cost, time, reliability, and availability constraints, enabling more realistic and effective optimization.
+4. **Inventory policy templates for common management strategies**: Pre-defined templates for standard inventory management approaches (economic order quantity, safety stock, min-max, etc.) that can be customized with specific parameters and business rules. This is necessary because inventory management is complex and mathematically sophisticated, and templates allow logistics planners to implement best-practice approaches without requiring expertise in inventory theory.
 
-4. **Inventory policy templates for common management strategies**
-   - Build a library of predefined inventory policy templates that encapsulate common inventory management strategies
-   - Inventory policies significantly impact overall supply chain performance. This feature provides Raj's planners with ready-to-use templates for strategies like safety stock calculations, reorder point determination, or ABC classification, allowing them to implement sophisticated inventory management without specialized knowledge.
-
-5. **Scenario comparison tools for evaluating rule modifications**
-   - Implement analytical tools for comparing optimization outcomes across different constraint scenarios
-   - Supply chain planning requires frequent evaluation of "what-if" scenarios. This capability enables Raj's team to systematically compare the effects of different constraints or rule modifications, supporting data-driven decision making about supply chain design and operational policies.
+5. **Scenario comparison tools for evaluating rule modifications**: Simulation and analysis capabilities to compare the outcomes of different constraint configurations across multiple scenarios (normal operations, peak season, disruption events, etc.). This is crucial because understanding how rule changes might affect performance under various conditions is essential for risk management and resilience planning, helping planners make informed decisions about policy changes.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each optimization model must be automatically verifiable for mathematical consistency
+  - Constraint definitions must be testable against known feasible and infeasible solutions
+  - Inventory policy implementations must be validated against theoretical optimal values
+  - Scenario comparisons must produce consistent results with controlled variations
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- Optimization models must be testable with historical supply chain data
-- Constraint definitions must be verifiable against known feasible solutions
-- Inventory policies must be testable with simulated demand patterns
-- Transportation networks must be validatable against actual route data
-- Test coverage must include both typical and edge case supply chain scenarios
+- **Performance Expectations**:
+  - Optimization problem compilation must complete in under 10 seconds for large models
+  - Solution computation must handle problems with 10,000+ variables in reasonable time
+  - Constraint visualization must generate results for complex models in under 30 seconds
+  - Scenario comparison must process 50+ scenarios in under 10 minutes
 
-### Performance Expectations
-- Constraint compilation must complete within 5 seconds for complex supply chains
-- Optimization problem solving must scale to networks with 1000+ nodes
-- Scenario comparison must process 10+ alternative constraint sets within 2 minutes
-- Visualization data generation must complete within 10 seconds for large networks
-- The system must support concurrent evaluation of multiple supply chain configurations
+- **Integration Points**:
+  - Transportation management systems
+  - Warehouse management systems
+  - Enterprise resource planning (ERP) platforms
+  - Demand forecasting systems
+  - Supplier management databases
+  - Real-time tracking and IoT data sources
 
-### Integration Points
-- Enterprise resource planning (ERP) systems for master data
-- Transportation management systems (TMS) for route information
-- Warehouse management systems (WMS) for inventory data
-- Demand forecasting systems for planning inputs
-- Business intelligence platforms for result reporting
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All optimization logic must be expressible through the DSL without requiring custom code
+  - Constraint definitions must be storable as human-readable text files
+  - System must leverage existing optimization solvers (CPLEX, Gurobi, etc.) as backends
+  - Performance must scale to enterprise-level supply chain complexity
 
-### Key Constraints
-- No UI components; all visualization capabilities must be expressed through data
-- All optimization models must be deterministic and reproducible
-- The system must handle real-world scale supply chain problems
-- All functionality must be accessible via well-defined APIs
-- The system must support both strategic planning and operational execution
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Supply Chain Optimization DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for supply chain constraints
+2. Multi-objective optimization definition with priority weighting mechanisms
+3. Constraint visualization and impact analysis tools
+4. Transportation network modeling capabilities
+5. Inventory policy template implementations
+6. Scenario generation and comparison utilities
+7. Integration with mathematical optimization solvers
+8. Performance analysis and solution quality assessment
+9. Documentation generators for logistics planning teams
+10. Test utilities for validating constraint models
 
-1. **Constraint Definition Language**: A grammar and parser for defining supply chain constraints, objectives, and policies in business terminology.
-
-2. **Multi-objective Optimization**: Mechanisms for expressing and balancing multiple competing objectives with explicit priority settings.
-
-3. **Transportation Network Modeling**: Tools for representing transportation networks with node, link, and route-specific constraints.
-
-4. **Inventory Policy Management**: Frameworks for defining inventory management rules, safety stock policies, and replenishment strategies.
-
-5. **Constraint Visualization**: Systems for representing constraints and their impacts in a form suitable for visualization.
-
-6. **Scenario Analysis**: Methods for comparing outcomes across different constraint configurations to support decision making.
-
-7. **Optimization Compilation**: Translation of high-level constraint definitions into mathematical optimization problems.
-
-8. **Solution Interpretation**: Tools for translating optimization solutions back into business-relevant recommendations.
+The system should enable logistics planners to define elements such as:
+- Facility location constraints and capacities
+- Transportation routes, modes, and schedules
+- Inventory policies and storage limitations
+- Service level requirements and delivery timeframes
+- Cost structures and budget constraints
+- Supplier capabilities and limitations
+- Demand patterns and seasonality factors
+- Risk management policies and contingency plans
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into mathematical optimization models
+  - Accurate handling of multi-objective optimization with priority weights
+  - Proper visualization of constraint impacts on solution space
+  - Correct modeling of transportation networks and routes
+  - Accurate implementation of inventory policy templates
 
-### Key Functionalities to Verify
-- Accurate parsing of constraint definitions from domain-specific syntax
-- Correct formulation of multi-objective optimization problems
-- Proper modeling of transportation networks and route constraints
-- Effective implementation of inventory policy templates
-- Reliable comparison of results across different scenario configurations
+- **Critical User Scenarios**:
+  - Logistics planner defines multi-objective optimization for peak season planning
+  - Network analyst evaluates impact of route constraints on overall costs
+  - Inventory manager implements custom safety stock policies across products
+  - Supply chain director compares scenarios for potential disruption events
+  - Operations researcher identifies constraint relaxations for performance improvement
 
-### Critical User Scenarios
-- Logistics planner defines constraints for a global supply chain
-- System balances multiple competing optimization objectives based on priorities
-- Transportation network is modeled with route-specific constraints
-- Inventory policies are applied across distribution network
-- Multiple constraint scenarios are compared to evaluate policy changes
+- **Performance Benchmarks**:
+  - Compile and prepare a model with 5000+ variables in under 30 seconds
+  - Generate constraint impact visualizations for 100+ constraints in under 60 seconds
+  - Evaluate 10+ inventory policy variations across 1000+ SKUs in under 5 minutes
+  - Compare 20+ scenarios with different constraint configurations in under 10 minutes
 
-### Performance Benchmarks
-- Constraint compilation completed in under 5 seconds for complex definitions
-- Optimization models solved within reasonable time frames based on problem size
-- Scenario comparison processing 10+ alternatives within 2 minutes
-- Visualization data generation completed in under 10 seconds
-- System maintains performance with supply chains containing 1000+ nodes
+- **Edge Cases and Error Conditions**:
+  - Handling of mathematically infeasible constraint combinations
+  - Detection of unbounded optimization problems
+  - Management of conflicting multi-objective priorities
+  - Behavior during transportation network disruptions
+  - Graceful degradation when optimization becomes computationally intractable
 
-### Edge Cases and Error Conditions
-- Handling of infeasible constraint combinations
-- Proper response to conflicting optimization objectives
-- Graceful degradation when optimizing extremely large networks
-- Recovery from partial constraint compilation failures
-- Handling of incomplete or uncertain supply chain data
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of constraint parser and interpreter
+  - 100% coverage of multi-objective handling mechanisms
+  - 95% coverage of inventory policy implementations
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core constraint parsing and compilation logic
-- 100% coverage of multi-objective optimization algorithms
-- 95% coverage of transportation network modeling functions
-- 90% coverage for inventory policy implementations
-- 100% test coverage for scenario comparison calculations
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Logistics planners can define complex supply chain constraints without requiring knowledge of mathematical optimization.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to express complex supply chain constraints
+4. Multi-objective optimization correctly balances competing priorities
+5. Constraint visualization accurately depicts impact on solution space
+6. Transportation network modeling correctly represents route constraints
+7. Inventory policy templates accurately implement theoretical models
+8. Scenario comparison provides meaningful analysis of potential rule modifications
 
-2. The system successfully balances multiple competing objectives according to business priorities.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Transportation networks and route constraints are accurately modeled and optimized.
+## Setup Instructions
+To set up the development environment:
 
-4. Inventory policies consistently yield expected results across various demand patterns.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. Scenario comparison provides clear insights into the effects of constraint modifications.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. The time required to define and solve supply chain optimization problems is reduced by at least 60%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. Optimization results lead to measurable improvements in supply chain performance metrics such as cost, service level, and inventory efficiency.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

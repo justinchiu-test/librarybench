@@ -1,176 +1,154 @@
-# ArtisticVault - Visual Asset Backup System for Digital Artists
+# CreativeVault - Incremental Backup System for Digital Artists
 
 ## Overview
-ArtisticVault is a specialized incremental backup system designed for digital artists creating content for animation studios. It provides visual differencing tools, timeline-based browsing, selective restoration capabilities, efficient asset library management, and workspace state preservation to maintain the complex creative workflow of digital art production.
+A specialized incremental backup system designed for digital artists who create complex project files with numerous iterations and dependencies. The system enables visual timeline tracking of creative works, selective restoration of specific elements, and intelligent handling of large asset libraries while preserving relationships between projects and reference materials.
 
 ## Persona Description
 Sofia creates digital art for animation studios, working with complex project files and reference materials. She needs to track iterations of creative works while maintaining large texture and asset libraries.
 
 ## Key Requirements
+1. **Visual Difference Comparison**: Implement an intelligent system that can visually represent changes between versions of image and 3D model files, allowing side-by-side comparison. This feature enables Sofia to quickly understand what changed between iterations, helping her track the creative evolution of her work and make informed decisions when restoring previous elements.
 
-1. **Visual Difference Comparison**
-   - Implement visual comparison tools for images and 3D model versions
-   - Create side-by-side and overlay comparison modes
-   - Generate visual heatmaps highlighting changes between versions
-   - Support comparison of file metadata and layer structure
-   - This feature is critical for Sofia as it allows her to visually identify changes between iterations of her artwork, helping her track the evolution of her designs and recover specific visual elements from previous versions
+2. **Timeline-based Version Browsing**: Create an advanced version history system with thumbnail previews that visually represents the evolution of projects over time. This capability allows Sofia to navigate through the creative development history of any file, understanding the progression of her work and confidently selecting specific versions to reference or restore.
 
-2. **Timeline-Based Version Browsing**
-   - Develop an API for chronological organization of file versions
-   - Implement efficient thumbnail generation for visual previews
-   - Create metadata extraction for meaningful version labeling
-   - Support filtering and searching across the version timeline
-   - This timeline browsing capability enables Sofia to visualize the progression of her artwork over time, making it easy to locate specific iterations based on visual appearance rather than just dates or filenames
+3. **Selective Element Restoration**: Develop functionality for extracting and restoring specific elements or layers from previous versions without losing recent changes to other components. This precision restoration capability enables Sofia to recover specific creative elements that were removed or altered, while preserving all the progress made on other aspects of the project.
 
-3. **Selective Element Restoration**
-   - Design a system for identifying and extracting specific elements from backup versions
-   - Implement layer-aware restoration for layered file formats
-   - Create merge capabilities for combining elements from different versions
-   - Support non-destructive restoration workflows
-   - This selective restoration is essential as it allows Sofia to recover specific elements or details from previous versions without losing all the progress made in her current version, preserving her creative workflow
+4. **Asset Library Deduplication**: Implement specialized handling for creative asset libraries that understands references and linked files in projects, ensuring that shared assets are backed up efficiently while maintaining all relationships. This feature dramatically reduces storage requirements for Sofia's extensive texture and model libraries while ensuring all project dependencies remain intact.
 
-4. **Asset Library Deduplication**
-   - Develop content-aware deduplication for creative assets
-   - Implement reference tracking for linked files and embedded resources
-   - Create intelligent identification of derivative assets
-   - Support customizable organization of asset references
-   - Efficient asset management is vital because Sofia works with large libraries of textures and reference materials that are often reused across projects, requiring smart storage that understands relationships between assets
-
-5. **Workspace State Preservation**
-   - Implement capture of application layouts and configurations
-   - Create backup for tool presets and custom brushes
-   - Support for saving viewport settings and camera positions
-   - Enable restoration of complete working environment
-   - This workspace preservation ensures that Sofia can restore not just her files but her entire creative environment, including custom tools, layouts, and viewport settings that are critical to her workflow
+5. **Workspace State Preservation**: Create a comprehensive system for capturing application layouts, tool configurations, and workspace states alongside creative files. This ensures that Sofia can restore not just her creative works but also the precise working environment in which they were created, enhancing productivity when revisiting projects.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Visual comparison algorithms must be testable with standard image test sets
-- Timeline functionality must be verifiable with simulated version histories
-- Selective restoration must be tested across various file formats
-- Asset reference tracking must be validated with complex project structures
-- Workspace state capture must be tested for compatibility with major creative applications
+- All components must have isolated unit tests with dependency injection for external systems
+- Visual difference algorithms must be tested with standardized image and model datasets
+- Timeline representation must be verified with various project evolution patterns
+- Selective restoration must be tested with complex layered file formats
+- Asset reference handling must be verified with various project-reference relationships
+- Workspace state capture must be tested across multiple creative application formats
 
 ### Performance Expectations
-- Generate visual difference comparisons in under 3 seconds for typical image sizes
-- Produce thumbnails for timeline browsing in under 1 second per image
-- Support asset libraries with 100,000+ files and complex relationships
-- Handle project files up to 2GB with multi-layer complexity
-- Complete workspace capture in under 10 seconds
+- The system must efficiently handle projects with thousands of linked assets
+- Visual difference generation must complete in under 5 seconds for typical image files
+- Timeline data processing must handle projects with 500+ saved versions
+- Selective restoration must extract components in under 10 seconds even from large files
+- Asset library deduplication must achieve at least 60% storage reduction for typical libraries
+- Workspace state capture must add less than 2 seconds overhead to project save operations
 
 ### Integration Points
-- Common creative file formats (PSD, AI, FBX, OBJ, etc.)
-- Creative application APIs for workspace state
-- Asset management systems and libraries
-- Metadata standards for creative content
-- Rendering and preview generation tools
+- Creative application file formats (Adobe Creative Cloud, Autodesk, Blender, etc.)
+- Image and 3D model processing libraries
+- Asset management systems and digital asset managers (DAMs)
+- Rendering engines and output processors
+- Version control systems with binary file support
+- Cloud storage providers for off-site backup
 
 ### Key Constraints
-- Must preserve exact fidelity of creative assets including color precision
-- Storage format must maintain all layers and non-destructive edits
-- System must be efficient with large media files (10GB+ project files)
-- Operations must be non-disruptive to creative applications
-- Must support industry-standard creative workflows
+- The implementation must work across macOS and Windows platforms (primary artist workstations)
+- All operations must be non-destructive with original files always preserved
+- The system must accommodate both small project files and very large asset libraries
+- Storage formats must support high bit-depth color and precision 3D data without degradation
+- Processing must be optimized to handle graphics-intensive files without excessive resource consumption
+- System must operate efficiently on workstations also running resource-intensive creative applications
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The system must provide these core capabilities:
+1. **Incremental Backup Engine**: A core module handling creative file change detection, efficient delta storage, and versioned backup creation with perfect fidelity for artistic content.
 
-1. **Visual Comparison Engine**
-   - Format-specific parsers for creative file types
-   - Pixel-level comparison algorithms
-   - Difference visualization generation
-   - Metadata and structure comparison
+2. **Visual Diff Generator**: Sophisticated algorithms for creating visual representations of changes between versions of images, 3D models, and other visual assets with meaningful highlighting of differences.
 
-2. **Version Timeline Management**
-   - Chronological version tracking
-   - Thumbnail generation and caching
-   - Metadata extraction and indexing
-   - Timeline query and filtering
+3. **Creative Timeline Manager**: A specialized version history system that maintains visual thumbnails and metadata about project evolution, enabling intuitive navigation through creative iterations.
 
-3. **Selective Restoration Framework**
-   - Element identification and extraction
-   - Version merging and conflict resolution
-   - Layer and component management
-   - Non-destructive workflow support
+4. **Element Extraction Framework**: Tools for parsing complex file formats and selectively extracting components, layers, or elements for targeted restoration while preserving file integrity.
 
-4. **Asset Reference System**
-   - Content-based identification
-   - Reference graph construction
-   - Duplicate detection and management
-   - Storage optimization
+5. **Asset Reference Tracker**: Intelligence for identifying and maintaining relationships between project files and their dependent assets, ensuring efficient storage while preserving all links.
 
-5. **Workspace Capture**
-   - Application state serialization
-   - Configuration and preset management
-   - Environment variable preservation
-   - Cross-application compatibility
+6. **Application Environment Capture**: Specialized adapters for extracting, storing, and restoring application states, workspace layouts, and tool configurations from major creative software.
+
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by various tools (though implementing a UI is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accuracy of visual difference detection between file versions
-- Proper organization and display of version timelines with previews
-- Successful selective restoration of specific elements from backup versions
-- Effective deduplication and reference management for asset libraries
-- Complete capture and restoration of workspace states
+- Visual difference generation with accurate representation of creative changes
+- Timeline creation with proper version ordering and preview generation
+- Selective element extraction and restoration with file integrity maintenance
+- Asset reference tracking with complete relationship preservation
+- Workspace state capture and restoration across application restarts
+- Storage efficiency compared to direct file versioning
 
 ### Critical User Scenarios
-- Iterative development of complex multi-layered artwork
-- Exploration of design alternatives with timeline browsing
-- Recovery of specific elements from previous versions
-- Management of large texture and reference libraries
-- Restoration of complete working environment after system failure
+- Complete project iteration tracking for a complex animation sequence
+- Recovery of specific creative elements from previous versions
+- Migration of projects between workstations with environment preservation
+- Storage optimization for large texture and model libraries
+- Collaborative workflow with shared asset references
+- Disaster recovery with complete project and environment restoration
 
 ### Performance Benchmarks
-- Process visual differences for 100MB layered file in under 5 seconds
-- Generate and display 100 thumbnails for timeline browsing in under 10 seconds
-- Handle selective restoration from 1GB+ project files in under 30 seconds
-- Achieve 50% or better storage savings through asset deduplication
-- Complete workspace capture and restoration in under 15 seconds
+- Initial backup of a 50GB project folder completing in under 30 minutes
+- Incremental backup completing in under 5 minutes for daily work sessions
+- Visual difference generation at a rate of at least 5 comparison sets per minute
+- Timeline processing handling 100+ versions in under 15 seconds
+- Selective restoration completing in under 30 seconds even for complex files
+- Storage efficiency achieving at least 5:1 ratio for version history through deduplication
 
 ### Edge Cases and Error Conditions
-- Extremely complex file structures with hundreds of layers
-- Proprietary or unusual file formats
-- Corrupt or partially damaged creative files
-- Broken references in asset libraries
-- Incompatible workspace states between software versions
+- Handling of corrupt or partially saved creative files
+- Recovery from interrupted backups during render or export operations
+- Proper functioning with extremely large individual files (high-res textures, complex scenes)
+- Correct behavior with circular references between project components
+- Appropriate handling of proprietary and evolving file formats
+- Graceful operation when applications modify files during backup operations
 
 ### Required Test Coverage Metrics
-- 90% code coverage for visual comparison components
-- 95% coverage for timeline management
-- 90% coverage for selective restoration
-- 95% coverage for asset reference management
-- 90% coverage for workspace capture
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify all external system interfaces
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Artists can visually compare versions of their work with clear highlighting of differences
-2. The timeline browsing capabilities make it easy to locate specific versions based on visual appearance
-3. Selective restoration allows recovery of specific elements without losing current work
-4. Asset management efficiently handles large libraries while maintaining all relationships
-5. Workspace state can be completely captured and restored across sessions
-6. All operations integrate smoothly with creative workflows without disruption
-7. Storage requirements are minimized while maintaining full fidelity of creative assets
-8. Performance remains responsive even with large and complex creative files
-9. The system supports the full range of file formats used in animation production
-10. The implementation passes all test suites with the required coverage metrics
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates effective visual difference comparison between creative file versions.
+3. Timeline-based version browsing works correctly with appropriate previews and metadata.
+4. Selective element restoration successfully extracts specific components while preserving file integrity.
+5. Asset library deduplication achieves significant storage savings while maintaining all references.
+6. Workspace state is properly captured and restored across application sessions.
+7. All performance benchmarks are met under the specified load conditions.
+8. Code quality meets professional standards with appropriate documentation.
 
-To get started with implementation:
-1. Set up a Python virtual environment: `uv venv`
-2. Activate the environment: `source .venv/bin/activate`
-3. Install development dependencies
-4. Implement the core modules following the requirements
-5. Create comprehensive tests for all functionality
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

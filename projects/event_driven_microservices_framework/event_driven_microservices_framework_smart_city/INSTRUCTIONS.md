@@ -1,7 +1,7 @@
-# Smart City Integration Microservices Framework
+# Smart City Microservices Integration Framework
 
 ## Overview
-A flexible, secure event-driven microservices framework designed to connect diverse municipal services across transportation, utilities, and public safety departments. The framework enables critical information sharing between city departments while maintaining independent operation, implements geospatial event routing, and provides robust privacy controls to protect citizen data.
+This project is a specialized event-driven microservices framework designed for smart city initiatives that integrate services across multiple municipal departments. It provides geospatial event routing, cross-department authorization, emergency broadcast capabilities, selective data persistence, and privacy controls to create an interconnected yet secure urban services infrastructure.
 
 ## Persona Description
 Raj develops systems connecting various municipal services for a smart city initiative spanning transportation, utilities, and public safety. His primary goal is to implement a microservices architecture that enables different city departments to share critical information while maintaining independent operation and specialized functionality.
@@ -9,147 +9,185 @@ Raj develops systems connecting various municipal services for a smart city init
 ## Key Requirements
 
 1. **Geospatial Event Routing Based on City Zones and Jurisdictions**
-   - Event routing based on geographic boundaries and jurisdictions
-   - Spatial query capabilities for location-based event filtering
-   - Dynamic zone definition and management for evolving city areas
-   - Time-sensitive geofencing for temporary event boundaries
-   - This is critical for Raj as it ensures events are processed by the appropriate department based on physical location and jurisdictional responsibility
+   - Implement event routing based on geographic boundaries
+   - Create efficient spatial indexing for rapid event distribution
+   - Support for overlapping jurisdictions with multiple responsible departments
+   - Include dynamic redistricting without service disruption
+   - This feature ensures that events are delivered only to departments with responsibility for specific geographic areas, optimizing system resources and respecting jurisdictional boundaries
 
 2. **Cross-department Event Subscription with Authorization Policies**
-   - Department-specific access control policies for event types
-   - Role-based subscription management across city services
-   - Departmental authorization framework with fine-grained permissions
-   - Auditable subscription governance
-   - This enables controlled sharing of information between departments (like traffic management and emergency services) while respecting organizational boundaries
+   - Develop configurable access policies for inter-department data sharing
+   - Create selective subscription based on event types and attributes
+   - Support for delegated authorization with audit trails
+   - Include time-bound and purpose-limited access grants
+   - This feature enables controlled information sharing between departments while respecting operational boundaries and data governance requirements
 
 3. **Emergency Broadcast Patterns with Priority Message Handling**
-   - Priority-based message distribution for emergency situations
-   - Interrupt capabilities for urgent public safety communications
-   - Escalation pathways for critical city events
-   - Guaranteed delivery mechanisms for emergency notifications
-   - This allows Raj to ensure critical emergency information immediately reaches all relevant city systems and personnel regardless of normal operational patterns
+   - Implement emergency event prioritization and distribution
+   - Create acknowledgment and escalation protocols
+   - Support for resilient delivery during infrastructure disruption
+   - Include fallback communication paths for critical notifications
+   - This feature ensures that emergency information reaches all relevant systems with appropriate urgency, even during infrastructure challenges
 
 4. **Long-term Data Archiving with Selective Event Persistence**
-   - Policy-driven event persistence and archiving
-   - Customizable retention periods for different event categories
-   - Historical event access and analysis capabilities
-   - Storage optimization for large-scale event histories
-   - This supports both immediate operational needs and long-term data requirements for planning, analysis, and legal compliance
+   - Develop tiered storage strategies based on data importance
+   - Create data lifecycle policies with automated archiving
+   - Support for efficient retrieval of historical data
+   - Include compliance with municipal record retention requirements
+   - This feature balances storage efficiency with the need to maintain historical smart city data for analysis, planning, and compliance purposes
 
 5. **Public/Private Information Barriers with Citizen Privacy Controls**
-   - Strict separation of public and private citizen information
-   - Configurable data anonymization for public-facing services
-   - Consent management for citizen data usage
-   - Privacy-preserving data aggregation techniques
-   - This ensures that citizen privacy is protected while still enabling data-driven city services and transparent public information sharing
+   - Implement privacy-preserving data transformation pipelines
+   - Create citizen consent management for personal data
+   - Support for anonymization and aggregation of sensitive information
+   - Include privacy impact assessments for new data integrations
+   - This feature protects citizen privacy while enabling appropriate public data sharing and transparency
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Comprehensive testing framework for cross-department interactions
-- Geospatial event routing verification tools
-- Privacy control validation suite
-- Emergency broadcast system testing without public impact
-- Long-term data storage and retrieval verification
+- Support for simulating multi-department interactions
+- Ability to test geospatial event routing
+- Testing of emergency broadcast scenarios
+- Verification of privacy controls and data protection
 
 ### Performance Expectations
-- Support for at least 1 million city residents
-- Geospatial routing decisions made within 50ms
-- Emergency broadcast delivery to all systems within 5 seconds
-- Ability to process at least 10,000 events per second during peak periods
-- Historical data queries completed within 5 seconds for recent data, 30 seconds for archived data
+- Support for at least 20 integrated city departments
+- Maximum 500ms latency for standard inter-department events
+- Maximum 100ms latency for emergency notifications
+- Support for city-scale data processing (minimum 100,000 events/hour)
 
 ### Integration Points
-- City department information systems
-- Geographic information systems (GIS)
-- Public safety and emergency response systems
-- Utility management systems
-- Public-facing city information portals
+- Integration with departmental systems (e.g., traffic management, utility monitoring)
+- Support for IoT devices and sensor networks throughout the city
+- Compatibility with GIS and mapping systems
+- Integration with emergency response and public safety networks
 
 ### Key Constraints
-- Must respect departmental authority and independence
-- Strict compliance with data privacy regulations
-- Support for legacy municipal systems
-- Public transparency requirements for government operations
-- Budget constraints of municipal funding
+- Must comply with municipal data retention policies
+- Must protect citizen privacy while enabling appropriate data sharing
+- Must operate reliably in emergency situations
+- Must accommodate varying technical capabilities across departments
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Smart City Integration Microservices Framework must provide:
+The framework must provide:
 
-1. **Geospatial Event System**
-   - Location-aware event distribution
-   - Jurisdiction-based routing
-   - Geographic boundary management
-   - Spatial indexing and filtering
+1. **Geospatial Event Management**
+   - Geographical event routing and filtering
+   - Spatial indexing and optimization
+   - Jurisdiction management
+   - Location-based event subscription
 
-2. **Inter-department Authorization**
-   - Access control policy management
-   - Cross-department subscription system
-   - Departmental permission enforcement
-   - Subscription audit and governance
+2. **Inter-department Communication**
+   - Configurable access policies
+   - Selective event subscription
+   - Authorization and authentication
+   - Audit logging and compliance
 
-3. **Emergency Communication System**
-   - Priority messaging infrastructure
-   - Emergency broadcast mechanisms
-   - Escalation pathway management
-   - Critical event distribution
+3. **Emergency Response System**
+   - Priority-based message handling
+   - Reliable emergency notification
+   - Acknowledgment and escalation
+   - Fallback communication paths
 
-4. **Data Archiving Infrastructure**
-   - Event persistence policy engine
-   - Tiered storage management
-   - Historical data access APIs
-   - Retention compliance enforcement
+4. **Data Management and Retention**
+   - Tiered data storage strategies
+   - Automated archiving and retrieval
+   - Retention policy enforcement
+   - Historical data access and analysis
 
-5. **Privacy Protection Framework**
-   - Public/private data separation
-   - Anonymization and pseudonymization tools
-   - Citizen consent management
-   - Privacy-preserving analytics methods
+5. **Privacy and Public Access**
+   - Privacy-preserving transformations
+   - Consent management
+   - Anonymization and aggregation
+   - Public/private data boundaries
 
 ## Testing Requirements
 
-### Key Functionalities to Verify
-- Geospatial event routing accuracy across city zones
-- Proper enforcement of department access controls
-- Emergency broadcast delivery within SLA targets
-- Long-term data archiving and retrieval capabilities
-- Effectiveness of privacy protection mechanisms
+### Key Functionalities that Must be Verified
+- Accurate geospatial event routing
+- Proper enforcement of cross-department authorization
+- Reliable emergency broadcast functioning
+- Correct implementation of data retention policies
+- Effectiveness of privacy controls
 
 ### Critical User Scenarios
-- Traffic incident triggering coordinated response across departments
-- Planned city event requiring temporary jurisdiction changes
-- Emergency situation with escalating priority levels
-- Historical analysis of multi-year urban infrastructure patterns
-- Citizen data access with proper privacy controls
+- Traffic incident affecting multiple departments
+- Public utility emergency requiring coordinated response
+- City-wide emergency notification and confirmation
+- Historical data retrieval for urban planning
+- Citizen-facing data publication with privacy protections
 
 ### Performance Benchmarks
-- Geospatial routing decisions made within 50ms
-- Support for 10,000+ events per second during peak periods
-- Emergency broadcasts delivered within 5 seconds to all systems
-- System scales to support 1 million+ city residents
-- Historical queries complete within time SLAs based on data age
+- Route 10,000+ geospatial events per hour to correct departments
+- Process emergency broadcasts within 100ms to all relevant systems
+- Support 20+ city departments with their own event patterns
+- Archive and retrieve data spanning at least 5 years of city operations
 
 ### Edge Cases and Error Conditions
-- Handling of events that cross multiple jurisdictional boundaries
-- System behavior during emergency situations with partial outages
-- Resolution of conflicting department authority over incidents
-- Recovery from data archiving failures
-- Handling of invalid or malformed geospatial data
+- Partial system outages during emergency situations
+- Jurisdictional boundary disputes with overlapping responsibility
+- Privacy conflicts between transparency requirements and data protection
+- Extreme event volumes during major city incidents
+- Legacy department systems with limited integration capabilities
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all components
-- 100% coverage of emergency broadcast paths
-- All privacy protection mechanisms must have dedicated tests
-- Comprehensive geospatial routing scenario tests
-- Long-term archiving tests simulating multiple years of operation
+- Minimum 90% line coverage for all code
+- 100% coverage of geospatial routing logic
+- 100% coverage of emergency broadcast functionality
+- 100% coverage of privacy control mechanisms
+- 100% coverage of data archiving and retrieval
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- All city departments can seamlessly share information within authorized boundaries
-- Emergency communications reach all relevant systems within seconds
-- Citizen privacy is demonstrably protected in all operations
-- Historical data is accessible for urban planning and analysis
-- System handles the full scale of city operations with defined performance
-- Municipal services can operate independently while accessing shared information
-- Public transparency requirements are met while protecting sensitive data
-- System adapts to changing city geography and departmental structures
+
+The implementation will be considered successful if:
+
+1. Events are correctly routed based on geospatial properties
+2. Departments can securely subscribe to events from other departments
+3. Emergency broadcasts are delivered with appropriate priority
+4. Data is archived according to retention policies
+5. Citizen privacy is protected through appropriate controls
+6. Performance meets the specified benchmarks
+7. All test cases pass with the required coverage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
+
+To set up the development environment:
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the project in development mode
+uv pip install -e .
+
+# Install test dependencies
+uv pip install pytest pytest-json-report
+
+# Run tests and generate the required JSON report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+CRITICAL: Generating and providing the pytest_results.json file is a mandatory requirement for project completion. This file serves as evidence that all functionality has been implemented correctly and passes all tests.

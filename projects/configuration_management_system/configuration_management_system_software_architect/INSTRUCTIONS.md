@@ -1,154 +1,158 @@
-# Microservices Configuration Architecture Framework
+# Architectural Configuration Management System
 
 ## Overview
-A sophisticated configuration management system designed for complex distributed systems that maintains configuration consistency across microservices while enabling service-specific customizations. The framework provides powerful dependency modeling, schema versioning, and architectural boundary enforcement to ensure system integrity during rapid evolution.
+A sophisticated configuration management system designed specifically for architects of complex distributed systems, enabling them to maintain configuration consistency across microservices while supporting service-specific customizations. This system provides dependency modeling, schema versioning, architectural boundary enforcement, API-first configuration management, and configuration-as-code workflows.
 
 ## Persona Description
 Elena designs complex distributed systems that need to maintain configuration consistency across microservices while allowing for service-specific customizations. Her primary goal is to create configuration hierarchies that ensure architectural integrity while enabling rapid service evolution.
 
 ## Key Requirements
+1. **Service Dependency Modeling with Configuration Inheritance Visualization** - Provides powerful tools to model dependencies between services and visualize how configuration settings inherit and override across the service hierarchy. This is critical for Elena because understanding the complex web of configuration dependencies is essential for maintaining system integrity during architecture evolution and preventing cascading failures from configuration changes.
 
-1. **Service Dependency Modeling with Configuration Inheritance Visualization**
-   - Implement a dependency graph model that represents relationships between service configurations
-   - Provide programmatic visualization of inheritance and dependency paths
-   - Essential for Elena to understand how configuration changes propagate across the distributed system architecture
+2. **Schema Versioning with Backward Compatibility Verification** - Implements a robust schema versioning system for configuration definitions that tracks changes over time and automatically verifies backward compatibility between schema versions. This allows Elena to evolve configuration schemas as services evolve while ensuring that configuration changes don't break existing service implementations or disrupt the distributed system.
 
-2. **Schema Versioning with Backward Compatibility Verification**
-   - Develop schema versioning capabilities that track configuration structure changes over time
-   - Include compatibility checking to ensure new schema versions don't break dependent services
-   - Critical for Elena to maintain system stability while evolving individual service configurations
+3. **Architectural Boundary Enforcement through Configuration Namespaces** - Enforces architectural boundaries by organizing configurations into strictly controlled namespaces that align with system domains, preventing cross-boundary configuration dependencies that would violate architectural principles. This helps Elena maintain a clean architecture by ensuring that configuration access patterns respect the intended architectural boundaries and service contracts.
 
-3. **Architectural Boundary Enforcement through Configuration Namespaces**
-   - Create a namespace system that logically separates configuration domains
-   - Implement boundary controls that prevent improper cross-boundary configuration access
-   - Vital for Elena to maintain clear architectural boundaries in complex systems with many teams
+4. **API-first Configuration Management with Service Discovery Integration** - Provides an API-first approach to configuration management that integrates with service discovery mechanisms, allowing services to dynamically discover and access their configuration based on their identity and role in the architecture. This enables Elena's microservices to bootstrap themselves with the right configuration without hard-coding environment-specific details.
 
-4. **API-first Configuration Management with Service Discovery Integration**
-   - Design a configuration API that supports service discovery mechanisms
-   - Enable dynamic configuration distribution based on service registration
-   - Necessary for Elena to support runtime reconfiguration in dynamic, auto-scaling environments
-
-5. **Configuration-as-Code Workflows with Architectural Review Automation**
-   - Build configuration-as-code practices into the core system
-   - Provide automated architectural impact analysis for configuration changes
-   - Crucial for Elena to ensure architectural integrity during rapid development cycles
+5. **Configuration-as-Code Workflows with Architectural Review Automation** - Supports configuration-as-code practices with integrated architectural review tools that automatically analyze configuration changes for architectural impact and compliance with design principles. This helps Elena's team move quickly while still maintaining architectural governance, identifying potentially problematic configuration changes before they're deployed.
 
 ## Technical Requirements
+- **Testability Requirements**: Configuration resolution logic must be fully testable with mocked service dependencies. Schema compatibility checks must be verifiable with automated tests. Namespace boundary enforcement must have comprehensive test coverage.
 
-### Testability Requirements
-- All core functions must support dependency injection for testing
-- Service dependency modeling must be fully testable with mocked services
-- Schema validation and compatibility checking must have exhaustive test coverage
-- Namespace boundary enforcement must have comprehensive tests for security
-- Configuration API must be fully testable with mock implementations
+- **Performance Expectations**: Configuration resolution must be highly efficient, completing within 50ms even for complex service hierarchies with hundreds of dependencies. Schema validation must complete within 100ms for typical configuration sizes.
 
-### Performance Expectations
-- Dependency graph operations must complete within 200ms even for graphs with 1000+ nodes
-- Schema validation must process complex schemas in under 100ms
-- Configuration distribution must support updates to 500+ services within 5 seconds
-- API endpoints must respond within 50ms under normal load
-- Configuration compilation from code must process 100+ files per second
+- **Integration Points**:
+  - Must integrate with service mesh and service discovery systems
+  - Must support standard schema definition formats (JSON Schema, OpenAPI, etc.)
+  - Must provide hooks for CI/CD pipeline integration
+  - Must integrate with version control systems for configuration-as-code
 
-### Integration Points
-- Integration with service discovery systems (Consul, etcd, Kubernetes)
-- Support for version control systems for configuration-as-code
-- Compatibility with CI/CD pipelines for automated testing
-- Integration with architecture documentation systems
-- Support for observability platforms for configuration metrics
+- **Key Constraints**:
+  - Must support distributed operation in multi-region deployments
+  - Must maintain backward compatibility for at least three major schema versions
+  - Must be resilient to partial system failures
+  - Must support incremental adoption in existing systems
 
-### Key Constraints
-- All operations must be available through well-defined APIs
-- Changes to shared configurations must not break dependent services
-- The system must work across heterogeneous service implementations
-- Must support gradual migration from legacy configuration systems
-- Must maintain high availability with no single points of failure
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality required for this architecture-focused configuration management system includes:
 
-The Microservices Configuration Architecture Framework should implement:
+1. **Service Dependency Model**:
+   - Service relationship graph modeling
+   - Configuration inheritance path resolution
+   - Circular dependency detection
+   - Dependency visualization data generation
 
-1. A service dependency model that:
-   - Maps relationships between services and their configurations
-   - Tracks configuration dependencies across the system
-   - Provides clear inheritance paths for derived configurations
-   - Offers visualization capabilities for complex relationships
+2. **Schema Management System**:
+   - Schema definition and validation
+   - Schema versioning with semantic versioning
+   - Backwards compatibility analysis
+   - Schema evolution recommendations
 
-2. A schema management system that:
-   - Defines configuration structures using a schema language
-   - Versions schemas with semantic versioning support
-   - Verifies backward compatibility between versions
-   - Validates configurations against their schemas
+3. **Architectural Boundary Enforcement**:
+   - Namespace definition and management
+   - Cross-namespace reference control
+   - Boundary violation detection
+   - Exemption mechanism with justification
 
-3. A namespace management system that:
-   - Organizes configurations into logical domains
-   - Enforces access controls between namespaces
-   - Prevents unauthorized cross-boundary dependencies
-   - Supports hierarchical namespace structures
+4. **API-first Configuration Access**:
+   - RESTful and gRPC API interfaces for configuration
+   - Service identity-based configuration resolution
+   - Dynamic configuration updates
+   - Configuration subscription for change notification
 
-4. A configuration API that:
-   - Provides CRUD operations for configuration management
-   - Integrates with service discovery for dynamic registration
-   - Supports versioned access to configurations
-   - Includes subscription mechanisms for change notifications
+5. **Configuration Workflow Engine**:
+   - Configuration change lifecycle management
+   - Architectural impact analysis
+   - Review automation and policy checking
+   - Deployment coordination with services
 
-5. A configuration-as-code workflow that:
-   - Treats configuration definitions as source code
-   - Supports review workflows with architectural analysis
-   - Enables testing of configuration changes
-   - Provides a deployment pipeline for configuration updates
+6. **Configuration Version Control**:
+   - Configuration history and tracking
+   - Diff and merge operations
+   - Rollback functionality
+   - Branch management for configuration variants
 
 ## Testing Requirements
+The implementation must include comprehensive pytest tests that validate all aspects of the system:
 
-### Key Functionalities to Verify
-- Service dependency modeling correctly represents complex relationships
-- Schema versioning properly tracks changes and validates compatibility
-- Namespace boundaries effectively control configuration access
-- Configuration API correctly interacts with service discovery
-- Configuration-as-code workflows properly analyze architectural impact
+- **Key Functionalities to Verify**:
+  - Correct resolution of configurations across service dependencies
+  - Accurate detection of schema compatibility issues
+  - Proper enforcement of architectural boundaries
+  - Correct operation of API-based configuration access
+  - Accurate architectural impact analysis of configuration changes
 
-### Critical User Scenarios
-- Architect models a complex distributed system with multiple service dependencies
-- New schema version introduction maintains backward compatibility with existing services
-- Configuration changes respect architectural boundaries and namespace restrictions
-- Services dynamically discover and load their configurations at runtime
-- Configuration changes go through proper review and validation before deployment
+- **Critical User Scenarios**:
+  - Adding a new service to an existing architecture
+  - Evolving a configuration schema with backward compatibility
+  - Refactoring architectural boundaries
+  - Integrating a new service with configuration APIs
+  - Reviewing configuration changes for architectural compliance
 
-### Performance Benchmarks
-- Dependency graph operations maintain performance with growing system complexity
-- Schema validation performance remains consistent across different schema versions
-- Namespace operations scale linearly with the number of configuration items
-- API performance remains consistent under high concurrent access
-- Configuration-as-code operations handle large repositories efficiently
+- **Performance Benchmarks**:
+  - Configuration resolution must complete within 50ms for a service with 20 dependencies
+  - Schema validation must process 10MB of configuration data within 1 second
+  - API endpoints must handle 1000 requests per second
+  - Dependency graph operations must scale to 500+ services
+  - Configuration change analysis must complete within 5 seconds
 
-### Edge Cases and Error Conditions
-- System handles circular dependencies in service configurations
-- Schema incompatibility detection works for subtle breaking changes
-- Namespace boundary violations are properly detected and prevented
-- API gracefully handles service discovery failures
-- Configuration-as-code workflow detects potential architectural issues
+- **Edge Cases and Error Conditions**:
+  - Handling circular dependencies in service relationships
+  - Managing incompatible schema changes
+  - Resolving conflicting configuration values
+  - Recovering from service discovery failures
+  - Handling partial deployments during configuration updates
 
-### Required Test Coverage Metrics
-- Core modeling functions must have 95%+ code coverage
-- Schema compatibility algorithms must have exhaustive test cases
-- Namespace boundary enforcement must have security-focused testing
-- API endpoints must have comprehensive integration tests
-- Configuration-as-code workflows must verify all validation rules
+- **Required Test Coverage Metrics**:
+  - Minimum 90% line coverage for all modules
+  - 100% coverage of configuration resolution logic
+  - All API endpoints must have integration tests
+  - All schema compatibility rules must have test cases
+  - All architectural boundary enforcement logic must be tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Service dependencies are correctly modeled and visualized, allowing architects to understand configuration relationships
-2. Schema versioning enables safe evolution of configurations without breaking dependent services
-3. Architectural boundaries are enforced through the namespace system, preventing unwanted dependencies
-4. Configuration API enables dynamic service configuration with proper discovery integration
-5. Configuration-as-code workflows support rapid, safe evolution with architectural governance
-6. The system allows complex distributed systems to evolve quickly while maintaining integrity
-7. Configuration changes can be tracked, reviewed, and validated against architectural standards
-8. Documentation and visualization tools provide clear insights into system configuration structure
+1. Service dependencies are correctly modeled and configuration inheritance works accurately across the service hierarchy.
+2. Schema versioning correctly tracks changes and verifies backward compatibility.
+3. Architectural boundaries are properly enforced through namespace controls.
+4. API-first configuration management integrates with service discovery.
+5. Configuration-as-code workflows include architectural review automation.
+6. All specified performance benchmarks are met consistently.
 
-To set up your development environment:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+To set up the development environment:
+
+1. Navigate to the project directory
+2. Create a virtual environment using `uv venv`
+3. Activate the environment with `source .venv/bin/activate`
+4. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```
+
+The pytest_results.json file must be submitted as evidence that all tests pass successfully.

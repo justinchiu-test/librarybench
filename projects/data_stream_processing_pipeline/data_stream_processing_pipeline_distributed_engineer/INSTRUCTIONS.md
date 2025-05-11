@@ -1,146 +1,144 @@
-# Globally Distributed Data Processing Framework
+# Globally Distributed Data Stream Processing Framework
 
 ## Overview
-A fault-tolerant, globally distributed data processing framework designed to maintain data consistency across multiple geographic regions while ensuring processing continuity during network partitions. This system provides exactly-once processing guarantees and optimal resource utilization through dynamic workload balancing.
+A resilient and consistent data stream processing framework designed to operate across multiple geographic regions, ensuring high availability and data consistency even during network partitions. The system provides sophisticated state synchronization, exactly-once processing guarantees, and dynamic workload balancing across distributed nodes.
 
 ## Persona Description
 Tomas builds data processing infrastructure that spans multiple data centers to provide global availability and disaster recovery. His primary goal is to ensure data consistency across geographic regions while maintaining processing continuity during network partitions.
 
 ## Key Requirements
+1. **Multi-region state synchronization with conflict resolution**: Implement a state management system that consistently replicates pipeline processing state across geographically distributed data centers, with sophisticated conflict resolution mechanisms when concurrent changes occur. This capability is essential for maintaining a coherent global view of processing state even when regions operate independently during network partitions.
 
-1. **Multi-region state synchronization with conflict resolution**
-   - Robust state synchronization mechanism that maintains consistency across geographically distributed processing nodes
-   - Essential for Tomas to ensure that processing results are consistent regardless of which region handles the data
-   - Must include configurable conflict resolution strategies for handling concurrent modifications
+2. **Exactly-once processing guarantees across distributed nodes**: Develop a transaction coordination framework that ensures every data record is processed exactly once, even in the presence of node failures, network disruptions, or processing retries. This semantic guarantee is critical for applications where duplicate processing could cause financial or data integrity issues.
 
-2. **Exactly-once processing guarantees across distributed nodes**
-   - End-to-end transaction management ensuring that each data element is processed exactly once
-   - Critical for preventing data duplication or loss when processing spans multiple regions
-   - Should include idempotent processing, transaction tracking, and recovery mechanisms
+3. **Pipeline segment migration for dynamic load balancing**: Create mechanisms for seamlessly relocating processing pipeline segments between nodes or regions without data loss or processing disruption. This dynamic rebalancing capability allows the system to adapt to changing workloads, hardware failures, or planned maintenance without affecting overall throughput.
 
-3. **Pipeline segment migration for dynamic load balancing**
-   - Automated workload management that can relocate processing segments between regions
-   - Necessary for optimizing resource utilization and responding to regional capacity changes
-   - Must include state transfer, coordination mechanisms, and seamless cutover capabilities
+4. **Backpressure propagation across network boundaries**: Implement a distributed backpressure system that can throttle data producers when any processing region becomes overloaded, with appropriate propagation of pressure signals across network boundaries. This end-to-end flow control prevents system instability during load spikes and ensures graceful degradation rather than catastrophic failure.
 
-4. **Backpressure propagation across network boundaries**
-   - Cross-region flow control system that maintains processing stability under variable loads
-   - Vital for preventing resource exhaustion and cascading failures in connected processing regions
-   - Should include configurable backpressure strategies and cross-region signaling protocols
-
-5. **Regional processing isolation with global aggregation**
-   - Architecture that allows regions to process independently while maintaining global consistency
-   - Crucial for maintaining availability during partial network outages or region failures
-   - Must include eventual consistency guarantees and catch-up mechanisms for recovering regions
+5. **Regional processing isolation with global aggregation**: Design a hybrid processing model that allows regions to process data independently when needed (improving latency and resilience), while still supporting global aggregation and correlation for complete results. This approach balances the needs for local responsiveness with globally consistent views of processed data.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Must support simulation of various network partition scenarios
+  - Needs deterministic testing of concurrent operations and conflict resolution
+  - Requires reproducible chaos engineering experiments
+  - Must support verification of exactly-once processing guarantees
+  - Needs comprehensive metrics collection for performance validation
 
-### Testability Requirements
-- Comprehensive distributed systems testing framework
-- Network partition simulation capabilities
-- Multi-region deployment testing infrastructure
-- Conflict generation and resolution verification
-- Long-running chaos testing for resilience verification
+- **Performance Expectations**:
+  - Recovery time of less than 30 seconds after region failure
+  - Cross-region state synchronization latency under 1 second
+  - Support for at least 5 concurrent geographic regions
+  - Throughput degradation of no more than 20% during network partitions
+  - State migration time proportional to state size with minimal processing disruption
 
-### Performance Expectations
-- Recovery time objective (RTO) under 5 minutes for regional failures
-- Consistency convergence within 30 seconds following network restoration
-- Support for 10+ geographic regions with independent processing capability
-- Linear throughput scaling with added regions for partitionable workloads
-- Minimal latency overhead for cross-region coordination (under 50ms)
+- **Integration Points**:
+  - Distributed consensus systems (e.g., etcd-compatible APIs)
+  - Reliable messaging systems for cross-region communication
+  - Monitoring and alerting infrastructure
+  - Cloud provider region-specific services
+  - Distributed tracing systems for cross-region request tracking
 
-### Integration Points
-- Regional network infrastructure and inter-region connectivity
-- Distributed database and storage systems
-- Global service discovery and coordination services
-- Cross-region monitoring and alerting systems
-- Disaster recovery and business continuity systems
+- **Key Constraints**:
+  - System must continue operating during multi-region network partitions
+  - Implementation must provide exactly-once processing guarantees
+  - Solution must be cloud-provider agnostic
+  - Design must minimize cross-region data transfer for cost efficiency
+  - All operations must be observable and debuggable across regions
 
-### Key Constraints
-- Must maintain correctness during arbitrary network partitions
-- Processing must continue in isolated regions with reconciliation upon reconnection
-- Resource utilization must be proportional to processing load
-- Must support heterogeneous infrastructure across regions
-- Must comply with regional data sovereignty requirements
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The system must provide a framework for distributed stream processing that:
 
-The framework must provide:
+1. Manages consistent state replication across geographically distributed nodes
+2. Implements coordination protocols for exactly-once processing semantics
+3. Provides dynamic workload distribution with automatic rebalancing
+4. Handles network partitions gracefully with continued operation
+5. Implements cross-region backpressure propagation mechanisms
+6. Supports both regional processing isolation and global aggregation
+7. Allows runtime migration of processing components without data loss
+8. Maintains comprehensive monitoring and failure detection
+9. Provides conflict detection and resolution for concurrent state changes
+10. Ensures transparent recovery from regional outages
 
-1. **State Synchronization System**
-   - Distributed state replication across regions
-   - Conflict detection and resolution mechanisms
-   - Causal consistency enforcement
-   - Reconciliation protocols for partition recovery
-
-2. **Transaction Management Framework**
-   - Globally unique transaction identification
-   - Distributed transaction tracking and verification
-   - Recovery mechanisms for incomplete transactions
-   - Exactly-once delivery guarantees
-
-3. **Workload Management System**
-   - Load monitoring across regions
-   - Dynamic pipeline segment allocation
-   - State migration protocols
-   - Seamless processing handoff between regions
-
-4. **Flow Control Architecture**
-   - Cross-region backpressure signaling
-   - Adaptive rate limiting
-   - Resource protection during overload conditions
-   - Fair resource allocation across processing streams
-
-5. **Regional Isolation Framework**
-   - Independent regional processing capabilities
-   - Global state aggregation mechanisms
-   - Partial failure handling strategies
-   - Catch-up procedures for rejoining regions
+The implementation should emphasize consistency, resilience, observability, and seamless operation across distributed environments while maintaining processing guarantees.
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct state synchronization across regions
+  - Exactly-once processing guarantees during various failure scenarios
+  - Proper pipeline segment migration and rebalancing
+  - Effective backpressure propagation across network boundaries
+  - Appropriate regional isolation with global aggregation
 
-### Key Functionalities to Verify
-- Multi-region state consistency under normal operations
-- Exactly-once processing guarantees across failure scenarios
-- Workload balancing effectiveness and migration stability
-- Backpressure effectiveness during load spikes
-- System behavior during region isolation and recovery
+- **Critical User Scenarios**:
+  - System behavior during complete region failure and recovery
+  - Performance during temporary network partition between regions
+  - Processing continuity during planned maintenance and migrations
+  - Data consistency during concurrent operations across regions
+  - Backpressure handling during partial system overload
 
-### Critical User Scenarios
-- Normal multi-region processing with full connectivity
-- Partial network partition isolating subset of regions
-- Complete region failure with subsequent recovery
-- Gradual degradation of inter-region connectivity
-- Data sovereignty requirements necessitating regional processing
+- **Performance Benchmarks**:
+  - State synchronization latency under 1 second between regions
+  - Recovery time under 30 seconds for region failure scenarios
+  - Throughput maintenance within 20% during degraded conditions
+  - Pipeline segment migration time proportional to state size
+  - Global aggregation results available within 5 seconds of local processing
 
-### Performance Benchmarks
-- Throughput within 10% of single-region processing for partitionable workloads
-- Recovery time under 5 minutes following region failure
-- State synchronization within 30 seconds of connectivity restoration
-- Processing latency overhead under 50ms for cross-region coordination
-- Resource utilization proportional to processing load in each region
+- **Edge Cases and Error Conditions**:
+  - Prolonged network partition scenarios with concurrent state changes
+  - Partial region failures affecting only some processing components
+  - "Split-brain" scenarios where regions temporarily operate independently
+  - Cascading failure scenarios with multiple component outages
+  - Recovery from corrupted or inconsistent state situations
 
-### Edge Cases and Error Conditions
-- Simultaneous multi-region failures
-- "Split-brain" scenarios during network partitions
-- Asymmetric network degradation between regions
-- Clock synchronization issues across regions
-- Data corruption during state transfer
+- **Required Test Coverage Metrics**:
+  - 100% coverage of synchronization and coordination mechanisms
+  - >90% line coverage for all production code
+  - 100% coverage of failure recovery paths
+  - Comprehensive tests for all distributed processing guarantees
+  - Simulation testing for all identified network partition scenarios
 
-### Test Coverage Metrics
-- 100% test coverage for coordination protocols
-- Comprehensive testing of all identified failure modes
-- Performance testing across projected regional configurations
-- Security testing for cross-region communications
-- Extended chaos testing (24+ hours) for stability verification
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. The system successfully maintains state consistency across multiple geographic regions with automatic conflict resolution
-2. Each data element is processed exactly once regardless of network conditions or region failures
-3. Processing segments dynamically migrate between regions to optimize resource utilization
-4. Backpressure properly propagates across regions to maintain system stability under variable loads
-5. Regions continue processing independently during network partitions while maintaining eventual global consistency
-6. The system recovers from region failures within the specified RTO
-7. Performance overhead for distributed operation remains within acceptable limits compared to single-region processing
+A successful implementation will demonstrate:
 
-_Note: To set up the development environment, use `uv venv` to create a virtual environment within the project directory. Activate it using `source .venv/bin/activate`._
+1. Consistent state synchronization across multiple regions
+2. Exactly-once processing guarantees even during failure scenarios
+3. Dynamic load balancing through pipeline segment migration
+4. Effective backpressure propagation across distributed components
+5. Appropriate regional isolation with accurate global aggregation
+6. Resilience to network partitions and region failures
+7. Comprehensive test coverage with all tests passing
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+To setup the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

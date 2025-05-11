@@ -1,130 +1,181 @@
-# Secure Code Analysis Editor Library
+# Security Research Text Editor
+
+A specialized text editor library designed for security researchers analyzing code and malware samples with advanced safety features.
 
 ## Overview
-A specialized text editor library designed for security researchers, focusing on safe handling of malicious code, binary visualization, pattern matching, isolated execution, and obfuscation analysis. This implementation prioritizes security while providing powerful tools for analyzing suspicious code and malware samples.
+
+This project implements a text editor library specifically designed for security researchers who analyze suspicious code and malware samples. It provides sandbox mode, binary visualization tools, pattern matching capabilities, safe execution environment, and obfuscation analysis tools.
 
 ## Persona Description
+
 Priya analyzes suspicious code and malware samples as part of security investigations. She needs specialized editor features for safely handling potentially malicious files while performing deep analysis.
 
 ## Key Requirements
-1. **Execution Sandbox Environment**: Implement a secure containment system that prevents executed or evaluated code from accessing system resources while still allowing analysis of runtime behavior. This is critical for Priya to observe how suspicious code behaves without risking compromise of her analysis environment or connected systems.
 
-2. **Multi-representation Binary Visualization**: Create a sophisticated visualization system showing file content simultaneously in multiple representations (hexadecimal, ASCII, various encodings, disassembly). This helps Priya identify patterns, hidden data, and obfuscated code that might not be apparent in a single representation.
+1. **Sandbox Mode**: Implement a protective environment that prevents executed or evaluated code from accessing system resources. This is critical for Priya to safely analyze potentially malicious code without risking compromise of her system, allowing secure inspection of suspicious samples.
 
-3. **Advanced Pattern Detection Engine**: Develop a powerful pattern matching system that can identify potential malware signatures, known exploit techniques, and suspicious coding patterns across large codebases. This enables Priya to quickly pinpoint areas of concern in large files or across multiple files during security investigations.
+2. **Binary Visualization Tools**: Develop capabilities to display hexadecimal and various encodings side-by-side. This allows Priya to identify patterns in binary data, spot encoded payloads, and understand how binary content is structured, making it easier to recognize malicious binary components.
 
-4. **Isolated Execution Framework**: Build a secure execution environment capable of running selected code segments in instrumented, isolated containers with monitoring and resource limitations. This allows Priya to safely observe actual code behavior with controlled inputs while capturing detailed execution metrics without risk to host systems.
+3. **Pattern Matching**: Create advanced search functionality that can highlight potential signature patterns across large codebases. This helps Priya identify known malicious patterns or suspicious code structures across many files, accelerating the process of finding security-relevant code in large projects.
 
-5. **Obfuscation Analysis Toolkit**: Implement specialized tools for detecting and unwrapping common code hiding techniques including encoding, encryption, packing, and polymorphism. This addresses Priya's need to reveal the true functionality of deliberately obscured malicious code that uses obfuscation to evade detection.
+4. **Safe Execution Environment**: Implement a system for running selected code in isolated containers. This enables Priya to observe the behavior of suspicious code in a controlled environment, capturing its actions, network attempts, and file operations without endangering the actual system.
+
+5. **Obfuscation Analysis Tools**: Develop specialized tools for detecting and unwrapping common code hiding techniques. This helps Priya analyze heavily obfuscated malicious code by automatically identifying and reversing obfuscation methods like string encoding, control flow flattening, and dead code insertion.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - Sandbox isolation must be verifiable with escape attempt tests
-  - Binary visualization must be testable for accuracy across file types
-  - Pattern detection must be benchmarkable against known malware databases
-  - Execution environment must demonstrate complete isolation from host
-  - Obfuscation unwrapping must be testable with known techniques
 
-- **Performance Expectations**:
-  - Binary visualization should render changes in real-time for files up to 10MB
-  - Pattern matching should process at least 1MB per second
-  - Isolated execution should add minimal overhead to normal execution time
-  - The system should efficiently handle large suspicious files (100MB+)
-  - Obfuscation analysis should process common techniques in under 30 seconds
+### Testability Requirements
+- Sandbox isolation must be verifiable through attempted resource access
+- Binary visualization must be testable with known binary patterns
+- Pattern matching must be demonstrable with signature test cases
+- Execution environment must prove isolation with resource access attempts
+- Obfuscation analysis must be testable with known obfuscation techniques
 
-- **Integration Points**:
-  - Integration with malware signature databases
-  - Support for common disassembly and binary analysis tools
-  - Compatibility with containerization technologies for isolation
-  - Integration with dynamic analysis frameworks
-  - Support for exporting findings to standard security report formats
+### Performance Expectations
+- Sandbox initialization should complete in under 2 seconds
+- Binary visualization should handle files up to 100MB with responsive performance
+- Pattern matching should scan at least 10MB of code per second
+- Safe execution environment should launch within 3 seconds
+- Obfuscation analysis should process at least 5,000 lines of code per minute
 
-- **Key Constraints**:
-  - Must prevent any unauthorized system access from analyzed code
-  - Must maintain analysis integrity when dealing with anti-analysis techniques
-  - Must never automatically execute suspicious code without explicit permission
-  - Must preserve chain of custody for forensic investigations
-  - Must operate effectively without internet access (air-gapped environments)
+### Integration Points
+- Container and virtualization technologies
+- Binary analysis frameworks
+- Signature and pattern databases
+- Dynamic analysis tools
+- Code transformation and deobfuscation libraries
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- Must maintain secure isolation between analyzed code and the host system
+- Must handle potentially malformed or intentionally malicious files
+- Analysis must not alter original samples without explicit action
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Secure Content Handling**: Components for safely storing, displaying, and manipulating potentially malicious content.
+The library should implement a text editor core with the following functionality:
 
-2. **Multi-format Binary Viewer**: A system for visualizing file contents in multiple representations simultaneously.
+1. A sandbox system that:
+   - Creates isolated environments for code inspection
+   - Prevents access to system resources and network
+   - Monitors attempted access to protected resources
+   - Provides detailed logs of code behavior
 
-3. **Pattern Matching Engine**: Tools for identifying suspicious patterns, signatures, and code constructs.
+2. A binary visualization system that:
+   - Displays data in multiple formats simultaneously (hex, ASCII, etc.)
+   - Highlights patterns and structures in binary data
+   - Identifies encoded content and potential payloads
+   - Supports navigation through binary structures
 
-4. **Execution Containment**: A secure framework for running code in isolated environments with monitoring.
+3. A pattern matching system that:
+   - Searches for known malicious signatures
+   - Identifies suspicious code patterns
+   - Performs fuzzy matching for variant detection
+   - Correlates findings across multiple files
 
-5. **Obfuscation Detection**: Algorithms for identifying and unwrapping obfuscated code.
+4. A safe execution system that:
+   - Runs selected code in isolated containers
+   - Captures execution behavior and output
+   - Monitors resource access attempts
+   - Provides detailed execution tracing
 
-6. **Analysis Reporting**: Mechanisms for documenting findings and generating security reports.
-
-7. **File Forensics**: Utilities for extracting metadata and hidden information from files.
-
-The library should use advanced security practices throughout its implementation. It should provide programmatic interfaces for all functions without requiring a graphical interface, allowing it to be integrated with various security workflows and analysis pipelines.
+5. An obfuscation analysis system that:
+   - Detects common obfuscation techniques
+   - Unravels string encoding and encryption
+   - Simplifies obfuscated control flow
+   - Reconstructs original code functionality
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Effectiveness of sandbox isolation against various escape attempts
-  - Accuracy of binary visualization across different file types and encodings
-  - Precision of pattern matching against known malicious signatures
-  - Security of isolated execution environment under various attack vectors
-  - Success rate of obfuscation analysis against common hiding techniques
 
-- **Critical User Scenarios**:
-  - Analyzing suspicious email attachments for malicious code
-  - Investigating potential zero-day exploits in compiled binaries
-  - Detecting hidden payloads in seemingly innocent files
-  - Safely observing the behavior of ransomware or other malware
-  - Unwrapping multiple layers of obfuscation to reveal core functionality
+### Key Functionalities to Verify
+- Sandbox mode successfully prevents access to protected system resources
+- Binary visualization correctly displays data in multiple formats
+- Pattern matching accurately identifies known malicious signatures
+- Safe execution environment properly isolates and monitors code execution
+- Obfuscation analysis successfully detects and unwraps common hiding techniques
 
-- **Performance Benchmarks**:
-  - Sandbox initialization should complete within 5 seconds
-  - Binary visualization should render at least 20 views per second during scrolling
-  - Pattern matching should support at least 10,000 signatures with minimal performance impact
-  - Isolated execution should add no more than 20% overhead to normal execution time
-  - Obfuscation analysis should process at least 1MB of obfuscated code per minute
+### Critical User Scenarios
+- Analyzing a suspicious JavaScript file with potential system access
+- Examining a binary file with embedded encoded payloads
+- Scanning a large codebase for potential security vulnerabilities
+- Executing a suspicious script to observe its behavior
+- Analyzing heavily obfuscated code to determine its true functionality
 
-- **Edge Cases and Error Conditions**:
-  - Handling files specifically designed to crash analysis tools
-  - Managing extremely large malware samples or binary files
-  - Dealing with sophisticated anti-analysis techniques
-  - Recovering from containment failures safely
-  - Processing files with deliberately corrupted structures
+### Performance Benchmarks
+- Sandbox initialization should be ready in under 2 seconds
+- Binary visualization should handle at least 50MB files with responsive scrolling
+- Pattern matching should scan at least 100,000 lines of code in under 30 seconds
+- Safe execution environment should support scripts running for up to 5 minutes
+- Obfuscation analysis should handle files with up to 10 layers of obfuscation
 
-- **Required Test Coverage**:
-  - 100% line coverage for sandbox isolation mechanisms
-  - 95% coverage for binary visualization engines
-  - 90% coverage for pattern matching algorithms
-  - 100% coverage for execution containment security barriers
-  - 90% coverage for obfuscation analysis tools
+### Edge Cases and Error Conditions
+- Handling intentionally malformed files designed to crash analysis tools
+- Managing extremely large binary files (1GB+)
+- Dealing with sophisticated evasion techniques in malicious code
+- Recovering from crashes during safe execution
+- Handling custom or previously unseen obfuscation methods
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 95% code coverage across all security-critical modules
+- 100% coverage of sandbox implementation
+- Complete coverage of all public API methods
+- All supported file formats must have binary visualization tests
+- All known obfuscation techniques must have detection tests
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. It provides a secure environment for analyzing malicious code without risk to host systems.
+1. Sandbox mode effectively prevents potentially malicious code from accessing system resources
+2. Binary visualization tools clearly represent binary data in multiple useful formats
+3. Pattern matching successfully identifies known malicious signatures across large codebases
+4. Safe execution environment properly isolates and monitors code behavior
+5. Obfuscation analysis tools successfully detect and unwrap common code hiding techniques
 
-2. Binary visualization effectively reveals patterns and anomalies in suspicious files.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Pattern matching accurately identifies known malicious signatures and suspicious code constructs.
+## Environment Setup
 
-4. Isolated execution safely allows observation of runtime behavior with detailed monitoring.
+To set up the development environment:
 
-5. Obfuscation analysis successfully reveals hidden functionality in deliberately obscured code.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. Security researchers can perform comprehensive analysis without requiring additional specialized tools.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the security, reliability, and effectiveness of the implementation for malware analysis.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

@@ -1,122 +1,171 @@
 # Security Testing Automation Framework
 
 ## Overview
-A specialized test automation framework designed for security engineers who need to validate application security controls, identify vulnerabilities, and verify compliance with security best practices. This framework focuses on automated security testing throughout the development lifecycle, providing specialized assertions and analysis for common security concerns.
+A specialized test automation framework designed for security engineers who test applications for security vulnerabilities and compliance with security best practices. This framework provides security-focused testing capabilities for identifying potential security issues during the development process.
 
 ## Persona Description
 Sophia tests applications for security vulnerabilities and compliance with security best practices. She needs testing tools that can identify potential security issues during the development process.
 
 ## Key Requirements
-1. **Security assertion library with specialized checks for common vulnerability patterns** - Essential for Sophia to efficiently test for known security weaknesses using predefined assertions that encapsulate security expertise, allowing automated verification of protection against issues like injection attacks, XSS vulnerabilities, and insecure configurations.
+1. **Security assertion library with specialized checks for common vulnerability patterns**
+   - Critical for systematically testing for known security weaknesses (OWASP Top 10, CWE, etc.)
+   - Provides consistent verification of security controls and mitigations
+   - Enables security testing without extensive security expertise for each test case
 
-2. **API abuse testing automatically probing endpoints for security weaknesses** - Critical for systematically testing API endpoints by automatically generating malicious inputs, invalid parameters, and unauthorized requests, identifying vulnerabilities like parameter tampering, broken access controls, and improper error handling.
+2. **API abuse testing automatically probing endpoints for security weaknesses**
+   - Identifies vulnerabilities by simulating malicious API interactions
+   - Tests boundary conditions and unexpected inputs that might expose security flaws
+   - Verifies proper validation, authorization, and error handling under attack conditions
 
-3. **Sensitive data leakage detection identifying exposed credentials or personal information** - Necessary to prevent accidental exposure of sensitive information by scanning application outputs, logs, and responses for patterns that match credentials, personal identifiers, or other protected data types that should never be revealed.
+3. **Sensitive data leakage detection identifying exposed credentials or personal information**
+   - Prevents accidental exposure of secrets, credentials, PII, and other sensitive data
+   - Ensures that sensitive information isn't logged, cached, or transmitted insecurely
+   - Validates data masking and protection mechanisms throughout the application
 
-4. **Authentication flow validation ensuring proper implementation of security controls** - Helps verify correct implementation of authentication mechanisms by systematically testing login flows, session management, password policies, multi-factor authentication, and account recovery processes for security weaknesses.
+4. **Authentication flow validation ensuring proper implementation of security controls**
+   - Verifies that authentication mechanisms follow security best practices
+   - Tests for common authentication vulnerabilities (credential stuffing, brute force)
+   - Ensures proper session management and access control after authentication
 
-5. **Compliance validation checking alignment with security standards (OWASP, NIST, etc.)** - Enables automated verification of adherence to security standards and best practices, mapping test results to specific requirements from frameworks like OWASP Top 10, NIST 800-53, or industry-specific regulations.
+5. **Compliance validation checking alignment with security standards (OWASP, NIST, etc.)**
+   - Measures adherence to industry-standard security frameworks and guidelines
+   - Generates evidence of security control implementation for compliance reviews
+   - Provides structured reporting mapped to specific security requirements
 
 ## Technical Requirements
-- **Testability requirements**
-  - Tests must validate security properties without triggering false alarms
-  - Framework must support both positive security testing (verifying controls work) and negative testing (attempting to bypass controls)
-  - Components must be testable in isolation from production systems
-  - Test fixtures must support simulation of common attack vectors
-  - Framework must detect subtle security issues that wouldn't be caught by functional tests
+- **Testability Requirements**:
+  - Framework must support injection of malicious test payloads safely
+  - Tests must verify proper implementation of security controls without triggering false positives
+  - Framework must simulate sophisticated attack patterns
+  - Tests must be executable in isolation to prevent security test side effects
 
-- **Performance expectations**
-  - Security scanning should complete within reasonable timeframes for CI/CD integration
-  - API abuse testing should generate and execute at least 100 test cases per endpoint
-  - Data leakage scanning should process responses at application speed with minimal overhead
-  - Authentication flow validation should execute complete scenarios in under 5 minutes
-  - Compliance validation should map results to standards in real-time during test execution
+- **Performance Expectations**:
+  - Security assertion checks must complete within 10ms per assertion
+  - API abuse testing should test 100+ attack vectors per endpoint in < 5 minutes
+  - Data leakage detection must scan 1GB of data in < 2 minutes
+  - Authentication flow validation must complete all scenarios in < 1 minute
 
-- **Integration points**
-  - Security scanning tools and vulnerability databases
-  - Authentication systems and identity providers
-  - Encryption and key management systems
-  - Compliance frameworks and security standards
-  - Security monitoring and incident response systems
+- **Integration Points**:
+  - Must integrate with common security testing tools (OWASP ZAP, Burp Suite)
+  - Should work with standard vulnerability databases (CVE, CWE)
+  - Must support export to security compliance reporting formats
+  - Should integrate with security information and event management (SIEM) systems
 
-- **Key constraints**
-  - No UI components; all functionality exposed through APIs
-  - Must not introduce security risks during testing process
-  - Should avoid false positives that could cause alert fatigue
-  - Must operate within controlled test environments safely
-  - Should protect sensitive test data and credentials
+- **Key Constraints**:
+  - Security tests must never create actual security incidents or data breaches
+  - Implementation must not store sensitive test data in logs or reports
+  - Framework must never deploy exploits that could damage production systems
+  - Solution should minimize false positives while maintaining high detection rates
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The framework needs to implement:
+The core functionality of this test automation framework includes:
 
-1. **Security Assertion Library**: A comprehensive collection of test assertions specifically designed to verify security properties, covering injection protection, authentication controls, authorization rules, data protection, and other security mechanisms.
+1. **Security Assertion System**
+   - Vulnerability pattern detection and verification
+   - Security control implementation testing
+   - Secure coding practice validation
+   - Defense-in-depth verification
 
-2. **API Security Test Generator**: Logic to automatically create and execute security-focused test cases for API endpoints, including authentication bypass attempts, privilege escalation tests, input validation checks, and denial of service resistance.
+2. **API Security Testing Engine**
+   - Automated attack vector generation and execution
+   - Input validation and sanitization testing
+   - Error handling and information disclosure analysis
+   - Access control boundary testing
 
-3. **Sensitive Data Scanner**: Components to identify potential data leakage by analyzing application outputs for patterns matching credentials, personal information, internal system details, and other sensitive data that should be protected.
+3. **Sensitive Data Scanner**
+   - Pattern-based sensitive data detection
+   - Data flow analysis for information leakage
+   - Encryption and masking verification
+   - Secret and credential exposure testing
 
-4. **Authentication Flow Validator**: Test scenarios to verify the security of authentication processes, including credential validation, session management, account lockout protection, multi-factor authentication, and account recovery flows.
+4. **Authentication Security Validator**
+   - Authentication mechanism security analysis
+   - Multi-factor authentication verification
+   - Session management security testing
+   - Credential handling and storage validation
 
-5. **Security Compliance Mapper**: Systems to associate test results with specific requirements from security standards and regulations, providing traceability between test coverage and compliance obligations.
-
-6. **Security Test Report Generator**: Logic to produce detailed security testing reports with vulnerability categorization, risk assessment, and remediation guidance.
-
-7. **Safe Exploitation Framework**: Infrastructure to safely simulate attack scenarios without damaging test systems or exposing sensitive information.
+5. **Security Compliance Framework**
+   - Security standard mapping and verification
+   - Control implementation evidence collection
+   - Gap analysis against security requirements
+   - Compliance reporting and documentation
 
 ## Testing Requirements
-- **Key functionalities that must be verified**
-  - Accurate detection of common security vulnerabilities
-  - Proper simulation of attack scenarios without causing harm
-  - Correct identification of sensitive data exposure
-  - Reliable validation of authentication security controls
-  - Appropriate mapping of test results to compliance requirements
+- **Key Functionalities That Must Be Verified**:
+  - Accuracy of security assertion library for detecting vulnerabilities
+  - Effectiveness of API abuse testing in identifying security weaknesses
+  - Precision of sensitive data leakage detection
+  - Thoroughness of authentication flow validation
+  - Completeness of compliance validation against security standards
 
-- **Critical user scenarios that should be tested**
-  - Testing an application for injection vulnerabilities (SQL, command, etc.)
-  - Verifying proper implementation of authentication mechanisms
-  - Checking for improper exposure of sensitive information
-  - Testing API endpoints for security weaknesses
-  - Validating compliance with security standards and best practices
+- **Critical User Scenarios**:
+  - Security engineer testing an application for OWASP Top 10 vulnerabilities
+  - Probing API endpoints for security weaknesses and improper validation
+  - Scanning application data flows for sensitive information leakage
+  - Validating authentication, session management, and access control
+  - Generating compliance reports for security standards and frameworks
 
-- **Performance benchmarks that must be met**
-  - Security assertions should execute with less than 50ms overhead per test
-  - API abuse testing should generate and execute at least 50 test cases per second
-  - Data leakage scanning should process at least 10MB of response data per second
-  - Authentication flow validation should test at least 20 different authentication scenarios
-  - Compliance validation should map to at least 3 different security standards
+- **Performance Benchmarks**:
+  - Security assertions must achieve 95%+ detection rate for known vulnerabilities
+  - API abuse testing must execute 1000+ attack vectors in < 10 minutes
+  - Data leakage detection must achieve 99%+ accuracy for known sensitive data patterns
+  - Compliance validation must verify 100+ security controls in < 5 minutes
 
-- **Edge cases and error conditions that must be handled properly**
-  - Applications with custom security controls or non-standard patterns
-  - Systems with multiple authentication mechanisms or complex flows
-  - Deeply nested structures that might conceal sensitive information
-  - Security mechanisms that change behavior after repeated testing
-  - Applications that implement custom encryption or obfuscation
+- **Edge Cases and Error Conditions**:
+  - Handling deliberately obfuscated or encoded security vulnerabilities
+  - Testing applications with custom or non-standard security mechanisms
+  - Appropriate behavior when encountering novel attack vectors
+  - Correct operation with encrypted or protected communications
+  - Avoiding false positives in highly dynamic application environments
 
-- **Required test coverage metrics**
-  - Vulnerability coverage: Tests must verify protection against all OWASP Top 10 categories
-  - Authentication coverage: Tests must verify all aspects of the authentication lifecycle
-  - API coverage: Tests must verify security of all exposed endpoints and methods
-  - Data protection coverage: Tests must verify handling of all sensitive data types
-  - Compliance coverage: Tests must verify all applicable security standard requirements
+- **Required Test Coverage Metrics**:
+  - Security assertion library: 100% coverage
+  - API abuse testing engine: 95% coverage
+  - Sensitive data detection: 100% coverage
+  - Authentication validation: 100% coverage
+  - Compliance framework: 95% coverage
+  - Overall framework code coverage minimum: 95%
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 The implementation will be considered successful when:
 
-1. The framework correctly identifies at least 90% of common security vulnerabilities in test applications
-2. API abuse testing identifies authorization and input validation weaknesses with minimal false positives
-3. Data leakage detection correctly identifies exposed sensitive information patterns
-4. Authentication flow validation verifies all critical aspects of secure authentication implementation
-5. Compliance validation correctly maps test results to specific security standard requirements
-6. Test execution completes within timeframes suitable for integration into CI/CD pipelines
-7. All functionality is accessible through well-defined APIs without requiring UI components
+1. The security assertion library can detect common vulnerability patterns with high accuracy
+2. API abuse testing effectively identifies security weaknesses in application endpoints
+3. Sensitive data leakage is reliably detected throughout the application
+4. Authentication flows are thoroughly validated for security best practices
+5. Compliance with security standards can be verified and documented
 
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+To set up your development environment:
+
+1. Use `uv venv` to create a virtual environment within the project directory
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file MUST be generated and included as it is a critical requirement for project completion and verification.

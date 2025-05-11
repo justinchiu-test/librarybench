@@ -1,172 +1,162 @@
-# Financial Independence and Early Retirement System
+# Financial Independence and Early Retirement Planning System
 
 ## Overview
-A comprehensive financial management system designed for individuals pursuing financial independence and early retirement (FIRE). This solution provides sophisticated tools for tracking savings rates, modeling safe withdrawal strategies, comparing geographic arbitrage opportunities, optimizing tax-efficient withdrawals, and calculating Coast FIRE metrics to facilitate a well-planned transition from working life to financial independence.
+A sophisticated financial planning system designed specifically for individuals pursuing financial independence and early retirement (FIRE). The system provides advanced tools for savings rate analysis, withdrawal strategy modeling, geographic arbitrage evaluation, tax-optimized withdrawal planning, and milestone tracking for achieving financial freedom.
 
 ## Persona Description
 Dr. Chen is pursuing financial independence and early retirement (FIRE) through aggressive saving and investing. He needs detailed projections of passive income, withdrawal strategies, and portfolio longevity to plan his transition from working life.
 
 ## Key Requirements
-1. **Savings rate analysis showing percentage of income preserved and path to independence**
-   - Calculation of savings rate as percentage of net and gross income
-   - Projection of time to financial independence based on savings rate and returns
-   - Historical tracking of savings rate fluctuations
-   - Visualization of savings rate impact on FIRE timeline
-   - Critical for tracking the primary metric that determines time to financial independence and maintaining motivation by showing progress
+1. **Savings rate analysis showing percentage of income preserved and path to independence**  
+   Dr. Chen needs to track and optimize his savings rate as the primary driver of his path to financial independence. The system must calculate his true savings rate (accounting for pre-tax and post-tax contributions), project the timeline to financial independence based on current and target savings rates, and provide detailed analysis of how spending changes directly impact his FIRE date.
 
-2. **Safe withdrawal rate simulations based on different market performance scenarios**
-   - Implementation of standard withdrawal methodologies (4% rule, variable percentage, etc.)
-   - Monte Carlo simulations of portfolio longevity under different market conditions
-   - Historical sequence of returns analysis using real market data
-   - Customizable withdrawal strategies based on personal risk tolerance
-   - Essential for determining sustainable withdrawal rates and evaluating the longevity of accumulated assets in retirement
+2. **Safe withdrawal rate simulations based on different market performance scenarios**  
+   To ensure portfolio longevity through retirement, Dr. Chen needs robust withdrawal modeling. The system must simulate various withdrawal strategies (fixed percentage, variable percentage, floor-and-ceiling, etc.) against different market performance scenarios (historical sequences, Monte Carlo simulations, etc.) to determine safe withdrawal rates that minimize the risk of portfolio depletion over a 40+ year retirement horizon.
 
-3. **Geographic arbitrage comparisons of living costs in different retirement locations**
-   - Cost of living calculator for different geographic locations
-   - Purchasing power analysis for portfolio in various regions
-   - Tax implication modeling for different domiciles
-   - Comparison of healthcare costs and quality metrics by location
-   - Necessary for optimizing retirement funds by potentially relocating to areas with lower costs but high quality of life
+3. **Geographic arbitrage comparisons of living costs in different retirement locations**  
+   Dr. Chen is considering relocating after achieving financial independence to areas with lower costs of living. The system needs to compare financial requirements across different potential retirement locations, adjusting for regional cost-of-living differences, tax implications, healthcare costs, and currency exchange considerations to determine how location choices affect his required portfolio size.
 
-4. **Tax-optimized withdrawal sequencing across different account types (401k, IRA, taxable)**
-   - Tax-efficient withdrawal strategy development across account types
-   - Roth conversion ladder planning and implementation
-   - Required Minimum Distribution (RMD) projections and management
-   - Tax bracket management for retirement income
-   - Vital for minimizing tax burden during the withdrawal phase, extending portfolio longevity
+4. **Tax-optimized withdrawal sequencing across different account types (401k, IRA, taxable)**  
+   To maximize tax efficiency in retirement, Dr. Chen needs optimization of withdrawal sequencing. The system must model optimal withdrawal strategies across various account types (taxable, tax-deferred, tax-free) based on applicable tax laws, required minimum distributions, and long-term tax minimization goals to extend portfolio longevity through tax efficiency.
 
-5. **Coast FIRE calculator showing when investments could grow to support retirement without additional contributions**
-   - Calculation of Coast FIRE number and date based on current portfolio
-   - Projection of portfolio growth during "coasting" phase
-   - Partial contribution modeling for semi-retirement scenarios
-   - Visualization of different Coast FIRE paths and timelines
-   - Important for providing flexibility in retirement planning and allowing for a staged approach to reducing work
+5. **Coast FIRE calculator showing when investments could grow to support retirement without additional contributions**  
+   Dr. Chen wants to understand when he might reach "Coast FIRE" - the point at which his existing investments, without additional contributions, would grow to support full retirement by traditional age. The system needs to calculate this milestone, showing how different partial retirement approaches (reduced work hours, lower-paying but more fulfilling work) could be financially viable once this point is reached.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Financial projections must be deterministic and unit-testable
-  - Simulation engines must support seeded randomization for testing
-  - Tax calculations must be verifiable against known tax scenarios
-  - Geographic data comparisons must be testable with mocked data sets
-  - Time-based projections must support accelerated time scales for testing
+- **Testability Requirements:**
+  - Savings rate calculations must be verified against established financial formulas
+  - Withdrawal simulations must be benchmarked against historical market data
+  - Tax calculations must be validated against current tax code specifications
+  - Projection models must be tested with varied economic scenarios
 
-- **Performance Expectations**
-  - Support for at least 10,000 Monte Carlo simulation runs in reasonable time
-  - Fast calculation of complex tax optimization strategies
-  - Efficient handling of multi-decade financial projections
-  - Quick comparison of numerous geographic locations
-  - Responsive recalculation when parameters change
+- **Performance Expectations:**
+  - Monte Carlo simulations must complete 10,000+ scenarios in under 30 seconds
+  - Savings rate projections must recalculate instantly when parameters change
+  - Geographic comparisons must handle data for 50+ locations simultaneously
+  - Tax optimization must evaluate multiple withdrawal strategies within 5 seconds
 
-- **Integration Points**
-  - Import capabilities for financial account data and balances
-  - Access to historical market performance data
-  - Integration with cost-of-living databases
-  - Tax rate and rule data sources
-  - Export functionality for retirement planning reports
+- **Integration Points:**
+  - Import capability for external investment account data
+  - Integration with historical market return datasets
+  - Cost-of-living database for geographic comparisons
+  - Tax rule database with regular updates
 
-- **Key Constraints**
-  - Clear communication of uncertainty in long-term projections
-  - Transparent methodology for all financial calculations
-  - Regular updates for tax law changes
-  - Accurate representation of market volatility in simulations
-  - Sensible default values with customization options
+- **Key Constraints:**
+  - Calculations must be mathematically rigorous and academically defensible
+  - Projections must clearly communicate uncertainty and probability
+  - Portfolio modeling must support diverse asset allocations
+  - System must adapt to changing tax laws and regulations
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide these core components:
+The system must implement these core components:
 
-1. **Financial Independence Tracking**
-   - Savings rate calculation and tracking
-   - FIRE number determination (25x, 30x, or custom multiple of expenses)
-   - Progress tracking toward financial independence
-   - Projection of independence date based on current trajectory
+1. **Savings Rate Analysis Engine:**
+   - True savings rate calculation accounting for all income sources and tax treatments
+   - Financial independence timeline projections based on savings rate
+   - Spending impact analysis on FIRE timeline
+   - Savings rate optimization recommendations
+   - Milestone tracking toward financial independence
 
-2. **Withdrawal Strategy Simulation**
-   - Safe withdrawal rate determination
-   - Monte Carlo simulation engine for portfolio longevity
-   - Historical sequence of returns analysis
-   - Customizable withdrawal rule implementation
+2. **Withdrawal Strategy Simulator:**
+   - Multiple withdrawal method implementations (fixed, variable, floor-ceiling, etc.)
+   - Historical sequence and Monte Carlo simulation capabilities
+   - Failure rate and portfolio survival analysis
+   - Sequence of returns risk assessment
+   - Dynamic spending model integration
 
-3. **Geographic Arbitrage Analysis**
-   - Cost of living database and comparison tools
-   - Purchasing power and lifestyle equivalence calculations
-   - Healthcare cost and quality analysis
-   - Regional tax burden estimation
+3. **Geographic Arbitrage Calculator:**
+   - Regional cost-of-living database and comparison
+   - Housing cost differential analysis
+   - Tax burden comparison by location
+   - Healthcare cost projections by region
+   - Currency exchange risk assessment for international locations
 
-4. **Tax-Efficient Withdrawal Planning**
-   - Account type-aware withdrawal sequencing
-   - Tax bracket optimization algorithms
-   - Roth conversion strategy planning
-   - RMD projection and management
+4. **Tax-Optimized Withdrawal Planner:**
+   - Account-specific tax treatment modeling
+   - Multi-year tax projection and optimization
+   - Required Minimum Distribution (RMD) planning
+   - Roth conversion strategy analysis
+   - Tax-loss harvesting optimization
 
-5. **Coast FIRE Calculation**
-   - Coast FIRE threshold determination
-   - Growth projection during coasting phase
-   - Part-time work and partial contribution modeling
-   - Transition planning from full work to coast to full retirement
-
-6. **Reporting and Analytics**
-   - Financial independence probability assessment
-   - Withdrawal strategy comparison
-   - Geographic location ranking
-   - Tax efficiency metrics
-   - Portfolio longevity projections
+5. **Coast FIRE and Work Optional Planning:**
+   - Coast FIRE threshold calculation
+   - Partial retirement scenario modeling
+   - Reduced income requirement analysis
+   - Semi-retirement sustainability assessment
+   - Bridge period planning between partial and full retirement
 
 ## Testing Requirements
-- **Key Functionalities for Verification**
-  - Accuracy of savings rate and FIRE timeline calculations
-  - Statistical validity of Monte Carlo retirement simulations
-  - Precision of geographic cost-of-living comparisons
-  - Correctness of tax-optimized withdrawal sequencing
-  - Accuracy of Coast FIRE threshold determinations
+- **Key Functionalities to Verify:**
+  - Savings rate calculations accurately project time to financial independence
+  - Withdrawal strategies are properly simulated across market scenarios
+  - Geographic cost-of-living differences are correctly analyzed
+  - Tax-optimized withdrawal sequences minimize overall tax burden
+  - Coast FIRE calculations accurately project investment growth without additional contributions
 
-- **Critical User Scenarios**
-  - Calculating time to financial independence based on savings rate
-  - Running withdrawal simulations to determine portfolio longevity
-  - Comparing potential retirement locations based on cost of living
-  - Developing a tax-efficient withdrawal strategy across account types
-  - Determining Coast FIRE threshold and partial retirement options
+- **Critical User Scenarios:**
+  - Adjusting savings rate and seeing updated FIRE date projections
+  - Testing portfolio sustainability with different withdrawal strategies
+  - Comparing financial requirements between potential retirement locations
+  - Optimizing withdrawals across different account types for tax efficiency
+  - Determining the Coast FIRE threshold and exploring semi-retirement options
 
-- **Performance Benchmarks**
-  - Execution of 10,000 Monte Carlo simulations in under 30 seconds
-  - Comparison of 20+ geographic locations in under 5 seconds
-  - Generation of optimal withdrawal strategies in under 10 seconds
-  - Calculation of detailed tax implications across 30+ years in under 15 seconds
-  - Real-time updates of FIRE projections when inputs change
+- **Performance Benchmarks:**
+  - Monte Carlo simulations must evaluate 10,000+ randomized scenarios
+  - System must handle 40+ year retirement horizon projections
+  - Portfolio survival probability calculations must achieve 95% confidence intervals
+  - Tax optimization must evaluate at least 20 years of withdrawal sequencing
 
-- **Edge Cases and Error Conditions**
-  - Handling of extreme market volatility in simulations
-  - Management of complex tax situations (e.g., foreign income)
-  - Adaptation to unusual income and expense patterns
-  - Proper handling of early retirement with penalties
-  - Recovery from invalid financial assumptions
-  - Graceful handling of incomplete financial data
+- **Edge Cases and Error Conditions:**
+  - Handling extreme market volatility scenarios
+  - Adapting to major tax code changes
+  - Managing inflation uncertainty in long-term projections
+  - Accounting for unexpected retirement expenses
+  - Adapting to changes in retirement date or financial goals
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage across all modules
-  - 100% coverage for simulation and financial calculation functions
-  - Comprehensive test suite for tax optimization algorithms
-  - Thorough validation of Monte Carlo simulation statistical properties
-  - Complete testing of geographic arbitrage comparison logic
+- **Required Test Coverage Metrics:**
+  - Savings rate calculation functions: minimum 95% coverage
+  - Withdrawal simulation engines: minimum 90% coverage
+  - Tax optimization algorithms: minimum 90% coverage
+  - Portfolio projection models: minimum 85% coverage
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Savings rate calculations accurately predict time to financial independence
-- Monte Carlo simulations provide statistically valid withdrawal success rates
-- Geographic arbitrage comparisons show meaningful cost of living differences
-- Tax-optimized withdrawal strategies demonstrably improve portfolio longevity
-- Coast FIRE calculations correctly identify the threshold for reduced contributions
-- All financial projections match expected results from established models
-- System accommodates various FIRE approaches (lean, traditional, fat)
-- Portfolio simulations reflect realistic market behavior and volatility
-- Performance meets or exceeds all benchmark requirements
-- Test coverage meets or exceeds specified metrics
+- The system accurately calculates savings rates and their impact on financial independence timing
+- Safe withdrawal rate simulations provide reliable portfolio longevity projections
+- Geographic arbitrage comparisons correctly assess cost-of-living differences between locations
+- Tax-optimized withdrawal sequencing demonstrably minimizes tax burden in retirement
+- Coast FIRE calculator accurately determines when investment growth alone could support retirement
+- All calculations are mathematically sound and properly account for uncertainty
+- System performance meets or exceeds the specified benchmarks
+- All tests pass without manual intervention
 
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

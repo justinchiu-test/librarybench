@@ -1,150 +1,179 @@
 # Local News Content Management System
 
 ## Overview
-A specialized content management system for local news operations that enables breaking news publishing, editorial workflows, advertisement management, citizen journalism, and content archiving. This system focuses on quickly publishing time-sensitive news while organizing content by category and importance.
+A specialized content management system designed for small-town news services to manage time-sensitive news content, organize articles by category, and generate revenue through local business advertisements. This system enables news publishers to quickly publish content while maintaining organizational control over the editorial process.
 
 ## Persona Description
 Aisha runs a small town news service covering local events, government, and community stories. Her primary goal is to quickly publish time-sensitive news content while organizing articles by category and importance, and generating revenue through local business advertisements.
 
 ## Key Requirements
 
-1. **Breaking News Alert System with Front Page Takeover**
-   - Implement an urgent publishing system with priority display options
-   - Critical for Aisha because it allows her to immediately publish important breaking news and ensure it receives prominent visibility, helping her news service be the first to report on time-sensitive local developments
+1. **Breaking news alert system with front page takeover option**
+   - Critical for Aisha to rapidly publish urgent news without delay or technical barriers
+   - Must include special formatting and prominence controls for high-priority stories
+   - Should support push notifications and emergency display options that override normal layouts
 
-2. **Editorial Workflow with Draft, Review, and Publishing Stages**
-   - Create a structured content workflow system with role-based approvals
-   - Essential for Aisha to maintain editorial quality while delegating work across her team, ensuring all content goes through appropriate review stages before being published
+2. **Editorial workflow with draft, review, and publishing stages**
+   - Essential for maintaining journalistic quality while enabling collaboration among staff writers
+   - Must track article status through the editorial process with role-appropriate access
+   - Should include revision tracking, editorial comments, and approval workflows
 
-3. **Local Ad Management System with Performance Tracking**
-   - Develop an advertising platform with placement and metrics capabilities
-   - Important for generating revenue to sustain the news operation, allowing Aisha to sell, manage, and report on advertisement performance for local business clients
+3. **Local ad management system with performance tracking**
+   - Important for generating revenue while providing value to local business advertisers
+   - Must support various ad formats, placement options, and scheduling
+   - Should include impression/click tracking and basic performance analytics
 
-4. **Citizen Journalism Submission Portal with Verification Tools**
-   - Implement a community content submission system with verification workflows
-   - Necessary for expanding content coverage beyond what Aisha's small team can produce, enabling community members to contribute tips, photos, and stories while maintaining editorial control
+4. **Citizen journalism submission portal with verification tools**
+   - Valuable for expanding coverage through community contributions while maintaining editorial standards
+   - Must include submission forms, content validation, and fact-checking workflow
+   - Should support identity verification and contributor management
 
-5. **Content Archiving with Advanced Search and Tagging**
-   - Create a comprehensive archiving system with powerful retrieval capabilities
-   - Crucial for preserving the historical record of local news while making past content discoverable and valuable, increasing the long-term utility of the news service's content
+5. **Content archiving with advanced search and tagging**
+   - Necessary for maintaining a valuable historical record and enabling research in past stories
+   - Must organize content chronologically, by topic, and by other relevant attributes
+   - Should support complex search queries and contextual content relationships
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Breaking news system must be testable with priority override scenarios
-- Editorial workflow must support simulated multi-user approval sequences
-- Ad management must verify placement rules and tracking functionality
-- Submission portal must be testable with various verification scenarios
-- Archive system must verify search functionality across historical content
+- All components must have unit tests with at least 90% code coverage
+- Integration tests must verify the editorial workflow functions correctly
+- Performance tests must ensure breaking news publishing meets time requirements
+- Mock ad delivery for testing impression and click tracking
 
 ### Performance Expectations
-- Breaking news publishing should complete within 30 seconds from submission to live
-- Editorial system should support at least 20 concurrent content pieces in workflow
-- Ad management should handle at least 100 concurrent active advertisements
-- Submission system should process at least 50 contributions per day
-- Archive search should return results in < 500ms even with 10+ years of content
+- Breaking news publishing must complete within 30 seconds from submission to live
+- Article searches must return results within 500ms regardless of archive size
+- Ad delivery decision must take less than 100ms per page view
+- System must support at least 50 concurrent content editors
 
 ### Integration Points
-- Notification systems for breaking news alerts
-- Email workflow for editorial approvals
-- Ad serving and tracking mechanisms
-- Media processing for user-submitted content
-- Full-text search engine for archive content
+- Email/SMS gateway for breaking news alerts
+- Social media platforms for automated sharing
+- Payment processing for advertiser billing
+- Analytics systems for content and ad performance
 
 ### Key Constraints
-- No UI components, only API endpoints and business logic
-- Support for multiple content contributors with varied permissions
-- Strict publishing timeframes for time-sensitive content
-- Reliable archiving with content integrity guarantees
-- Compliance with journalistic standards and advertising regulations
+- Content must be stored in a format suitable for multiple delivery channels
+- System must maintain strict content ownership and attribution
+- Ad content must be clearly distinguished from editorial content
+- Search system must handle complex queries with acceptable performance
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Local News CMS includes:
+The system must provide a Python library with the following core components:
 
-1. **News Content Management**
-   - Article creation with metadata and categorization
-   - Priority and prominence designation
-   - Publishing schedule and time-sensitive handling
-   - Multi-format content support (text, images, video)
+1. **News Article Management**
+   - Content data model with metadata and categorization
+   - Publishing workflow and status tracking
+   - Priority classification and promotion
+   - Version control and revision history
 
-2. **Editorial Process Management**
-   - Workflow definition with customizable stages
-   - Role-based permissions and approval tracking
-   - Content versioning and edit history
-   - Collaborative editing capabilities
+2. **Breaking News System**
+   - Expedited publishing workflow
+   - Alert generation and distribution
+   - Front page takeover mechanisms
+   - Urgent content formatting and presentation
 
-3. **Advertisement Platform**
-   - Ad slot definition and inventory management
-   - Campaign scheduling and targeting
-   - Performance metrics collection and reporting
-   - Advertiser account management
+3. **Editorial Process**
+   - Draft management and revision tracking
+   - Review assignment and feedback collection
+   - Approval workflows and publishing authorization
+   - Editorial calendar and scheduling
 
-4. **Community Contribution System**
-   - Submission collection and categorization
-   - Verification workflow and fact checking
-   - Contributor recognition and management
-   - Moderation tools and policies
+4. **Advertising Infrastructure**
+   - Ad inventory management
+   - Placement and targeting rules
+   - Impression/click tracking
+   - Performance reporting and analytics
 
-5. **Archive Management**
-   - Content preservation with versioning
-   - Metadata enhancement for searchability
-   - Advanced query capabilities
-   - Historical context linking
+5. **Community Contribution**
+   - Submission validation and processing
+   - Contributor identity verification
+   - Fact-checking workflow
+   - Content moderation and feedback
+
+6. **Archive and Search**
+   - Content indexing and categorization
+   - Full-text search with relevance ranking
+   - Tagging and metadata management
+   - Historical content relationships
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Breaking news publishing and priority display
-- Editorial workflow progression through approval stages
-- Ad placement, rotation, and performance tracking
-- Community submission processing and verification
-- Archive storage, indexing, and retrieval
+- Breaking news is published rapidly with proper prominence
+- Editorial workflow correctly tracks content through all stages
+- Ad system delivers appropriate advertisements with accurate tracking
+- Community submissions are properly validated and processed
+- Archive search returns relevant results based on various criteria
 
 ### Critical User Scenarios
-- Publishing an urgent breaking news story with front page priority
-- Moving a news article through the complete editorial workflow
-- Setting up a new local business advertisement campaign
-- Processing and verifying a citizen-submitted news tip
-- Searching the archive for historical coverage of a local topic
+- Publishing a breaking news story with alerts and front page takeover
+- Managing an article through the complete editorial workflow
+- Setting up and monitoring a new advertising campaign
+- Processing and verifying a community-submitted news tip
+- Researching historical articles on a specific topic or event
 
 ### Performance Benchmarks
-- Breaking news publishing time from submission to live
-- Editorial workflow throughput with multiple concurrent articles
-- Ad management performance with varied campaign parameters
-- Submission processing time including media handling
-- Archive search response time with complex queries
+- Breaking news publishing must complete end-to-end in under 30 seconds
+- System must support an archive of at least 100,000 articles
+- Search must return results in under 500ms for complex queries
+- Ad system must handle at least 100,000 impressions per day
 
 ### Edge Cases and Error Conditions
-- Handling multiple simultaneous breaking news events
-- Managing editorial deadline pressures and approval bottlenecks
-- Resolving advertising conflicts and placement issues
-- Addressing problematic or controversial community submissions
-- Recovering from search indexing failures or corruption
+- Handling concurrent edits to the same article
+- Managing incomplete or embargoed content
+- Dealing with ad delivery failures
+- Processing potentially inappropriate community submissions
+- Recovering from interrupted publishing operations
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of breaking news critical path
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for submission and publishing vulnerabilities
+- Minimum 90% code coverage across all modules
+- 100% coverage of breaking news publishing logic
+- 100% coverage of editorial approval workflows
+- 100% coverage of ad delivery and tracking
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Breaking news can be published quickly with appropriate prominence
-2. Editorial workflow functions through all stages with proper role enforcement
-3. Advertisements can be managed with accurate performance tracking
-4. Community submissions can be collected, verified, and published
-5. Archive content can be effectively searched and retrieved
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. Time-sensitive content is published within required timeframes
-9. All tests pass, demonstrating the functionality works as expected
+1. The breaking news system enables rapid publishing with appropriate prominence
+2. The editorial workflow effectively manages content through all stages
+3. The ad system correctly delivers and tracks advertisements
+4. The community submission system properly validates and processes contributions
+5. The archive and search system effectively organizes and retrieves historical content
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

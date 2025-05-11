@@ -1,147 +1,236 @@
-# Customer Support Request Analyzer
+# Customer Support Request Analysis Framework
+
+A specialized natural language processing toolkit for analyzing support tickets, categorizing issues, extracting relevant information, detecting sentiment, and generating appropriate responses for customer service automation.
 
 ## Overview
-A specialized natural language processing toolkit designed for customer support automation, focusing on intent classification, information extraction, sentiment analysis, response suggestion, and conversation flow modeling to improve response efficiency for high-volume support tickets.
+
+This project provides customer support teams with powerful tools to analyze incoming support requests, categorize issues, extract actionable information, detect customer sentiment, and generate appropriate response templates. The framework helps support teams handle high volumes of tickets more efficiently by automating routine analysis tasks and ensuring consistent response quality.
 
 ## Persona Description
+
 Raj develops automation for customer service teams handling high volumes of support tickets. He needs to analyze incoming requests, categorize issues, and extract actionable information to improve response efficiency.
 
 ## Key Requirements
-1. **Intent Classification**: Develop algorithms to determine the primary purpose of customer messages, categorizing them into common support request types such as technical issues, billing inquiries, product questions, feature requests, or complaints. This enables accurate routing and prioritization, ensuring each request reaches the appropriate support team and receives the proper response template.
 
-2. **Information Extraction**: Implement extraction capabilities to identify critical details from unstructured customer messages, including product names, version numbers, error codes, account identifiers, timestamps, and steps already attempted. This eliminates the need for support agents to manually search for key information, significantly reducing response time.
+1. **Intent Classification System**: Develop algorithms to determine the primary purpose of customer messages and categorize them into appropriate issue types, request categories, and urgency levels.
+   - This feature is critical for Raj as it enables automatic ticket routing to the appropriate support teams and prioritization of urgent issues, dramatically reducing initial response time.
+   - The classification must recognize multiple intents within the same message, distinguish between similar issue types, and adapt to evolving product features and common customer problems.
 
-3. **Sentiment Escalation**: Create sentiment analysis specialized for support contexts to detect emotionally charged messages indicating customer frustration, urgency, or dissatisfaction that may require expedited handling or escalation. This prevents negative customer experiences by identifying high-risk interactions before they deteriorate further.
+2. **Information Extraction Engine**: Create a framework to identify and extract key details from customer messages, including product information, error codes, action attempts, environment details, and other relevant contextual data.
+   - This capability allows support agents to immediately access the critical information needed to diagnose issues without manually parsing lengthy customer messages.
+   - The extraction must recognize diverse formats of product identifiers, error messages, version numbers, and other technical details even when presented in non-standard ways.
 
-4. **Response Suggestion**: Design a framework for generating context-sensitive template-based replies for common scenarios, leveraging extracted information to personalize responses appropriately. This dramatically increases agent efficiency by providing ready-to-use response foundations that can be quickly customized rather than drafted from scratch.
+3. **Sentiment Escalation Detector**: Implement a system to identify emotionally charged messages indicating customer frustration, anger, or distress that require urgent attention and specialized handling.
+   - This feature helps Raj ensure that customers experiencing significant distress receive priority attention before their frustration escalates further.
+   - The detection must go beyond basic sentiment analysis to recognize emotional intensity, differentiate between frustration with the product versus the support experience, and identify specific trigger phrases indicating potential escalation risk.
 
-5. **Conversation Flow Modeling**: Develop capabilities to track multi-message interactions between customers and agents, understanding context across conversation threads and identifying resolution paths and completion stages. This helps support teams understand where each customer stands in their resolution journey and what next steps are appropriate.
+4. **Response Suggestion Generator**: Build a system that creates template-based replies for common scenarios, incorporating relevant extracted information and adapting to the specific context of each customer inquiry.
+   - This capability significantly improves agent efficiency by providing ready-to-use response templates that require minimal customization while still addressing the customer's specific situation.
+   - The generator must select appropriate templates based on issue type, include relevant customer and product details, maintain a consistent tone, and adapt language based on customer technical proficiency.
+
+5. **Conversation Flow Modeling**: Develop tools to track multi-message interactions throughout the resolution process, understanding the current state of each conversation and predicting next steps toward resolution.
+   - This feature enables Raj to build systems that understand where each customer conversation stands in the resolution process and what actions are likely needed next.
+   - The modeling must track conversation state across multiple messages, recognize when issues evolve or new issues are introduced, and identify when conversations are ready for resolution or require escalation.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - All classification algorithms must produce consistent, deterministic results
-  - Intent classification must be testable against labeled support tickets
-  - Information extraction must be verifiable with annotated messages
-  - Sentiment analysis must align with human judgment on escalation needs
-  - Response suggestions must meet quality and appropriateness standards
 
-- **Performance Expectations**:
-  - Process support messages (typically 50-500 words) in near real-time
-  - Handle high volumes of incoming tickets (thousands per day)
-  - Support concurrent analysis of active conversation threads
-  - Generate response suggestions with minimal latency
-  - Maintain performance consistency during peak support periods
+### Testability Requirements
+- Intent classification must achieve measurable accuracy against human-labeled support tickets
+- Information extraction must be verifiable with precision and recall metrics
+- Sentiment detection must correlate with human judgment of message urgency
+- Response suggestions must be evaluable for appropriateness and completeness
+- Conversation flow modeling must accurately track state changes through ticket lifecycles
 
-- **Integration Points**:
-  - Support for common ticket format imports
-  - Extraction of structured data from unstructured text
-  - Classification output compatible with ticketing systems
-  - Support for ticket metadata incorporation
-  - Template system integration for response generation
+### Performance Expectations
+- Process and analyze typical support tickets (100-500 words) in under 1 second
+- Handle batches of up to 1,000 new tickets in under 5 minutes
+- Generate response suggestions immediately upon ticket classification
+- Maintain consistent performance regardless of ticket length or complexity
+- Support concurrent analysis of multiple ongoing conversations
 
-- **Key Constraints**:
-  - Use only Python standard library without external dependencies
-  - Handle diverse writing styles, language proficiency, and technical accuracy
-  - Support multi-turn conversations with context maintenance
-  - Accommodate product-specific terminology and error codes
-  - Balance automation efficiency with quality of customer experience
+### Integration Points
+- Accept support tickets from multiple channels (email, chat, web forms)
+- Support integration with common helpdesk and CRM systems
+- Enable export of analysis results in standard formats (JSON, CSV)
+- Provide APIs for real-time ticket processing in support workflows
+- Allow customization through configuration rather than code changes
+
+### Key Constraints
+- Implementation must use only Python standard library
+- Processing must maintain customer privacy with no external API dependencies
+- System must handle domain-specific terminology across different product lines
+- Analysis must be effective across different customer communication styles
+- Algorithms must adapt to evolving product features and support issues
+- Response suggestions must be clearly marked as templates requiring human review
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement:
 
-1. Support request intent classification:
-   - Multi-class categorization of support requests
-   - Confidence scoring for classification decisions
-   - Hybrid classification using keywords and patterns
-   - Issue type and subtype hierarchical classification
-   - Product-specific intent recognition
+The system consists of five main components:
 
-2. Technical information extraction frameworks:
-   - Product name and version recognition
-   - Error code and message identification
-   - System configuration detail extraction
-   - User action and attempt history parsing
-   - Account and order identifier recognition
+1. **Support Intent Classifier**: A framework for categorizing customer support requests. It should:
+   - Identify the primary purpose of customer messages
+   - Categorize requests into defined issue types and subtypes
+   - Determine urgency and prioritization levels
+   - Recognize multiple intents within single messages
+   - Adapt to new issue categories over time
 
-3. Support-specific sentiment analysis:
-   - Urgency and priority detection
-   - Frustration and dissatisfaction recognition
-   - Escalation need prediction
-   - Customer loyalty risk assessment
-   - Conversation tone tracking over time
+2. **Technical Detail Extractor**: A system for identifying relevant information in tickets. It should:
+   - Extract product details, models, and version information
+   - Identify error codes, messages, and symptoms
+   - Recognize customer environment information
+   - Capture previous troubleshooting steps attempted
+   - Identify temporal information related to the issue
 
-4. Response generation capabilities:
-   - Template selection based on intent and context
-   - Dynamic field population from extracted information
-   - Response customization suggestions
-   - Follow-up question generation
-   - Appropriate tone matching for situation
+3. **Emotional Content Analyzer**: A framework for detecting customer sentiment. It should:
+   - Measure overall sentiment and emotional intensity
+   - Identify specific emotions (frustration, anger, satisfaction)
+   - Recognize escalation indicators and trigger phrases
+   - Detect sarcasm and implicit negative sentiment
+   - Differentiate between product frustration and support frustration
 
-5. Conversation and ticket lifecycle tracking:
-   - Conversation state modeling
-   - Resolution pathway identification
-   - Multi-message context maintenance
-   - Next-step prediction for resolution
-   - Similar case matching for solution reference
+4. **Template Response Engine**: A system for generating contextual replies. It should:
+   - Select appropriate response templates based on issue type
+   - Incorporate extracted customer and product information
+   - Adapt language to customer technical proficiency
+   - Generate step-by-step troubleshooting instructions
+   - Maintain appropriate tone and consistent brand voice
+
+5. **Conversation State Tracker**: A framework for modeling support interactions. It should:
+   - Track conversation progress through resolution stages
+   - Identify when new information arrives or issues evolve
+   - Recognize successful resolution indicators
+   - Detect stalled conversations requiring intervention
+   - Model probable next steps in the resolution process
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of intent classification across support categories
-  - Precision and recall of information extraction
-  - Reliability of sentiment analysis for escalation decisions
-  - Appropriateness of response suggestions
-  - Effectiveness of conversation flow modeling
 
-- **Critical User Scenarios**:
-  - Processing incoming technical support requests
-  - Analyzing billing dispute messages
-  - Handling product information inquiries
-  - Managing multi-message troubleshooting conversations
-  - Detecting high-priority issues needing immediate attention
+### Key Functionalities to Verify
 
-- **Performance Benchmarks**:
-  - Classify support requests into categories with 90%+ accuracy
-  - Extract key technical information with 85%+ precision
-  - Identify escalation-needed messages with high recall (>90%)
-  - Generate appropriate response suggestions for 80%+ of common requests
-  - Process standard support messages in under 1 second
+1. Intent Classification:
+   - Test accuracy of primary intent identification
+   - Verify correct categorization into issue types
+   - Test detection of multiple intents in single messages
+   - Validate urgency determination
+   - Verify adaptation to new issue categories
 
-- **Edge Cases and Error Conditions**:
-  - Handling multi-issue support requests
-  - Processing messages with minimal information
-  - Managing conversations with multiple topic switches
-  - Dealing with technical language and jargon
-  - Accommodating non-native speakers with language difficulties
+2. Information Extraction:
+   - Test extraction of product details in various formats
+   - Verify identification of error messages and codes
+   - Test recognition of environment information
+   - Validate capture of previous troubleshooting attempts
+   - Verify handling of ambiguous or incomplete information
 
-- **Required Test Coverage**:
-  - 90%+ coverage of all analysis algorithms
-  - Comprehensive testing with diverse support request types
-  - Validation with actual (anonymized) support ticket data
-  - Testing across different product lines and issue categories
-  - Verification of multi-turn conversation handling
+3. Sentiment Detection:
+   - Test identification of different emotional states
+   - Verify detection of escalation indicators
+   - Test measurement of emotional intensity
+   - Validate correlation with human judgment
+   - Verify recognition of implicit sentiment
 
-IMPORTANT: 
+4. Response Generation:
+   - Test selection of appropriate templates
+   - Verify incorporation of customer-specific details
+   - Test adaptation to different technical proficiency levels
+   - Validate generation of accurate troubleshooting steps
+   - Verify maintenance of consistent tone
+
+5. Conversation Tracking:
+   - Test accurate state identification across message sequences
+   - Verify detection of conversation progress
+   - Test recognition of issue evolution
+   - Validate identification of resolution readiness
+   - Verify detection of stalled conversations
+
+### Critical User Scenarios
+
+1. Processing an initial technical support request with error codes and system details
+2. Handling an escalated complaint from a frustrated customer
+3. Tracking a multi-message troubleshooting conversation to resolution
+4. Analyzing a complex request containing multiple separate issues
+5. Processing a follow-up message with new information about an existing ticket
+
+### Performance Benchmarks
+
+- Classify support tickets into correct categories with at least 85% accuracy
+- Extract at least 90% of critical technical details from standard format messages
+- Detect high-urgency emotional content with at least 90% precision and recall
+- Generate appropriate response templates for at least 80% of common scenarios
+- Correctly track conversation state through resolution with at least 85% accuracy
+
+### Edge Cases and Error Conditions
+
+- Test with extremely brief or vague customer messages
+- Verify behavior with highly technical or jargon-filled requests
+- Test with messages containing mixed positive and negative sentiment
+- Validate performance on non-standard communication styles
+- Test with tickets containing multiple unrelated issues
+- Verify handling of unusual product configurations or error scenarios
+- Test with conversations that suddenly change topic or urgency
+
+### Required Test Coverage Metrics
+
+- Line coverage: Minimum 90%
+- Branch coverage: Minimum 85%
+- Function coverage: Minimum 95%
+- All public APIs must have 100% test coverage
+- All error handling paths must be tested
+- All classification, extraction, and generation algorithms must be thoroughly tested
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Intent classification correctly categorizes support requests for appropriate routing
-2. Information extraction reliably identifies key technical details from unstructured messages
-3. Sentiment escalation accurately identifies high-priority issues needing urgent attention
-4. Response suggestion generates appropriate template-based replies for common scenarios
-5. Conversation flow modeling effectively tracks support interactions toward resolution
-6. The system processes support requests with sufficient speed for high-volume environments
-7. Classification accuracy meets or exceeds 90% for common support categories
-8. Information extraction reduces the need for clarification questions from agents
-9. Support teams experience measurable efficiency improvements through automation
-10. The quality of customer experience is maintained or enhanced through automation
+- The system correctly classifies at least 85% of support tickets into appropriate categories
+- Information extraction identifies at least 90% of critical technical details in test messages
+- Sentiment analysis correctly prioritizes at least 90% of high-urgency messages
+- Response generation produces appropriate templates for at least 80% of common scenarios
+- Conversation tracking accurately models at least 85% of multi-message support interactions
 
-## Development Environment
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up your development environment:
+
+1. Create a virtual environment using uv:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Install testing tools:
+   ```
+   pip install pytest pytest-json-report
+   ```
+
+5. Run tests with JSON reporting:
+   ```
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+IMPORTANT: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion. This file serves as proof that all tests pass and the implementation meets the specified requirements.

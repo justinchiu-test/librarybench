@@ -1,146 +1,236 @@
-# Language Learning Text Processor
+# Language Learning Text Analysis Toolkit
+
+A specialized natural language processing framework for analyzing text difficulty, identifying challenging vocabulary, and generating learning materials for English language learners at different proficiency levels.
 
 ## Overview
-A specialized natural language processing toolkit designed for ESL teachers to assess reading difficulty, identify challenging vocabulary, analyze linguistic features, and generate level-appropriate learning exercises for non-native English speakers at different proficiency levels.
+
+This project provides ESL (English as a Second Language) teachers with powerful tools to assess reading material difficulty, map texts to appropriate language proficiency levels, identify challenging vocabulary, detect cultural references requiring explanation, and automatically generate appropriate learning exercises. All functionality is implemented as Python libraries requiring no advanced programming knowledge.
 
 ## Persona Description
+
 Carlos develops instructional materials for non-native English speakers and needs tools to assess reading difficulty, identify challenging vocabulary, and create level-appropriate learning exercises tailored to different language proficiency levels.
 
 ## Key Requirements
-1. **Readability Scoring with Granular Feedback**: Implement comprehensive text analysis that goes beyond simplistic readability formulas, providing detailed feedback on specific complexity factors such as sentence structure, vocabulary difficulty, cohesion, and conceptual density. This allows teachers to understand exactly what makes a text challenging for language learners and where modifications might be needed.
 
-2. **Language Acquisition Level Mapping**: Create a system to evaluate texts against established language proficiency frameworks (CEFR, ACTFL, etc.), matching content to appropriate learner levels (A1-C2) based on grammatical structures, vocabulary, and discourse features. This enables selection of texts that precisely match students' current proficiency levels for optimal comprehension and acquisition.
+1. **Readability Analysis Engine**: Develop a comprehensive system for assessing text complexity with granular feedback on specific linguistic factors affecting readability.
+   - This feature is essential for Carlos as it allows him to quickly evaluate whether texts are appropriate for specific learner levels and identify exactly which aspects make a text challenging.
+   - The analysis must go beyond simple metrics like Flesch-Kincaid to identify specific syntactic structures, rare vocabulary, idiomatic expressions, and other elements that impact comprehension for non-native speakers.
 
-3. **Vocabulary Grading**: Develop algorithms to identify words outside targeted learning levels, highlighting terms that may require pre-teaching or substitution, with suggestions for level-appropriate alternatives. This helps teachers efficiently adapt authentic materials for different proficiency levels without manual word-by-word analysis.
+2. **Language Proficiency Mapping Framework**: Create a system that classifies texts according to established language acquisition frameworks (such as CEFR, ACTFL, or other ESL standards).
+   - This capability ensures Carlos can confidently select materials that align precisely with curriculum standards and learner abilities across different proficiency stages.
+   - The framework must detect and quantify features that distinguish between adjacent proficiency levels (A1/A2, B1/B2, etc.) with high accuracy.
 
-4. **Cultural Reference Detection**: Implement pattern recognition to highlight culturally-specific idioms, expressions, references, and assumed knowledge that might require special explanation for non-native speakers. This addresses the cultural competence dimension of language learning that is often overlooked by standard readability measures.
+3. **Vocabulary Grading and Substitution System**: Implement tools to identify words outside a targeted learning level and suggest appropriate alternatives while maintaining text meaning.
+   - This feature allows Carlos to efficiently adapt authentic materials to be accessible for learners without manually reviewing every word, saving significant preparation time.
+   - The system must recognize context-dependent word difficulty, academic vocabulary, and specialized terminology to make appropriate recommendations.
 
-5. **Exercise Generation**: Create a framework for automatically generating language learning activities from texts, including cloze tests (with strategic word removal based on learning objectives), vocabulary practice focusing on target words, and comprehension questions at appropriate cognitive levels. This dramatically reduces preparation time while ensuring exercises are pedagogically sound.
+4. **Cultural Reference Detector**: Build an algorithm to highlight culturally-specific idioms, expressions, and references that would require special explanation for non-native speakers.
+   - This is critical for Carlos since cultural literacy gaps often cause greater comprehension difficulties than language itself, especially for intermediate and advanced learners.
+   - The detector must identify subtle cultural references, idioms, slang, and expressions that might be transparent to native speakers but opaque to language learners.
+
+5. **Exercise Generation Engine**: Develop a framework for automatically creating pedagogically sound language learning exercises from any text, including cloze tests, vocabulary practice, and comprehension questions.
+   - This capability dramatically reduces Carlos's preparation time while ensuring consistent quality across learning materials targeted at different proficiency levels.
+   - The system must generate exercises that test appropriate skills for each proficiency level, with distractors and answer keys that follow educational best practices.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - All analysis algorithms must produce consistent, deterministic results
-  - Readability evaluations must be validated against established ESL frameworks
-  - Vocabulary identification must match standard level classifications
-  - Exercise generation must follow sound pedagogical principles
-  - All components must be independently testable with sample texts
 
-- **Performance Expectations**:
-  - Process typical teaching materials (articles, short stories) in seconds
-  - Handle book-length texts for comprehensive analysis in under 5 minutes
-  - Support batch processing of multiple texts for curriculum planning
-  - Generate exercise sets rapidly for last-minute lesson preparation
-  - Maintain reasonable memory usage with educational-scale texts
+### Testability Requirements
+- All readability metrics must be deterministic and yield consistent scores for the same text
+- Proficiency level mapping must be verifiable against expert-classified sample texts
+- Vocabulary grading must be testable against established ESL word lists for different levels
+- Cultural reference detection must identify a high percentage of known idioms and expressions
+- Generated exercises must follow established ESL pedagogical patterns and best practices
 
-- **Integration Points**:
-  - Import capabilities for common document formats (plain text, docx, pdf)
-  - Export of analysis results and generated exercises in usable formats
-  - Vocabulary checking against established word lists (GSL, AWL, etc.)
-  - Support for custom vocabulary lists and proficiency definitions
-  - Extensibility for additional languages beyond English
+### Performance Expectations
+- Process and analyze texts up to 10,000 words in under 5 seconds
+- Generate comprehensive exercise sets for a 1,000-word text in under 10 seconds
+- Handle batch processing of multiple texts (e.g., an entire textbook) efficiently
+- Support incremental analysis to avoid reprocessing when making minor text changes
+- Operate with minimal memory footprint suitable for standard laptop hardware
 
-- **Key Constraints**:
-  - Use only Python standard library without external dependencies
-  - Design for language-teaching contexts with pedagogical validity
-  - Support for explicit learning progression across proficiency levels
-  - Focus on practical classroom and materials development use cases
-  - Maintain accessibility for teachers without programming backgrounds
+### Integration Points
+- Accept plain text, Word documents, PDF, and HTML as input formats
+- Provide programmatic access to all analysis results for integration with authoring tools
+- Export exercises in standard formats (plain text, markdown, or structured JSON)
+- Support integration of custom vocabulary lists and proficiency definitions
+- Enable extensibility through custom rule sets for different language teaching approaches
+
+### Key Constraints
+- Implementation must use only Python standard library
+- All algorithms must operate without requiring internet connectivity
+- System must handle texts with mixed language proficiency levels in different sections
+- Analysis must work effectively on both fiction and non-fiction content
+- All components must be efficient enough for interactive use during lesson preparation
+- Vocabulary and cultural references must be adaptable to different English varieties (US, UK, etc.)
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement:
 
-1. Comprehensive text analysis for language learning contexts:
-   - Multi-factor readability assessment beyond formula-based scores
-   - Grammatical structure complexity analysis
-   - Vocabulary profiling against level-appropriate word lists
-   - Discourse and cohesion feature identification
-   - Cultural and background knowledge requirements
+The system consists of five main components:
 
-2. Proficiency level mapping frameworks:
-   - Mapping texts to CEFR levels (A1-C2) based on multiple factors
-   - Identifying features that place text at particular proficiency levels
-   - Highlighting elements that cross proficiency boundaries
-   - Suggesting modifications to adjust text to target levels
-   - Visualizing proficiency level distribution within texts
+1. **Readability Analyzer**: A comprehensive text assessment engine that evaluates multiple dimensions of language complexity. It should:
+   - Calculate standard readability metrics (Flesch-Kincaid, SMOG, etc.)
+   - Identify complex syntactic structures (embedded clauses, passive voice, etc.)
+   - Analyze vocabulary complexity beyond frequency (abstract terms, polysemy, etc.)
+   - Evaluate text cohesion and discourse structure
+   - Generate specific feedback on factors affecting comprehension difficulty
 
-3. Vocabulary processing specialized for language learning:
-   - Frequency-based vocabulary identification
-   - Academic and specialized vocabulary recognition
-   - Idiom and collocation detection
-   - Word family grouping and derivational relationships
-   - Level-appropriate alternatives recommendation
+2. **Proficiency Level Mapper**: A framework for classifying texts according to language learning standards. It should:
+   - Map texts to CEFR levels (A1-C2) based on linguistic features
+   - Identify features that place text between defined levels
+   - Compare text characteristics to level descriptors in official frameworks
+   - Recommend specific adaptations to target different proficiency levels
+   - Support customization for different curriculum standards
 
-4. Cultural and pragmatic content analysis:
-   - Idiomatic expression identification
-   - Cultural reference detection
-   - Background knowledge assumption identification
-   - Register and formality analysis
-   - Pragmatic function recognition
+3. **Vocabulary Analyzer and Adaptation Tool**: A system for vocabulary assessment and text simplification. It should:
+   - Identify words beyond targeted proficiency level
+   - Suggest appropriate synonyms based on proficiency targets
+   - Recognize context-dependent word difficulty
+   - Flag technical or specialized vocabulary for glossary inclusion
+   - Support academic word list integration for EAP (English for Academic Purposes)
 
-5. Exercise generation frameworks for:
-   - Cloze/gap-fill exercises with pedagogical targeting
-   - Vocabulary practice activities at appropriate levels
-   - Comprehension questions addressing different skills
-   - Task difficulty calibration to proficiency levels
-   - Answer key generation for teacher reference
+4. **Cultural Reference Identifier**: A tool for detecting expressions requiring cultural literacy. It should:
+   - Identify idioms, expressions, and phrasal verbs
+   - Detect culturally-specific references (historical, literary, pop culture)
+   - Flag humor, irony, and other pragmatic elements
+   - Recognize political, religious, and social references
+   - Categorize references by domain and expected familiarity
+
+5. **Language Exercise Generator**: A framework for creating pedagogical materials. It should:
+   - Generate cloze (fill-in-the-blank) exercises targeting specific skills
+   - Create vocabulary practice activities appropriate to proficiency level
+   - Produce comprehension questions at different cognitive levels
+   - Develop grammar exercises based on text structures
+   - Generate appropriate distractors and answer keys
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of readability analysis against expert ESL teacher evaluations
-  - Precision of CEFR level mapping compared to standard exemplars
-  - Reliability of vocabulary grading against established word lists
-  - Effectiveness of cultural reference detection with diverse texts
-  - Pedagogical validity of generated exercises
 
-- **Critical User Scenarios**:
-  - Evaluating authentic materials for classroom appropriateness
-  - Adapting texts to specific proficiency level targets
-  - Identifying vocabulary that requires pre-teaching
-  - Generating supplementary exercises for reading assignments
-  - Creating comprehensive lesson materials from source texts
+### Key Functionalities to Verify
 
-- **Performance Benchmarks**:
-  - Complete multi-factor analysis of 2,000-word texts in under 30 seconds
-  - Generate complete exercise sets for standard texts in under 1 minute
-  - Process curriculum-scale materials (20+ texts) in batch mode efficiently
-  - Maintain consistent performance across text types and genres
-  - Support reasonable processing times on standard teacher hardware
+1. Readability Analysis:
+   - Test accuracy of standard readability metrics against reference implementations
+   - Verify identification of complex syntactic structures
+   - Test detection of vocabulary beyond specified proficiency levels
+   - Validate consistency of scoring across similar texts
+   - Verify detailed feedback generation for specific complexity factors
 
-- **Edge Cases and Error Conditions**:
-  - Handling poorly formatted or OCR-processed texts
-  - Processing texts with mixed languages or code-switching
-  - Managing specialized content with domain-specific vocabulary
-  - Appropriately analyzing texts with non-standard English varieties
-  - Graceful handling of extremely simple or complex outlier texts
+2. Proficiency Level Mapping:
+   - Test classification accuracy against expert-labeled texts for each CEFR level
+   - Verify feature detection that distinguishes between adjacent levels
+   - Test adaptation recommendations for different target levels
+   - Validate handling of texts with mixed-level features
+   - Verify alignment with official CEFR descriptors
 
-- **Required Test Coverage**:
-  - 90%+ coverage of all analysis algorithms
-  - Comprehensive testing of exercise generation logic
-  - Verification against established proficiency level exemplars
-  - Validation with texts from diverse genres and domains
-  - Testing across full range of proficiency levels (A1-C2)
+3. Vocabulary Grading:
+   - Test identification accuracy against established ESL word lists
+   - Verify context-appropriate synonym suggestions
+   - Test handling of polysemous words and specialized terminology
+   - Validate academic vocabulary identification
+   - Verify preservation of meaning in simplified text versions
 
-IMPORTANT: 
+4. Cultural Reference Detection:
+   - Test identification of common idioms and expressions
+   - Verify recognition of cultural references across different domains
+   - Test detection of humor, irony, and pragmatic elements
+   - Validate categorization of references by type
+   - Verify performance across different English varieties
+
+5. Exercise Generation:
+   - Test pedagogical soundness of generated exercises
+   - Verify appropriate targeting of different proficiency levels
+   - Test quality of generated distractors and answer keys
+   - Validate variety and relevance of generated questions
+   - Verify alignment with ESL teaching best practices
+
+### Critical User Scenarios
+
+1. Analyzing a news article to determine its appropriateness for intermediate (B1) learners
+2. Adapting an authentic text by simplifying vocabulary while maintaining core meaning
+3. Creating a comprehensive worksheet with exercises for a short story
+4. Identifying cultural references in a text that require additional explanation
+5. Developing a sequence of readings with gradually increasing difficulty levels
+
+### Performance Benchmarks
+
+- Process and analyze a 1,000-word text in under 2 seconds
+- Complete vocabulary grading and suggest alternatives within 3 seconds for texts up to 2,000 words
+- Generate a full exercise set including at least 5 different exercise types in under 5 seconds
+- Identify at least 90% of cultural references present in test texts
+- Achieve at least 85% agreement with expert ESL teachers on proficiency level classification
+
+### Edge Cases and Error Conditions
+
+- Test with texts containing specialized terminology or jargon
+- Verify behavior with texts containing non-standard English or deliberate errors
+- Test with content containing mixed languages or code-switching
+- Validate performance with very short or very long texts
+- Test with texts containing unusual formatting or structure
+- Verify handling of culturally diverse content with multiple reference points
+- Test with content specifically designed for language learners versus authentic texts
+
+### Required Test Coverage Metrics
+
+- Line coverage: Minimum 90%
+- Branch coverage: Minimum 85%
+- Function coverage: Minimum 95%
+- All public APIs must have 100% test coverage
+- All error handling paths must be tested
+- All text processing algorithms must be thoroughly tested with diverse samples
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Readability analysis provides actionable insights beyond standard formulas, matching expert ESL teacher assessment
-2. Texts are accurately mapped to appropriate CEFR or similar proficiency levels with clear rationale
-3. Vocabulary is correctly identified by difficulty level with appropriate alternatives suggested
-4. Cultural references and idioms are reliably detected across diverse text types
-5. Generated exercises follow sound pedagogical principles and target appropriate skills
-6. The system significantly reduces teacher preparation time for materials development
-7. Analysis results provide clear guidance for text selection and adaptation
-8. Exercise generation produces classroom-ready activities requiring minimal editing
-9. All functionality maintains high accuracy across different text genres and proficiency levels
+- The readability analyzer correctly identifies at least 90% of complexity factors in test texts
+- Proficiency level mapping agrees with expert ESL teacher assessment at least 85% of the time
+- Vocabulary grading correctly identifies at least 90% of words beyond target proficiency levels
+- Cultural reference detection identifies at least 85% of idioms and expressions in test content
+- Generated exercises are rated as pedagogically appropriate by ESL experts
 
-## Development Environment
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up your development environment:
+
+1. Create a virtual environment using uv:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Install testing tools:
+   ```
+   pip install pytest pytest-json-report
+   ```
+
+5. Run tests with JSON reporting:
+   ```
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+IMPORTANT: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion. This file serves as proof that all tests pass and the implementation meets the specified requirements.

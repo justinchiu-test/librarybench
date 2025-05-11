@@ -1,153 +1,180 @@
-# Resilient Field Data Synchronization System
+# FieldSync - Resilient Data Sharing for Remote Research
 
 ## Overview
-A specialized peer-to-peer file sharing system designed for environmental research teams working in remote locations with intermittent connectivity, enabling reliable data collection, storage, and synchronization across distributed field sites without requiring continuous internet access.
+FieldSync is a specialized peer-to-peer file sharing library designed for environmental researchers working in remote locations with limited connectivity. It enables resilient data sharing between field sites and base stations through intermittent connectivity optimization, bandwidth-aware synchronization, mesh networking, scientific instrument integration, and differential synchronization.
 
 ## Persona Description
 Marco conducts environmental research in remote areas with limited internet connectivity. He needs to share large datasets with colleagues at base camp and headquarters without relying on stable internet connections or central servers.
 
 ## Key Requirements
+
 1. **Intermittent Connectivity Optimization**
-   - Store-and-forward capability retaining files for transfer when peers reconnect
-   - Connection opportunity detection and prioritized queue processing
-   - Automatic retry and resume of interrupted transfers
-   - Essential for Marco's team to exchange data despite frequent connection drops in remote field sites
+   - Implement store-and-forward techniques that queue and resume transfers when connections are re-established
+   - Critical for Marco's fieldwork in areas where network connectivity is unpredictable and intermittent
+   - Must preserve transfer state and resume from interruption points without data loss
+   - Should include intelligent retry mechanisms with exponential backoff to conserve battery power
 
 2. **Bandwidth-Aware Synchronization**
-   - Adaptive data transfer rates based on available connection quality
-   - Configurable prioritization system for critical vs. non-critical data
-   - Compression and optimization for low-bandwidth scenarios
-   - Critical because field sites often rely on satellite or cellular connections with severe bandwidth limitations
+   - Create a prioritization system that transfers critical data first when connections are limited
+   - Essential for ensuring that the most important research data reaches colleagues despite poor connectivity
+   - Must support user-defined priority levels for different data types
+   - Should dynamically adjust transfer rates based on available bandwidth and remaining battery life
 
 3. **Mesh Networking Support**
-   - Device discovery and connection across local networks without internet
-   - Multi-hop routing to extend network reach in field camps
-   - Dynamic topology adaptation as devices move or power down
-   - Necessary for creating functional data sharing networks at field sites completely disconnected from external infrastructure
+   - Develop peer-to-peer mesh networking capabilities for creating local sharing networks without internet access
+   - Vital for maintaining data flow between researchers spread across a remote study site
+   - Must support ad-hoc network formation using available wireless technologies
+   - Should optimize routing to minimize power consumption while maximizing data throughput
 
 4. **Data Collection Device Integration**
-   - API for direct transfer from scientific instruments and data loggers
-   - Support for common field equipment protocols and data formats
-   - Automated ingestion of new readings without manual intervention
-   - Vital for streamlining the workflow from data collection to sharing, reducing manual steps in harsh field conditions
+   - Implement interfaces for direct data transfer from common scientific instruments
+   - Important for automating the collection and sharing of environmental sensor data
+   - Must support common scientific data formats and protocols
+   - Should include metadata preservation to maintain context and calibration information
 
 5. **Differential Sync for Dataset Updates**
-   - Efficient updating of previously shared datasets with only new readings
-   - Version tracking of evolving datasets across the research team
-   - Conflict detection and resolution for concurrent updates
-   - Essential for minimizing data transfer requirements when updating time-series or growing datasets from ongoing field research
+   - Create efficient synchronization that only transfers changes made to previously shared datasets
+   - Critical for reducing bandwidth needs when updating large environmental datasets with small changes
+   - Must correctly identify and extract only the modified portions of complex data files
+   - Should maintain version history to allow rollback to previous states if needed
 
 ## Technical Requirements
-### Testability Requirements
-- All components must have comprehensive unit tests with >90% coverage
-- Simulated network conditions for testing intermittent connectivity scenarios
-- Deterministic mesh network simulation for topology testing
-- Reproducible differential sync tests with various dataset types
-- Mock integration points for scientific instrument data sources
 
-### Performance Expectations
-- Efficient operation on low-power field equipment (laptops, tablets, data loggers)
-- Minimal battery impact during idle periods with fast wake-on-connection
-- Support for datasets up to 100GB in size
-- Efficient differential updates (transfer < 110% of actual changed data)
-- Mesh operation with at least 20 connected nodes spanning 3 hops
+- **Testability Requirements**
+  - All network resilience features must be testable with simulated connectivity disruptions
+  - Bandwidth optimization must be testable with configurable bandwidth limitations
+  - Mesh networking capabilities must be testable in simulated multi-node environments
+  - Scientific instrument integration must be testable with mock instrument data sources
 
-### Integration Points
-- Common scientific data format support (CSV, HDF5, NetCDF)
-- Standard instrument integration (Campbell Scientific, HOBO data loggers)
-- GPS and location awareness for positional data tagging
-- Export capabilities for GIS and analysis software
-- Metadata preservation through all synchronization operations
+- **Performance Expectations**
+  - System must operate efficiently on devices with limited processing power and battery capacity
+  - Synchronization must minimize data transfer to conserve bandwidth (at least 80% reduction for incremental updates)
+  - Mesh network throughput must achieve at least 50% of theoretical maximum for the simulated radio technology
+  - Storage requirements must be optimized for devices with limited capacity
 
-### Key Constraints
-- Must operate on standard field equipment (Windows/Linux laptops, Android tablets)
-- No cloud dependencies for core functionality
-- Minimal configuration requirements for field deployment
-- All operations possible through programmatic API
-- Maximum memory usage appropriate for field-grade hardware
+- **Integration Points**
+  - Common scientific data formats (CSV, NetCDF, HDF5, GeoTIFF, etc.)
+  - Standard instrument communication protocols
+  - Common wireless technologies (WiFi, Bluetooth, LoRa where appropriate)
+  - GPS/location services for geographic metadata
+
+- **Key Constraints**
+  - All functionality must operate without reliance on internet connectivity
+  - Power efficiency must be a primary consideration in all operations
+  - Implementation must be pure Python with minimal dependencies
+  - All algorithms must be robust against frequent disruptions and failures
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must be implemented as a library with the following components:
 
-1. **Store-and-Forward Engine**
-   - Persistent queue management for pending transfers
-   - Metadata tracking for partially transferred files
-   - Priority-based scheduling for outbound data
-   - Connection state detection and optimization
+The FieldSync implementation should provide these core functions:
 
-2. **Bandwidth Management**
-   - Connection quality detection and monitoring
-   - Adaptive transfer rate control
-   - Priority-based resource allocation
-   - Compression selection based on data type and urgency
+1. **Resilient Data Transfer**
+   - Robust peer-to-peer file transfer with interruption recovery
+   - Queue management for pending transfers
+   - Transfer resumption from point of interruption
+   - Progress tracking and state preservation
 
-3. **Mesh Network Protocol**
-   - Peer discovery on local networks
-   - Routing table management for multi-hop transfers
-   - Path optimization for efficient data movement
-   - Network state monitoring and adaptation
+2. **Adaptive Bandwidth Management**
+   - Data prioritization based on user-defined importance
+   - Dynamic bandwidth allocation based on network conditions
+   - Throttling based on available power and connectivity
+   - Scheduling of non-critical transfers during optimal conditions
 
-4. **Device Integration Framework**
-   - Abstract interface for data collection devices
-   - Protocol implementations for common scientific equipment
-   - Data format conversion and normalization
-   - Automated acquisition scheduling
+3. **Local Mesh Networking**
+   - Peer discovery in offline environments
+   - Multi-hop data routing between research team members
+   - Network topology management and optimization
+   - Adaptive routing based on connection quality
 
-5. **Differential Synchronization**
-   - Dataset version tracking and management
-   - Change detection algorithms for various data types
-   - Conflict identification and resolution strategies
-   - Metadata preservation through sync operations
+4. **Scientific Instrument Connectivity**
+   - Data adapters for common field instruments
+   - Automated data collection and sharing
+   - Metadata preservation and enrichment
+   - Calibration data handling
+
+5. **Efficient Dataset Synchronization**
+   - Change detection in complex scientific datasets
+   - Delta encoding and transfer
+   - Version tracking and conflict resolution
+   - Verification of data integrity
 
 ## Testing Requirements
-### Key Functionalities to Verify
-- Reliable data transfer across intermittent connections
-- Efficient bandwidth utilization under constrained conditions
-- Correct mesh network formation and adaptation
-- Accurate integration with supported data collection devices
-- Proper differential synchronization with various dataset types and change patterns
 
-### Critical Scenarios to Test
-- Data integrity through store-and-forward operations
-- Transfer prioritization under bandwidth constraints
-- Mesh network operation across multiple hops
-- Complete data collection workflows from instruments to analysis
-- Concurrent updates to shared datasets from multiple field teams
+- **Key Functionalities to Verify**
+  - Transfers successfully resume after connectivity interruptions
+  - High-priority data transfers before low-priority data in bandwidth-limited scenarios
+  - Mesh network successfully routes data across multiple hops
+  - Instrument data is correctly captured and shared with metadata intact
+  - Differential sync correctly identifies and transfers only changed data
 
-### Performance Benchmarks
-- Battery impact vs. data throughput efficiency
-- Reconnection and recovery times after disruption
-- Bandwidth utilization efficiency (>80% of theoretical maximum)
-- Time to synchronize various dataset sizes and change patterns
-- Memory footprint during idle and active operations
+- **Critical User Scenarios**
+  - Collecting and synchronizing environmental sensor data in areas with sporadic connectivity
+  - Sharing urgent findings with base camp despite limited bandwidth
+  - Maintaining data flow among a distributed research team via mesh network
+  - Integrating data from multiple scientific instruments into a cohesive dataset
+  - Efficiently updating central databases with field amendments to existing datasets
 
-### Edge Cases and Error Conditions
-- Extremely limited bandwidth scenarios (<1 Kbps)
-- Frequent connection disruptions during active transfers
-- Device disappearance from mesh network during transfers
-- Corrupt or incomplete data from collection devices
-- Conflicting concurrent changes to the same dataset regions
-- Recovery from power loss during transfer operations
+- **Performance Benchmarks**
+  - Transfers must resume within 5 seconds of connectivity restoration
+  - Bandwidth prioritization must ensure critical data transfers at least 5x faster than low-priority data
+  - Mesh networking must support at least 5 hops with less than 50% throughput degradation
+  - Differential sync must achieve at least 90% bandwidth savings for typical dataset updates
+  - System must operate for at least 12 hours on a standard laptop battery
 
-### Required Test Coverage
-- ≥90% line coverage for core transfer protocols
-- 100% coverage of data integrity verification mechanisms
-- ≥85% coverage for mesh networking components
-- ≥90% coverage for device integration framework
-- ≥95% coverage for differential sync algorithms
+- **Edge Cases and Error Handling**
+  - Correct behavior during prolonged connectivity loss (days or weeks)
+  - Proper handling of conflicting updates from disconnected researchers
+  - Recovery from corrupted transfer state
+  - Graceful degradation when battery power is critically low
+  - Maintaining data integrity during unexpected device shutdown
+
+- **Test Coverage Requirements**
+  - All core resilience functions must have 100% test coverage
+  - Simulated field conditions must test end-to-end functionality
+  - Power consumption must be measured and verified in tests
+  - Error recovery paths must be thoroughly tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Field teams can reliably exchange data despite challenging connectivity conditions
-2. Critical research data receives priority treatment when bandwidth is limited
-3. Researchers can form functional data sharing networks regardless of internet availability
-4. Data flows directly from collection devices into the shared research ecosystem
-5. Dataset updates minimize bandwidth requirements through efficient differential synchronization
-6. All five key requirements are fully implemented and testable via pytest
-7. Battery life impact is minimized while maintaining data sharing capabilities
-8. Research workflow is accelerated by reducing manual data handling steps
+The implementation will be considered successful if:
 
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. It reliably shares research data despite intermittent and limited connectivity
+2. Critical data successfully transfers even with severe bandwidth constraints
+3. Local mesh networks enable data sharing without internet access
+4. Scientific instruments can directly contribute data to the shared repository
+5. Dataset updates transfer efficiently using differential synchronization
+6. All operations are power-efficient and suitable for field conditions
+7. The system is robust against the connectivity challenges of remote fieldwork
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Install test dependencies with `uv pip install pytest pytest-json-report`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

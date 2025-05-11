@@ -1,112 +1,174 @@
 # High-Frequency Trading Task Scheduler
 
 ## Overview
-A specialized concurrent task scheduler designed for time-critical financial analysis systems with nanosecond precision requirements. This system ensures deterministic execution of trading algorithms with strict latency guarantees while maximizing overall throughput of the financial analytics platform.
+A specialized concurrent task scheduler designed for high-frequency trading systems that process market data and execute trading algorithms with ultra-low latency. This system ensures that critical financial operations meet strict timing guarantees while optimizing overall throughput, with particular attention to nanosecond precision, hardware optimization, and performance anomaly detection.
 
 ## Persona Description
 Sophia builds high-frequency trading systems that must process market data and execute trading algorithms with minimal latency. Her primary goal is to ensure critical tasks meet strict timing guarantees while maximizing overall system throughput.
 
 ## Key Requirements
-1. **Latency-Focused Scheduling with Nanosecond Precision**
-   - Implement a real-time scheduling system capable of task timing with nanosecond precision and minimal jitter
-   - Critical for Sophia because high-frequency trading requires predictable, ultra-low-latency execution where even microsecond delays can result in missed opportunities or financial losses
 
-2. **Critical Path Prioritization with Task Reordering**
-   - Develop automatic identification and prioritization of tasks on the critical path, with dynamic reordering to minimize end-to-end latency for trading decision paths
-   - Essential for Sophia's systems where market data must flow through multiple analytical stages before trading decisions, and optimizing this critical path directly impacts trading performance
+1. **Latency-Focused Scheduling System**
+   - Implement a scheduling mechanism with nanosecond precision timing capabilities optimized for ultra-low latency operations
+   - This feature is critical for Sophia as financial trading algorithms require precise execution timing to capitalize on market opportunities that exist for microseconds or less
+   - The system must minimize scheduling overhead and jitter while providing deterministic execution guarantees
 
-3. **Hardware Affinity Controls for Performance Optimization**
-   - Create processor and memory affinity controls that allow fine-grained task placement to optimize cache utilization, minimize context switching, and leverage CPU topology
-   - Vital for extracting maximum performance from hardware by keeping latency-sensitive calculations on the same CPU core, maintaining data locality, and avoiding NUMA penalties
+2. **Critical Path Optimization**
+   - Create an intelligent task prioritization system that automatically identifies and reorders tasks to optimize critical paths in the execution graph
+   - This feature is essential for Sophia as it reduces end-to-end latency for transaction processing by ensuring that tasks on the critical path receive priority resource allocation
+   - Must dynamically update critical path analysis as execution proceeds and market conditions change
 
-4. **Real-Time Performance Anomaly Detection**
-   - Implement continuous monitoring of execution performance with automatic detection of anomalies and latency spikes, with configurable mitigation strategies
-   - Crucial for trading systems where performance degradation must be detected and addressed immediately to prevent financial impact, requiring automatic detection and mitigation of issues
+3. **Hardware Affinity Management**
+   - Develop a sophisticated resource allocation system that optimizes task placement for processor cache utilization and memory access patterns
+   - This feature is crucial for Sophia as it minimizes latency by ensuring optimal use of hardware capabilities, including cache locality, NUMA awareness, and specialized instruction sets
+   - Must include configurable pinning of critical tasks to specific CPU cores and memory regions
 
-5. **Low-Latency Logging with Minimal Execution Impact**
-   - Build a specialized logging system for financial transactions and algorithm execution that has minimal impact on critical path performance
-   - Important for maintaining both detailed audit trails required by regulatory compliance and execution traceability for debugging, without compromising the performance of the trading system
+4. **Real-time Performance Anomaly Detection**
+   - Implement a monitoring system that detects and responds to performance anomalies in real-time with minimal overhead
+   - This feature is vital for Sophia as it allows immediate identification and mitigation of latency spikes that could impact trading strategies and cause financial losses
+   - Must include adaptive baseline modeling and sub-microsecond response capabilities
+
+5. **Low-Latency Logging System**
+   - Create a high-performance logging mechanism that captures detailed execution metrics with minimal impact on system performance
+   - This feature is important for Sophia to support both post-mortem analysis of trading performance and regulatory compliance requirements without compromising system latency
+   - Must include configurable verbosity levels and efficient storage strategies for high-volume log data
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All components must be testable with deterministic timing validation
-  - Latency guarantees must be verifiable through statistical analysis
-  - Hardware affinity strategies must be testable on various CPU architectures
-  - Performance anomaly detection must be validated through controlled fault injection
-  - System must support replay testing with historical market data
 
-- **Performance Expectations**
-  - Scheduler overhead must not exceed 500 nanoseconds per task
-  - Jitter in task execution must be less than 50 nanoseconds at 99.9th percentile
-  - Critical path execution must complete with at least 99.99% of operations under target latency
-  - Performance anomaly detection must identify issues within 10 microseconds
-  - System must maintain performance guarantees under full load of market data processing
+### Testability Requirements
+- All components must be independently testable with precise latency measurement
+- System must support cycle-accurate simulation for deterministic testing
+- Test harnesses must provide nanosecond-resolution timing verification
+- Test coverage should exceed 95% for all latency-critical code paths
 
-- **Integration Points**
-  - Market data feed systems for real-time pricing information
-  - Hardware performance counters for low-level timing information
-  - CPU topology discovery for affinity optimization
-  - Regulatory compliance systems for transaction logging
-  - Trading execution systems for order placement
+### Performance Expectations
+- Support for at least 10,000 tasks per second with sub-microsecond scheduling latency
+- 99.9th percentile latency deviation less than 10 microseconds for critical tasks
+- CPU utilization overhead for scheduling should not exceed 1% on designated cores
+- System should maintain performance guarantees under 95% CPU load
 
-- **Key Constraints**
-  - Must operate without requiring real-time operating system modifications
-  - Must accommodate both Linux and specialized financial OS environments
-  - Must maintain deterministic performance during market volatility spikes
-  - All operations must be fully auditable for regulatory compliance
-  - Implementation must prioritize reliability over additional features
+### Integration Points
+- Integration with market data feeds (FIX, FAST, proprietary protocols)
+- Support for trading algorithm frameworks and execution systems
+- Interfaces for monitoring and risk management systems
+- Compatibility with regulatory reporting mechanisms (MiFID II, Reg NMS)
+
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- The system must maintain strict determinism for reproducible behavior
+- All operations must be fully auditable for regulatory compliance
+- Must operate correctly in environments with microsecond timing requirements
+- System must be resilient to market data anomalies and hardware glitches
 
 ## Core Functionality
-The system must provide a framework for defining time-critical financial processing pipelines with strict latency guarantees. It should implement deterministic scheduling algorithms that optimize for both predictable latency and throughput, with special attention to critical path execution in market data processing.
 
-Key components include:
-1. A task definition system using Python decorators/functions that captures timing requirements and hardware preferences
-2. A nanosecond-precision scheduler that guarantees execution timing for critical tasks
-3. A critical path analyzer that automatically identifies and optimizes end-to-end latency
-4. A hardware affinity manager that optimally places tasks based on CPU topology
-5. A performance monitoring system that detects and mitigates execution anomalies
-6. A low-impact logging system that maintains detailed execution records
+The High-Frequency Trading Task Scheduler must provide:
+
+1. **Precision Task Definition and Scheduling**
+   - A high-performance API for defining time-critical tasks with their resource requirements
+   - Support for nanosecond-precision scheduling and execution timing
+   - Deterministic execution guarantees for critical trading operations
+
+2. **Resource Optimization**
+   - Intelligent CPU core and memory allocation for optimal hardware utilization
+   - Cache-aware task placement to minimize memory access latency
+   - Support for specialized hardware acceleration (FPGA, ASIC integration)
+
+3. **Performance Monitoring and Adaptation**
+   - Real-time collection of latency and throughput metrics with minimal overhead
+   - Statistical analysis of performance patterns to detect anomalies
+   - Dynamic adjustment of scheduling parameters based on observed conditions
+
+4. **Critical Path Management**
+   - Automatic identification of execution-critical task sequences
+   - Priority boosting for tasks on the critical path
+   - Preemption capabilities for high-priority market events
+
+5. **Audit and Compliance**
+   - Low-overhead logging of all trading decisions and their timing
+   - Reproducible execution for regulatory investigation
+   - Performance record maintenance for strategy evaluation
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Nanosecond timing precision is maintained under various system loads
-  - Critical path prioritization correctly minimizes end-to-end latency
-  - Hardware affinity controls properly optimize for CPU topology
-  - Performance anomaly detection identifies and mitigates issues
-  - Logging system captures required data with minimal performance impact
 
-- **Critical User Scenarios**
-  - Processing market data during high-volatility trading conditions
-  - Executing multi-stage trading algorithms with tight latency requirements
-  - Maintaining performance during sudden market news events
-  - Detecting and addressing performance degradation before it affects trading
-  - Ensuring complete execution logs for regulatory audit while maintaining performance
+### Key Functionalities to Verify
+- Task scheduling consistently achieves sub-microsecond precision
+- Critical path optimization correctly identifies and prioritizes key tasks
+- Hardware affinity controls effectively optimize cache and memory utilization
+- Anomaly detection correctly identifies performance outliers
+- Logging system maintains performance without impacting latency
 
-- **Performance Benchmarks**
-  - 99.9th percentile task scheduling latency under 500 nanoseconds
-  - 99.99% of critical path executions completing within latency target
-  - CPU cache utilization improved by at least 30% through affinity optimization
-  - Performance anomalies detected within 10 microseconds of occurrence
-  - Logging overhead less than 100 nanoseconds per transaction
+### Critical Scenarios to Test
+- Handling of market data bursts during high-volatility periods
+- Response to simulated hardware performance degradation
+- Management of competing high-priority task streams
+- Recovery from scheduling delays or execution anomalies
+- Maintenance of performance under sustained high load
 
-- **Edge Cases and Error Conditions**
-  - Recovery from CPU thermal throttling events
-  - Handling of market data feed disruptions
-  - Management of resource contention during market volatility spikes
-  - Graceful degradation under extreme system load
-  - Detection of algorithmic anomalies in trading strategies
+### Performance Benchmarks
+- Scheduling overhead should not exceed 500 nanoseconds per task
+- 99.9th percentile scheduling jitter should be less than 1 microsecond
+- System should support at least 10,000 task invocations per second
+- Performance anomaly detection should trigger within 10 microseconds
 
-- **Required Test Coverage Metrics**
-  - >95% line coverage for all scheduling components
-  - 100% coverage of critical path identification logic
-  - 100% coverage of hardware affinity optimization strategies
-  - >95% branch coverage for performance monitoring logic
-  - Integration tests must verify end-to-end latency across complete trading workflows
+### Edge Cases and Error Conditions
+- Handling of clock synchronization issues or time source failures
+- Correct behavior during market data feed disruptions
+- Recovery from thread starvation or priority inversion
+- Proper management of resource exhaustion scenarios
+- Graceful degradation under extreme market volatility
+
+### Required Test Coverage
+- Minimum 95% line coverage for all latency-critical components
+- Comprehensive timing tests for all scheduling operations
+- Performance tests under various load conditions and market scenarios
+- Statistical verification of latency distribution properties
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- End-to-end latency for trading decisions reduced by at least 40%
-- Execution jitter reduced by 80% compared to standard scheduling
-- Trading algorithm throughput increased by at least 35%
-- Performance anomalies detected and mitigated before affecting trading outcomes in 99.9% of cases
-- Complete regulatory compliance with full transaction logging
-- Sophia's team can implement new trading strategies 2x faster due to predictable execution environment
+
+The implementation will be considered successful if:
+
+1. Scheduling operations consistently maintain sub-microsecond latency
+2. Critical path optimization reduces end-to-end execution time by at least 20%
+3. Hardware affinity controls improve cache utilization by at least 25%
+4. Performance anomaly detection identifies issues within 10 microseconds
+5. Logging system captures all required data with less than 1% performance impact
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using UV:
+   ```
+   uv venv
+   source .venv/bin/activate
+   ```
+
+2. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+3. CRITICAL: Run tests with pytest-json-report to generate pytest_results.json:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

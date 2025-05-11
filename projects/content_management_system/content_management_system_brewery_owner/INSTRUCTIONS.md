@@ -1,150 +1,173 @@
 # Craft Brewery Content Management System
 
 ## Overview
-A specialized content management system for craft breweries that enables beer catalog management, tap room status updates, release promotions, brewing documentation, and age verification. This system focuses on showcasing beer offerings and brewery story while building brand loyalty through engaging content.
+A specialized content management system designed for craft breweries to showcase their story, current tap offerings, and upcoming events. This system enables brewery owners to frequently update beer descriptions and availability while building brand loyalty through an engaging content experience that reflects the brewery's unique personality.
 
 ## Persona Description
 Carlos needs to showcase his brewery's story, current tap offerings, and upcoming events to beer enthusiasts. His primary goal is to frequently update beer descriptions and availability while building brand loyalty through an engaging content experience that reflects his brewery's unique personality.
 
 ## Key Requirements
 
-1. **Product Catalog with Customizable Beer Attributes**
-   - Implement a beer catalog management system with specialized characteristics tracking
-   - Critical for Carlos because it allows him to showcase the unique attributes of his craft beers (ABV, IBU, hops, malt, flavor profile, etc.) in a consistent format that helps customers discover beers matching their preferences
+1. **Product catalog with customizable attributes for beer characteristics**
+   - Critical for Carlos to maintain detailed information about each beer, including style, ABV, IBU, ingredients, flavor notes, and brewing process
+   - Must support custom attribute creation for unique characteristics of specialty beers
+   - Should include versioning to track changes in recipes and batches over time
 
-2. **Tap Room Status Board with Real-time Availability Updates**
-   - Create a tap management system for tracking current offerings and keg levels
-   - Essential for Carlos to provide up-to-date information about which beers are currently pouring, helping customers plan visits and reducing staff time spent answering availability questions
+2. **Tap room status board with real-time availability updates**
+   - Essential for keeping customers informed about what's currently pouring and how much remains
+   - Must provide an easy updating mechanism for staff to adjust keg levels and availability
+   - Should include integration options for digital display boards in the physical tap room
 
-3. **Beer Release Countdown Timers with Notification Signup**
-   - Develop a release promotion system with time-based content and alerts
-   - Important for building anticipation around new beer releases, limited editions, and special batches, helping Carlos create excitement and ensure customers don't miss releases they're interested in
+3. **Beer release countdown timers with notification signup**
+   - Important for building anticipation and traffic for new beer releases and special batches
+   - Must track multiple upcoming releases with configurable countdown displays
+   - Should include a notification system for customers to receive alerts about specific releases
 
-4. **Recipe and Brewing Process Documentation Templates**
-   - Implement a structured content system for sharing brewing information
-   - Necessary for Carlos to share the story behind his beers, showcasing the craftsmanship and unique brewing approaches that differentiate his brewery while engaging beer enthusiasts interested in the technical aspects
+4. **Recipe and brewing process documentation templates**
+   - Valuable for sharing brewing knowledge with the community and establishing craft credibility
+   - Must support structured documentation of brewing processes with appropriate terminology
+   - Should include appropriate level of detail while protecting proprietary brewing techniques
 
-5. **Age Verification System with Regional Compliance Settings**
-   - Create a configurable age verification system with geographical rule variations
-   - Crucial for ensuring legal compliance with alcohol marketing regulations across different jurisdictions while providing appropriate access to brewery content
+5. **Age verification system with regional compliance settings**
+   - Necessary for legal compliance when displaying alcoholic product information
+   - Must implement age verification appropriate to different jurisdictions
+   - Should include content restriction controls based on verified age
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Beer catalog entries must be testable with various attribute combinations
-- Tap status system must support simulated updates and availability changes
-- Release countdown functionality must be testable with time manipulation
-- Recipe documentation must verify structure and content requirements
-- Age verification must be testable with various regional settings and scenarios
+- All components must have unit tests with at least 85% code coverage
+- Integration tests must verify product catalog accuracy and tap status updates
+- Performance tests must ensure real-time updates function under load
+- Mock notification system for testing release countdown functionality
 
 ### Performance Expectations
-- Beer catalog must support at least 500 different brews with < 200ms retrieval time
-- Tap status updates should register and display within 5 seconds
-- Countdown timers should be accurate to within 1 second
-- Recipe document generation should complete in < 3 seconds
-- Age verification checks should add minimal overhead (< 100ms) to content access
+- Tap status updates must propagate within 5 seconds
+- Product catalog queries must complete within 200ms regardless of catalog size
+- Notification processing must handle at least 100 subscriptions per second
+- Age verification must complete within 1 second
 
 ### Integration Points
-- Inventory management system for tap availability tracking
-- Email/SMS service for release notifications
-- Calendar system for event and release scheduling
-- Document generation for printable beer information
-- GeoIP or similar service for regional compliance determination
+- Point-of-sale system for tap status synchronization
+- Email/SMS gateway for release notifications
+- Social media platforms for promotion sharing
+- Digital signage systems for in-store displays
 
 ### Key Constraints
-- No UI components, only API endpoints and business logic
-- Content must be structured for multi-channel distribution
-- Regulatory compliance with alcohol marketing laws
-- Support for frequent content updates by brewing staff
-- Scalability for growing product catalog and customer base
+- Product information must be structured for both human and machine consumption (Untappd, BeerAdvocate)
+- Age verification must comply with regulations in multiple jurisdictions
+- Real-time status must be accurate across multiple access points
+- System must function in the brewery environment (limited connectivity, high temperature/humidity)
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Craft Brewery CMS includes:
+The system must provide a Python library with the following core components:
 
 1. **Beer Catalog Management**
-   - Beer definition with customizable attributes
-   - Category and style organization
-   - Seasonal and limited edition designation
+   - Product data model with flexible attributes
+   - Beer style classification system
+   - Version control and batch tracking
    - Search and filtering capabilities
 
-2. **Tap Room Management**
-   - Current tap list configuration
-   - Keg level tracking and availability updates
-   - Rotation scheduling and upcoming taps
-   - Happy hour and special pricing integration
+2. **Tap Room Inventory**
+   - Real-time status tracking
+   - Availability calculation and display
+   - Staff update interface
+   - Historical consumption analytics
 
-3. **Release Promotion System**
-   - Release scheduling and countdown management
-   - Notification list management and triggering
-   - Pre-release content scheduling
-   - Release event coordination
+3. **Release Management**
+   - Event scheduling and countdown
+   - Notification subscription handling
+   - Audience targeting and segmentation
+   - Release promotion automation
 
 4. **Brewing Documentation**
-   - Recipe template definition and instantiation
-   - Process documentation with structured sections
-   - Ingredient and technique tagging
-   - Brewing history and beer lineage tracking
+   - Template system for process documentation
+   - Ingredient management and tracking
+   - Process visualization preparation
+   - Public/private information control
 
-5. **Age Compliance System**
-   - Age verification rule configuration
-   - Geographic region detection and rule application
-   - Verification session management
-   - Access control based on verification status
+5. **Compliance Management**
+   - Age verification mechanisms
+   - Regional regulation configuration
+   - Access control based on verification
+   - Audit logging for compliance verification
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Beer catalog entry creation and attribute management
-- Tap status updating and availability tracking
-- Release countdown functionality and notification system
-- Recipe and brewing process documentation creation
-- Age verification rule application and session management
+- Product catalog correctly stores and retrieves all beer attributes
+- Tap status updates accurately reflect current availability
+- Countdown system correctly tracks and notifies for upcoming releases
+- Documentation system properly formats and protects brewing information
+- Age verification correctly implements rules for different regions
 
 ### Critical User Scenarios
-- Adding a new seasonal beer with complete attribute set
-- Updating tap status when kegs are changed or emptied
-- Setting up a new beer release with countdown and notifications
-- Creating a detailed brewing process document for a signature beer
-- Configuring and testing age verification for different regions
+- Adding a new beer to the catalog with complete information
+- Updating tap status during a busy service period
+- Setting up a special release with countdown and notifications
+- Documenting a new brewing process with appropriate detail levels
+- Configuring regional compliance settings for distribution expansion
 
 ### Performance Benchmarks
-- Beer catalog search and filtering response times
-- Tap status update propagation speed
-- Concurrent countdown timer accuracy for multiple releases
-- Document generation speed for various recipe complexities
-- Age verification overhead under varied traffic conditions
+- System must support catalog with at least 500 beer entries
+- Tap status must handle at least 50 updates per hour
+- Notification system must support at least 10,000 subscribers
+- Age verification must process at least 100 verifications per minute
 
 ### Edge Cases and Error Conditions
-- Handling discontinued beers while preserving historical information
-- Managing tap changeovers during business hours
-- Handling time zone issues for release countdowns
-- Recovering from interrupted document generation
-- Gracefully managing verification failures and retry attempts
+- Handling conflicting tap status updates from multiple staff members
+- Managing notification delivery failures and retries
+- Dealing with incomplete product information
+- Recovering from interrupted brewing documentation
+- Handling age verification in undefined regulatory regions
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of age verification code paths
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for age verification bypass attempts
+- Minimum 85% code coverage across all modules
+- 100% coverage of tap status update logic
+- 100% coverage of age verification rules
+- 100% coverage of notification dispatch
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Beer catalog can manage diverse products with detailed attributes
-2. Tap room status can be updated and tracked in near real-time
-3. Beer releases can be promoted with accurate countdowns and notifications
-4. Brewing processes can be documented with consistent structured formats
-5. Age verification works correctly according to regional requirements
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. Content updates can be performed quickly and efficiently
-9. All tests pass, demonstrating the functionality works as expected
+1. The product catalog effectively manages beer information with custom attributes
+2. The tap status system accurately tracks and communicates current availability
+3. The release countdown correctly manages dates and notifications
+4. The documentation system properly structures brewing information
+5. The age verification system correctly implements appropriate restrictions
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

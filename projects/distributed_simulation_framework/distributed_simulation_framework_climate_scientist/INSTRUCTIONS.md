@@ -1,183 +1,173 @@
-# Multi-Domain Climate Simulation Framework
+# Climate System Simulation Framework
 
 ## Overview
-A specialized distributed simulation framework designed for climate scientists to model regional climate systems with high resolution and efficiency. This framework enables the integration of atmospheric, oceanic, and land components with different timescales, supports uncertainty quantification through ensemble simulations, and provides downscaling capabilities for regional impact assessment.
+A distributed simulation framework specialized for climate scientists to model complex regional climate systems with high resolution and computational efficiency. The framework enables integration of atmospheric, oceanic, and land components while efficiently distributing computation across available resources for long-running climate simulations.
 
 ## Persona Description
 Dr. Zhang models regional climate systems to predict environmental changes and evaluate mitigation strategies. His primary goal is to run high-resolution climate simulations that integrate atmospheric, oceanic, and land components while maximizing computational efficiency.
 
 ## Key Requirements
 
-1. **Multi-Physics Domain Integration with Different Timescales**
-   - Support for coupling atmospheric, oceanic, and land surface models with different temporal resolutions
-   - Synchronization mechanisms to handle varying timescales between model components
-   - Data exchange interfaces between different physical domains
-   - Consistent state management across integrated components
-   - Critical for Dr. Zhang because climate systems involve multiple interacting physical processes operating at different timescales (from hours for atmospheric processes to months for deep ocean dynamics), and accurately modeling these interactions is essential for reliable climate predictions
+1. **Multi-Physics Domain Integration with Different Timescales**  
+   Implement a system for coupling different physical domains (atmosphere, ocean, land, ice) that operate on different timescales while maintaining physical consistency. This feature is critical for Dr. Zhang because realistic climate modeling requires simulating interactions between these systems that evolve at different rates, and accurate coupling is essential for modeling feedback mechanisms that drive climate dynamics.
 
-2. **Uncertainty Quantification through Ensemble Simulations**
-   - Automated generation and management of ensemble simulation members
-   - Parameterization variation across ensemble members
-   - Statistical analysis of ensemble results to quantify prediction uncertainty
-   - Sensitivity analysis to identify critical parameters
-   - Critical for Dr. Zhang because climate predictions inherently contain uncertainties from initial conditions, model parameters, and structural assumptions, requiring ensemble approaches to quantify confidence levels and provide probabilistic forecasts
+2. **Uncertainty Quantification through Ensemble Simulations**  
+   Develop a framework for automatically generating, managing, and analyzing ensemble simulations with perturbed initial conditions and parameters to quantify prediction uncertainties. This capability is vital because climate projections inherently contain uncertainties, and ensemble methods allow Dr. Zhang to provide statistical confidence intervals for predictions, which are essential for science-based policy decisions.
 
-3. **Downscaling Capabilities for Regional Impact Assessment**
-   - Methods for increasing spatial resolution in regions of interest
-   - Consistent boundary condition handling between global and regional scales
-   - Statistical and dynamical downscaling techniques
-   - Validation against regional observational data
-   - Critical for Dr. Zhang because while global models provide broad climate patterns, regional impact assessment requires higher resolution simulations that can capture local topography, coastlines, and human systems that influence regional climate effects
+3. **Downscaling Capabilities for Regional Impact Assessment**  
+   Create a system for dynamically downscaling global climate data to high-resolution regional grids while preserving physical consistency and boundary conditions. This feature enables Dr. Zhang to produce detailed local climate projections that decision-makers need for adaptation planning, as regional impacts are what ultimately matter for community resilience strategies.
 
-4. **Long-Running Simulation Management with Incremental Results**
-   - Checkpoint/restart capabilities for simulations spanning months of compute time
-   - Incremental result generation and analysis during execution
-   - Runtime monitoring and early stopping based on convergence metrics
-   - Job scheduling and resource reservation for extended computations
-   - Critical for Dr. Zhang because climate simulations often require months of compute time to model decades or centuries of climate evolution, necessitating robust mechanisms for managing long-running jobs and extracting usable insights before full completion
+4. **Long-Running Simulation Management with Incremental Results**  
+   Build mechanisms for checkpoint/restart, incremental result analysis, and simulation monitoring for simulations that run for weeks or months of computation time. This capability is essential because climate simulations typically require extremely long run times, and Dr. Zhang needs to monitor progress, analyze interim results, and recover from system failures without losing valuable computation.
 
-5. **Computation Distribution Optimized for Heterogeneous Clusters**
-   - Domain decomposition strategies for efficient parallel processing
-   - Load balancing optimized for climate model characteristics
-   - Support for utilizing specialized hardware when available (e.g., different CPU architectures)
-   - Performance profiling and optimization tools
-   - Critical for Dr. Zhang because climate models are computationally intensive, and research institutions often have heterogeneous computing resources, requiring efficient utilization strategies to maximize simulation throughput and resolution
+5. **Computation Distribution Optimized for Heterogeneous Clusters**  
+   Implement intelligent workload distribution that can leverage different types of computing resources (CPU, GPU, specialized hardware) with dynamic load balancing. This feature is crucial because climate centers often have heterogeneous computing environments, and optimal utilization of all available resources is necessary to achieve the highest possible resolution and longest simulation timeframes within resource constraints.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each component must have comprehensive unit tests with at least 90% code coverage
-- Integration tests verifying correct coupling between different physical domains
-- Conservation tests ensuring physical quantities (mass, energy) are properly preserved
-- Bit-reproducibility tests confirming identical results with the same inputs
-- Validation tests comparing model outputs against analytical solutions and observational data
+- All components must have deterministic modes for reproducible testing
+- Physics modules must be validated against standard benchmark cases
+- Domain coupling mechanisms must preserve conservation laws within acceptable tolerances
+- Ensemble generation must produce statistically valid parameter variations
+- Downscaling algorithms must be verifiable against high-resolution reference data
 
 ### Performance Expectations
-- Ability to utilize at least 32 distributed processes efficiently
-- Scaling efficiency of at least 70% when doubling processor count
-- I/O performance allowing checkpointing of a full model state in under 5 minutes
-- Communication overhead limited to maximum 15% of total computation time
-- Support simulations spanning at least 100 model years at 50km resolution
+- Must achieve at least 80% parallel efficiency on up to 1,000 cores for large domains
+- Should process at least 5 simulated years per day of computation for standard resolution
+- Ensemble simulations should scale linearly with available computational resources
+- Downscaling operations should maintain at least 70% of the performance of raw simulation
+- Checkpoint/restart overhead should be less than 5% of total computation time
 
 ### Integration Points
-- Support for standard climate data formats (NetCDF, GRIB)
-- Integration with common visualization and analysis tools
-- APIs for implementing custom physical process models
+- Data interfaces compatible with standard climate data formats (NetCDF, GRIB)
+- API for defining and registering new physical process models
+- Workflow integration with data preprocessing and postprocessing pipelines
+- Extension points for custom uncertainty quantification methods
 - Interfaces for observational data assimilation
-- Compatibility with existing climate model components
 
 ### Key Constraints
-- All components must be implementable in pure Python
-- Distribution mechanisms must use standard library capabilities
-- The system must work across heterogeneous computing environments
-- Results must be bit-reproducible with the same initial conditions and parameters
-- Storage efficiency for extremely large datasets generated by ensemble simulations
+- Implementation must be in Python with no UI components
+- All core algorithms must be mathematically stable for long-running simulations
+- Must operate within memory constraints of typical HPC environments
+- Data storage formats must be self-describing and platform-independent
+- Must support both MPI and shared-memory parallelism models
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation should provide a Python library with the following core components:
+The Climate System Simulation Framework needs to implement these core capabilities:
 
-1. **Multi-Physics Coupling Framework**
-   - Component model interface definitions
-   - Data exchange and interpolation utilities
-   - Time synchronization management
-   - Conservation enforcement mechanisms
-   - Domain overlap handling
+1. **Multi-Domain Physics Engine**
+   - Implementation of atmospheric, oceanic, land surface, and cryosphere models
+   - Flexible coupling mechanisms between domains with different spatial and temporal scales
+   - Conservation enforcement for critical physical quantities (energy, mass, momentum)
+   - Support for pluggable physics parameterization schemes
 
-2. **Distribution System**
-   - Domain decomposition for spatial parallelization
-   - Process/node management across computing resources
-   - Communication optimization for climate model patterns
-   - Load balancing with consideration for physical processes
-   - Fault tolerance and recovery capabilities
+2. **Ensemble Simulation System**
+   - Parameter perturbation mechanisms based on physical constraints
+   - Efficient execution of multiple simulation instances
+   - Statistical analysis tools for ensemble results
+   - Uncertainty propagation and quantification
 
-3. **Ensemble Management System**
-   - Parameter space exploration tools
-   - Ensemble member generation and tracking
-   - Result aggregation and statistical analysis
-   - Uncertainty quantification methods
-   - Sensitivity analysis utilities
+3. **Spatial Resolution Management**
+   - Dynamic grid refinement and nested domain support
+   - Downscaling algorithms for regional focus areas
+   - Boundary condition handling between resolution levels
+   - Conservation-preserving interpolation methods
 
-4. **Downscaling Framework**
-   - Nested grid implementation for higher resolution regions
-   - Statistical downscaling methods
-   - Boundary condition management between scales
-   - Regional validation tools
-   - Scale-appropriate physics toggles
+4. **Execution Control Framework**
+   - Checkpoint/restart mechanisms with data integrity validation
+   - Progress monitoring and early result extraction
+   - Fault tolerance and recovery strategies
+   - Simulation lifecycle management
 
-5. **Long-Running Simulation Support**
-   - Checkpoint/restart implementation with versioning
-   - Incremental result extraction and processing
-   - Runtime monitoring and analysis tools
-   - Resource management integration
-   - Progress tracking and estimation
+5. **Resource Optimization System**
+   - Workload distribution based on resource capabilities
+   - Dynamic load balancing for heterogeneous environments
+   - Memory usage optimization for large-scale simulations
+   - I/O patterns optimized for parallel file systems
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-1. **Physical Accuracy**
-   - Conservation of relevant physical quantities
-   - Correct implementation of physical process equations
-   - Appropriate handling of boundary conditions
-   - Stability over long integration periods
-
-2. **Component Coupling**
-   - Accurate data exchange between domains
-   - Proper time synchronization across varying timescales
-   - Consistency at domain interfaces
-   - Conservation across component boundaries
-
-3. **Ensemble Analysis**
-   - Correct statistical processing of ensemble members
-   - Appropriate uncertainty quantification
-   - Sensitivity analysis accuracy
-   - Proper management of ensemble variations
-
-4. **Downscaling**
-   - Consistent results across resolution changes
-   - Accurate representation of fine-scale features
-   - Proper boundary condition handling
-   - Validation against high-resolution reference data
-
-5. **Performance and Scaling**
-   - Efficiency with increasing process count
-   - Load balance across heterogeneous resources
-   - I/O performance for large datasets
-   - Resource utilization efficiency
+- Accuracy of physical process implementations against analytical solutions
+- Conservation properties in domain coupling mechanisms
+- Statistical properties of ensemble generation methods
+- Fidelity of downscaled results compared to high-resolution reference runs
+- Correctness of checkpoint/restart functionality for long simulations
+- Efficiency of resource utilization in heterogeneous environments
 
 ### Critical User Scenarios
-1. Simulating regional climate changes under various emissions scenarios
-2. Quantifying prediction uncertainties through large ensemble simulations
-3. Analyzing extreme event risks in specific geographic regions
-4. Evaluating climate mitigation strategies and their regional impacts
-5. Running multi-century simulations to identify long-term climate patterns
+- Running a century-scale climate simulation with full Earth system coupling
+- Generating a 50-member ensemble to quantify prediction uncertainties
+- Downscaling global climate projections to regional domains
+- Recovering and continuing a simulation after system failure
+- Analyzing incremental results from ongoing simulations
+- Deploying a simulation across a heterogeneous computing environment
 
 ### Performance Benchmarks
-1. Complete a 50-year climate simulation at 50km resolution in under 24 hours using 32 processes
-2. Achieve at least 70% parallel efficiency when scaling from 8 to 32 processes
-3. Generate and analyze a 50-member ensemble in under 48 hours
-4. Complete checkpointing of full model state in under 5 minutes
-5. Achieve downscaling to 10km resolution with no more than 8x computational cost
+- Scaling efficiency to at least 1,000 cores with minimum 80% parallel efficiency
+- Processing speed of at least 5 simulated years per day for standard configurations
+- Storage efficiency: maximum 1TB per decade of simulated climate at standard resolution
+- Memory footprint: maximum 2GB per core for production simulations
+- Checkpoint overhead: less than 5% of total runtime
 
 ### Edge Cases and Error Conditions
-1. Handling numerical instabilities in extreme climate scenarios
-2. Recovery from node failures during long-running simulations
-3. Managing ensemble members that diverge significantly from observed behavior
-4. Appropriate degradation with insufficient computational resources
-5. Handling corrupted or incomplete checkpoint data
+- Handling of numerical instabilities in physical process calculations
+- Recovery from partial or corrupted checkpoint data
+- Management of disk space limitations during long simulations
+- Detection and reporting of non-physical results
+- Graceful degradation when requested resources are unavailable
 
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for core framework components
-- 100% coverage of physical conservation mechanisms
-- All boundary condition handling code must be comprehensively tested
-- Performance tests must cover various scales and processor counts
-- Full integration tests for all supported physical components
+### Test Coverage Requirements
+- Unit test coverage of at least 90% for all physics implementations
+- Integration tests for all coupling mechanisms
+- Verification against standard benchmark cases from the climate modeling community
+- Performance tests covering scaling behavior
+- Regression tests for all critical workflows
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully couple atmospheric, oceanic, and land models with different timescales
-2. Generate ensemble simulations that quantify prediction uncertainties with statistical confidence
-3. Achieve regional downscaling with appropriate representation of local climate features
-4. Complete multi-decade simulations with proper checkpoint/restart capabilities
-5. Demonstrate efficient utilization of distributed computing resources
-6. Validate model results against observational data with acceptable error margins
-7. Provide analysis tools that extract actionable insights from simulation outputs
+
+The implementation of the Climate System Simulation Framework will be considered successful when:
+
+1. The system correctly integrates multiple physical domains operating at different timescales while maintaining conservation properties
+2. Ensemble simulations successfully quantify uncertainties in climate projections
+3. Downscaling operations produce high-resolution regional data consistent with global simulations
+4. Long-running simulations can be managed effectively with checkpointing and incremental analysis
+5. Computational workloads are efficiently distributed across heterogeneous computing resources
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file must be included as proof that all tests pass and is a critical requirement for project completion.

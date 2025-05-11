@@ -1,10 +1,10 @@
-# Security-Focused System Monitoring Platform
+# Security-Focused Monitoring Platform
 
-A specialized monitoring solution designed to detect, analyze, and alert on security-relevant system behaviors and potentially suspicious activities across an organization's infrastructure.
+A specialized monitoring solution that emphasizes security event detection, suspicious behavior analysis, and system integrity validation.
 
 ## Overview
 
-The Security-Focused System Monitoring Platform is a tailored implementation of the PyMonitor system that concentrates on security-relevant metrics and behaviors. It provides security operations analysts with detailed visibility into authentication attempts, process relationships, network communications, file integrity, and security configuration drift to help identify potential security incidents and vulnerabilities.
+This implementation of PyMonitor is designed specifically for security operations, focusing on authentication failure monitoring, process lineage tracking, network connection visualization, file integrity monitoring, and security baseline comparison to enable effective threat detection and security incident response.
 
 ## Persona Description
 
@@ -12,161 +12,225 @@ Elena focuses on security monitoring across company infrastructure. She needs vi
 
 ## Key Requirements
 
-1. **Authentication Failure Monitoring with Geolocation** - Implement functionality to track failed login attempts across systems with geographic context. This is critical for Elena because unusual authentication attempts from unexpected locations are often the first indicator of account compromise, and immediate detection with location data enables faster threat assessment and response.
+1. **Authentication Failure Monitoring with Geolocation**
+   - Track failed login attempts across systems with IP geolocation context
+   - Detect brute force and password spraying patterns
+   - Identify unusual login times or locations for valid accounts
+   - Correlate authentication failures across multiple systems
+   - Generate risk scores based on authentication patterns
+   - This is critical because authentication-related attacks are one of the most common initial access vectors for security breaches.
 
-2. **Process Lineage Tracking** - Develop capabilities to monitor and highlight unusual parent-child process relationships. Elena needs this because sophisticated attacks often involve abnormal process spawning patterns, and understanding process lineage helps identify malicious code execution that standard monitoring might miss.
+2. **Process Lineage Tracking**
+   - Monitor parent-child process relationships across systems
+   - Detect unusual process spawning patterns
+   - Identify potentially malicious command line arguments
+   - Track process execution chains from initial entry points
+   - Generate alerts for suspicious process behavior
+   - This is critical because understanding process relationships helps identify living-off-the-land techniques and other sophisticated attack methods that leverage legitimate system processes.
 
-3. **Network Connection Visualization** - Create a system to track and identify unexpected outbound communications from monitored systems. This capability is essential because malware and data exfiltration typically involve network connections to unusual destinations, and Elena needs to quickly identify potentially compromised systems attempting unauthorized communications.
+3. **Network Connection Visualization**
+   - Monitor and visualize internal and external network connections
+   - Detect unusual or unauthorized network communication
+   - Track data flow volumes and patterns between systems
+   - Identify potential command-and-control or data exfiltration channels
+   - Generate baseline network maps and alert on deviations
+   - This is critical because unexpected network connections often indicate compromise, lateral movement, or data exfiltration attempts.
 
-4. **File Integrity Monitoring** - Implement functionality to detect and alert on changes to critical system files. This is crucial for Elena as unauthorized modifications to system files are a common indicator of compromise, and early detection of such changes can prevent further system exploitation and damage.
+4. **File Integrity Monitoring**
+   - Track changes to critical system files and configurations
+   - Calculate and validate file hashes to detect unauthorized modifications
+   - Log file change details including timestamps and responsible processes
+   - Provide file change history with comparison capabilities
+   - Support custom rules for monitoring specific file patterns
+   - This is critical because system file modifications are common indicators of persistence mechanisms and other malicious activities.
 
-5. **Security Baseline Comparison** - Develop a system to track and report system configuration drift from hardened security standards. Elena requires this because maintaining secure configurations across systems is essential for security posture, and identifying systems that have deviated from security baselines helps prioritize remediation efforts.
+5. **Security Baseline Comparison**
+   - Define and enforce security configuration baselines
+   - Detect and report deviations from hardened standards
+   - Score system security posture against defined benchmarks
+   - Track security configuration changes over time
+   - Generate compliance reports for security standards
+   - This is critical because system misconfigurations or security control disablements are frequent contributors to successful attacks and policy violations.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All security monitoring components must be testable with pytest
-- Authentication monitoring must be testable with simulated login attempt data
-- Process relationship detection must validate against known malicious patterns
-- Network monitoring must allow testing with predefined connection scenarios
-- File integrity checking must verify detection of various modification types
+- All security monitoring components must be testable with simulated security events
+- Authentication monitoring must be testable with mock login data and geolocation
+- Process lineage must be verifiable with predefined process hierarchies
+- Network monitoring must be testable with simulated connection data
+- File integrity checking must work with test file sets
+- Baseline comparison must validate against defined security standards
 
 ### Performance Expectations
-- Near real-time detection of security events (within 30 seconds)
-- Minimal false positive rate (<1%) while maintaining high detection sensitivity
-- Efficient processing of authentication logs from hundreds of systems
-- Lightweight process monitoring with minimal impact on system performance
-- Network connection analysis capable of handling systems with thousands of connections
+- Real-time detection of security events (within 10 seconds of occurrence)
+- Ability to process at least 1000 authentication events per second
+- Track process lineage for at least 10,000 processes per monitored system
+- Monitor network connections across 1000+ endpoints with minimal latency
+- File integrity checking with minimal system impact (less than 2% CPU utilization)
+- Support for at least 100 concurrent security baseline checks
 
 ### Integration Points
-- Authentication systems and directory services
-- System logging frameworks and SIEM systems
-- Process monitoring APIs across different operating systems
-- Network flow data from firewalls and network devices
-- File integrity databases and cryptographic verification tools
+- Authentication systems (LDAP, Active Directory, local auth logs)
+- Process monitoring facilities (procfs, Windows WMI, sysmon)
+- Network monitoring tools (netflow, pcap, socket statistics)
+- File system monitoring capabilities (inotify, FSEvents, USN journal)
+- Security configuration standards (CIS benchmarks, DISA STIGs)
+- IP geolocation databases and services
 
 ### Key Constraints
-- Must minimize false positives while maximizing detection capability
-- Should operate with minimal privileged access where possible
-- Must function across diverse operating systems and environments
-- Should balance comprehensive monitoring with resource efficiency
-- Must preserve chain of evidence for security incidents
+- Must operate with minimal elevated privileges
+- Cannot significantly impact system performance during monitoring
+- Must support multiple operating systems (Windows, Linux, macOS)
+- Should function without constant connectivity to a central server
+- Must maintain accurate audit trails for security events
+- Should minimize storage requirements for long-term event history
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Security-Focused System Monitoring Platform must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Authentication Security Monitoring**
-   - Failed login attempt tracking with threshold alerting
-   - Geographic source correlation for authentication attempts
-   - Pattern analysis for brute force and credential stuffing attacks
-   - User behavior anomaly detection
-   - Login time and location pattern analysis
+1. **Authentication Monitor**
+   - Authentication event collection and normalization
+   - IP geolocation resolution and enrichment
+   - Pattern detection for brute force and credential stuffing
+   - User behavior profiling and anomaly detection
+   - Risk scoring and alerting for suspicious authentication
 
-2. **Process Security Analysis**
-   - Parent-child process relationship tracking
-   - Detection of known malicious process patterns
-   - Unusual process execution path identification
-   - Privilege escalation detection
-   - Unauthorized script and interpreter usage monitoring
+2. **Process Tracker**
+   - Process creation and termination monitoring
+   - Parent-child relationship mapping
+   - Command line and argument analysis
+   - Process behavior profiling
+   - Suspicious execution chain detection
 
-3. **Network Security Visibility**
-   - Outbound connection monitoring and categorization
-   - Unusual destination detection based on historical patterns
-   - Data volume anomaly identification
-   - Connection timing pattern analysis
-   - DNS request monitoring for suspicious domains
+3. **Network Analyzer**
+   - Connection establishment and termination tracking
+   - Traffic flow analysis and baselining
+   - Destination categorization and risk assessment
+   - Protocol analysis and validation
+   - Anomalous connection detection
 
-4. **File System Security**
-   - Critical file integrity verification with cryptographic hashing
-   - Change detection for system binaries and configuration files
-   - Permission modification monitoring
-   - Unauthorized file creation in sensitive directories
-   - Temporal correlation of file changes with other security events
+4. **File Integrity Checker**
+   - File change detection and validation
+   - Hash calculation and verification
+   - Change attribution to users and processes
+   - Historical comparison capabilities
+   - Critical file prioritization
 
-5. **Security Configuration Management**
-   - Hardened baseline definition and storage
-   - Ongoing configuration compliance checking
-   - Prioritized security configuration drift reporting
-   - Recommended remediation steps for compliance issues
-   - Tracking of security posture over time
+5. **Security Configuration Validator**
+   - Baseline definition and management
+   - Configuration scanning and comparison
+   - Compliance scoring and reporting
+   - Remediation guidance for deviations
+   - Change tracking and drift detection
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Accuracy of authentication failure detection and geolocation
-- Precision of process lineage tracking compared to known patterns
-- Effectiveness of network connection analysis in identifying anomalies
-- Reliability of file integrity monitoring for various modification scenarios
-- Consistency of security baseline comparisons with hardened standards
+### Key Functionalities to Verify
+- Accurate detection of authentication-based attacks
+- Reliable tracking of process lineage and suspicious execution
+- Precise identification of unusual network connections
+- Effective detection of unauthorized file modifications
+- Accurate comparison against security baselines
 
 ### Critical User Scenarios
-- Detecting attempted brute force attacks from multiple geographic locations
-- Identifying malware execution through abnormal process relationships
-- Discovering data exfiltration attempts through unusual network connections
-- Detecting unauthorized modifications to critical system files during an attack
-- Prioritizing systems with the most significant security configuration drift
+- Identifying potential brute force attacks in progress
+- Detecting malicious process execution chains
+- Discovering unauthorized data exfiltration attempts
+- Identifying unauthorized changes to critical files
+- Assessing system compliance with security standards
 
 ### Performance Benchmarks
-- Time to detect and alert on authentication anomalies
-- Resource impact of continuous process monitoring
-- Efficiency of network connection analysis under heavy traffic
-- Speed of file integrity verification across large file sets
-- Performance of configuration baselines checks across diverse systems
+- Authentication event processing within 5 seconds of occurrence
+- Process relationship mapping within 2 seconds of process creation
+- Network connection detection within 1 second of establishment
+- File integrity checking with less than 2% system performance impact
+- Baseline compliance checks completing within 5 minutes per system
 
-### Edge Cases and Error Handling
-- Behavior during high volumes of authentication failures (DoS scenarios)
-- Handling of process monitoring during system high load conditions
-- Network analysis during unusual but legitimate traffic patterns
-- File integrity checking with corrupted or inaccessible files
-- Baseline comparison with partially collected configuration data
+### Edge Cases and Error Conditions
+- Handling high-volume authentication failure events during attacks
+- Managing complex process trees during high system activity
+- Processing unusually high network connection volumes
+- Correctly attributing file changes during concurrent modifications
+- Handling partially applicable security baselines in mixed environments
 
-### Required Test Coverage
-- 95% code coverage for authentication monitoring components
-- 95% coverage for process lineage tracking logic
-- 90% coverage for network connection analysis algorithms
-- 95% coverage for file integrity verification
-- 90% coverage for security baseline comparison
+### Test Coverage Metrics
+- Minimum 95% code coverage across all security modules
+- 100% coverage of authentication pattern detection algorithms
+- 100% coverage of process relationship mapping logic
+- 100% coverage of network anomaly detection
+- 100% coverage of file hash calculation and verification
+- 95% coverage of security baseline comparison logic
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. Authentication anomalies are detected and geolocated with 95% accuracy within 30 seconds
-2. Unusual process relationships are identified with a false positive rate below 1%
-3. Unexpected network connections are detected with 90% accuracy within 60 seconds
-4. File integrity changes are identified within 5 minutes with 99.9% accuracy
-5. Security configuration drift is accurately reported with clear prioritization
-6. The system integrates with existing security tools and workflows
-7. Resource impact on monitored systems is minimal and configurable
-8. All components pass their respective test suites with required coverage levels
+1. **Effective Authentication Monitoring**
+   - Accurate detection of authentication-based attack patterns
+   - Proper geolocation context for login attempts
+   - Reliable user behavior profiling and anomaly detection
 
----
+2. **Comprehensive Process Tracking**
+   - Complete mapping of process relationships
+   - Accurate detection of suspicious process behaviors
+   - Reliable alerting on unusual process execution chains
+
+3. **Insightful Network Visualization**
+   - Clear identification of unusual network connections
+   - Accurate detection of potential data exfiltration
+   - Reliable network behavior baselining and deviation alerting
+
+4. **Reliable File Integrity Verification**
+   - Accurate detection of file modifications
+   - Proper attribution of changes to users and processes
+   - Complete historical tracking of file changes
+
+5. **Thorough Security Baseline Validation**
+   - Accurate comparison against defined security standards
+   - Clear reporting on configuration deviations
+   - Reliable tracking of security posture over time
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

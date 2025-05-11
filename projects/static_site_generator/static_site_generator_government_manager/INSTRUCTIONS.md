@@ -1,10 +1,10 @@
-# Government Agency Information Portal Generator
+# Accessible Government Information Portal Generator
 
-A specialized static site generator for creating accessible, compliant government websites that effectively organize public information, regulatory content, and community resources.
+A specialized static site generator designed for government agencies to publish regulatory information, public notices, and community resources in a highly accessible, standards-compliant format.
 
 ## Overview
 
-This project is a Python library for generating comprehensive government agency websites from structured content sources. It focuses on accessibility compliance, document management, multi-language support, and official notice formatting to meet the unique requirements of government information portals.
+This project implements a Python library for generating government information websites that prioritize accessibility, compliance with regulatory standards, searchable document repositories, and multilingual support. It focuses on the needs of government content managers who must publish official information that meets strict compliance requirements while serving diverse community needs.
 
 ## Persona Description
 
@@ -12,146 +12,234 @@ Miguel works for a municipal government agency and needs to publish regulatory i
 
 ## Key Requirements
 
-1. **Accessibility Compliance System**: Implement comprehensive accessibility checking to ensure all generated content meets WCAG standards. As a government agency, Miguel's site must be legally compliant with accessibility regulations, making this feature essential to automatically detect and remedy potential barriers for users with disabilities across all generated pages.
+1. **Accessibility Compliance Checking**: Implement comprehensive tools for ensuring generated content meets Web Content Accessibility Guidelines (WCAG) standards throughout the site.
+   - Critical for Miguel because government websites must comply with accessibility regulations, and non-compliance can result in legal issues and exclude citizens from accessing vital information.
+   - Must validate against WCAG 2.1 AA standards at minimum with automated testing and reporting.
 
-2. **Document Repository Management**: Create a system for organizing, categorizing, and making searchable public records and government forms. Miguel's agency must maintain transparent access to numerous official documents and forms, requiring a structured repository that allows citizens to easily locate specific documents through multiple categorization schemes and search functionality.
+2. **Document Repository**: Create a structured, searchable system for organizing and presenting public records, forms, and official documents with proper categorization.
+   - Essential for Miguel because government agencies must provide transparent access to public documents, organized in a way that citizens can easily find what they need.
+   - Should include metadata, versioning, and powerful search capabilities.
 
-3. **Legal Notice Template System**: Develop specialized templates with proper formatting for official announcements and legal notices. Government agencies have strict requirements for how official notices must be formatted and presented to have legal standing, making this feature critical for Miguel to ensure all public announcements meet required standards for official communication.
+3. **Legal Notice Templates**: Develop standardized templates for official announcements, public notices, and regulatory information with proper formatting and structure.
+   - Important for Miguel because government communications often require specific formats and legal language to be valid, and consistency is essential across notices.
+   - Must include dated archives and proper citation information.
 
-4. **Multi-language Content Management**: Implement a framework for managing and displaying content in multiple languages with translation workflow support. To serve diverse community members, Miguel needs to provide critical government information in multiple languages, with a systematic approach to managing translations and ensuring content parity across language versions.
+4. **Multi-Language Content Management**: Implement a comprehensive system for managing content in multiple languages with appropriate translation workflows.
+   - Valuable for Miguel because government information must be accessible to all community members, including those with limited English proficiency.
+   - Should maintain synchronization between translated versions and indicate translation status.
 
-5. **PDF Generation System**: Create functionality for automatically generating printer-friendly PDF versions of online content. For official documentation and records purposes, Miguel's agency requires PDF versions of web content that maintain proper formatting, pagination, headers/footers, and official markings for distribution and archival purposes.
+5. **PDF Generation**: Create functionality for generating printer-friendly, accessible PDF versions of online content for official documents and forms.
+   - Critical for Miguel because many government processes still require printable forms and official documents that can be downloaded, printed, and submitted.
+   - Must generate PDF/A compliant documents that maintain accessibility features.
 
 ## Technical Requirements
 
-- **Testability Requirements**:
-  - Accessibility compliance must be automatically verified against WCAG standards
-  - Document repository structure must be validatable with test data
-  - Legal notice formatting must be verified against regulatory requirements
-  - Multi-language content must be tested for completeness across languages
-  - PDF generation must produce consistent, valid documents
+### Testability Requirements
+- All components must be individually testable through well-defined interfaces
+- Support automated accessibility testing against WCAG standards
+- Validate generated PDFs for compliance with accessibility standards
+- Test multi-language implementations with various character sets
+- Verify document repository search functionality with comprehensive test datasets
 
-- **Performance Expectations**:
-  - Full site generation must complete in under 2 minutes for sites with up to 1000 pages
-  - Document search functionality should return results in under 200ms
-  - Language switching should occur without page reloads
-  - PDF generation should complete in under 5 seconds per document
-  - Accessibility checking should not increase build time by more than 20%
+### Performance Expectations
+- Accessibility validation should complete for 100+ pages in under 60 seconds
+- Document repository searches should return results in under 300ms
+- Multi-language site generation should process 5+ languages efficiently
+- PDF generation should create documents at a rate of at least 10 pages per second
+- Full site generation for a typical agency site (500+ pages) should complete in under 5 minutes
 
-- **Integration Points**:
-  - Accessibility evaluation tools and standards (WCAG)
-  - Document management systems and metadata standards
-  - PDF generation libraries with proper document structure
-  - Translation management workflows
-  - Government compliance checking tools
+### Integration Points
+- Accessibility testing tools and validators
+- PDF generation libraries with accessibility support
+- Translation management systems and workflows
+- Document indexing and search engines
+- Compliance reporting and validation tools
 
-- **Key Constraints**:
-  - All site content must meet WCAG 2.1 AA standards at minimum
-  - Document repository must support standard government metadata
-  - Legal notices must conform to jurisdictional formatting requirements
-  - Translation management must support workflow approval processes
-  - Generated PDFs must include proper metadata and be archivable
-
-IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- Must comply with relevant government regulations for web accessibility (Section 508, ADA, etc.)
+- Must generate complete accessibility reports for compliance documentation
+- Must support all required languages for the target community
+- Document repository must maintain proper security controls for public vs. restricted content
+- Output must provide official, citable versions of government information
 
 ## Core Functionality
 
-The core functionality must include:
+The Accessible Government Information Portal Generator should provide a comprehensive Python library with the following core capabilities:
 
-1. **Accessibility Enforcement System**:
+1. **Accessibility Compliance System**
    - Validate HTML against WCAG 2.1 AA standards
-   - Check color contrast ratios for text visibility
-   - Ensure proper heading structure and landmark regions
-   - Verify image alt text and form labeling
-   - Generate accessibility compliance reports
+   - Check for proper semantic structure and landmarks
+   - Verify color contrast and text alternatives
+   - Test keyboard navigation and screen reader compatibility
+   - Generate compliance reports with issue identification
+   - Implement automated fixes for common accessibility issues
 
-2. **Document Management Framework**:
-   - Process document metadata in standardized formats
-   - Create searchable document indexes with filtering
-   - Organize documents by multiple categorization schemes
-   - Generate document listings with proper sorting options
-   - Support document versioning and update tracking
+2. **Document Management System**
+   - Process document metadata and categorization
+   - Generate searchable document indices
+   - Implement versioning and document history
+   - Create filterable document repositories
+   - Support various document types and formats
+   - Implement document access controls and notices
 
-3. **Legal Content Management**:
+3. **Legal Content Templates**
+   - Process standardized notice templates
    - Generate properly formatted legal notices
-   - Apply required styling and structure for official communications
-   - Include mandatory elements (dates, reference numbers, authority citations)
-   - Create archives of historical notices
-   - Support notice types with different requirements
+   - Implement citation and reference systems
+   - Create chronological archives of notices
+   - Support for legal metadata and categorization
+   - Generate indices of related notices and regulations
 
-4. **Multilingual Content System**:
-   - Process content with language-specific variations
-   - Generate parallel sites or pages for each supported language
-   - Implement language switching while maintaining context
-   - Track translation status and completeness
-   - Handle language-specific formatting (dates, numbers, etc.)
+4. **Multi-Language Framework**
+   - Process content in multiple languages
+   - Maintain relationships between translated versions
+   - Generate language selection interfaces
+   - Support right-to-left languages and special character sets
+   - Implement language-specific formatting and style
+   - Create translation status reporting and management
 
-5. **PDF Export System**:
-   - Transform web content to properly formatted PDFs
-   - Include required headers, footers, and page numbering
-   - Apply document security and metadata
-   - Generate document tables of contents
-   - Support batch generation of multiple documents
+5. **PDF Generation Engine**
+   - Convert HTML content to accessible PDF/A
+   - Implement proper document structure and tagging
+   - Generate forms with fillable fields when needed
+   - Create print-optimized versions of content
+   - Maintain accessibility features in generated PDFs
+   - Support for official document templates with proper headers/footers
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**:
-  - Compliance with accessibility standards across all content types
-  - Proper organization and searchability of document repository
-  - Correct formatting of legal notices according to requirements
-  - Complete content presentation across multiple languages
-  - Accurate PDF generation with proper document structure
+### Key Functionalities to Verify
 
-- **Critical User Scenarios**:
-  - Citizen with screen reader accesses government information
-  - Resident searches for specific regulatory documents
-  - Staff publishes a legal notice with required formatting
-  - Non-English speaker accesses translated content
-  - User downloads official PDF version of online information
+1. **Accessibility Implementation**
+   - Test HTML output against WCAG 2.1 AA requirements
+   - Verify proper semantic structure and ARIA usage
+   - Test keyboard navigation paths
+   - Confirm screen reader compatibility
+   - Verify color contrast compliance
+   - Test compliance reporting accuracy
 
-- **Performance Benchmarks**:
-  - Site generation time for different volumes of content
-  - Document search response time with various repository sizes
-  - Language switching time between content versions
-  - PDF generation time for documents of different complexity
-  - Accessibility compliance checking time impact
+2. **Document Repository**
+   - Test document indexing and categorization
+   - Verify search functionality with various queries
+   - Test filtering and sorting of document collections
+   - Confirm proper metadata extraction and display
+   - Verify document version tracking
+   - Test document access controls
 
-- **Edge Cases and Error Conditions**:
-  - Handling of documents with complex structures or unusual formats
-  - Management of content with incomplete translations
-  - Recovery from invalid or improperly formatted source content
-  - Processing of extremely long legal notices or documents
-  - Accessibility challenges with specialized content (maps, charts, forms)
+3. **Legal Notice System**
+   - Test generation of various notice types
+   - Verify proper formatting and structure
+   - Test notice archives and chronological organization
+   - Confirm citation generation
+   - Verify notice relationships and categorization
+   - Test legal metadata accuracy
 
-- **Required Test Coverage**:
-  - 95% code coverage for accessibility checking functions
-  - 90% coverage for document management system
-  - 95% coverage for legal notice generation
-  - 90% coverage for multi-language content management
-  - 90% coverage for PDF generation system
+4. **Multi-Language Support**
+   - Test content generation in multiple languages
+   - Verify synchronization between language versions
+   - Test handling of special characters and encodings
+   - Confirm proper language indicators and switching
+   - Verify right-to-left language support
+   - Test translation workflow status tracking
 
-IMPORTANT: 
+5. **PDF Generation**
+   - Test conversion of various content types to PDF
+   - Verify accessibility of generated PDFs
+   - Test form field functionality
+   - Confirm proper document structure and tagging
+   - Verify PDF/A compliance
+   - Test print optimization features
+
+### Critical User Scenarios
+
+1. Publishing a new legal notice with proper formatting and archiving previous versions
+2. Adding a new document to the repository with appropriate metadata and search indexing
+3. Creating multilingual content with proper synchronization between languages
+4. Generating accessible PDFs of government forms that can be filled electronically
+5. Running a complete accessibility audit and addressing identified issues
+
+### Performance Benchmarks
+
+- Full site accessibility validation should complete in under 2 minutes for 500+ pages
+- Document search should handle 10,000+ documents with sub-second query times
+- Multi-language generation should process 5+ languages without significant performance penalty
+- PDF generation should create complex documents in under 3 seconds per document
+- Memory usage should not exceed 1GB for typical government sites
+
+### Edge Cases and Error Conditions
+
+- Test handling of extremely long legal documents
+- Verify behavior with complex multilingual content including mixed directionality
+- Test document search with unusual or special characters
+- Verify graceful handling of invalid or incomplete accessibility attributes
+- Test PDF generation with complex tables and structures
+- Validate behavior with uncommon document formats
+- Test with screen readers and assistive technologies
+
+### Required Test Coverage Metrics
+
+- Minimum 95% code coverage for core functionality
+- 100% coverage for accessibility validation logic
+- 100% coverage for PDF generation
+- Integration tests for the entire site generation pipeline
+- Performance tests for both small and large government sites
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+The Accessible Government Information Portal Generator will be considered successful if it:
 
-1. The generated site passes WCAG 2.1 AA compliance checks
-2. Document repository effectively organizes and provides access to public records
-3. Legal notices are generated with correct, jurisdiction-appropriate formatting
-4. Content is consistently available across all supported languages
-5. PDF versions of content maintain proper formatting and official requirements
-6. All government compliance requirements are demonstrably met
-7. All tests pass with at least 90% code coverage
-8. Content updates can be made by non-technical staff through structured data files
+1. Generates websites that meet or exceed WCAG 2.1 AA accessibility standards
+2. Creates a structured, searchable repository for government documents and forms
+3. Produces properly formatted legal notices and public announcements
+4. Successfully manages multilingual content with appropriate translation workflows
+5. Generates accessible, compliant PDF versions of online content
+6. Builds government sites efficiently with proper organization and search capabilities
+7. Provides comprehensive compliance reporting and validation
+8. Creates sites that meet all relevant regulatory requirements for government information
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+- Generated sites must pass automated accessibility validation
+
+### Development Environment Setup
 
 To set up your development environment:
-```
-uv venv
-source .venv/bin/activate
-```
+
+1. Create a virtual environment using UV:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: When testing, you must generate the pytest_results.json file:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+This file is MANDATORY proof that all tests pass and must be included with your implementation.

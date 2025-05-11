@@ -1,142 +1,160 @@
-# Game Logic Definition Language Framework
-
-A domain-specific language toolkit for creating complex game narratives, quest systems, and character interactions without programming intervention.
+# Game Narrative and Logic Definition Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on game design logic. It enables narrative designers and game designers to create intricate quest lines and character interactions without requiring programmer intervention. The system emphasizes narrative branching, character state management, world persistence, economy balancing, and quest dependency validation.
+A specialized Domain Specific Language toolkit for creating and implementing complex game narratives, quest systems, and character interactions. This toolkit enables game designers and narrative writers to define sophisticated game logic and storytelling elements without requiring programmer intervention, while ensuring these elements integrate seamlessly with the game's core systems.
 
 ## Persona Description
-
 Alex leads a team creating an RPG game with complex character progression and quest systems. His primary goal is to build a game logic language that allows narrative designers and game designers to create intricate quest lines and character interactions without requiring programmer intervention.
 
 ## Key Requirements
+1. **Narrative branching visualization with consequence tracking**: Tools for defining and visualizing complex branching narratives with explicit tracking of how player choices affect future story options and game state. This is critical because modern RPGs feature intricate narratives with numerous decision points, and designers need to understand and manage the combinatorial complexity of player choice consequences throughout the game.
 
-1. **Narrative branching visualization with consequence tracking**
-   - Implement a system for defining branching narrative structures with automatic tracking of story consequences across multiple paths
-   - This feature is essential for Alex because complex RPG narratives often involve hundreds of branching story paths with interconnected consequences. This capability enables his narrative designers to create rich, reactive stories while automatically tracking how player choices in one branch affect story elements in other branches, eliminating common continuity errors.
+2. **Character state management with personality trait modeling**: A system for defining character attributes, personality traits, and relationship dynamics that evolve based on player interactions and game events. This is essential because believable characters with consistent personalities that respond appropriately to player actions are fundamental to engaging RPG storytelling, and systematic modeling ensures coherent character behavior.
 
-2. **Character state management with personality trait modeling**
-   - Develop a framework for defining character states, personality traits, and behavioral rules that govern NPC interactions
-   - Creating believable, consistent characters across a large game world is a significant challenge. This feature allows Alex's team to define complex character models with traits that influence behavior, dialogue options, and relationships, enabling more emergent and natural-feeling character interactions without hard-coding every possible scenario.
+3. **World state persistence with trigger-based event system**: Mechanisms for tracking persistent changes to the game world and triggering appropriate events based on combinations of world state conditions. This is vital because a responsive, persistent game world creates immersion and player agency, allowing designers to create environments that meaningfully change based on player actions and game progression.
 
-3. **World state persistence with trigger-based event system**
-   - Create a state management system that tracks game world changes and triggers events based on complex combinations of conditions
-   - Maintaining a persistent, reactive game world is critical for immersive RPGs. This capability enables Alex's designers to define how the game world responds to player actions over time, creating the illusion of a living world where past actions have meaningful consequences through an event system that doesn't require programming to configure.
+4. **Economy balancing tools with progression curve analysis**: Analytical tools to model and balance the game's economy, resource flows, and progression systems to ensure appropriate difficulty curves and reward pacing. This is necessary because balanced progression is central to player engagement, and mathematical modeling helps identify potential progression bottlenecks, difficulty spikes, or resource imbalances before they affect player experience.
 
-4. **Economy balancing tools with progression curve analysis**
-   - Build analytical tools that can simulate and visualize player progression through game economies and reward systems
-   - Game economies are notoriously difficult to balance. This feature allows Alex's designers to model how players will progress through the game's rewards and challenges, identifying potential progression bottlenecks or exploits before implementation, which is critical for maintaining player engagement throughout the game experience.
-
-5. **Quest dependency validation preventing progression deadlocks**
-   - Implement a validation system that detects potential progression blockers, cycles, or unreachable states in quest dependencies
-   - Quest dependencies in complex RPGs can create unintended dead ends if not carefully managed. This capability enables Alex's team to automatically validate quest structures to ensure players can never become permanently stuck or unable to progress due to complex interdependencies between quests, items, or world states.
+5. **Quest dependency validation preventing progression deadlocks**: Automated analysis of quest dependencies and prerequisites to identify potential progression blockers, unreachable content, or logical contradictions in quest requirements. This is crucial because complex quest systems with interdependencies can easily develop logical errors that block player progression, and automated validation helps ensure all content is accessible through intended gameplay paths.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each narrative branch must be automatically verifiable for consistency
+  - Character state models must be testable with simulated interaction sequences
+  - World state persistence must demonstrate correct event triggering
+  - Economy models must be validated against target progression curves
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- Each narrative branch must be independently testable with specific player choice sequences
-- Character behavior models must be verifiable with simulated interaction scenarios
-- World state transitions must be testable with specific event trigger combinations
-- Economy simulations must be replicable with documented player progression models
-- Quest dependency graphs must be analyzable for completeness and accessibility
+- **Performance Expectations**:
+  - Narrative branch analysis must process 1000+ story nodes in under 30 seconds
+  - Character state updates must compute in under 5ms to maintain game performance
+  - World state triggers must evaluate 500+ conditions in under 10ms
+  - Economy simulations must model 10,000+ player actions in under 60 seconds
 
-### Performance Expectations
-- Story compilation must complete within 3 seconds for narratives with up to 500 branches
-- Character state evaluations must occur in real-time during gameplay (< 50ms)
-- World state updates must process up to 100 concurrent changes in under 100ms
-- Economy simulations must process 1000+ player progression scenarios in under 1 minute
-- Dependency validation must analyze complex quest networks in under 10 seconds
+- **Integration Points**:
+  - Game engines (Unity, Unreal, etc.) through standardized interfaces
+  - Dialogue and localization systems
+  - Animation and cutscene management
+  - Save/load mechanisms for persistence
+  - Game analytics platforms for player behavior tracking
 
-### Integration Points
-- Game engine scripting systems for runtime execution
-- Asset management systems for content references
-- Version control for narrative and quest definitions
-- Localization systems for dialogue and text content
-- Analytics platforms for gameplay data collection
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All game logic must be expressible through the DSL without requiring custom code
+  - DSL scripts must be storable as human-readable text files
+  - System must operate within memory constraints of target gaming platforms
+  - Runtime performance must not impact game frame rates or player experience
 
-### Key Constraints
-- No UI components; all visualization capabilities must be expressed through data structures
-- All game logic must be deterministic and reproducible for testing
-- The system must support concurrent modification by multiple designers
-- All definitions must be serializable for storage and version control
-- The system must perform efficiently in both development and runtime environments
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Game Narrative and Logic DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for game narratives and logic
+2. Narrative branching tools with consequence tracking and visualization
+3. Character trait and relationship modeling systems
+4. World state management with condition-based event triggers
+5. Economy and progression curve analysis and balancing tools
+6. Quest dependency validation and progression path analysis
+7. Integration mechanisms for connecting with game engine systems
+8. Debugging utilities for testing narrative and gameplay scenarios
+9. Documentation generators for design team collaboration
+10. Performance optimization for runtime execution in game environments
 
-1. **Game Logic Definition Language**: A grammar and parser for defining narrative structures, character behaviors, world events, and quest relationships.
-
-2. **Narrative Branching**: Tools for creating complex branching narratives with conditional paths and consequence tracking across storylines.
-
-3. **Character Modeling**: A system for defining character attributes, personality traits, relationships, and behavioral rules.
-
-4. **World State Management**: Mechanisms for tracking changes to the game world and triggering events based on state conditions.
-
-5. **Economy Simulation**: Analytical tools for modeling player progression through game economies and balancing reward systems.
-
-6. **Quest Dependencies**: Frameworks for defining relationships between quests, objectives, and world states with validation for progression blockers.
-
-7. **Compilation Pipeline**: Translation of high-level game logic definitions into executable code for the target game engine.
-
-8. **Debugging Tools**: Methods for testing and troubleshooting game logic definitions through simulation and analysis.
+The system should enable game designers to define elements such as:
+- Dialogue trees with conditional branches
+- Character personality traits and interaction patterns
+- Quest objectives, rewards, and dependencies
+- Item properties and economy balance values
+- Environmental interactions and world state changes
+- Narrative consequences based on player choices
+- Achievement criteria and progression milestones
+- Event triggers and gameplay state conditions
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into executable game logic
+  - Accurate visualization of narrative branches and consequences
+  - Proper modeling of character traits and relationships
+  - Correct persistence and triggering of world state events
+  - Accurate analysis of economy balance and progression curves
 
-### Key Functionalities to Verify
-- Accurate parsing of game logic definitions from domain-specific syntax
-- Correct evaluation of narrative branching conditions and consequences
-- Proper modeling of character behaviors based on defined traits
-- Effective triggering of world events in response to state changes
-- Reliable detection of progression blockers in quest dependency networks
+- **Critical User Scenarios**:
+  - Narrative designer creates branching quest line with multiple endings
+  - Character designer defines personality traits affecting dialogue options
+  - World builder creates persistent world changes based on player achievements
+  - Economy designer balances resource distribution across player levels
+  - QA tester validates quest dependencies for progression blockers
 
-### Critical User Scenarios
-- Narrative designer creates a branching storyline with multiple outcomes
-- Character designer defines personality traits and interaction rules for NPCs
-- World designer creates a reactive environment with state-dependent events
-- Economy designer balances progression curves for player advancement
-- Quest designer establishes dependencies between quest objectives and validates progression
+- **Performance Benchmarks**:
+  - Process a narrative structure with 500+ dialogue nodes in under 10 seconds
+  - Update character states for 100+ NPCs in under 50ms
+  - Evaluate 200+ world state triggers in under 5ms
+  - Simulate economy progression for 100 hours of gameplay in under 2 minutes
 
-### Performance Benchmarks
-- Narrative compilation completed in under 3 seconds for complex storylines
-- Character state evaluation completed in under 50ms during gameplay
-- World state updates processing 100+ changes in under 100ms
-- Economy simulations processing 1000+ scenarios in under 1 minute
-- Dependency validation completed in under 10 seconds for quest networks
+- **Edge Cases and Error Conditions**:
+  - Handling of circular quest dependencies
+  - Detection of unreachable narrative branches
+  - Management of conflicting character traits in interaction systems
+  - Identification of progression dead-ends in complex quest networks
+  - Economy analysis under extreme player behavior patterns
 
-### Edge Cases and Error Conditions
-- Handling of circular narrative references or infinite loops
-- Proper response to contradictory character trait definitions
-- Graceful degradation when world state becomes extremely complex
-- Recovery from partial compilation failures
-- Handling of unreachable but valid quest states
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of DSL parser and interpreter
+  - 100% coverage of quest dependency validation
+  - 95% coverage of economy balancing algorithms
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core game logic parsing and compilation
-- 100% coverage of quest dependency validation algorithms
-- 95% coverage of narrative branching logic
-- 90% coverage for character state evaluation
-- 100% test coverage for progression blocking detection
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Narrative and game designers can create complex interactive content without requiring programmer intervention.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to define complex narrative structures
+4. Character state management correctly models personality and relationships
+5. World state persistence properly triggers events based on conditions
+6. Economy balancing tools accurately analyze progression curves
+7. Quest dependency validation correctly identifies potential progression blockers
+8. Game designers without programming expertise can create functional game logic
 
-2. The system automatically detects and prevents common design issues like unreachable quest states or progression deadlocks.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Character behaviors demonstrate consistent personality traits across different game contexts.
+## Setup Instructions
+To set up the development environment:
 
-4. The game world reacts appropriately to player actions through the event triggering system.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. Economy balancing tools accurately predict and help optimize player progression rates.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. The time required to implement and test narrative and quest content is reduced by at least 70%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. The gap between game design and implementation is effectively eliminated for narrative and quest content.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

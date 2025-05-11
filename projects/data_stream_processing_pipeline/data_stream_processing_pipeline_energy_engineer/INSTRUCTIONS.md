@@ -1,151 +1,153 @@
-# Smart Grid Optimization Framework
+# Smart Grid Data Stream Processing System
 
 ## Overview
-An advanced stream processing system for analyzing power distribution network data from smart grid infrastructure to optimize load balancing and integrate renewable energy sources. This framework enables real-time energy forecasting, grid topology analysis, and dynamic optimization of energy distribution in response to changing conditions.
+A specialized data stream processing framework designed to monitor, analyze, and optimize power distribution networks using real-time sensor data from smart grid infrastructure. The system integrates weather data, forecasts energy demand and supply patterns, and enables intelligent grid operations to balance load and integrate renewable energy sources effectively.
 
 ## Persona Description
 Marcus monitors power distribution networks using sensor data from smart grid infrastructure to balance load and integrate renewable sources. His primary goal is to forecast energy demand and supply patterns while optimizing grid operations in response to changing conditions.
 
 ## Key Requirements
+1. **Predictive analytics for demand forecasting with weather integration**: Implement a forecast engine that combines historical energy usage patterns with real-time weather data and predictions to generate accurate short-term (hours) and medium-term (days) demand forecasts. This predictive capability is critical for proactively balancing grid resources and planning generation capacity to meet anticipated loads while minimizing costs.
 
-1. **Predictive analytics for demand forecasting with weather integration**
-   - Sophisticated forecasting system that predicts energy consumption patterns with high accuracy
-   - Critical for Marcus to anticipate load requirements and proactively optimize grid resources
-   - Must incorporate weather data as a key factor influencing both demand and renewable generation
+2. **Grid topology modeling with flow analysis**: Create a dynamic model of the power distribution network that represents its physical topology and continuously updates with real-time flow data, enabling simulation of load changes and contingency scenarios. This topology awareness is essential for identifying potential constraints, planning maintenance activities, and ensuring stable operations during system reconfigurations.
 
-2. **Grid topology modeling with flow analysis**
-   - Comprehensive network model that represents the physical and logical structure of the power distribution grid
-   - Essential for understanding power flow dynamics and identifying potential bottlenecks or vulnerabilities
-   - Should include real-time state estimation and contingency analysis capabilities
+3. **Renewable source intermittency handling with battery storage optimization**: Develop algorithms that predict renewable energy generation variability (solar, wind) and optimize battery storage charging/discharging cycles to compensate for intermittency. This capability enables maximum utilization of renewable resources while maintaining grid stability by using energy storage as a buffer during generation fluctuations.
 
-3. **Renewable source intermittency handling with battery storage optimization**
-   - Specialized management system for dealing with the variable nature of renewable energy sources
-   - Vital for maximizing clean energy utilization while maintaining grid stability
-   - Must include intelligent battery storage management for optimal energy buffering and dispatch
+4. **Load shedding prioritization during constraint periods**: Implement a framework for intelligently prioritizing and sequencing load reduction during periods of supply constraints, based on configurable policies that consider customer type, critical infrastructure, economic impact, and contractual arrangements. This prioritization ensures that when demand must be reduced, it occurs in the least disruptive and most equitable manner possible.
 
-4. **Load shedding prioritization during constraint periods**
-   - Strategic demand management framework for handling periods of supply limitation
-   - Necessary for maintaining critical services while minimizing disruption during constraint periods
-   - Should include configurable priority schemes based on service criticality and contractual obligations
-
-5. **Supply/demand balancing with price signal optimization**
-   - Economic optimization engine that balances grid stability with cost considerations
-   - Crucial for achieving financial efficiency while meeting technical requirements
-   - Must include real-time pricing models and market integration capabilities
+5. **Supply/demand balancing with price signal optimization**: Design mechanisms that use dynamic pricing signals to influence consumer behavior and adjust demand in near-real-time, helping balance supply constraints through economic incentives rather than forced curtailment. This market-based approach enables more efficient resource allocation and empowers consumers to participate actively in grid stabilization.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Must support simulation with synthetic grid data
+  - Needs validation against historical grid events
+  - Requires reproducible testing of optimization algorithms
+  - Must support verification of forecasting accuracy
+  - Needs comprehensive testing of failure scenarios
 
-### Testability Requirements
-- Comprehensive testing with historical grid data and simulated scenarios
-- Validation framework for forecasting accuracy measurement
-- Grid topology model verification against physical network
-- Performance testing under various grid conditions
-- Simulation capabilities for extreme events and contingencies
+- **Performance Expectations**:
+  - Processing of data from at least 100,000 grid sensors
+  - Forecast updates at minimum 15-minute intervals
+  - Optimization algorithms execution within 30 seconds
+  - Grid state estimation updates every 5 seconds
+  - Support for topology models with at least 10,000 nodes and edges
 
-### Performance Expectations
-- Support for processing data from 100,000+ grid sensors
-- Forecasting updates every 5 minutes with 24-hour horizon
-- Topology state estimation refresh every 30 seconds
-- Optimization recommendations within 1 minute of condition changes
-- System response within 10 seconds for critical grid events
+- **Integration Points**:
+  - SCADA and grid management systems
+  - Weather data and forecast services
+  - Energy market and pricing platforms
+  - Battery and energy storage management systems
+  - Smart meter data collection infrastructure
+  - Renewable generation monitoring systems
 
-### Integration Points
-- Grid sensor and SCADA system interfaces
-- Weather data services and forecasting systems
-- Energy market platforms and pricing systems
-- Battery management systems and controllable loads
-- Regulatory reporting and compliance systems
+- **Key Constraints**:
+  - System must operate continuously without planned downtime
+  - Optimization must respect physical grid constraints
+  - Implementation must handle delayed or missing sensor data
+  - Processing must prioritize grid stability over optimization
+  - Solution must comply with energy regulatory requirements
 
-### Key Constraints
-- Must maintain grid stability as the primary objective
-- Must operate within regulatory framework for grid operations
-- Must handle graceful degradation during partial data availability
-- Must provide transparent decision justification for auditing
-- Must support both fully automated and human-in-the-loop operations
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The system must provide a framework for smart grid data processing that:
 
-The framework must provide:
+1. Ingests data from diverse sources including:
+   - Grid sensors and smart meters
+   - Weather observation and forecast systems
+   - Renewable generation facilities
+   - Energy storage systems
+   - Electricity market platforms
+2. Maintains a real-time model of grid topology and state
+3. Generates demand and supply forecasts at multiple time horizons
+4. Implements optimization algorithms for:
+   - Renewable integration and intermittency management
+   - Energy storage charging/discharging cycles
+   - Load balancing across grid segments
+   - Demand response through price signals
+   - Prioritized load shedding when required
+5. Provides simulation capabilities for what-if scenario analysis
+6. Detects anomalies and potential failure conditions
+7. Generates operational recommendations for grid operators
+8. Tracks key performance indicators and optimization metrics
 
-1. **Energy Forecasting System**
-   - Short-term and medium-term demand prediction
-   - Weather data integration and correlation analysis
-   - Renewable generation forecasting
-   - Anomaly detection for unusual consumption patterns
-   - Forecasting accuracy tracking and model optimization
-
-2. **Grid Topology Management**
-   - Network model construction and maintenance
-   - Real-time state estimation and validation
-   - Power flow analysis and bottleneck identification
-   - Contingency analysis for failure scenarios
-   - Topology change detection and model updates
-
-3. **Renewable Integration Engine**
-   - Intermittency pattern analysis and prediction
-   - Battery storage state management
-   - Charging/discharging optimization algorithms
-   - Renewable curtailment decision support
-   - Virtual power plant coordination
-
-4. **Load Management System**
-   - Consumption classification and prioritization
-   - Demand response program integration
-   - Load shedding sequence optimization
-   - Critical service protection mechanisms
-   - Post-event recovery orchestration
-
-5. **Economic Optimization Framework**
-   - Real-time cost modeling and analysis
-   - Price signal generation and distribution
-   - Market integration for energy trading
-   - Cost-based optimization with constraint handling
-   - Financial impact reporting and analysis
+The implementation should emphasize forecasting accuracy, optimization efficiency, and maintaining grid stability while maximizing renewable energy utilization and minimizing costs.
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Accuracy of demand forecasting with weather integration
+  - Correctness of grid topology modeling and flow analysis
+  - Effectiveness of renewable intermittency handling
+  - Appropriate load shedding prioritization logic
+  - Proper implementation of supply/demand balancing through price signals
 
-### Key Functionalities to Verify
-- Forecasting accuracy against historical data
-- Grid model fidelity and power flow calculation correctness
-- Renewable integration strategies under various weather conditions
-- Load shedding prioritization adherence to defined policies
-- Economic optimization effectiveness in reducing costs
+- **Critical User Scenarios**:
+  - Grid operations during peak demand periods
+  - Integration of variable renewable generation during adverse weather
+  - Response to sudden generation or transmission capacity loss
+  - Management of demand during supply constraints
+  - Optimization of economic dispatch with price-responsive load
 
-### Critical User Scenarios
-- Normal daily grid operation with typical demand patterns
-- Peak demand periods with constrained supply
-- Integration of variable renewable generation during changing weather
-- Recovery from grid component failures
-- Extreme weather events affecting both supply and demand
+- **Performance Benchmarks**:
+  - Demand forecast accuracy within 5% mean absolute percentage error
+  - Optimization algorithm execution within 30 seconds
+  - Grid state estimation within 99% accuracy compared to measured values
+  - Renewable integration enabling at least 90% utilization of available generation
+  - System capable of processing 100,000+ sensor updates per minute
 
-### Performance Benchmarks
-- Forecasting accuracy within 5% of actual demand for 24-hour horizon
-- State estimation completion within 30 seconds for full grid model
-- Optimization algorithm convergence within 1 minute for standard scenarios
-- Processing throughput of 100,000+ sensor readings per minute
-- Decision response time under 10 seconds for critical events
+- **Edge Cases and Error Conditions**:
+  - Handling of communication failures with grid sensors
+  - Operation during weather forecast inaccuracies
+  - Response to unexpected renewable generation fluctuations
+  - Behavior during grid reconfiguration or maintenance
+  - Management of cascading constraint violations
 
-### Edge Cases and Error Conditions
-- Handling of sensor data gaps and communication failures
-- Response to sudden renewable generation drop (cloud cover, wind changes)
-- Management of cascading failure scenarios
-- Operation during partial system outages
-- Recovery from incorrect forecasts or unexpected demand spikes
+- **Required Test Coverage Metrics**:
+  - 100% coverage of optimization and forecasting algorithms
+  - >90% line coverage for all production code
+  - 100% validation against historical grid scenarios
+  - Comprehensive tests for all operational states
+  - Performance verification at scale with full sensor complement
 
-### Test Coverage Metrics
-- 100% coverage of grid topology components in model
-- Comprehensive testing of forecasting under diverse conditions
-- Full testing of optimization algorithms against defined constraints
-- Performance testing under peak load and stress conditions
-- Reliability testing for 24/7 continuous operation
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. The system accurately forecasts energy demand patterns with weather correlation, maintaining prediction error within acceptable limits
-2. Grid topology modeling correctly represents network structure and enables accurate power flow analysis and bottleneck identification
-3. Renewable source intermittency is effectively managed through intelligent battery storage utilization and dispatch
-4. Load shedding during constraint periods follows priority schemes that protect critical services while minimizing overall disruption
-5. Supply/demand balancing achieves optimal economic outcomes while maintaining technical grid requirements
-6. The system responds to changing conditions within specified time constraints
-7. Grid stability and reliability metrics show improvement after system implementation
+A successful implementation will demonstrate:
 
-_Note: To set up the development environment, use `uv venv` to create a virtual environment within the project directory. Activate it using `source .venv/bin/activate`._
+1. Accurate demand forecasting that incorporates weather data
+2. Effective modeling of grid topology with real-time flow analysis
+3. Intelligent handling of renewable generation intermittency
+4. Appropriate prioritization during load shedding events
+5. Efficient balancing of supply and demand through price signals
+6. Optimized operation of the grid under various conditions
+7. Comprehensive test coverage with all tests passing
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+To setup the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

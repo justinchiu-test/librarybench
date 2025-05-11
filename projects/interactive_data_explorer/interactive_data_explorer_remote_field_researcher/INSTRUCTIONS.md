@@ -1,157 +1,163 @@
-# Interactive Data Explorer for Remote Field Research
+# Field Research Data Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for ecological researchers operating in remote wilderness locations with limited power and connectivity. This tool emphasizes energy efficiency, offline operation, and integration with environmental sensor data while supporting the unique constraints of field research environments.
+A specialized terminal-based data exploration framework optimized for ecologists conducting research in remote wilderness locations with limited connectivity and computing resources. This lightweight yet powerful tool enables analysis of environmental sensor data collected during expeditions using only a laptop without relying on cloud services or specialized hardware.
 
 ## Persona Description
 Marco conducts ecological studies in remote wilderness locations with limited connectivity and computing resources. He needs to analyze environmental sensor data collected during expeditions using only his laptop without relying on cloud services or specialized hardware.
 
 ## Key Requirements
+1. **Low-power operating mode** - Implement resource-efficient processing algorithms that optimize battery life during extended field sessions, enabling researchers to conduct data analysis in remote locations without access to reliable power sources. This feature is critical for prolonging field work capability in off-grid environments.
 
-1. **Low-power Operating Mode**
-   - Implement adaptive computational scaling that optimizes battery life during extended field sessions
-   - Critical because field researchers often work for days without reliable power sources
-   - Must provide configurable performance levels to balance analytical depth against power consumption
-   - Needs to monitor and report estimated battery impact of different operations
+2. **Geospatial visualization** - Provide specialized mapping capabilities with support for custom coordinate systems specific to study regions, allowing researchers to visualize spatial relationships in their data using locally relevant reference frames. Field ecologists often work in remote areas using local coordinate systems rather than standard GPS coordinates.
 
-2. **Geospatial Visualization with Custom Coordinate Systems**
-   - Create specialized mapping capabilities with support for custom coordinate systems specific to study regions
-   - Essential because ecological research often occurs in areas poorly represented by standard mapping systems
-   - Must handle arbitrary coordinate transformations for specialized ecological transects
-   - Should support overlay of environmental parameters on custom spatial representations
+3. **Offline reference dataset integration** - Enable comparison of collected field data with pre-loaded historical environmental records, helping researchers contextualize new findings without requiring internet connectivity. This is essential for understanding how current observations relate to historical patterns while working in disconnected environments.
 
-3. **Offline Reference Dataset Integration**
-   - Implement a system for packaging, versioning, and comparing field data with pre-loaded historical environmental records
-   - Important because comparisons to baseline conditions are often critical for identifying ecological changes
-   - Must operate without any network connectivity while maintaining data integrity
-   - Should optimize storage utilization for reference datasets to fit within limited field device capacity
+4. **Sensor calibration tools** - Identify and correct for environmental interference patterns in raw sensor data, accounting for field conditions that may impact measurement accuracy. Remote research often involves sensors operating in harsh conditions where temperature, humidity, and other factors can affect readings.
 
-4. **Sensor Calibration Tools**
-   - Develop algorithms that identify and correct for environmental interference patterns in sensor readings
-   - Critical because field sensor data is often affected by environmental conditions that must be compensated for
-   - Must detect common sensor issues like temperature drift, humidity effects, and power fluctuations
-   - Should provide audit trails for all calibration adjustments made to raw sensor data
-
-5. **Expedition Context Annotations**
-   - Create a framework for linking quantitative data anomalies with qualitative field notes and observations
-   - Essential for capturing the full context of field research where measured data alone may miss important environmental factors
-   - Must support structured and freeform annotation at multiple levels of granularity
-   - Should provide bidirectional navigation between annotations and corresponding data points
+5. **Expedition context annotations** - Link data anomalies with field notes and observations, providing critical context for understanding unusual readings or patterns discovered during analysis. Field researchers need to integrate quantitative sensor data with qualitative field observations to properly interpret findings.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Battery consumption must be measurable and verifiable against baseline
+  - Geospatial functions must be validated with standard GIS test datasets
+  - Calibration algorithms must be tested against known interference patterns
+  - Annotation linking must maintain data integrity and relationship consistency
+  - All operations must maintain defined precision appropriate for field research
 
-### Testability Requirements
-- All components must be testable via pytest with no external dependencies
-- Sensor calibration algorithms must be verifiable against standard reference adjustments
-- Low-power optimizations must be measurable and reproducible
-- Offline data operations must be validated for consistency with online equivalents
-- Annotation systems must be tested for bidirectional integrity
+- **Performance Expectations**:
+  - Must operate with less than 15% CPU utilization during typical operations
+  - Memory usage must remain below 500MB to function on field laptops
+  - Processing of 1 week of multi-sensor data (10 sensors, 1-minute resolution) within 30 seconds
+  - Startup time less than 5 seconds even with large offline reference datasets
+  - Visualization generation within 2 seconds for typical data views
 
-### Performance Expectations
-- Must minimize CPU and memory usage during critical battery conservation modes
-- Should process typical field datasets (1GB or less) using less than 20% of system resources
-- Geospatial operations should complete within seconds even on limited hardware
-- Reference dataset comparisons should be optimized for minimal memory footprint
-- All operations should include power impact estimates before execution
+- **Integration Points**:
+  - Support for common environmental sensor data formats (CSV, JSON, proprietary logger formats)
+  - Import/export compatibility with standard GIS formats (Shapefile, GeoJSON, KML)
+  - Integration with common field notebook applications and formats
+  - Support for various sensor instrument calibration specifications
+  - Compatibility with common reference dataset formats (NetCDF, HDF5)
 
-### Integration Points
-- Data import from common environmental sensor formats
-- Integration with GPS and location tracking systems
-- Export capabilities to ecological data repositories when connectivity is restored
-- Support for standard field research metadata formats
-- Compatibility with common field research equipment data outputs
+- **Key Constraints**:
+  - Must function completely offline with no internet dependency
+  - All operations must be efficient enough for laptop use in field conditions
+  - Storage footprint must be minimal for use on field computers with limited capacity
+  - Must be resilient to unexpected shutdown and power loss
+  - Interface must be usable in various lighting conditions (night, bright sun)
 
-### Key Constraints
-- Must operate entirely offline with no external service dependencies
-- All functionality must be achievable on standard laptop hardware
-- Operations must be designed to minimize battery consumption
-- Must gracefully handle incomplete or intermittent sensor data
-- Should be resilient to environmental conditions (temperature, humidity) affecting the computing device
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Field Research Data Explorer must provide a comprehensive framework for environmental field data analysis:
 
-The implementation must provide the following core capabilities:
+1. **Sensor Data Processing and Analysis**:
+   - Import and parse data from various environmental sensor formats
+   - Apply appropriate filtering and smoothing techniques for field collected data
+   - Calculate derived metrics and indices relevant to ecological research
+   - Identify patterns, cycles, and trends in environmental measurements
+   - Handle missing data and sensor malfunctions common in field conditions
 
-1. **Energy-Efficient Data Processing**
-   - Adaptive processing pipelines that scale based on available power
-   - Incremental computation that can pause and resume with changing power conditions
-   - Background indexing and optimization that only runs when external power is available
-   - Power consumption estimation for planned analytical operations
+2. **Geospatial Analysis**:
+   - Process location data in multiple coordinate systems and datums
+   - Support custom local coordinate systems for specialized study areas
+   - Generate spatial visualizations of environmental parameters
+   - Calculate spatial statistics and clustering metrics
+   - Support for common ecological spatial analysis methods
 
-2. **Field-Optimized Geospatial Analysis**
-   - Support for custom coordinate systems and transformations
-   - Visualization of environmental parameters across specialized transects
-   - Terrain-aware spatial analysis for ecological features
-   - Efficient rendering of geospatial visualizations on limited hardware
+3. **Resource-Efficient Operation**:
+   - Implement low-power processing algorithms and optimization
+   - Provide configurable processing modes balancing detail vs. battery life
+   - Efficiently manage memory and storage resources
+   - Implement data compression for field-collected datasets
+   - Support incremental processing to handle large datasets on limited hardware
 
-3. **Offline Reference and Comparison Framework**
-   - Management of reference dataset versions with minimal storage overhead
-   - Statistical comparison between current and historical measurements
-   - Detection of significant deviations from established environmental baselines
-   - Data compression specialized for environmental time series
+4. **Calibration and Data Quality**:
+   - Implement sensor calibration algorithms for common environmental sensors
+   - Detect and correct for environmental interference patterns
+   - Apply drift correction and sensitivity adjustments
+   - Validate data against physical constraints and expected ranges
+   - Quantify uncertainty and confidence levels in measurements
 
-4. **Environmental Sensor Calibration System**
-   - Detection algorithms for common sensor interference patterns
-   - Correction models for environmental factors affecting sensor accuracy
-   - Calibration audit trails and metadata management
-   - Confidence scoring for adjusted sensor measurements
-
-5. **Field Context Integration**
-   - Structured annotation system linking observations to data points
-   - Bidirectional navigation between quantitative data and qualitative context
-   - Support for multimedia field notes (text, audio transcription)
-   - Anomaly detection that incorporates contextual observations
+5. **Contextual Integration**:
+   - Link numerical data with field notes and observations
+   - Support for integrating images and audio recordings with sensor data
+   - Enable annotation of data points with expedition context
+   - Create timeline views combining multiple data sources
+   - Generate reports integrating quantitative and qualitative information
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Resource usage stays within defined low-power parameters
+  - Geospatial visualization correctly represents location-based data
+  - Integration with offline reference datasets produces valid comparisons
+  - Calibration tools accurately correct for known interference patterns
+  - Annotation system successfully links data points with contextual information
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Analyzing a multi-day collection of environmental sensor data in the field
+  - Visualizing spatial distribution of measurements across a study area
+  - Comparing field measurements with historical baseline data
+  - Calibrating and correcting raw sensor data for environmental factors
+  - Annotating unusual readings with field observations and notes
 
-1. **Power Efficiency Tests**
-   - Validation of resource consumption in different operational modes
-   - Comparison of power optimization strategies under various workloads
-   - Testing of graceful degradation under low-power conditions
-   - Verification of accurate power impact estimations
+- **Performance Benchmarks**:
+  - Process 1 week of data from 10 sensors (1-minute resolution) within 30 seconds
+  - Generate geospatial visualization of 1000 data points within 3 seconds
+  - Complete sensor calibration algorithms for 24 hours of data within 10 seconds
+  - Maintain CPU usage below 15% during standard analysis operations
+  - Keep memory usage below 500MB during all operations
 
-2. **Geospatial Implementation Tests**
-   - Validation of custom coordinate system transformations
-   - Testing of spatial analysis functions across irregular terrains
-   - Performance testing for rendering efficiency
-   - Correctness testing with standard geospatial datasets
+- **Edge Cases and Error Conditions**:
+  - Handling corrupt or partially damaged sensor data files
+  - Managing extreme outliers in environmental measurements
+  - Processing data from malfunctioning or miscalibrated sensors
+  - Dealing with GPS/location errors and inconsistencies
+  - Recovering from unexpected system shutdown during analysis
 
-3. **Offline Data Operation Tests**
-   - Verification of data integrity through synchronization cycles
-   - Testing of reference dataset comparison accuracy
-   - Validation of storage efficiency for compressed datasets
-   - Resilience testing for interrupted operations
+- **Required Test Coverage Metrics**:
+  - 90% code coverage for all core functionality
+  - 100% coverage for power optimization and resource management functions
+  - All data parsers tested with valid and invalid inputs
+  - Complete integration tests for all public APIs
+  - Performance tests verifying resource usage constraints
 
-4. **Sensor Calibration Tests**
-   - Testing of detection algorithms against known interference patterns
-   - Validation of correction models with standard reference adjustments
-   - Verification of calibration metadata integrity
-   - Testing across diverse environmental conditions
-
-5. **Annotation System Tests**
-   - Validation of bidirectional linking between data and annotations
-   - Testing of annotation search and filtering capabilities
-   - Performance testing with large annotation collections
-   - Verification of annotation export and import functions
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Field Research Data Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Efficient operation with minimal power consumption suitable for field use
+2. Accurate geospatial visualization with support for custom coordinate systems
+3. Effective integration with offline reference datasets for historical comparison
+4. Reliable sensor calibration correcting for environmental interference
+5. Seamless integration of data analysis with field notes and observations
 
-1. Enables comprehensive data analysis while maximizing battery life in field conditions
-2. Accurately represents ecological data in custom spatial contexts appropriate to research sites
-3. Facilitates meaningful comparisons between current and historical environmental datasets
-4. Improves the quality of sensor data through intelligent calibration and interference correction
-5. Integrates quantitative measurements with qualitative field observations for complete context
-6. Operates reliably in disconnected field environments on standard laptop hardware
-7. Provides field researchers with insights comparable to laboratory systems despite resource constraints
-8. Supports the complete field research workflow from data collection through analysis to findings documentation
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the remote field researcher's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

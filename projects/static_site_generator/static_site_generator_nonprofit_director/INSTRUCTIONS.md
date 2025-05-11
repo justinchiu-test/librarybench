@@ -1,10 +1,10 @@
-# Non-profit Organization Site Generator
+# Non-Profit Organization Site Generator
 
-A specialized static site generator for non-profit organizations to showcase their mission, programs, impact, and fundraising initiatives with minimal technical overhead.
+A specialized static site generator designed for non-profit organizations to create mission-driven websites showcasing their impact, programs, funding opportunities, and volunteer engagement with limited technical resources.
 
 ## Overview
 
-This project is a Python library for generating comprehensive websites for non-profit organizations from structured content sources. It focuses on impact storytelling, donation facilitation, volunteer engagement, event promotion, and funding transparency to address the unique needs of mission-driven organizations.
+This project implements a Python library for generating comprehensive non-profit organization websites that highlight mission, programs, impact stories, and engagement opportunities. It focuses on the needs of non-profit directors who need to maintain an effective online presence with limited technical resources while maximizing donor and volunteer engagement.
 
 ## Persona Description
 
@@ -12,146 +12,233 @@ Amara leads a small environmental non-profit and needs to maintain their organiz
 
 ## Key Requirements
 
-1. **Impact Story Template System**: Implement a framework for creating and displaying compelling impact narratives with consistent formatting. This feature is essential for Amara to effectively communicate her organization's environmental work through stories that demonstrate concrete outcomes, beneficiaries, and progress toward mission goals without requiring design skills for each new story.
+1. **Impact Story Templates**: Create a system for showcasing the organization's work through compelling narrative templates that highlight outcomes and impact with consistent formatting.
+   - Critical for Amara because storytelling is essential for connecting donors and supporters to the organization's mission, and templates ensure consistency with minimal effort.
+   - Must include support for multimedia elements, testimonials, and impact metrics.
 
-2. **Donation Integration Framework**: Create a system for generating static payment links for various fundraising campaigns and purposes. With limited resources for maintaining complex technical systems, this feature allows Amara to facilitate donations through multiple channels and campaigns without requiring server-side payment processing, relying instead on established payment providers while tracking campaign performance.
+2. **Donation Integration**: Implement functionality for generating static payment links and donation forms for various fundraising campaigns without requiring server-side infrastructure.
+   - Essential for Amara because donations are the lifeblood of non-profit operations, but her organization lacks resources for complex payment processing systems.
+   - Should integrate with third-party donation platforms while maintaining brand consistency.
 
-3. **Volunteer Opportunity Management**: Develop a system for presenting volunteer positions with detailed information and signup processes. As volunteers are critical to Amara's organization, this feature helps her recruit and manage volunteer involvement by clearly communicating role descriptions, time commitments, skills needed, and application procedures through a structured, easily-updatable system.
+3. **Volunteer Opportunity Management**: Create a system for promoting volunteer positions with detailed descriptions, requirements, and sign-up capabilities.
+   - Important for Amara because volunteers provide critical support for the organization's programs, and effective recruitment requires clear, accessible information.
+   - Must include scheduling, skill requirements, and simplified application processes.
 
-4. **Event Promotion and Archiving System**: Implement functionality for promoting upcoming events with registration links and automatically archiving past events. This allows Amara to build community engagement through events, provide clear information about upcoming opportunities to participate, and maintain a historical record of past activities that demonstrates the organization's ongoing impact.
+4. **Event Promotion System**: Develop tools for showcasing upcoming events with registration links and automatic archiving of past events with materials and outcomes.
+   - Valuable for Amara because events are key engagement opportunities, and proper promotion before and documentation after helps maximize their impact.
+   - Should include countdown features, capacity tracking, and post-event reporting.
 
-5. **Grant and Funding Information Organizer**: Create a system for transparently presenting grant and funding information organized by project with progress updates. Transparency in funding is important for non-profit credibility, making this feature crucial for Amara to demonstrate financial accountability by clearly showing funding sources, allocation to specific projects, and concrete outcomes achieved with donated funds.
+5. **Grant and Funding Information**: Create a structured way to organize and present grant and funding information by project with progress updates and impact reporting.
+   - Critical for Amara because transparency in funding usage builds trust with donors and grantmakers, while organized information helps with reporting requirements.
+   - Must support project breakdowns, milestone tracking, and outcome measurement.
 
 ## Technical Requirements
 
-- **Testability Requirements**:
-  - Impact story templates must render consistently with various content types
-  - Donation link generation must be secure and verifiable
-  - Volunteer opportunity listings must display all required information fields
-  - Event promotion system must correctly transition events to archives based on dates
-  - Funding information must accurately represent relationships between grants and projects
+### Testability Requirements
+- All components must be individually testable with clear interfaces
+- Support snapshot testing for generated pages and templates
+- Validate third-party integrations with mock services
+- Test donation flows and volunteer sign-up processes
+- Support testing with realistic non-profit content sets
 
-- **Performance Expectations**:
-  - Full site generation must complete in under 30 seconds
-  - Image optimization for impact stories should reduce file sizes by at least 50%
-  - Page load time should not exceed 2 seconds on standard connections
-  - Incremental builds for content updates should complete in under 10 seconds
-  - Generated site must be under 5MB total (excluding high-resolution images)
+### Performance Expectations
+- Full site generation should complete in under 30 seconds for typical non-profit sites
+- Image optimization should process impact story photos efficiently
+- Event calendar generation should handle 100+ events in under 5 seconds
+- Donation form integration should add minimal overhead to page loading
+- Generated sites should achieve 90+ scores on web performance metrics (to be simulated in tests)
 
-- **Integration Points**:
-  - Payment processors (PayPal, Stripe, etc.) for donation links
-  - Calendar systems for event management
-  - Email collection systems for volunteer signups
-  - Social media platforms for sharing impact stories
-  - Analytics services for campaign tracking
+### Integration Points
+- Third-party donation and payment processing platforms
+- Volunteer management and sign-up services
+- Event registration and ticketing systems
+- Social media sharing and promotion
+- Email newsletter sign-up services
+- Impact measurement and tracking tools
 
-- **Key Constraints**:
-  - All functionality must work without server-side processing
-  - Donation processing must happen through established third-party providers
-  - Content must be updatable by non-technical staff
-  - Site must be accessible according to WCAG 2.1 AA standards
-  - Solution must require minimal ongoing technical maintenance
-
-IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- Must generate completely static HTML that works without server-side processing
+- Must work with limited technical resources and ease of maintenance
+- Output must be accessible for all potential supporters
+- Site performance must be optimized for various device types and connection speeds
+- Design must accommodate frequent content updates by non-technical staff
 
 ## Core Functionality
 
-The core functionality must include:
+The Non-Profit Organization Site Generator should provide a comprehensive Python library with the following core capabilities:
 
-1. **Impact Storytelling System**:
-   - Process structured impact story data with consistent metadata
-   - Apply templates with appropriate layouts for different story types
-   - Handle media-rich content with optimized images and quotes
-   - Support story categorization and filtering
-   - Create story archives and featured story highlighting
+1. **Impact Storytelling System**
+   - Process impact story data from structured formats
+   - Generate narrative templates with proper formatting
+   - Implement multimedia integration for stories
+   - Create impact metrics visualizations
+   - Support for testimonials and beneficiary voices
+   - Generate story archives and categorization
 
-2. **Donation Management Framework**:
-   - Generate secure, trackable donation links for various campaigns
-   - Create campaign-specific landing pages with impact goals
-   - Track and display fundraising progress toward goals
-   - Support multiple donation methods and amounts
-   - Generate appropriate thank-you pages and confirmation content
+2. **Donation Management**
+   - Generate platform-agnostic donation forms
+   - Implement integration with popular donation processors
+   - Create campaign-specific donation flows
+   - Support for suggested donation amounts
+   - Implement recurring donation options
+   - Generate donation impact visualizations
 
-3. **Volunteer Engagement System**:
-   - Process structured volunteer opportunity data
-   - Generate position listings with complete information
-   - Create application/signup flows that connect to external forms
-   - Track and display volunteer needs by project or department
-   - Support recurring and one-time volunteer opportunities
+3. **Volunteer Engagement Tools**
+   - Process volunteer opportunity information
+   - Generate role descriptions and requirements
+   - Implement sign-up form integration
+   - Create volunteer recognition features
+   - Support for volunteer hour tracking
+   - Generate volunteer impact reporting
 
-4. **Event Management System**:
-   - Process event information with proper date handling
-   - Generate event promotional pages with registration links
-   - Automatically transition past events to an accessible archive
-   - Support recurring events and event series
-   - Create event calendars and category-based event filtering
+4. **Event System**
+   - Process event data and schedules
+   - Generate event promotional materials
+   - Implement registration integration
+   - Create event archives with materials
+   - Support for recurring events and series
+   - Generate event outcomes and impact reports
 
-5. **Funding Transparency Framework**:
-   - Process grant and donation allocation data
+5. **Funding Transparency**
+   - Process grant and funding information
    - Generate project-based funding breakdowns
-   - Create visual representations of funding allocation
-   - Support progress updates on funded initiatives
-   - Track and display impact metrics related to funding
+   - Implement progress tracking and milestones
+   - Create funding source acknowledgment
+   - Support for impact reporting by project
+   - Generate financial transparency visualizations
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**:
-  - Proper rendering of impact stories with different content types
-  - Secure generation of donation links with correct parameters
-  - Complete display of volunteer opportunity information
-  - Accurate event promotion and automatic archiving
-  - Correct representation of funding information by project
+### Key Functionalities to Verify
 
-- **Critical User Scenarios**:
-  - Organization adds a new impact story with multimedia content
-  - Potential donor navigates donation options for specific campaigns
-  - Prospective volunteer reviews opportunities and application process
-  - Community member looks for information about upcoming events
-  - Stakeholder reviews funding allocation and project progress
+1. **Impact Story Generation**
+   - Test impact story template generation
+   - Verify multimedia integration in stories
+   - Test impact metric visualization
+   - Confirm proper formatting and layout
+   - Verify story categorization and filtering
+   - Test responsive design for various devices
 
-- **Performance Benchmarks**:
-  - Site generation time for organizations of different sizes
-  - Image optimization time and quality results
-  - Page load time with various connection speeds
-  - Build time for incremental content updates
-  - Memory usage during site generation process
+2. **Donation System Integration**
+   - Test donation form generation for various platforms
+   - Verify third-party integration functionality
+   - Test campaign-specific donation flows
+   - Confirm secure handling of payment links
+   - Verify donation impact visualization
+   - Test integration with popular payment processors
 
-- **Edge Cases and Error Conditions**:
-  - Handling of impact stories with missing media or information
-  - Management of expired or invalid donation campaigns
-  - Processing of volunteer opportunities with complex requirements
-  - Handling of canceled or rescheduled events
-  - Representation of complex funding relationships and reallocations
+3. **Volunteer Management**
+   - Test volunteer opportunity listing generation
+   - Verify sign-up form functionality
+   - Test role description formatting
+   - Confirm accessibility of volunteer information
+   - Verify volunteer recognition features
+   - Test scheduling and availability display
 
-- **Required Test Coverage**:
-  - 90% code coverage for impact story generation
-  - 95% coverage for donation link creation
-  - 90% coverage for volunteer opportunity management
-  - 90% coverage for event system with date-based transitions
-  - 90% coverage for funding information organization
+4. **Event Promotion**
+   - Test event calendar and listing generation
+   - Verify registration link functionality
+   - Test event archiving process
+   - Confirm proper event categorization
+   - Verify countdown and timing features
+   - Test event outcome reporting
 
-IMPORTANT: 
+5. **Funding Information**
+   - Test project funding breakdown generation
+   - Verify milestone and progress tracking
+   - Test grant acknowledgment formatting
+   - Confirm transparency visualization
+   - Verify project-based reporting
+   - Test financial information presentation
+
+### Critical User Scenarios
+
+1. Creating and publishing a new impact story with multimedia elements and metrics
+2. Setting up a fundraising campaign with custom donation forms and progress tracking
+3. Posting new volunteer opportunities with clear requirements and sign-up process
+4. Promoting an upcoming event and later archiving it with outcome information
+5. Reporting on grant usage with project milestones and impact measurements
+
+### Performance Benchmarks
+
+- Full site generation should complete in under 30 seconds for typical non-profit sites
+- Image processing should optimize 50+ impact story images in under 15 seconds
+- Donation form integration should add less than 200ms to page load times
+- Event system should process 100+ events in under 5 seconds
+- Memory usage should not exceed 500MB for typical non-profit sites
+
+### Edge Cases and Error Conditions
+
+- Test handling of missing impact metrics or incomplete stories
+- Verify graceful degradation when third-party donation services are unavailable
+- Test behavior with cancelled or rescheduled events
+- Verify handling of volunteer opportunities with unusual requirements
+- Test with incomplete funding information or missing grant details
+- Validate behavior with large image files or unusual media formats
+
+### Required Test Coverage Metrics
+
+- Minimum 90% code coverage for core functionality
+- 100% coverage for donation integration logic
+- 100% coverage for volunteer management
+- Integration tests for the entire site generation pipeline
+- Performance tests for both small and large non-profit sites
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+The Non-Profit Organization Site Generator will be considered successful if it:
 
-1. Impact stories effectively communicate program outcomes with consistent presentation
-2. Donation links work correctly with various payment providers and campaign tracking
-3. Volunteer opportunities are clearly presented with all necessary information
-4. Events are properly promoted and automatically archived after completion
-5. Funding information transparently shows allocation and impacts by project
-6. Non-technical staff can update all content through structured data files
-7. All tests pass with at least 90% code coverage
-8. The full site can be regenerated in under 30 seconds
+1. Creates compelling impact stories with proper formatting and multimedia support
+2. Integrates donation options that work with third-party processors without server-side code
+3. Effectively promotes volunteer opportunities with clear information and sign-up process
+4. Successfully manages event promotion and archiving with registration capabilities
+5. Presents funding and grant information with appropriate transparency and project tracking
+6. Builds non-profit sites efficiently with proper organization and minimal technical overhead
+7. Produces accessible, mobile-friendly HTML output
+8. Enables non-technical staff to maintain and update content easily
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
 
 To set up your development environment:
-```
-uv venv
-source .venv/bin/activate
-```
+
+1. Create a virtual environment using UV:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: When testing, you must generate the pytest_results.json file:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+This file is MANDATORY proof that all tests pass and must be included with your implementation.

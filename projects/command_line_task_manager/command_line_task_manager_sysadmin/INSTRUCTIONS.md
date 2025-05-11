@@ -1,167 +1,152 @@
-# TermTask for System Administrators
+# SysOps-TaskTrack - Command-Line Task Management for System Administrators
 
 ## Overview
-A specialized command-line task management system designed for system administrators who manage enterprise server infrastructure. This variant focuses on server health monitoring, change management documentation, maintenance scheduling, command history tracking, and critical task escalation to streamline operations and ensure system reliability.
+A specialized command-line task management system designed for system administrators managing enterprise infrastructure. The system enables tracking of routine maintenance tasks alongside urgent issues, prioritization of operations work, and comprehensive documentation of system changes for compliance and knowledge sharing.
 
 ## Persona Description
 Olivia manages server infrastructure for an enterprise and needs to track routine maintenance tasks alongside urgent issues. Her primary goal is to prioritize operations work and document system changes for compliance and team knowledge sharing.
 
 ## Key Requirements
+1. **Automated Server Health Checks**: Implement a mechanism to create tasks based on system status by integrating with monitoring platforms. This feature is critical for Olivia as it eliminates manual task creation for routine health issues, ensures critical system problems are automatically tracked as tasks, and provides seamless integration between monitoring alerts and administrative workflow.
 
-1. **Automated Server Health Monitoring**
-   - Create tasks based on server health status
-   - Integrate with monitoring systems (Nagios, Prometheus, etc.)
-   - Prioritize tasks based on system criticality and alert severity
-   - Group related alerts into single actionable tasks
-   - This feature is critical because it transforms passive monitoring alerts into actionable work items, ensuring that system issues are addressed proactively and preventing critical outages through early intervention.
+2. **Change Management Documentation**: Create a structured framework for recording system states before and after changes, including configurations and relevant metrics. This capability allows Olivia to maintain detailed records of all infrastructure modifications, satisfy audit and compliance requirements with comprehensive change logs, and provide team members with complete context for troubleshooting and knowledge transfer.
 
-2. **Change Management Documentation**
-   - Record before/after system states for all changes
-   - Document approval workflows and sign-offs
-   - Capture configuration diffs and rollback instructions
-   - Link changes to business justifications and tickets
-   - This capability is essential because it creates a comprehensive audit trail of all system modifications, satisfying compliance requirements and providing crucial context for troubleshooting when issues arise following changes.
+3. **Maintenance Window Scheduling**: Develop intelligent scheduling functionality that manages maintenance periods with conflict detection. This feature enables Olivia to plan system maintenance with awareness of business-critical periods and dependencies, prevent overlapping maintenance activities that could compound risk, and communicate planned downtime to stakeholders with clear visibility of timing and impact.
 
-3. **Maintenance Window Scheduling**
-   - Schedule and track system maintenance windows
-   - Detect scheduling conflicts across servers and services
-   - Send notifications for upcoming maintenance activities
-   - Track maintenance completion status and outcomes
-   - This feature is vital because it helps Olivia coordinate complex maintenance activities across interdependent systems, preventing service disruptions from conflicting changes and ensuring all stakeholders are informed of planned downtime.
+4. **Command History Integration**: Build functionality that records and associates exact operations performed with specific tasks. This integration helps Olivia maintain precise documentation of commands used for system changes, create a searchable repository of proven solutions for common issues, and enable junior administrators to learn from past interventions.
 
-4. **Command History Integration**
-   - Record exact operations performed on systems
-   - Associate commands with specific tasks and servers
-   - Enable command replay for recurring operations
-   - Search historical commands by server, task, or outcome
-   - This functionality is critical because it documents precisely what actions were taken during system changes, creating institutional knowledge that can be leveraged for future similar tasks and for training new team members.
-
-5. **Critical Task Escalation Pathways**
-   - Define escalation paths for critical issues
-   - Implement notification rules based on task priority and age
-   - Track response times and SLA compliance
-   - Support on-call rotation integration
-   - This feature is essential because it ensures urgent issues receive appropriate attention, maintains accountability for critical systems, and provides clear procedures for escalating problems when timely resolution is imperative.
+5. **Escalation Pathways**: Implement a sophisticated notification system for critical tasks with configurable escalation routes. This capability ensures critical issues receive appropriate attention based on severity and time thresholds, maintains clear accountability for urgent problems as they progress through resolution stages, and prevents important tasks from being overlooked during high-activity periods.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock monitoring system integration for testing alert processing
-- Simulated system state for testing change documentation
-- Virtual calendar system for testing maintenance scheduling
-- Command execution simulation for testing history tracking
-- Notification system mocking for testing escalation pathways
+- Server health check integration must be testable with mock monitoring data
+- Change documentation components must be verifiable with sample configuration files
+- Maintenance scheduling must be testable with predefined calendar scenarios
+- Command recording must work across different shell environments (bash, zsh, PowerShell)
+- Escalation logic must be fully testable without sending actual notifications
+- All components must be unit testable with appropriate mocking
 
 ### Performance Expectations
-- Support processing 100+ monitoring alerts per minute
-- Handle 1000+ servers and services in the infrastructure registry
-- Maintenance scheduler should handle 500+ scheduled windows
-- Command history should store and query 1,000,000+ command entries
-- Escalation system should process notifications in under 1 second
+- Health check integrations must handle 1000+ servers with sub-second response
+- Change documentation must efficiently store and retrieve changes to large configuration files
+- Maintenance scheduling must process calendars with 10,000+ entries in <3 seconds
+- Command history must support searching through 100,000+ historical commands in <2 seconds
+- Escalation system must process 100+ parallel notification paths without significant latency
 
 ### Integration Points
-- Monitoring systems (Nagios, Prometheus, Zabbix, etc.)
-- Configuration management tools (Ansible, Chef, Puppet)
-- Ticketing systems (ServiceNow, Jira)
-- Shell history and command execution
-- Notification systems (email, SMS, chat platforms)
+- Monitoring system APIs (Nagios, Prometheus, Zabbix, etc.)
+- Configuration management databases
+- Enterprise calendar systems
+- Shell environment and command history
+- Notification systems (email, SMS, messaging platforms)
+- Authentication and authorization systems for escalation control
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Cannot interfere with system operations or performance
-- Must function in air-gapped or restricted network environments
-- Minimal dependency requirements for security-conscious environments
-- Support for operating across multiple security zones
+- The implementation must work across different operating systems
+- All functionality must be accessible via programmatic API without UI components
+- The system must support enterprise security requirements including least privilege
+- Sensitive information must be handled appropriately in logs and documentation
+- Performance must scale with enterprise infrastructure sizes
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for system administrators includes:
+1. **Task Management Engine**: A core module handling CRUD operations for system administration tasks with priority levels, categories, and statuses appropriate for IT operations.
 
-1. **Task Management Engine**
-   - Create, read, update, and delete operations tasks
-   - Organize tasks by priority, status, system, and owner
-   - Support for task dependencies and critical paths
-   - Customizable workflows for different types of operations
-   - Persistence with high reliability guarantees
+2. **Monitoring Integration**: Components for connecting with monitoring systems to automatically generate tasks based on alerts and system status.
 
-2. **Server Health Monitoring Integration**
-   - Connect to monitoring system APIs
-   - Process and normalize alerts from multiple sources
-   - Convert technical alerts to actionable tasks
-   - Implement deduplication and correlation
-   - Track historical alert patterns
+3. **Change Documentation System**: A framework for capturing, storing, and retrieving system state information before and after administrative actions.
 
-3. **Change Management System**
-   - Document proposed changes with impact analysis
-   - Capture pre-change system state snapshots
-   - Record post-change verification steps
-   - Manage change approval workflows
-   - Archive change documentation for compliance
+4. **Maintenance Scheduler**: Logic for planning and coordinating maintenance windows with conflict detection and dependency awareness.
 
-4. **Maintenance Planning Framework**
-   - Define maintenance window parameters
-   - Check for conflicts across systems and dependencies
-   - Schedule recurring maintenance activities
-   - Track maintenance execution and outcomes
-   - Notify stakeholders of scheduled activities
+5. **Command Management**: Functionality to record, associate, and search shell commands related to specific tasks and resolutions.
 
-5. **Command Management System**
-   - Capture shell commands and execution context
-   - Categorize commands by purpose and target system
-   - Associate commands with specific tasks
-   - Enable search and replay of command sequences
-   - Analyze command patterns and effectiveness
+6. **Escalation Framework**: A configurable system for escalating critical issues through appropriate notification channels based on severity and timing.
 
-6. **Escalation Management Engine**
-   - Define escalation rules and pathways
-   - Implement SLA monitoring and notifications
-   - Track incident response metrics
-   - Integrate with on-call rotation systems
-   - Generate incident response reports
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Monitoring alerts correctly create appropriate tasks
-- Change management captures complete system state information
-- Maintenance scheduling properly detects and prevents conflicts
-- Command history accurately records all operational commands
-- Escalation pathways properly trigger notifications based on rules
+- Task creation, retrieval, updating, and deletion with sysadmin-specific metadata
+- Monitoring system integration with accurate task generation
+- Change documentation with comprehensive before/after state recording
+- Maintenance scheduling with correct conflict detection
+- Command recording and association with tasks
+- Escalation path logic with proper notification targeting
 
 ### Critical User Scenarios
-- Responding to a critical system alert
-- Documenting and executing a complex system change
-- Scheduling a maintenance window across interdependent systems
-- Using historical command information to troubleshoot an issue
-- Escalating an unresolved critical issue through proper channels
+- Responding to system outages with proper task tracking and escalation
+- Planning and executing coordinated maintenance across multiple systems
+- Documenting complex system changes for compliance and knowledge sharing
+- Managing routine maintenance alongside urgent issues
+- Handling escalation of critical issues through appropriate channels
+- Training new team members with historical task and command data
 
 ### Performance Benchmarks
-- Process 50+ monitoring alerts per second
-- Store and retrieve change records for 10,000+ changes
-- Schedule conflict detection across 1,000+ maintenance windows in under 1 second
-- Command history search across 1,000,000+ entries in under 2 seconds
-- Escalation pathway evaluation and notification in under 500ms
+- Task operations must complete in <50ms for individual operations
+- Monitoring integration must handle 100+ simultaneous alerts
+- Change documentation must efficiently store differences in configurations up to 10MB
+- Maintenance scheduling must handle calendars with 10,000+ entries
+- Command history must efficiently search through 100,000+ historical commands
+- Escalation system must process notification decisions in <100ms
 
 ### Edge Cases and Error Conditions
-- Handling alert storms during major outages
-- Managing incomplete change documentation
-- Rescheduling maintenance after conflicts or failures
-- Recovering from interrupted command sequences
-- Routing escalations when primary contacts are unavailable
-- Operating during network connectivity issues
+- Handling monitoring system unavailability
+- Maintaining accurate state documentation during failed or partial changes
+- Resolving complex maintenance scheduling conflicts
+- Recovering from interrupted command recording
+- Proper behavior when escalation paths are invalid or unavailable
+- Graceful degradation under extremely high task volumes during major incidents
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for escalation and critical alert paths
-- Comprehensive integration tests for monitoring system connections
-- Performance tests for high-volume alert scenarios
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Security controls must be explicitly verified
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully converts monitoring alerts into actionable tasks
-- Change management documentation meets or exceeds compliance requirements
-- Maintenance scheduling prevents conflicting changes and service disruptions
-- Command history provides valuable operational knowledge and troubleshooting aids
-- Critical issues are promptly escalated and resolved within SLA requirements
-- System administrator time spent on routine documentation is reduced by at least 40%
-- Mean time to identify and resolve incidents is decreased by at least 25%
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system successfully integrates with monitoring platforms to create tasks automatically.
+3. Change documentation comprehensively records system states before and after modifications.
+4. Maintenance scheduling correctly identifies and prevents conflicts.
+5. Command history is accurately recorded and associated with relevant tasks.
+6. Escalation pathways properly route notifications based on severity and timing.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation adheres to enterprise security and compliance requirements.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

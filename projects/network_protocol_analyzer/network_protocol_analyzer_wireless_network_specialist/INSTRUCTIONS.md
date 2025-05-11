@@ -1,131 +1,172 @@
-# NetScope for Wireless Network Optimization
+# Wireless Network Protocol Analysis Framework
 
 ## Overview
-A specialized network protocol analyzer focused on troubleshooting and optimizing complex Wi-Fi deployments, providing detailed analysis of wireless protocol behavior, roaming patterns, signal quality correlation, and channel utilization to improve performance in challenging environments.
+A specialized network protocol analysis library for wireless network specialists to analyze Wi-Fi deployments, focusing on client roaming behavior, signal quality correlations, frame type analysis, channel utilization patterns, and client capability negotiation to optimize wireless networks in challenging environments.
 
 ## Persona Description
 Omar troubleshoots complex Wi-Fi deployments in challenging environments like hospitals and manufacturing facilities. He needs to analyze wireless protocol behavior and interference patterns affecting network performance.
 
 ## Key Requirements
-1. **Wireless handoff analysis showing client roaming behavior between access points**
-   - Implement detection and timing analysis of client roaming events
-   - Develop visualization of roaming patterns across physical spaces
-   - Create metrics for roaming effectiveness including timing, success rates, and disruption assessment
-   - Include comparative analysis between different client types and their roaming behaviors
-   - Support for various 802.11 roaming standards and vendor-specific implementations
 
-2. **Signal quality correlation linking packet errors with wireless interference**
-   - Implement correlation algorithms between signal metrics and packet error rates
-   - Develop pattern recognition for interference signatures in error distributions
-   - Create visualization of signal quality trends with synchronized error overlay
-   - Include spectral analysis integration when available from monitoring systems
-   - Support for mapping error patterns to common interference sources
+1. **Wireless Handoff Analysis System**  
+   Create a module that tracks and analyzes client roaming behavior between access points, including timing, triggers, and success rates. This is critical for Omar because seamless client handoffs are essential in environments like hospitals where medical devices and staff must maintain reliable connectivity while moving throughout the facility, and poor roaming implementations cause dropped connections and service disruptions.
 
-3. **Frame subtype analysis showing control, management, and data frame distributions**
-   - Implement comprehensive 802.11 frame classification and analysis
-   - Develop statistical modeling of frame type distributions for various network states
-   - Create anomaly detection for unusual frame type patterns indicating problems
-   - Include efficiency metrics comparing control/management overhead to data throughput
-   - Support for vendor-specific management frames and information elements
+2. **Signal Quality Correlation Engine**  
+   Implement functionality to link packet errors and retransmissions with wireless interference and signal quality metrics. This feature is essential for Omar to identify the root causes of wireless performance problems in noisy RF environments like manufacturing facilities with heavy machinery, allowing him to distinguish between protocol issues, RF interference, and client-specific problems.
 
-4. **Channel utilization visualization identifying congestion across frequency bands**
-   - Implement channel occupancy and airtime utilization analysis
-   - Develop visualization of usage patterns across channels and frequency bands
-   - Create congestion prediction based on usage trends and client distribution
-   - Include channel optimization recommendations based on observed utilization
-   - Support for all Wi-Fi frequency bands (2.4GHz, 5GHz, 6GHz) and channel widths
+3. **Frame Subtype Analysis**  
+   Develop capabilities to categorize and analyze the distribution of control, management, and data frames across the wireless network. This is crucial for Omar because an imbalanced frame distribution can indicate network health issues, inefficient configurations, or problematic clients, and understanding the protocol overhead helps optimize wireless network capacity in high-density environments.
 
-5. **Client capability negotiation showing connection parameter selection and limitations**
-   - Implement detection and analysis of capability advertisement and negotiation
-   - Develop comparison between available and utilized connection parameters
-   - Create identification of suboptimal capability negotiation and root causes
-   - Include recommendations for configuration changes to improve connection quality
-   - Support for analyzing various Wi-Fi standards (802.11n/ac/ax) and feature negotiations
+4. **Channel Utilization Visualization**  
+   Build a system to identify congestion and interference patterns across different frequency bands and channels. This allows Omar to optimize channel assignments, detect co-channel interference, and understand utilization patterns that cause performance problems in crowded wireless environments, especially when working with limited clean spectrum availability.
+
+5. **Client Capability Negotiation Analysis**  
+   Create functionality to examine the process of capability selection and parameter negotiation between clients and access points. This feature is vital for Omar to identify clients that aren't using optimal connection parameters or falling back to legacy rates, which helps him troubleshoot performance disparities between device types and ensure all devices operate at their maximum potential.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- Roaming analysis must be testable with captures of clients moving between access points
-- Signal correlation must be verifiable against controlled interference scenarios
-- Frame analysis must be validated against known reference distributions
-- Channel utilization must be testable with synthetic and real-world congestion patterns
-- Capability negotiation must be verified against clients with known feature sets
+- All components must be testable with wireless capture files (PCAP with radiotap headers)
+- Roaming analysis must be verifiable against known roaming events
+- Signal correlation must be testable with RF measurement data
+- Frame analysis must be validated against known frame distributions
+- Client capability analysis must be verifiable against device specifications
 
 ### Performance Expectations
-- Analysis tools must process wireless captures at rates suitable for field troubleshooting
-- System should handle at least 24 hours of continuous wireless traffic captures
-- Processing should complete complex multi-AP analysis in under 15 minutes
-- Real-time monitoring should support at least 50 simultaneous clients
-- Visualizations must render within 3 seconds even for complex wireless environments
+- Process at least 1GB of wireless capture data in under 10 minutes
+- Track roaming for at least 1,000 clients across 100 access points
+- Correlate signal metrics with at least 95% accuracy compared to specialized tools
+- Analyze frame distribution across 50+ channels simultaneously
+- Support 802.11 amendments including a/b/g/n/ac/ax (Wi-Fi 6) protocol analysis
 
 ### Integration Points
-- Import capabilities for wireless-specific capture formats (.pcap, .pcapng with radio headers)
-- Integration with wireless site survey and heat mapping tools
-- Export formats compatible with wireless troubleshooting documentation
-- APIs for integration with WLAN management systems
-- Support for importing spectrum analyzer data for correlation analysis
+- Import from wireless packet captures with radiotap/PPI headers
+- Support for importing access point location data and floor plans
+- Integration with external RF spectrum analysis data when available
+- Export findings in formats compatible with wireless survey tools
+- API for correlation with WLAN controller statistics
 
 ### Key Constraints
-- Must handle specialized wireless capture formats with radio information headers
-- Should accommodate distributed captures from multiple monitoring points
-- Must process captures from various wireless sniffing hardware with different capabilities
-- Should function effectively with incomplete captures typical in wireless monitoring
-- Must handle the complexities of modern wireless networks including multiple bands, standards, and features
+- Must handle encrypted wireless traffic (WPA2/WPA3)
+- Should work with captures from multiple, distributed sensors
+- Must process vendor-specific Information Elements and capabilities
+- Should handle captures from different chipsets with varying radiotap fields
+- Must support analysis of wireless networks using multiple frequency bands
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Wireless Network Optimization version of NetScope must provide specialized analysis capabilities focused on Wi-Fi networks. The system should enable wireless specialists to understand roaming behavior, correlate signal issues with errors, analyze frame distributions, visualize channel utilization, and optimize client connections.
 
-Key functional components include:
-- Wireless roaming and handoff analysis system
-- Signal quality and error correlation framework
-- Frame type and subtype classification and statistical analysis
-- Channel utilization and congestion visualization
-- Client capability negotiation and optimization tools
+The Wireless Network Protocol Analysis Framework should provide the following core functionality:
 
-The system should provide both detailed technical analysis for wireless engineers and summary reports suitable for communicating with IT management and stakeholders. All components should be designed with an understanding of the unique characteristics of wireless networks and the challenges they present for troubleshooting.
+1. **802.11 Protocol Analysis Engine**
+   - Parse and decode wireless frames and their subtypes
+   - Extract and interpret radiotap/PPI headers for RF metrics
+   - Analyze protocol behaviors across different amendments
+   - Support for wireless security protocol analysis
+
+2. **Roaming and Mobility Analysis**
+   - Track client associations across multiple access points
+   - Analyze roaming decisions and their triggers
+   - Measure roaming delay and success rates
+   - Identify sticky client behavior and roaming failures
+
+3. **RF Quality and Interference Assessment**
+   - Correlate signal metrics with transmission errors
+   - Analyze retry rates and their relationship to signal quality
+   - Track SNR (Signal-to-Noise Ratio) impact on data rates
+   - Identify patterns indicating external interference
+
+4. **Spectrum and Channel Analysis**
+   - Measure airtime utilization across channels
+   - Identify co-channel and adjacent channel interference
+   - Analyze frequency band usage patterns
+   - Evaluate channel bonding effectiveness
+
+5. **Client and AP Capability Analysis**
+   - Decode and analyze supported data rates and capabilities
+   - Track negotiated connection parameters
+   - Identify suboptimal feature negotiation
+   - Compare actual versus potential performance
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate identification and timing analysis of roaming events
-- Reliable correlation between signal metrics and packet errors
-- Comprehensive classification and analysis of frame types and subtypes
-- Precise measurement of channel utilization and congestion
-- Detailed analysis of client capability negotiation and connection parameters
+- Accuracy of wireless protocol decoding and analysis
+- Correctness of roaming event detection and analysis
+- Precision of signal quality correlation with packet errors
+- Completeness of frame categorization and statistics
+- Effectiveness of client capability analysis
 
 ### Critical User Scenarios
-- Troubleshooting poor roaming performance in a hospital with critical devices
-- Identifying sources of interference in a manufacturing facility
-- Optimizing frame exchange efficiency in a high-density deployment
-- Resolving channel congestion issues in an educational environment
-- Improving client connection quality in a mixed-client environment
+- Analyzing roaming patterns for medical devices in a hospital deployment
+- Correlating interference patterns with packet loss in a manufacturing facility
+- Identifying excessive management frame overhead in a high-density environment
+- Mapping channel utilization across a multi-floor office building
+- Troubleshooting why specific client devices negotiate lower data rates
 
 ### Performance Benchmarks
-- Process and analyze roaming patterns for 100 clients over 24 hours in under 15 minutes
-- Correlate signal metrics and errors with at least 95% accuracy compared to manual analysis
-- Classify frame subtypes with 100% accuracy for standard frames
-- Measure channel utilization with at least 98% accuracy compared to specialized tools
-- Analyze capability negotiation for at least 50 different client types in under 10 minutes
+- Process at least 10,000 wireless frames per second on reference hardware
+- Complete roaming analysis for 24 hours of traffic in under 15 minutes
+- Generate signal correlation metrics with less than 5% deviation from specialized tools
+- Analyze frame distribution across all channels in under 30 seconds
+- Process client capability negotiation for 500 clients in under 60 seconds
 
 ### Edge Cases and Error Conditions
-- Correct handling of protected management frames
-- Appropriate analysis of vendor-specific information elements
-- Graceful handling of malformed 802.11 frames
-- Proper management of country-specific channel regulations
-- Resilience against capture file corruption and truncation
-- Accurate analysis despite missing frames in wireless captures
-- Appropriate handling of various encryption methods
+- Handling captures with incomplete roaming sequences
+- Processing mixed-mode networks (e.g., 802.11ac and 802.11ax)
+- Analyzing networks with multiple BSSIDs per radio
+- Dealing with vendor-specific extensions and non-standard behaviors
+- Supporting mesh wireless deployments and repeated SSIDs
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all wireless analysis components
-- Complete coverage of 802.11 frame type parsing
-- Comprehensive tests for roaming detection with various client types
-- Full suite of tests for signal correlation with different interference patterns
-- Complete validation of channel utilization across all supported bands
+- Minimum 90% code coverage for core functionality
+- 95% coverage for wireless handoff analysis
+- 95% coverage for signal quality correlation
+- 90% coverage for frame subtype analysis
+- 95% coverage for client capability analysis
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Roaming analysis correctly identifies at least 98% of handoff events in test captures
-- Signal quality correlation identifies interference sources with at least 90% accuracy
-- Frame analysis correctly classifies at least 99.9% of standard 802.11 frames
-- Channel utilization measurements correlate with specialized tools with at least 95% accuracy
-- Client capability analysis correctly identifies at least 95% of suboptimal negotiations
-- Analysis completes within specified performance parameters for enterprise-scale deployments
-- Wireless engineers report at least 50% reduction in troubleshooting time for complex issues
+
+The Wireless Network Protocol Analysis Framework implementation will be considered successful when:
+
+1. It accurately detects and analyzes at least 95% of roaming events in test captures
+2. It successfully correlates signal quality metrics with packet errors with at least 90% accuracy
+3. It correctly categorizes frame subtypes and provides meaningful distribution statistics
+4. It accurately measures channel utilization across different bands and channels
+5. It properly analyzes client capability negotiation and identifies suboptimal connections
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

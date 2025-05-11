@@ -1,7 +1,7 @@
 # Edge-Enabled Retail IoT Microservices Framework
 
 ## Overview
-A lightweight, resource-efficient event-driven microservices framework designed for retail IoT environments, enabling seamless coordination between point-of-sale systems, inventory management, and customer analytics. The framework can operate on edge devices with limited computing resources while maintaining reliable synchronization with cloud services, even in environments with intermittent connectivity.
+This project is a specialized event-driven microservices framework designed for retail IoT environments, enabling seamless communication between in-store edge devices and cloud services. It focuses on lightweight operation, offline capabilities, efficient bandwidth usage, and dynamic service discovery to create a resilient retail technology ecosystem that functions reliably even with limited connectivity.
 
 ## Persona Description
 Priya builds retail store systems connecting point-of-sale, inventory, and customer analytics using IoT devices. Her primary goal is to create a lightweight framework that can run on edge devices with limited resources while maintaining seamless coordination with cloud services.
@@ -9,146 +9,184 @@ Priya builds retail store systems connecting point-of-sale, inventory, and custo
 ## Key Requirements
 
 1. **Edge-compatible Event Processing with Offline Operation Modes**
-   - Lightweight event processing engine optimized for resource-constrained devices
-   - Local event queue management for operation during network outages
-   - Automatic synchronization when cloud connectivity is restored
-   - Conflict resolution strategies for reconciling offline operations
-   - This is critical for Priya as retail stores must continue functioning even during internet outages, ensuring uninterrupted customer service
+   - Implement local event processing that functions without cloud connectivity
+   - Create event storage mechanisms for offline operation with later synchronization
+   - Support prioritization of critical retail operations during connectivity loss
+   - Include conflict resolution strategies for reconnection scenarios
+   - This feature is critical for retail environments where internet connectivity may be unreliable but business operations must continue uninterrupted
 
 2. **Bandwidth-efficient Event Batching and Compression**
-   - Intelligent event batching based on priority and network conditions
-   - Compression algorithms optimized for IoT event data
-   - Delta-based updates to minimize data transfer
-   - Configurable sending strategies based on network quality and cost
-   - This enables Priya to minimize bandwidth usage in stores with limited connectivity while ensuring all critical data eventually reaches the cloud
+   - Develop intelligent event batching based on priority and bandwidth availability
+   - Implement efficient binary serialization formats for IoT device communication
+   - Create adaptive compression strategies based on device capabilities and network conditions
+   - Include delta-encoding for similar sequential events
+   - This feature optimizes network usage in retail environments with limited or costly bandwidth
 
 3. **Device Capability Discovery with Dynamic Service Registration**
-   - Automatic discovery of IoT devices and their capabilities
-   - Dynamic registration of services provided by each device
-   - Capability advertisement and negotiation between devices
-   - Real-time service directory updates as devices join and leave
-   - This allows Priya to create a plug-and-play environment where new devices automatically integrate into the store system
+   - Create an automatic device capability discovery mechanism
+   - Implement dynamic service registration as devices join the network
+   - Support capability negotiation between devices with different resources
+   - Include graceful degradation based on available capabilities
+   - This feature enables plug-and-play operation of diverse retail devices without manual configuration
 
 4. **Store-level Event Partitioning with Regional Aggregation**
-   - Event partitioning by store location for data isolation
-   - Local event processing for store-specific operations
-   - Regional aggregation of events for multi-store analytics
-   - Hierarchical event routing from store to regional to global levels
-   - This ensures that each store operates independently while still contributing to the larger retail analytics system
+   - Implement event partitioning based on physical store boundaries
+   - Create regional event aggregation for multi-store analytics
+   - Support for store-specific event handling rules and policies
+   - Include cross-store event correlation for inventory and customer tracking
+   - This feature maintains data locality while enabling chain-wide operations and analytics
 
 5. **Power-aware Processing Prioritization for Battery-operated Devices**
-   - Event processing strategies optimized for power efficiency
-   - Adaptive duty cycling based on device battery levels
-   - Priority-based event handling to conserve energy on critical devices
-   - Power consumption monitoring and alerting
-   - This helps Priya ensure that battery-powered devices (like handheld scanners) conserve energy while prioritizing critical retail operations
+   - Develop power consumption profiling for different operations
+   - Implement adaptive processing based on battery levels
+   - Create sleep/wake scheduling for non-critical operations
+   - Include power state management across device collections
+   - This feature extends battery life for mobile retail devices while ensuring critical functions remain available
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be testable on both edge devices and cloud environments
-- Mock implementations for all hardware dependencies
-- Simulation framework for testing offline operation scenarios
-- Power consumption profiling for battery-operated device testing
-- Network condition simulation for testing various connectivity scenarios
+- Support for simulating networks of IoT devices with varying capabilities
+- Ability to test offline scenarios and reconnection handling
+- Support for testing under constrained resource conditions
+- Verification of power consumption patterns
 
 ### Performance Expectations
-- Framework must run efficiently on devices with as little as 256MB RAM
-- Event processing overhead must not exceed 5% of CPU on target devices
-- Batched event transmission should achieve at least 5:1 compression ratio
-- System must handle at least 100 devices per store location
-- Operation must continue without degradation during 24+ hour offline periods
+- Support for minimum 100 IoT devices per retail location
+- Maximum 50ms latency for in-store event processing
+- Ability to operate for at least a 12-hour retail day on battery power
+- Efficient synchronization after offline periods (at least 1000 events/minute)
 
 ### Integration Points
-- Integration with various IoT device types (POS terminals, RFID readers, etc.)
-- Cloud service integration for centralized data processing
-- Integration with inventory management systems
-- Customer analytics platform integration
-- Legacy retail system compatibility
+- Compatible with common retail IoT devices (POS, inventory scanners, beacons)
+- Support for standard IoT protocols (MQTT, CoAP)
+- Integration with cloud-based analytics and management systems
+- Support for existing inventory and customer management systems
 
 ### Key Constraints
-- Must operate on resource-constrained edge devices
+- Must operate on devices with as little as 256MB RAM and 1GHz CPU
 - Must function in environments with intermittent connectivity
-- Framework footprint must not exceed 10MB
-- Maximum battery impact on portable devices
-- Secure operation in semi-public retail environments
+- Power consumption must be optimized for battery-operated devices
+- Data storage must be efficient for devices with limited capacity
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Edge-Enabled Retail IoT Microservices Framework must provide:
+The framework must provide:
 
-1. **Edge Event Processing Engine**
-   - Lightweight event bus implementation for resource-constrained devices
-   - Local event queue management with persistence
-   - Event prioritization for critical retail operations
-   - Resource-aware event scheduling
+1. **Lightweight Event Processing Engine**
+   - Efficient event processing for resource-constrained devices
+   - Support for local and distributed event handling
+   - Prioritization mechanisms for critical retail operations
+   - Offline operation with event storage and replay
 
-2. **Connectivity Management**
-   - Network status monitoring and adaptation
-   - Event batching and compression
-   - Synchronization protocols for offline operation
-   - Bandwidth optimization strategies
+2. **Network and Communication Management**
+   - Bandwidth-efficient communication protocols
+   - Intelligent batching and compression
+   - Reliable delivery with store-and-forward capabilities
+   - Adaptive behavior based on network conditions
 
-3. **Device Discovery and Management**
-   - Automatic service discovery for retail devices
-   - Capability registration and advertisement
-   - Dynamic service directory management
-   - Health monitoring for connected devices
+3. **Device and Service Discovery**
+   - Automatic capability discovery and registration
+   - Service advertisement and discovery
+   - Version and compatibility management
+   - Dynamic service composition based on available devices
 
-4. **Data Partitioning and Aggregation**
-   - Store-level data isolation
-   - Location-based event processing
-   - Hierarchical event aggregation
-   - Cross-store data synchronization
+4. **Data Locality and Aggregation**
+   - Store-level data partitioning
+   - Local-first processing with regional aggregation
+   - Cross-store data correlation
+   - Hierarchical event processing (device, store, region, chain)
 
-5. **Resource Optimization**
-   - Power consumption monitoring and management
-   - Adaptive processing based on device capabilities
-   - Resource allocation for critical retail functions
-   - Battery life optimization for mobile devices
+5. **Resource Management**
+   - Battery and power consumption optimization
+   - Storage management for limited capacity devices
+   - Adaptive CPU usage based on device capabilities
+   - Resource monitoring and management
 
 ## Testing Requirements
 
-### Key Functionalities to Verify
-- Event processing on resource-constrained devices
-- Offline operation and recovery
-- Data synchronization after connectivity restoration
-- Device discovery and capability negotiation
-- Power optimization under various scenarios
+### Key Functionalities that Must be Verified
+- Offline operation and successful synchronization upon reconnection
+- Efficient bandwidth usage through batching and compression
+- Successful device discovery and capability negotiation
+- Proper store-level event partitioning and regional aggregation
+- Power consumption optimization for battery-operated devices
 
 ### Critical User Scenarios
-- Complete point-of-sale transaction flow during internet outage
-- Inventory synchronization between store devices and central system
-- New device addition to existing store network
-- Multi-day operation of battery-powered devices
-- Regional analytics gathering from multiple stores
+- Complete retail transaction processing during internet outage
+- Deployment of new devices with automatic capability discovery
+- Cross-store inventory reconciliation
+- Battery operation throughout a complete business day
+- Recovery after unexpected device shutdown or network failure
 
 ### Performance Benchmarks
-- Event processing throughput of at least 100 events per second on target devices
-- Battery life impact less than 10% compared to non-framework operation
-- Compression achieving 80% reduction in transmitted data size
-- Support for at least 100 concurrent device connections per store
-- Recovery time less than 60 seconds after 24-hour offline period
+- Process 100 sales transactions per minute on edge devices
+- Maintain local response time under 50ms for customer-facing operations
+- Operate on battery power for 12+ hours with typical retail workloads
+- Synchronize 10,000+ offline events within 10 minutes of reconnection
 
 ### Edge Cases and Error Conditions
-- Extended network outages (multiple days)
-- Power failures and unexpected device shutdowns
-- Network congestion during high-traffic periods
-- Device capability mismatches
-- Partial data corruption during transmission
+- Extended offline operation beyond local storage capacity
+- Network reconnection with conflict resolution
+- Partial device failures in the store network
+- Extreme low battery conditions
+- Handling of incompatible device capabilities
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all components
-- 100% coverage of offline operation paths
-- All power optimization features must have measurable benchmarks
-- All device types must be included in integration tests
-- Simulated long-term operation tests (30+ days)
+- Minimum 90% line coverage for all code
+- 100% coverage of offline operation and synchronization logic
+- 100% coverage of power management functionality
+- 100% coverage of device discovery and capability negotiation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Framework successfully runs on specified target devices within resource constraints
-- Retail operations continue uninterrupted during network outages
-- At least 80% reduction in bandwidth usage compared to unoptimized solutions
-- Battery-operated devices achieve at least 12 hours of continuous operation
-- Zero data loss during extended offline periods
-- Plug-and-play functionality for adding new devices to the store
-- Complete store-level and regional analytics despite intermittent connectivity
+
+The implementation will be considered successful if:
+
+1. The system demonstrates reliable operation in both connected and offline modes
+2. Network communication is optimized for bandwidth efficiency
+3. Devices can be dynamically discovered and integrated into the system
+4. Events are properly partitioned by store with support for regional aggregation
+5. Battery life is maximized through power-aware processing
+6. Performance meets the specified benchmarks
+7. All test cases pass with the required coverage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
+
+To set up the development environment:
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the project in development mode
+uv pip install -e .
+
+# Install test dependencies
+uv pip install pytest pytest-json-report
+
+# Run tests and generate the required JSON report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+CRITICAL: Generating and providing the pytest_results.json file is a mandatory requirement for project completion. This file serves as evidence that all functionality has been implemented correctly and passes all tests.

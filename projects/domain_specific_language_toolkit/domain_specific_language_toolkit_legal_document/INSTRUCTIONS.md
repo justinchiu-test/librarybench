@@ -1,142 +1,160 @@
-# Legal Contract Language Definition Framework
-
-A domain-specific language toolkit for defining, analyzing, and generating complex legal contracts with conditional clauses.
+# Legal Contract Language Definition Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on legal contract automation. It enables lawyers to define complex contract logic and conditional clauses that can be automatically applied across different contract types. The system emphasizes legal term standardization, conflict detection, plain language translation, precedent analysis, and risk scoring.
+A specialized Domain Specific Language toolkit for legal professionals to define, analyze, and implement contract clauses and legal document logic. This toolkit enables lawyers to express complex contractual conditions and relationships in a structured format without requiring programming knowledge, while ensuring legal accuracy and consistency.
 
 ## Persona Description
-
 Elena works for a legal tech company that automates contract generation and analysis. Her primary goal is to develop a contract clause language that allows lawyers to define complex contract logic and conditional clauses that can be automatically applied across different contract types.
 
 ## Key Requirements
+1. **Legal term standardization with jurisdiction-specific variations**: A comprehensive system for defining and managing standard legal terminology with support for jurisdiction-specific variations and synonyms. This is critical because it ensures consistent language across documents, accommodates regional legal differences, and reduces ambiguity in contract interpretation while allowing contracts to be legally valid in different jurisdictions.
 
-1. **Legal term standardization with jurisdiction-specific variations**
-   - Implement a system for defining and managing standardized legal terms that can adapt to jurisdiction-specific variations
-   - This feature is critical for Elena because contract language must be precise yet adaptable to different legal jurisdictions. Standardization enables contract automation across multiple regions while ensuring that each contract uses the appropriate terminology for its jurisdiction, reducing the risk of unenforceable clauses or misinterpretations.
+2. **Conflict and contradiction detection between clauses**: Automated analysis capabilities to identify when contract clauses contradict each other, create unintended obligations, or introduce logical inconsistencies. This is essential because undetected conflicts in legal documents can render contracts unenforceable, create legal liabilities, or lead to disputes over interpretation that require costly litigation to resolve.
 
-2. **Conflict and contradiction detection between clauses**
-   - Develop an analysis system that can identify logical conflicts, contradictions, or circular references between contract clauses
-   - This capability is essential for contract integrity as contradictory clauses can invalidate contracts or lead to disputes. It enables Elena to ensure that automated contract generation maintains logical consistency even when combining clauses from different templates or when customizing existing contracts.
+3. **Plain language translation of technical legal constructs**: Tools for translating complex legal concepts and clauses into more accessible language while preserving the precise legal meaning. This is vital because it improves client understanding of contractual obligations, supports transparency in legal agreements, and helps non-legal stakeholders review documents without requiring legal expertise for basic comprehension.
 
-3. **Plain language translation of technical legal constructs**
-   - Create a transformation system that can generate plain language explanations of complex legal provisions
-   - This feature addresses a significant pain point in legal practice—making contracts understandable to non-lawyers. It allows Elena to produce contracts that satisfy legal requirements while also providing clear explanations to contract parties, improving informed consent and reducing disputes arising from misunderstandings.
+4. **Precedent analysis comparing clause definitions to case law**: Integration with legal databases to validate clause formulations against relevant case law and precedent, identifying potential enforceability issues. This is necessary because contract language validated against case history is more likely to be interpreted as intended by courts, reducing the risk of unexpected legal outcomes and strengthening the defensibility of contractual provisions.
 
-4. **Precedent analysis comparing clause definitions to case law**
-   - Build an analysis framework that can compare contract clauses against a database of legal precedents and case outcomes
-   - Understanding how similar clauses have been interpreted by courts is crucial for effective contract drafting. This capability enables Elena to draft clauses informed by historical precedent, reducing the risk of unintended interpretations and aligning contract language with established legal constructs.
-
-5. **Contract risk scoring based on clause combinations**
-   - Implement a risk assessment system that evaluates overall contract risk based on the combination and interaction of clauses
-   - This analytical feature provides valuable insights into contract risk profiles, enabling Elena to identify and mitigate potential vulnerabilities. It transforms contract drafting from a document-creation exercise into a strategic risk management process, improving business outcomes for contract parties.
+5. **Contract risk scoring based on clause combinations**: Algorithmic evaluation of overall contract risk based on the combination of clauses, terms, and conditions present in the document. This is crucial because it enables objective risk assessment of complex legal documents, helps prioritize legal review efforts toward high-risk provisions, and supports strategic decision-making about acceptable levels of contractual risk.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each clause definition must be automatically verifiable against legal standards
+  - Conflict detection must be tested against known problematic clause combinations
+  - Plain language translations must maintain legal equivalence to original text
+  - Risk scoring must align with expert legal assessment on benchmark contracts
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- Contract definitions must be testable against sample scenarios and fact patterns
-- Conflict detection must be verifiable with deliberately contradictory clause sets
-- Plain language translations must be assessable for reading level and clarity
-- Risk scoring algorithms must be calibratable against expert-assessed contracts
-- Test coverage must include both standard and edge case legal scenarios
+- **Performance Expectations**:
+  - Clause analysis and conflict detection must complete in under 10 seconds for 100-page contracts
+  - System must process precedent comparison against 10,000+ court cases in under 60 seconds
+  - Risk scoring algorithms must evaluate complex contracts in under 5 seconds
+  - System must handle contract templates with 1000+ variable elements without degradation
 
-### Performance Expectations
-- Contract compilation must complete within 3 seconds for documents up to 100 pages
-- Conflict detection analysis must complete within 10 seconds for complex contracts
-- Plain language translation must process 5 pages per second
-- Precedent analysis must query and analyze relevant case law within 5 seconds per clause
-- The system must support concurrent processing of multiple contract templates
+- **Integration Points**:
+  - Legal research platforms (Westlaw, LexisNexis, etc.)
+  - Document management systems
+  - E-signature platforms
+  - Legal practice management software
+  - Contract lifecycle management systems
 
-### Integration Points
-- Legal research platforms for precedent analysis
-- Contract management systems for template storage and retrieval
-- Document generation systems for producing final contracts
-- Legal knowledge bases for term definitions and jurisdictional variations
-- E-signature and workflow systems for contract execution
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All contract logic must be expressible through the DSL without requiring custom code
+  - Clause definitions must be storable as human-readable text files
+  - System must maintain attorney-client privilege protection where applicable
+  - All legal definitions must be traceable to authoritative sources
 
-### Key Constraints
-- All contract generation must be deterministic and reproducible
-- The system must maintain attorney-client privilege where applicable
-- No UI components; all functionality must be exposed through APIs
-- All transformations must be traceable from source definitions to output
-- The system must support legal review and approval workflows
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Legal Contract DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for contract clauses
+2. A terminology standardization system with jurisdiction-specific variations
+3. Logical analysis capabilities for detecting conflicts and contradictions
+4. Plain language translation algorithms for legal text
+5. Precedent analysis through integration with legal databases
+6. Risk scoring algorithms for evaluating clause combinations
+7. Template generation and clause library management
+8. Version control and audit trail for clause modifications
+9. Documentation generators that produce annotation for contract review
+10. Test utilities for verifying legal accuracy and consistency
 
-1. **Contract Clause Definition Language**: A grammar and parser for defining contract provisions with conditional logic, variables, and alternative phrasings based on context.
-
-2. **Term Standardization**: A system for managing legal terms with jurisdiction-specific variations and maintaining consistent terminology throughout contracts.
-
-3. **Conflict Detection**: Analysis tools that examine contract provisions for logical inconsistencies, contradictions, or circular references.
-
-4. **Plain Language Translation**: Transformation mechanisms that generate clear, non-technical explanations of complex legal provisions.
-
-5. **Precedent Analysis**: Integration with legal research to compare clause language against relevant case law and precedents.
-
-6. **Risk Assessment**: Algorithms for evaluating contract risk based on clause combinations and language patterns.
-
-7. **Contract Compilation**: Translation of high-level clause definitions into complete, formatted contract documents.
-
-8. **Clause Library Management**: Tools for storing, categorizing, and retrieving reusable contract components.
+The system should enable legal professionals to define elements such as:
+- Contractual rights and obligations
+- Conditional terms with complex dependencies
+- Force majeure and liability limitations
+- Payment terms and conditions
+- Intellectual property provisions
+- Confidentiality and data protection requirements
+- Termination and renewal conditions
+- Jurisdiction and governing law provisions
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into clause representations
+  - Accurate detection of conflicting provisions
+  - Proper translation between technical and plain language
+  - Correct precedent matching with case law
+  - Accurate risk scoring reflecting legal expertise
 
-### Key Functionalities to Verify
-- Accurate parsing of contract definitions from domain-specific syntax
-- Correct detection of conflicts between interdependent clauses
-- Effective plain language transformation of technical legal language
-- Accurate risk scoring compared to expert legal assessment
-- Proper handling of jurisdiction-specific term variations
+- **Critical User Scenarios**:
+  - Lawyer creates new clause template for specific contractual situation
+  - Legal team analyzes existing contract for risks and conflicts
+  - Contract manager assembles document from clause library with specific customizations
+  - Legal tech specialist develops new clause patterns for emerging legal issues
+  - Corporate counsel reviews contracts for regulatory compliance
 
-### Critical User Scenarios
-- Lawyer defines a new contract template with conditional clauses
-- System detects and reports conflicts between newly added and existing clauses
-- Contract is compiled with jurisdiction-specific term variations
-- Plain language translations are generated for complex provisions
-- Contract receives risk assessment based on clause combinations
+- **Performance Benchmarks**:
+  - Analyze a 50-page contract for conflicts in under 10 seconds
+  - Compare 100 clauses against precedent database in under 30 seconds
+  - Generate plain language translations for 200 legal provisions in under 60 seconds
+  - Compute risk scores for a contract portfolio of 1000 documents in under 10 minutes
 
-### Performance Benchmarks
-- Contract compilation completed in under 3 seconds for 100-page documents
-- Conflict detection analysis completed in under 10 seconds for contracts with 200+ clauses
-- Plain language translation processed at 5 pages per second
-- Precedent analysis completed in under 5 seconds per clause
-- Risk scoring calculated in under 8 seconds for complete contracts
+- **Edge Cases and Error Conditions**:
+  - Handling of novel legal constructs without precedent
+  - Detection of subtly contradictory provisions across different sections
+  - Management of multi-jurisdictional conflicts in international contracts
+  - Graceful degradation when legal database connections are unavailable
+  - Clause behavior when referenced definitions are ambiguous or circular
 
-### Edge Cases and Error Conditions
-- Handling of novel legal constructs without precedent
-- Proper response to ambiguous or vague clause definitions
-- Graceful degradation when precedent databases are unavailable
-- Recovery from partial contract compilation failures
-- Handling of conflicting jurisdictional requirements
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of clause parser and interpreter
+  - 100% coverage of conflict detection algorithms
+  - 95% coverage of risk scoring components
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core contract parsing and compilation logic
-- 100% coverage of conflict detection algorithms
-- 95% coverage of plain language transformation rules
-- 90% coverage for precedent analysis interfaces
-- 100% test coverage for risk scoring calculations
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Lawyers can define complex contract clauses and conditions using the domain-specific language without requiring programming expertise.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to express complex legal provisions in the DSL
+4. Conflict detection correctly identifies contradictory clauses
+5. Plain language translations maintain legal equivalence while improving readability
+6. Precedent analysis correctly matches clauses with relevant case law
+7. Risk scoring aligns with expert legal assessment of contract risk
+8. Legal professionals without programming expertise can define and modify clauses
 
-2. The system reliably detects logical conflicts and contradictions between contract provisions.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Plain language translations accurately convey the meaning of technical legal provisions at appropriate reading levels.
+## Setup Instructions
+To set up the development environment:
 
-4. Risk assessments correlate closely with evaluations performed by experienced legal professionals.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. Generated contracts correctly implement jurisdiction-specific variations of standard terms.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. The time required to draft and review complex contracts is reduced by at least 50%.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. Contract disputes arising from drafting errors or ambiguities are measurably reduced.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,10 +1,10 @@
-# Healthcare Systems Compliance Monitor
+# Healthcare Compliance Monitoring System
 
-A specialized monitoring solution designed for medical practices with strict uptime requirements and compliance regulations, focusing on HIPAA verification, scheduled maintenance, medical device connectivity, and audit reporting.
+A specialized monitoring platform designed for healthcare environments that ensures system reliability, regulatory compliance, and patient care continuity.
 
 ## Overview
 
-The Healthcare Systems Compliance Monitor is a tailored implementation of the PyMonitor system specifically designed for healthcare IT environments. It provides comprehensive monitoring of system health with particular emphasis on regulatory compliance, minimizing patient impact during maintenance, integrating with medical devices, and generating audit-ready documentation for certification requirements.
+This implementation of PyMonitor focuses on the unique monitoring needs of healthcare IT environments, emphasizing HIPAA compliance verification, scheduled downtime management, medical device integration, patient impact assessment, and audit-ready reporting to support the strict uptime and regulatory requirements of medical practices.
 
 ## Persona Description
 
@@ -12,161 +12,226 @@ Dr. Patel maintains systems for a medical practice that must meet strict uptime 
 
 ## Key Requirements
 
-1. **HIPAA Compliance Verification** - Implement functionality to continuously check security controls and access patterns against HIPAA requirements. This is critical for Dr. Patel because healthcare organizations face severe penalties for compliance violations, and automated verification helps ensure consistent adherence to required security controls and access restrictions.
+1. **HIPAA Compliance Verification**
+   - Monitor and verify security controls required for HIPAA compliance
+   - Track access patterns to Protected Health Information (PHI) systems
+   - Detect potential security violations and unauthorized access attempts
+   - Generate compliance assessment reports for audit preparation
+   - Maintain evidence of continuous monitoring for regulatory requirements
+   - This is critical because healthcare organizations must maintain strict compliance with HIPAA regulations to protect patient data and avoid significant penalties.
 
-2. **Scheduled Downtime Management** - Develop a system to plan and manage maintenance during non-patient-facing hours. Dr. Patel requires this capability because healthcare systems directly impact patient care, making it essential to schedule necessary maintenance during periods with minimal patient impact and ensure all stakeholders are properly informed.
+2. **Scheduled Downtime Management**
+   - Implement planned maintenance windows during non-patient-facing hours
+   - Verify system availability during critical operational periods
+   - Track maintenance activities and completion status
+   - Automatically test critical functions after maintenance
+   - Provide early warnings for maintenance overruns into operational hours
+   - This is critical because healthcare systems require regular maintenance but must maintain strict availability during patient care hours to ensure continuous access to critical medical information.
 
-3. **Medical Device Integration** - Create monitoring capabilities for specialized healthcare equipment connectivity. This feature is essential because modern medical practices rely on numerous specialized devices that interface with IT systems, and connectivity issues can directly impact patient care, diagnostic capabilities, and treatment delivery.
+3. **Medical Device Integration Monitoring**
+   - Monitor connectivity between information systems and medical devices
+   - Track data flow integrity from devices to electronic health records
+   - Detect device communication failures or data transmission errors
+   - Verify proper operation of interface engines and integration points
+   - Support various medical device communication protocols
+   - This is critical because healthcare environments rely on data from specialized medical equipment, and integration failures can impact patient care and clinical decision-making.
 
-4. **Patient Impact Estimation** - Implement analytics to correlate system issues with affected appointments or services. This is crucial for Dr. Patel because understanding the scope of patient impact during system issues helps prioritize responses, allocate resources effectively, and communicate accurately with clinical staff about service disruptions.
+4. **Patient Impact Estimation**
+   - Correlate system issues with affected appointments and patient services
+   - Prioritize alerts based on potential impact to patient care
+   - Estimate number of affected patients during system degradation
+   - Track incident resolution time against patient care schedules
+   - Provide decision support for contingency plan activation
+   - This is critical because healthcare IT teams need to understand how technical issues translate to patient care impact to properly prioritize response efforts.
 
-5. **Audit-Ready Reporting** - Develop comprehensive reporting functionality that generates documentation for compliance certifications. Dr. Patel needs this because healthcare organizations undergo frequent audits and certification processes that require detailed evidence of system monitoring, security controls, incident response, and resolution activities.
+5. **Audit-Ready Reporting**
+   - Generate comprehensive documentation for compliance certifications
+   - Provide tamper-evident logs of system monitoring activities
+   - Support attestation requirements for various healthcare regulations
+   - Maintain historical evidence of security controls and monitoring
+   - Produce executive summaries for leadership and audit reviewers
+   - This is critical because healthcare organizations undergo frequent audits and must demonstrate continuous compliance with various regulations and standards.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All compliance monitoring components must be testable with pytest
-- HIPAA verification rules must be validated against standard compliance benchmarks
-- Downtime management must be verifiable with simulated maintenance scenarios
-- Medical device connectivity must be testable with device simulators
-- Impact estimation must be verifiable with synthetic appointment data
+- All compliance monitoring must be verifiable against HIPAA requirements
+- Downtime management must be testable with simulated maintenance scenarios
+- Medical device integration must be testable with mock device interfaces
+- Patient impact estimation must work with test appointment and schedule data
+- Audit reporting must generate verifiable documentation from test data
 
 ### Performance Expectations
-- Continuous compliance checking with minimal system impact
-- Complete system verification within 4 hours for audit purposes
-- Maintenance window planning with 15-minute precision
-- Real-time medical device connectivity status (within 30 seconds of changes)
-- Impact estimations generated within 2 minutes of detected issues
+- Support for monitoring at least 100 clinical and administrative systems
+- Process and correlate events within 30 seconds of occurrence
+- Generate compliance reports within 5 minutes of request
+- Track at least 50 integrated medical devices
+- Maintain at least 7 years of auditable monitoring history (with appropriate archiving)
+- Minimal system impact (less than 2% CPU, 100MB RAM) on monitored systems
 
 ### Integration Points
 - Electronic Health Record (EHR) systems
-- Medical device communication interfaces and protocols
-- Appointment scheduling and practice management systems
+- Medical devices and integration engines
+- Appointment scheduling systems
 - Authentication and access control systems
-- Reporting frameworks for compliance documentation
+- Audit logging infrastructure
+- Backup and disaster recovery systems
+- Compliance management platforms
 
 ### Key Constraints
-- Must maintain strict data privacy in compliance with HIPAA
-- Should operate with minimal impact on clinical systems
-- Must accommodate 24/7 operational requirements of healthcare
-- Should integrate with healthcare-specific protocols and standards
-- Must maintain detailed, tamper-evident audit logs
+- Must satisfy HIPAA Security Rule monitoring requirements
+- Cannot impact performance of critical clinical systems
+- Must maintain data privacy during monitoring
+- Cannot store PHI within monitoring system
+- Should operate without requiring additional hardware
+- Must support various healthcare-specific systems and protocols
+- Should minimize maintenance requirements for IT staff
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Healthcare Systems Compliance Monitor must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Regulatory Compliance Management**
-   - HIPAA security rule control verification
-   - Access pattern analysis for inappropriate access
-   - Encryption and data protection validation
-   - Security configuration assessment
-   - Compliance deviation alerting and remediation tracking
+1. **Compliance Monitoring Engine**
+   - Security control verification and assessment
+   - Access pattern analysis and anomaly detection
+   - Vulnerability and configuration compliance checking
+   - Evidence collection and preservation
+   - Regulatory requirement mapping and validation
 
-2. **Clinical System Maintenance Coordination**
-   - Maintenance window scheduling and management
-   - Service dependency mapping for coordinated downtime
-   - Automated pre/post-maintenance system verification
-   - Stakeholder notification management
-   - Maintenance impact forecasting and minimization
+2. **Maintenance Window Manager**
+   - Downtime scheduling and notification
+   - Critical period protection and verification
+   - Activity tracking and status monitoring
+   - Post-maintenance testing coordination
+   - Contingency activation for extended outages
 
-3. **Medical Technology Integration**
-   - Specialized device connectivity monitoring
-   - Healthcare protocol support (HL7, DICOM, etc.)
-   - Medical device data flow validation
-   - Integration point failure detection
-   - Healthcare network segmentation verification
+3. **Device Integration Monitor**
+   - Medical device connectivity tracking
+   - Interface engine monitoring
+   - Data flow validation and integrity checking
+   - Protocol support for common medical devices
+   - Integration point mapping and dependency tracking
 
-4. **Clinical Service Impact Analysis**
-   - System-to-service mapping and dependency tracking
-   - Appointment and clinical workflow correlation
-   - Patient care impact severity classification
-   - Service recovery prioritization
-   - Clinical communication preparation
+4. **Patient Care Impact Analyzer**
+   - System-to-service dependency mapping
+   - Appointment and schedule correlation
+   - Impact severity classification
+   - Patient notification recommendation
+   - Contingency planning support
 
-5. **Compliance Documentation Generation**
-   - Automated evidence collection and preservation
-   - Tamper-evident audit logging
-   - Compliance control status reporting
-   - Incident documentation and resolution tracking
-   - Certification-specific report generation
+5. **Audit Documentation Generator**
+   - Evidence collection and preservation
+   - Report generation with compliance mapping
+   - Historical archiving with secure access
+   - Executive summary preparation
+   - Attestation support for certification
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Accuracy of HIPAA compliance rule verification
-- Effectiveness of maintenance window management
-- Reliability of medical device connectivity monitoring
-- Precision of patient impact estimation algorithms
-- Completeness of audit reports against certification requirements
+### Key Functionalities to Verify
+- Accurate verification of HIPAA compliance controls
+- Reliable management of scheduled maintenance windows
+- Effective monitoring of medical device integration
+- Precise estimation of patient impact during incidents
+- Comprehensive generation of audit documentation
 
 ### Critical User Scenarios
-- Preparing for an unexpected HIPAA compliance audit
-- Scheduling and managing a major EHR system upgrade
-- Detecting and addressing medical device connectivity failures
-- Assessing and communicating impact when critical systems fail
-- Generating required documentation for annual security certifications
+- Preparing for a HIPAA compliance audit
+- Managing system maintenance while minimizing care disruption
+- Troubleshooting medical device integration issues
+- Assessing patient impact during system outages
+- Generating documentation for regulatory certification
 
 ### Performance Benchmarks
-- Time to complete full compliance verification scans
-- Accuracy of maintenance window impact predictions
-- Latency of medical device status monitoring
-- Speed of patient impact calculations during incidents
-- Efficiency of audit report generation for large systems
+- Compliance status updates within 5 minutes of configuration changes
+- Maintenance window scheduling and alert suppression activating within 1 minute
+- Device integration status updating within 30 seconds of connectivity changes
+- Patient impact estimation within 2 minutes of incident detection
+- Audit report generation within 5 minutes of request
 
-### Edge Cases and Error Handling
-- Behavior during unplanned clinical system outages
-- Handling of conflicting maintenance requirements
-- Response to medical device protocol anomalies
-- Operation during partial EHR system availability
-- Recovery from monitoring component failures
+### Edge Cases and Error Conditions
+- Handling conflicting compliance requirements across regulations
+- Managing emergency maintenance during critical care hours
+- Adapting to new or non-standard medical devices
+- Estimating impact when appointment data is incomplete
+- Generating audit documentation during system recovery
 
-### Required Test Coverage
-- 95% code coverage for compliance verification modules
-- 90% coverage for maintenance management components
-- 95% coverage for medical device integration
-- 90% coverage for patient impact estimation
-- 100% coverage for audit reporting functionality
+### Test Coverage Metrics
+- Minimum 95% code coverage across all modules
+- 100% coverage of compliance verification logic
+- 100% coverage of maintenance window management
+- 95% coverage of device integration monitoring
+- 90% coverage of patient impact estimation
+- 100% coverage of audit report generation
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. HIPAA compliance verification correctly identifies 99% of security control deviations
-2. Scheduled maintenance windows accurately predict system availability with 95% precision
-3. Medical device connectivity issues are detected within 30 seconds with 99% reliability
-4. Patient impact estimations correctly identify affected appointments with 90% accuracy
-5. Generated audit reports satisfy requirements for major healthcare certification frameworks
-6. System operates reliably in 24/7 healthcare environments with 99.9% uptime
-7. All monitoring functions maintain strict compliance with patient privacy requirements
-8. All components pass their respective test suites with required coverage levels
+1. **Comprehensive Compliance Monitoring**
+   - Complete verification of required security controls
+   - Accurate detection of potential compliance violations
+   - Thorough documentation of compliance status
 
----
+2. **Effective Downtime Management**
+   - Reliable scheduling and enforcement of maintenance windows
+   - Proper protection of critical operational periods
+   - Accurate tracking of maintenance activities and completion
+
+3. **Reliable Device Integration**
+   - Comprehensive monitoring of medical device connectivity
+   - Accurate detection of integration issues
+   - Effective tracking of data flow between systems
+
+4. **Precise Patient Impact Assessment**
+   - Accurate correlation between technical issues and patient appointments
+   - Reliable estimation of affected patient services
+   - Appropriate prioritization based on care impact
+
+5. **Audit-Ready Documentation**
+   - Complete and accurate compliance reports
+   - Properly preserved evidence of monitoring
+   - Executive-friendly summaries for leadership and auditors
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

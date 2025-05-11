@@ -1,126 +1,162 @@
-# Documentation UX Optimization Framework
+# Documentation Experience Optimization System
+
+A specialized documentation testing and optimization platform that enables data-driven improvement of technical documentation through experimental design, user behavior analysis, and cognitive load measurement.
 
 ## Overview
-An advanced documentation analytics and optimization system for developer experience designers that enables A/B testing of documentation approaches, generates user attention heatmaps, analyzes feedback sentiment, provides tools for reorganizing content based on usage patterns, and estimates cognitive load to systematically improve technical documentation.
+
+The Documentation Experience Optimization System allows developer experience designers to conduct A/B tests on documentation approaches, analyze user interactions through heatmaps, measure emotional responses to documentation, restructure content based on usage patterns, and identify complex sections requiring simplification.
 
 ## Persona Description
+
 Miguel focuses on improving the usability of technical documentation through user research and design. He needs to experiment with different presentation approaches and measure their effectiveness in helping developers successfully implement solutions.
 
 ## Key Requirements
-1. **A/B Testing Framework** - Implement a system that enables controlled experiments comparing different documentation approaches for the same content, with metrics tracking developer success rates and comprehension. This is critical for Miguel because it transforms documentation design from subjective opinion to data-driven decisions, allowing him to quantitatively measure which documentation strategies lead to better developer outcomes.
 
-2. **Attention Heatmap Generation** - Create functionality to capture and visualize where users focus their attention on documentation pages, showing which sections receive the most engagement and which are skipped or skimmed. This feature is essential because it reveals actual reading patterns rather than assumed ones, helps identify content that isn't engaging developers, and enables Miguel to optimize the placement of critical information where developers are most likely to notice it.
+1. **A/B Testing Framework** - The system must support controlled experiments comparing different documentation approaches for the same content. This is critical for Miguel because it enables evidence-based decisions about documentation design, allowing him to scientifically determine which presentation methods most effectively help developers understand and implement technical concepts.
 
-3. **Feedback Sentiment Analysis** - Develop a system to analyze the emotional tone of user feedback on documentation, identifying sections that consistently generate frustration, confusion, or positive responses. This capability is vital for Miguel because it helps systematically identify pain points in the documentation that cause negative developer experiences, prioritize improvements to the most problematic areas, and measure emotional response to documentation changes over time.
+2. **Interaction Heatmap Visualization** - The tool must track and visually represent where users focus their attention within documentation pages. As a DX designer, Miguel needs this feature to understand which documentation elements attract attention, which are ignored, and how users navigate complex information, providing insights that drive layout and emphasis decisions.
 
-4. **Information Architecture Tools** - Design tools that analyze natural usage patterns and suggest reorganizations of documentation structure to better align with how developers actually navigate and consume information. This is important for Miguel because intuitive information architecture significantly impacts findability and usability, data-driven restructuring leads to more intuitive documentation organization, and it helps bridge the gap between how documentation creators and users think about information.
+3. **Sentiment Analysis** - The system must analyze user feedback and interactions to identify documentation sections that cause frustration or confusion. This helps Miguel pinpoint emotionally challenging content that creates developer friction, allowing targeted improvements to areas that negatively impact the developer experience and potentially cause project abandonment.
 
-5. **Cognitive Load Estimation** - Implement methods to assess the complexity and cognitive demands of documentation sections, identifying overly complex content that exceeds working memory limitations and requires simplification. This is crucial for Miguel because cognitive overload is a primary cause of documentation abandonment, identifying overly complex sections enables targeted simplification efforts, and it helps ensure documentation remains accessible to developers with varying experience levels.
+4. **Information Architecture Optimization** - The tool must analyze natural usage patterns and provide tools for reorganizing content structure based on actual developer behavior. This is essential for Miguel to ensure documentation structure matches developers' mental models and work processes, rather than internal organizational logic that may not align with how developers actually use documentation.
+
+5. **Cognitive Load Estimation** - The system must identify documentation sections with excessive complexity that require significant mental effort to understand. This enables Miguel to identify content that exceeds cognitive processing capacity, causing developer fatigue and comprehension issues, so he can prioritize simplification efforts where they'll have the greatest impact on developer success.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - A/B testing framework must produce consistent results with controlled synthetic data
-  - Attention tracking algorithms must generate reproducible heatmaps from interaction data
-  - Sentiment analysis must be verifiable with labeled test feedback datasets
-  - Information architecture recommendations must be testable against usage pattern sets
-  - Cognitive load estimations must produce consistent scores for the same content
 
-- **Performance Expectations**
-  - System should handle documentation for products with 1,000+ API endpoints
-  - A/B test assignment and tracking should add no more than 100ms latency
-  - Heatmap generation should process 100,000+ interaction events in under 5 minutes
-  - Sentiment analysis should process 10,000+ feedback items in under 10 minutes
-  - Information architecture analysis should handle repositories with 10,000+ pages
+### Testability Requirements
+- All components must have comprehensive unit tests with minimum 90% code coverage
+- A/B testing must be verifiable with simulated user cohorts
+- Heatmap generation must be testable with synthetic interaction data
+- Sentiment analysis must be verifiable with annotated feedback samples
+- Cognitive load estimation must be testable with content of varying complexity
 
-- **Integration Points**
-  - Web analytics platforms for user behavior tracking
-  - Feedback collection systems and survey tools
-  - Version control systems for documentation content
-  - Natural language processing services for sentiment analysis
-  - A/B testing infrastructure for controlled experiments
+### Performance Expectations
+- A/B test analysis must process data from 10,000+ sessions in under 10 minutes
+- Heatmap generation must complete in under 5 seconds for individual pages
+- Sentiment analysis must process 1,000+ feedback items in under 1 minute
+- Information architecture analysis must complete in under 30 minutes for entire documentation sets
+- Cognitive load estimation must analyze 100+ pages in under 5 minutes
 
-- **Key Constraints**
-  - All user data collection must comply with privacy regulations
-  - System must function with anonymized user data
-  - Performance impact on documentation loading must be minimal
-  - All metrics must be exportable in standard formats
-  - Testing variations must not create SEO penalties or indexing issues
+### Integration Points
+- Web analytics platforms for raw user data
+- User feedback collection systems
+- Eye-tracking and interaction monitoring tools
+- Content management systems
+- Natural language processing services
+
+### Key Constraints
+- All functionality must be implementable without UI components
+- Must support documentation sets with at least 1,000 pages
+- Must analyze data from at least 100,000 distinct user sessions
+- Must process at least 10,000 user feedback submissions
+- Must maintain user privacy and comply with data regulations
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide a Python library with the following core modules:
 
-1. **Experiment Manager**: Design, deploy, and analyze A/B tests for documentation variations.
+The system must provide:
 
-2. **Interaction Analyzer**: Collect and process user interactions to generate attention heatmaps and usage patterns.
+1. An experimental design engine that enables controlled A/B testing of documentation variants
+2. An interaction tracking system that records and visualizes user attention patterns
+3. A sentiment analysis engine that identifies emotionally frustrating documentation sections
+4. An information architecture analysis system that reveals natural usage patterns
+5. A complexity analysis engine that estimates cognitive load of documentation sections
+6. A recommendation system that suggests targeted documentation improvements
+7. A reporting system that communicates developer experience insights to stakeholders
 
-3. **Sentiment Processor**: Analyze feedback and comments to identify emotional responses to documentation.
-
-4. **Structure Optimizer**: Analyze usage patterns and suggest improvements to documentation organization.
-
-5. **Complexity Evaluator**: Assess cognitive load and complexity of documentation sections.
-
-6. **Metrics Aggregator**: Combine multiple data sources to create comprehensive documentation effectiveness metrics.
-
-7. **Recommendation Engine**: Generate prioritized, actionable recommendations for documentation improvements.
-
-These modules should be designed with clean interfaces, allowing them to work together seamlessly while maintaining the ability to use individual components independently.
+These components should work together to create a data-driven documentation optimization system that continuously improves the developer experience through empirical testing and analysis.
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Accurate tracking and analysis of A/B test results
-  - Correct generation of attention heatmaps from interaction data
-  - Reliable sentiment classification of user feedback
-  - Appropriate information architecture recommendations based on usage patterns
-  - Consistent cognitive load estimation across documentation sections
 
-- **Critical User Scenarios**
-  - Designing and implementing an A/B test for alternative explanation approaches
-  - Analyzing user attention patterns across key documentation sections
-  - Identifying documentation sections that consistently generate negative sentiment
-  - Reorganizing documentation structure based on actual usage analytics
-  - Identifying and simplifying documentation sections with excessive cognitive load
+The implementation must include tests for:
 
-- **Performance Benchmarks**
-  - Process interaction data from 10,000 user sessions in under 15 minutes
-  - Analyze sentiment for 5,000 feedback items in under 5 minutes
-  - Generate attention heatmaps for 500 documentation pages in under 10 minutes
-  - Complete cognitive load estimation for 1,000 documentation sections in under 8 minutes
-  - Generate restructuring recommendations for a 5,000-page documentation set in under 20 minutes
+### Key Functionalities Verification
+- A/B testing framework correctly compares different documentation approaches
+- Heatmap visualization accurately represents user attention patterns
+- Sentiment analysis correctly identifies frustrating documentation sections
+- Information architecture tools effectively reveal natural usage patterns
+- Cognitive load estimation accurately identifies overly complex content
 
-- **Edge Cases and Error Conditions**
-  - Insufficient data for statistically significant A/B test conclusions
-  - Highly polarized feedback with extreme sentiment distribution
-  - Conflicting usage patterns across different user segments
-  - Documentation with highly technical or specialized vocabulary
-  - Interaction patterns suggesting user confusion or circular navigation
-  - Recovery from interrupted data collection or processing
+### Critical User Scenarios
+- A DX designer tests two alternative explanation approaches for a complex API
+- A documentation team analyzes how developers navigate reference material
+- A product manager identifies documentation sections causing negative emotions
+- A technical writer reorganizes content based on observed usage patterns
+- A documentation lead identifies sections requiring simplification efforts
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% line coverage across all modules
-  - 95%+ coverage for A/B testing statistical analysis
-  - 95%+ coverage for sentiment analysis algorithms
-  - 90%+ coverage for attention mapping algorithms
-  - 90%+ coverage for cognitive load estimation
+### Performance Benchmarks
+- A/B test analysis completes within time limits for large user populations
+- Heatmap generation performs efficiently for individual pages and entire sections
+- Sentiment analysis scales appropriately with increasing feedback volume
+- Information architecture analysis completes within time limits for large documentation sets
+- Cognitive load estimation performs efficiently across documentation collections
 
-IMPORTANT: 
+### Edge Cases and Error Handling
+- Handling inconclusive A/B test results with statistical significance evaluation
+- Processing unusual interaction patterns or anomalous user behavior
+- Managing sparse feedback data for less frequently accessed documentation
+- Dealing with documentation that changes during the analysis period
+- Handling content with mixed technical levels and audience targets
+
+### Required Test Coverage
+- Minimum 90% test coverage for all components
+- 100% coverage for statistical analysis and significance testing
+- Integration tests for all external system interfaces
+- Performance tests for all data-intensive operations
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. A/B testing framework correctly identifies statistically significant differences between documentation approaches
-2. Attention heatmaps accurately represent where users focus when consuming documentation
-3. Sentiment analysis correctly classifies at least 85% of user feedback emotional tone
-4. Information architecture recommendations align with observed usage patterns
-5. Cognitive load estimation identifies documentation sections requiring simplification
-6. The system generates actionable, prioritized recommendations for documentation improvements
-7. All components function without requiring a user interface
-8. All tests pass with the specified coverage metrics
+The implementation will be considered successful if:
 
-To set up a development environment for this project, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. A/B testing framework correctly compares documentation variants with statistical validity
+2. Heatmap visualization accurately represents user attention across documentation
+3. Sentiment analysis identifies at least 85% of frustrating documentation sections in test cases
+4. Information architecture analysis reveals meaningful usage patterns from interaction data
+5. Cognitive load estimation successfully identifies overly complex documentation sections
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. From within the project directory, create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report to generate the required report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion.

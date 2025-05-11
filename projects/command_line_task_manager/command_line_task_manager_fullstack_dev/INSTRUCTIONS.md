@@ -1,159 +1,149 @@
-# TermTask for Full-Stack Developers
+# GitTask - Git-Integrated CLI Task Management for Developers
 
 ## Overview
-A specialized command-line task management system optimized for full-stack developers who juggle multiple client projects simultaneously. This variant integrates seamlessly with git workflows, allowing developers to associate tasks with specific branches and commits while providing project context awareness based on the current working directory.
+A specialized command-line task management system designed for full-stack developers working across multiple client projects. This system seamlessly integrates with git workflows, enabling developers to associate tasks with specific commits and branches, organize project-specific tasks, and maintain productivity without disrupting coding flow.
 
 ## Persona Description
 Rachel builds web applications across multiple client projects simultaneously and needs to track numerous development tasks without disrupting her coding flow. Her primary goal is to organize project-specific tasks and seamlessly integrate task management with her git workflow to associate tasks with specific commits and branches.
 
 ## Key Requirements
+1. **Git Integration**: Implement a sophisticated integration with git that automatically links tasks to commits and branches. This feature is critical for Rachel as it enables her to maintain a clear connection between tasks and their implementation in code, streamline her development workflow by reducing context switching, and create an auditable history of which code changes fulfill which requirements.
 
-1. **Git Integration**
-   - Automatically link tasks to git commits and branches
-   - Enable task creation from branch names
-   - Allow commit messages to be generated from task details
-   - Track task completion status based on commit history
-   - This feature is critical because it eliminates context switching between task management and code versioning, allowing Rachel to maintain a single source of truth for work completed.
+2. **Project-Based Context Switching**: Develop context-aware functionality that automatically filters tasks based on the current working directory. This capability is essential for Rachel to maintain focus on the relevant tasks for the current project she's working on, eliminate mental overhead of task filtering, and instantly switch contexts when moving between different client codebases.
 
-2. **Project Context Awareness**
-   - Filter tasks based on the current working directory
-   - Automatically switch task context when changing directories
-   - Support multiple concurrent project workspaces
-   - Preserve task state across project switches
-   - This feature is essential because Rachel works on multiple client projects simultaneously and needs her task view to automatically adapt to her current coding context.
+3. **Task Templating System**: Create a flexible templating system for common development workflows (bug fixes, features, refactoring). This feature allows Rachel to standardize task creation across different types of work, ensure consistent information capture for similar types of tasks, and save time when initiating new development work with predefined templates.
 
-3. **Development Workflow Templates**
-   - Predefined task templates for common workflows (bug fix, feature, refactor)
-   - Customizable template fields for different project requirements
-   - Batch task creation from templates for sprint planning
-   - Historical analysis of workflow completion times
-   - This feature streamlines Rachel's task creation process by standardizing common development workflows, ensuring consistent task tracking across different types of work.
+4. **IDE Terminal Integration**: Design a clean API that supports integration with VS Code/WebStorm terminal environments. This integration enables Rachel to access task information directly within her development environment, maintain her workflow without switching applications, and increase productivity by keeping task management within her existing tools.
 
-4. **IDE Terminal Integration**
-   - Compatible with VSCode/WebStorm terminal functionality
-   - Support for task visualization within the IDE terminal
-   - Keyboard shortcuts that don't conflict with IDE bindings
-   - Status line integration showing current task context
-   - This capability is vital because Rachel spends most of her time in IDE terminals and needs task information accessible without switching applications.
-
-5. **Automated Documentation Generation**
-   - Generate PR/commit messages based on completed task details
-   - Create changelogs from completed tasks
-   - Document task completion history for client reporting
-   - Link tasks to project documentation
-   - This feature saves Rachel time by automatically generating documentation from completed work, ensuring comprehensive records for client handoffs and team knowledge sharing.
+5. **PR/Commit Message Generation**: Build functionality to automatically generate pull request descriptions and commit messages based on completed task details. This feature helps Rachel maintain high-quality documentation of code changes, ensure PR descriptions properly reference requirements and implementation details, and save time on repetitive documentation tasks.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All core functionality must be accessible through a well-defined Python API
-- Functions should be pure whenever possible to facilitate unit testing
-- Mock git repositories must be supported for integration testing
-- Testing should not require actual git operations to be performed
-- Mock filesystem for testing directory-based context switching
+- Git integration must be testable with mock repositories
+- Directory-based context switching must be testable with simulated filesystem
+- Task template rendering must be verifiable with predefined inputs and expected outputs
+- IDE integration API must be fully testable without requiring actual IDE environments
+- Message generation must be testable with predefined task data and expected output formats
+- All components must be unit testable in isolation
 
 ### Performance Expectations
-- Task context switching should occur in under 100ms
-- Git operations should be non-blocking and not freeze the task management functionality
-- Support for repositories with 10,000+ commits
-- Support for managing 1,000+ active tasks across 20+ projects
-- All operations should be responsive in terminal environments
+- Context switching based on directory must occur in <100ms
+- Git operations must add <200ms overhead to normal git commands
+- Template rendering must complete in <50ms
+- Task querying and filtering must handle repositories with 10,000+ tasks
+- System must support at least 50 distinct project contexts without performance degradation
 
 ### Integration Points
-- Git CLI (reading repository state, branches, commits)
-- Local filesystem (determining project contexts)
-- IDE terminal environments
-- Task database (SQLite or similar for persistence)
-- Export formats for documentation (Markdown, plain text)
+- Git hooks for commit and branch operations
+- Filesystem monitoring for directory changes
+- Template engine with variable substitution
+- External API for IDE plugins
+- PR platform integration (GitHub, GitLab, Bitbucket)
 
 ### Key Constraints
-- Must operate entirely within terminal environment
-- No external services or APIs required for core functionality
-- Minimal dependencies beyond Python standard library
-- Must preserve data integrity during interrupted operations
-- Cannot interfere with git operations or repository state
+- Git integration must not interfere with normal git operations
+- All functionality must be accessible via programmatic API without UI components
+- The implementation must not require admin privileges
+- Task data must be storable within git repositories (optional) or externally
+- The system must maintain data integrity across branch switches and merges
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for full-stack developers includes:
+1. **Task Management Engine**: A core module handling CRUD operations for tasks with support for attributes like title, description, status, priority, and custom fields.
 
-1. **Task Management Core**
-   - Create, read, update, and delete tasks
-   - Organize tasks by project, type, priority, and status
-   - Support for task dependencies and blocking relationships
-   - Task search and filtering capabilities
-   - Persistent storage with data integrity protection
+2. **Git Integration Layer**: Functionality to link tasks with git operations, including commit association, branch tracking, and task status updates based on git activities.
 
-2. **Git Integration Layer**
-   - Repository state detection and branch awareness
-   - Task-to-commit linking mechanisms
-   - Commit message generation from task attributes
-   - Branch naming suggestions based on task details
-   - Historical task completion tracking via git history
+3. **Context Detection System**: A component that detects the current working directory and project context, automatically filtering and presenting relevant tasks.
 
-3. **Context Management System**
-   - Working directory detection and monitoring
-   - Project context rules and configurations
-   - Automatic task filtering based on detected context
-   - Context persistence and state management
-   - Multiple simultaneous context support
+4. **Template Management**: A flexible template system for different task types with variable substitution and default values based on context.
 
-4. **Workflow Templating Engine**
-   - Template definition and storage
-   - Template instantiation with variable substitution
-   - Template categories for different development activities
-   - Template usage analytics and optimization
-   - Template sharing and version control
+5. **IDE Integration API**: A well-defined API that exposes task operations in a format suitable for consumption by IDE terminal environments.
 
-5. **Documentation Generator**
-   - Structured data extraction from completed tasks
-   - Format-specific output generation
-   - Timeline-based report creation
-   - Client-ready documentation formatting
-   - Customizable documentation templates
+6. **Message Generation Engine**: Logic to transform task information into formatted commit messages and pull request descriptions according to configurable templates.
+
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Task creation, modification, and status tracking functions correctly
-- Git integration accurately links tasks with commits and branches
-- Context switching correctly filters tasks based on working directory
-- Workflow templates create properly structured tasks
-- Documentation generation produces accurate and well-formatted output
+- Task creation, retrieval, updating, and deletion with all required attributes
+- Git hook integration with proper task linking
+- Directory-based context detection and task filtering
+- Template rendering with variable substitution
+- API endpoints for IDE integration
+- Message generation with proper formatting
 
 ### Critical User Scenarios
-- Creating a new task for a specific git branch
-- Completing a task and committing the associated code
-- Switching between project directories and seeing relevant tasks only
-- Using templates to create standardized workflow tasks
-- Generating PR descriptions from completed task information
+- Complete development workflow from task creation to commit to PR submission
+- Switching between multiple client projects with automatic context changes
+- Using templates for different types of development tasks
+- Accessing task information from within the IDE terminal
+- Generating appropriate documentation for code changes
 
 ### Performance Benchmarks
-- Context switching completes in < 100ms
-- Task operations (create, read, update) complete in < 50ms
-- Supporting 10,000+ historical tasks without performance degradation
-- Git operations do not block UI for repositories with 5,000+ commits
-- Documentation generation for 100+ tasks completes in < 1s
+- Context switching must occur in <100ms
+- Task operations must complete in <50ms
+- Git integration operations must add <200ms to normal git command execution
+- The system must maintain performance with 50+ projects and 10,000+ tasks
+- Template rendering must process at least 20 templates per second
 
 ### Edge Cases and Error Conditions
-- Working with uncommitted changes
-- Handling git conflicts and rebasing scenarios
-- Recovering from interrupted operations
-- Working with offline/disconnected git repositories
-- Handling malformed task data or corrupted state
+- Handling of git merge conflicts affecting task data
+- Proper behavior when switching to unknown project contexts
+- Recovery from interrupted git operations
+- Handling malformed templates or template data
+- Graceful degradation when IDE integration is unavailable
+- Proper error reporting for failed git operations
 
 ### Required Test Coverage Metrics
-- Minimum 85% code coverage for core functionality
-- 100% coverage for data persistence operations
-- Comprehensive integration tests for git operations
-- Performance tests for all critical paths
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify git hook behavior
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system allows seamless switching between projects, automatically showing relevant tasks
-- Tasks can be created, tracked, and completed within the git workflow without context switching
-- Documentation generation saves at least 30 minutes per week in administrative time
-- Development workflow templates standardize task tracking across different types of work
-- The system operates entirely within the terminal/IDE environment without requiring external tools
-- Task management operations are fast enough to not disrupt the development workflow
-- Git integration provides valuable insights without requiring changes to normal git workflows
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates seamless integration with git, automatically associating tasks with commits and branches.
+3. Project context switching works correctly based on the current working directory.
+4. Task templates can be created, used, and customized for different development workflows.
+5. The API for IDE integration is well-documented and functional.
+6. PR and commit message generation produces appropriate content based on task information.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation maintains data integrity across git operations like branch switching and merging.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

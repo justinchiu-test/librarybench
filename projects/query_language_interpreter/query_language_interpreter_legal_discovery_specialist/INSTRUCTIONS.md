@@ -1,185 +1,162 @@
-# Legal Discovery Query Engine
-
-A query language interpreter specialized for searching through legal document collections for litigation-relevant materials.
+# Legal Discovery Query Language Interpreter
 
 ## Overview
-
-The Legal Discovery Query Engine provides a specialized query system for analyzing large corporate document collections during litigation discovery. This project variant focuses on enabling legal specialists to identify complex patterns across emails, contracts, and internal documents, featuring legal terminology awareness, proximity search, communication pattern analysis, and privilege detection.
+This specialized Query Language Interpreter enables legal discovery specialists to efficiently search through large corporate document collections for litigation-relevant materials. The interpreter integrates with legal term ontologies, provides proximity search capabilities, analyzes communication patterns, offers temporal filtering with legal timeframe awareness, and includes privilege detection, making it an ideal tool for e-discovery in litigation cases.
 
 ## Persona Description
-
 Carlos searches through large corporate document collections for litigation-relevant materials. He needs powerful query capabilities that can identify complex patterns across emails, contracts, and internal documents.
 
 ## Key Requirements
+1. **Legal term ontology integration mapping common concepts to specialized terminology**: Connects queries to comprehensive legal term ontologies that automatically expand searches to include specialized legal terminology, industry jargon, known abbreviations, and conceptually related terms, enabling discovery specialists to find relevant documents even when they use technical language different from the initial search terms.
 
-1. **Legal term ontology integration mapping common concepts to specialized terminology**
-   - Implement integration with legal ontologies and taxonomies
-   - Support concept-based searching beyond exact keyword matching
-   - Enable synonym expansion for legal terminology
-   - Provide jurisdictional variants for legal terms
-   - Critical for Carlos to find relevant documents using conceptual searches rather than having to specify every possible variant of legal terminology
+2. **Proximity search finding terms appearing near each other within documents**: Enables searching for terms that appear within a specified distance of each other (sentences, paragraphs, pages), critical for identifying documents where key concepts are discussed in relation to each other rather than just appearing separately within the same document.
 
-2. **Proximity search finding terms appearing near each other within documents**
-   - Develop advanced proximity operators with customizable distance parameters
-   - Support different proximity measures (words, sentences, paragraphs)
-   - Enable ordered and unordered proximity constraints
-   - Provide nested proximity expressions for complex patterns
-   - Essential for identifying documents where related concepts appear in context with each other, distinguishing meaningful relationships from documents that mention terms separately
+3. **Communication pattern analysis identifying exchanges between specific parties**: Provides capabilities to analyze email and message communications to identify exchanges between specific individuals or departments, including message chains, reply patterns, and distribution lists, essential for reconstructing conversations relevant to litigation.
 
-3. **Communication pattern analysis identifying exchanges between specific parties**
-   - Create social network analysis for communication patterns
-   - Support email thread reconstruction and conversation tracking
-   - Enable identification of unusual communication patterns
-   - Provide temporal analysis of communication frequency and timing
-   - Vital for mapping relationships between parties and identifying communication patterns that could indicate relevant discussions
+4. **Temporal filtering with awareness of legal timeframes and statutory deadlines**: Incorporates specialized date filtering functions aware of legal timeframes (statutes of limitations, regulatory deadlines, corporate events), enabling precise targeting of documents created during legally significant periods without requiring manual date calculations.
 
-4. **Temporal filtering with awareness of legal timeframes and statutory deadlines**
-   - Implement date-based filtering with special awareness of legal timeframes
-   - Support relative date ranges based on key case events
-   - Enable date approximation and inference from document context
-   - Provide timeline visualization and clustering
-   - Important for focusing discovery on relevant time periods and understanding document chronology in relation to legal events
-
-5. **Privilege detection flagging potentially attorney-client protected materials**
-   - Develop advanced classification for potentially privileged communications
-   - Support recognition of attorney-client relationships in communications
-   - Enable work product doctrine identification
-   - Provide configurable sensitivity levels for privilege detection
-   - Critical for identifying documents that may require special handling due to legal privilege, helping prevent inadvertent waiver of attorney-client privilege
+5. **Privilege detection flagging potentially attorney-client protected materials**: Automatically identifies documents that may contain privileged attorney-client communications or work product based on sender/recipient patterns, legal terminology, and formatting cues, helping to prevent inadvertent disclosure of protected materials during the discovery process.
 
 ## Technical Requirements
-
 ### Testability Requirements
-- All text analysis functions must be testable with pytest
-- Test legal term expansion against legal dictionaries
-- Verify proximity search with reference documents
-- Test communication pattern analysis against sample email datasets
-- Validate privilege detection against legally annotated test sets
+- Legal term expansion must be tested with diverse legal practice areas
+- Proximity search must be verified for accuracy at different distance thresholds
+- Communication pattern analysis must be validated with complex email datasets
+- Temporal filtering must be tested with various legal timeframe scenarios
+- Privilege detection must be evaluated against known privileged document samples
 
 ### Performance Expectations
-- Process document collections of up to 10 million items
-- Execute complex queries across 1TB of document data in under 2 minutes
-- Support incremental indexing for continuously growing collections
-- Enable interactive search refinement with sub-5-second response times
-- Handle documents in multiple formats (email, Office, PDF) with consistent performance
+- Must efficiently process document collections exceeding 10 million pages
+- Search response times should remain under 5 seconds for typical legal queries
+- Communication pattern analysis should scale with the size of message repositories
+- Memory usage should be optimized for operation on standard legal workstations
+- Index structures should be optimized for the specific challenges of legal documents
 
 ### Integration Points
-- Connect with document management and e-discovery platforms
-- Support standard legal export formats (EDRM XML, load files)
-- Interface with legal review platforms for further analysis
-- Integrate with redaction and production tools
-- Provide compatibility with review tagging systems
+- Support for common legal document formats (PDF, DOCX, emails, etc.)
+- Compatibility with e-discovery platforms and document management systems
+- Export capabilities compliant with legal production requirements
+- Optional integration with case management systems
+- Support for legal document metadata standards
 
 ### Key Constraints
-- Maintain chain of custody and document integrity
-- Preserve document metadata throughout processing
-- Support multi-language documents with consistent analysis
-- Handle common OCR and conversion errors in legal documents
-- Enable defensible search methodology documentation
+- Must maintain document integrity and chain of custody
+- Implementation must be defensible in court proceedings
+- All operations must be thoroughly logged for transparency
+- System must handle the variety of document types in corporate collections
+- Must operate within the technical constraints of legal environments
 
-### Implementation Notes
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this Legal Discovery Query Language Interpreter includes:
 
-The Legal Discovery Query Engine must implement the following core functionality:
+1. **Legal Query Engine**:
+   - SQL-like language with legal discovery extensions
+   - Integration with legal term ontologies and thesauri
+   - Execution planning optimized for document collection searches
+   - Relevance scoring specifically tuned for legal discovery
 
-1. **Document Processing and Indexing**
-   - Parse various document formats preserving metadata
-   - Create optimized indexes for legal-specific search needs
-   - Extract and normalize dates, names, and entities
-   - Maintain document family relationships (attachments, threads)
+2. **Document Analysis Framework**:
+   - Full-text indexing optimized for legal terminology
+   - Proximity detection with configurable distance metrics
+   - Metadata extraction and classification
+   - Content-based similarity assessment
 
-2. **Legal Query Language Processor**
-   - Implement legal-specific query syntax and semantics
-   - Support concept expansion and ontology integration
-   - Enable advanced proximity and pattern searching
-   - Process complex Boolean logic with nested expressions
+3. **Communication Analysis System**:
+   - Email thread reconstruction algorithms
+   - Participant relationship mapping
+   - Distribution pattern identification
+   - Conversation flow analysis
 
-3. **Communication and Relationship Analysis**
-   - Identify communication patterns between parties
-   - Reconstruct email threads and conversations
-   - Map organizational relationships from communications
-   - Analyze timing and frequency of exchanges
+4. **Temporal Management**:
+   - Legal timeframe definition and calculation
+   - Date normalization across document types
+   - Period-based filtering operations
+   - Timeline generation and analysis
 
-4. **Temporal Analysis Framework**
-   - Normalize and standardize document dates
-   - Align documents with case timeline events
-   - Support relative temporal queries
-   - Enable chronological analysis of document sets
-
-5. **Privilege Classification System**
-   - Identify potentially privileged communications
-   - Detect attorney-client relationships
-   - Flag work product materials
-   - Support privilege log generation
+5. **Privilege Protection**:
+   - Attorney identification and relationship tracking
+   - Privilege indicators detection
+   - Confidence scoring for privilege assessment
+   - Privilege log generation assistance
 
 ## Testing Requirements
-
 ### Key Functionalities to Verify
-- Accuracy of legal term expansion and concept searching
-- Correct function of proximity operators at various distances
-- Proper identification of communication patterns and relationships
-- Accurate temporal filtering based on case events
-- Reliable detection of potentially privileged materials
+- Accuracy of legal term expansion with various practice areas
+- Precision and recall of proximity searches at different thresholds
+- Correct identification of communication patterns and relationships
+- Proper filtering based on legally significant time periods
+- Effectiveness of privilege detection compared to manual review
 
 ### Critical User Scenarios
-- Finding all communications about a specific legal issue during a relevant timeframe
-- Identifying discussions between key executives about regulatory compliance
-- Locating contract language variations across multiple agreement versions
-- Mapping communication patterns before and after a significant event
-- Detecting potentially privileged materials before production to opposing counsel
+- Finding documents relevant to specific legal issues across large collections
+- Identifying communications between key individuals during critical periods
+- Analyzing contract language for specific clauses or provisions
+- Filtering documents based on relevant statutory periods
+- Screening documents for potential privilege before production
 
 ### Performance Benchmarks
-- Index at least 100GB of documents per day on standard hardware
-- Execute complex privilege queries across 1 million documents in under 5 minutes
-- Process proximity searches on 10 million documents in under 2 minutes
-- Support at least 20 concurrent users with interactive response times
-- Generate communication pattern reports for 100,000 emails in under 10 minutes
+- Full-text search should process at least 1 million documents in under 10 seconds
+- Term expansion should support ontologies with at least 50,000 legal concepts
+- Communication pattern analysis should handle email repositories exceeding 5 million messages
+- System should maintain interactive performance with document collections up to 20TB
+- Privilege detection should process at least 10,000 documents per hour
 
 ### Edge Cases and Error Conditions
-- Handling documents with poor OCR quality or conversion artifacts
-- Processing highly technical or industry-specific terminology
-- Managing documents with ambiguous or missing dates
-- Dealing with code names or aliases for projects or individuals
-- Identifying privilege in non-standard communications
+- Handling of corrupt or password-protected documents
+- Proper management of unusual document formats or encodings
+- Appropriate treatment of ambiguous dates or inconsistent timestamps
+- Graceful handling of extremely large documents or email threads
+- Behavior with documents containing mixed languages or legal systems
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all modules
-- Test legal term expansion with at least 1,000 legal terms across multiple practice areas
-- Verify proximity search with at least 100 different distance patterns
-- Test communication analysis with organizational structures of varying complexity
-- Validate privilege detection with at least 500 sample privileged/non-privileged documents
+- Minimum 90% code coverage across all modules
+- 100% coverage for privilege detection and term expansion functions
+- All temporal filtering operations must have dedicated test cases
+- Communication pattern analysis must be tested with various email formats
+- Proximity search must be verified with different document types and structures
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation will:
 
-The implementation will be considered successful if it meets the following criteria:
+1. Effectively expand searches using legal term ontologies, demonstrated through tests with various legal practice areas
+2. Accurately perform proximity searches at different distance thresholds, verified with test documents having known term relationships
+3. Correctly identify communication patterns between specific parties, validated with test email datasets
+4. Properly filter documents based on legal timeframes, confirmed through tests with various statutory period scenarios
+5. Successfully detect potentially privileged documents, demonstrated through comparison with expert-reviewed privilege determinations
 
-1. **Functional Completeness**
-   - All five key requirements are fully implemented
-   - Legal term expansion correctly identifies conceptually related documents
-   - Proximity search accurately finds terms in meaningful context
-   - Communication pattern analysis reveals relevant relationships
-   - Temporal filtering correctly aligns documents with case events
-   - Privilege detection identifies protected materials with high recall
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Legal Discovery Effectiveness**
-   - Significantly improves relevant document identification compared to keywords
-   - Reduces review time by better focusing on potentially responsive materials
-   - Helps prevent inadvertent privilege waiver
-   - Enables insights about case facts that might be missed with simpler tools
-   - Supports defensible search methodology for legal proceedings
+## Environment Setup
 
-3. **Performance and Scalability**
-   - Handles litigation-scale document collections efficiently
-   - Provides interactive response times for search refinement
-   - Scales appropriately with collection size
-   - Processes complex queries in reasonable timeframes
-   - Supports concurrent use by legal teams
+To set up your development environment:
 
-4. **Integration with Legal Workflow**
-   - Fits within standard e-discovery processes
-   - Supports proper chain of custody and documentation
-   - Enables collaboration among review team members
-   - Produces outputs compatible with legal review platforms
-   - Maintains document integrity throughout processing
+```bash
+# From within the project directory
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```bash
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

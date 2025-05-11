@@ -1,151 +1,153 @@
-# Interactive Data Explorer for Clinical Research
+# Clinical Research Data Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for clinical research coordinators who need to analyze patient outcome data across multiple treatment protocols. This tool emphasizes confidentiality, statistical significance, and medical context while operating securely in environments with restrictive software installation policies.
+An interactive, terminal-based data exploration framework tailored for clinical research coordinators who need to analyze patient outcomes across multiple treatment protocols. This specialized explorer enables secure analysis of sensitive medical data while maintaining patient confidentiality in environments where external software installation is restricted.
 
 ## Persona Description
 Dr. Patel coordinates medical research studies analyzing patient outcomes across multiple treatment protocols. She needs to explore complex clinical datasets to identify potential correlations and trends while maintaining strict patient confidentiality in secure environments where external software installation is restricted.
 
 ## Key Requirements
+1. **Custom anonymization filters** - Automatically detect and mask potentially identifying information during visualization, essential for maintaining HIPAA compliance and patient privacy while still allowing meaningful data analysis. The system must identify common PII patterns and apply appropriate masking without manual intervention.
 
-1. **Automated Anonymization Filters**
-   - Implement intelligent data anonymization that automatically detects and masks potentially identifying information (PII) during data loading and visualization
-   - Critical because clinical researchers must maintain strict HIPAA compliance while still preserving the analytical value of patient data
-   - Must handle direct identifiers (names, IDs) and quasi-identifiers (demographic combinations that could identify individuals)
+2. **Statistical significance highlighting** - Automatically flag correlations meeting configurable p-value thresholds, crucial for quickly identifying potentially meaningful relationships in complex multivariate clinical data. Researchers must be able to adjust significance thresholds to match study requirements.
 
-2. **Statistical Significance Highlighting**
-   - Create visualization overlays that automatically flag correlations meeting configurable p-value thresholds
-   - Essential for quickly identifying meaningful relationships in large clinical datasets while reducing false positives
-   - Must support multiple statistical tests appropriate for different types of clinical data (parametric, non-parametric)
+3. **Medical terminology recognition** - Add contextual information to data points with clinical significance, enabling non-specialist team members to understand specialized terminology and standardized codes. This feature must link to standardized medical dictionaries and ontologies.
 
-3. **Medical Terminology Recognition**
-   - Implement a system that adds contextual information to data points with clinical significance
-   - Important because it enables researchers to interpret raw values in proper medical context (lab values, vital signs, etc.)
-   - Should integrate with standard medical terminologies and classification systems
+4. **Regulatory compliance export** - Generate documentation appropriate for IRB reviews and medical journals, streamlining the process of preparing findings for regulatory submission and publication. Exports must follow templates appropriate for common medical journals and IRB requirements.
 
-4. **Regulatory Compliance Export**
-   - Create standardized documentation exports appropriate for IRB reviews and medical journal submissions
-   - Critical because clinical findings must be presented in formats that satisfy strict regulatory requirements
-   - Must include proper citation of statistical methods and appropriate data provenance information
-
-5. **Longitudinal Patient Tracking**
-   - Implement visualizations showing treatment progression timelines across multiple dimensions
-   - Essential for understanding how patient outcomes evolve over time in response to interventions
-   - Must handle irregular time intervals and missing data points common in clinical studies
+5. **Longitudinal patient tracking visualizations** - Show treatment progression timelines across multiple dimensions, critical for understanding how patient outcomes evolve over time in response to interventions. The system must support multiple time series with clinical event markers.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - All data processing functions must maintain data integrity and be verifiable with known test datasets
+  - Statistical calculations must be validated against established statistical packages
+  - Anonymization functions must be tested with synthetic PII data to ensure complete masking
+  - Export formatting must be validated against actual IRB and journal templates
 
-### Testability Requirements
-- All components must be designed with unit and integration tests
-- Statistical methods must be validated against known datasets with established outcomes
-- Anonymization techniques must be verifiable against privacy standards
-- Export functionality must be tested against regulatory templates
-- Time-series visualizations must handle a range of temporal edge cases
+- **Performance Expectations**:
+  - Must handle datasets of up to 10,000 patients with 100+ variables each
+  - Statistical calculations should complete within 5 seconds for typical analysis operations
+  - Filtering and visualization updates must be near real-time (< 1 second) for interactive exploration
+  - Memory usage must remain below 4GB even with full dataset loaded
 
-### Performance Expectations
-- Must efficiently handle datasets with 10,000+ patient records across 100+ variables
-- Anonymization filters must process data with minimal latency
-- Statistical calculations should be optimized for iterative exploration
-- Timeline visualizations must render quickly even with complex longitudinal data
-- Export generation should complete within seconds even for complex reports
+- **Integration Points**:
+  - Support for importing from common clinical data formats (CSV, XLSX, REDCap exports, SPSS files)
+  - Export to statistical formats (R, STATA) and documentation formats (PDF, DOCX)
+  - Integration with medical terminology databases (SNOMED CT, ICD-10, RxNorm)
+  - Support for anonymized dataset sharing via secure export formats
 
-### Integration Points
-- Data import from common clinical research formats (CSV, Excel, REDCap exports)
-- Optional integration with standard medical terminology databases
-- Export interfaces to common regulatory documentation formats
-- Statistical validation against established reference libraries
+- **Key Constraints**:
+  - No external network access during analysis for data security
+  - No persistent storage of raw data, all temporary files must be securely deleted
+  - All processing must occur on local machine without cloud dependencies
+  - Must operate within terminal environment with no GUI components
 
-### Key Constraints
-- All functionality must operate without external visualization libraries
-- Must work in restricted environments with limited installation privileges
-- No patient data should ever be transmitted outside the system
-- All operations must be logged for audit purposes
-- Must handle incomplete and inconsistent clinical data gracefully
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Clinical Research Data Explorer must provide a comprehensive data analysis framework focused on medical research needs:
 
-The implementation must provide the following core capabilities:
+1. **Data Loading and Preparation**:
+   - Import clinical datasets from various formats with automatic field type detection
+   - Apply privacy filters to automatically detect and mask PII (names, identifiers, etc.)
+   - Normalize medical codes and terminology across different standards
+   - Implement data validation rules specific to clinical research
 
-1. **Data Loading and Privacy Protection**
-   - Methods to load clinical data from various formats
-   - Automatic scanning for PII and applying appropriate masking/anonymization
-   - Configurable privacy rules that adapt to different types of clinical data
-   - Privacy impact assessment for data transformations and exports
+2. **Statistical Analysis**:
+   - Calculate key statistical measures (mean, median, variance) for continuous variables
+   - Perform hypothesis testing (t-tests, chi-square, ANOVA) with automatic p-value reporting
+   - Calculate confidence intervals and effect sizes for treatment comparisons
+   - Implement survival analysis and time-to-event calculations
 
-2. **Statistical Analysis Framework**
-   - Implementation of common statistical tests relevant to clinical research
-   - Adjustable significance thresholds with multiple testing correction options
-   - Visual indicators for correlation strength and confidence intervals
-   - Anomaly detection specific to clinical data patterns
+3. **Visualization Framework**:
+   - Generate patient timeline visualizations showing treatment events and outcomes
+   - Create distribution plots for outcome measures across treatment groups
+   - Build correlation matrices highlighting statistically significant relationships
+   - Produce longitudinal trend visualizations for key clinical metrics
 
-3. **Medical Context Enhancement**
-   - Ability to annotate data points with relevant medical information
-   - Reference range indicators for clinical measurements
-   - Classification of values based on medical significance
-   - Contextual grouping of related medical variables
+4. **Privacy and Compliance**:
+   - Implement robust anonymization algorithms for all patient identifiers
+   - Track and log all data transformations for complete audit trail
+   - Generate compliance documentation for IRB and regulatory submissions
+   - Ensure all exports meet privacy standards for medical publications
 
-4. **Regulatory Documentation System**
-   - Templates for common regulatory submissions
-   - Automated generation of method descriptions and statistical summaries
-   - Data provenance tracking throughout analysis workflows
-   - Proper citation and reference formatting for medical protocols
-
-5. **Temporal Clinical Analysis**
-   - Patient timeline visualizations with treatment milestones
-   - Cohort comparison across different timepoints
-   - Detection of clinically significant changes over time
-   - Handling of irregular visit schedules and missing appointments
+5. **Medical Context Integration**:
+   - Link data elements to standard medical terminology databases
+   - Provide contextual information for specialized medical codes and measurements
+   - Flag clinically meaningful patterns based on medical domain knowledge
+   - Support annotation with relevant clinical guidelines and literature references
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Anonymization correctly masks all PII in diverse datasets
+  - Statistical calculations match results from reference implementations
+  - Timeline visualizations correctly represent patient progression
+  - Exports conform to required formats for regulatory submission
+  - Medical terminology integration provides accurate contextual information
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Importing and anonymizing a new clinical dataset
+  - Performing statistical analysis across treatment groups
+  - Visualizing patient progression over multiple timepoints
+  - Identifying statistically significant correlations between variables
+  - Generating compliant documentation for IRB submission
 
-1. **Privacy and Security Tests**
-   - Verification that PII is properly detected and anonymized
-   - Confirmation that privacy is maintained through all transformations
-   - Validation of security logging and audit trails
-   - Tests for potential re-identification risks in outputs
+- **Performance Benchmarks**:
+  - Import and anonymization of 10,000-patient dataset within 30 seconds
+  - Statistical analysis operations complete within 5 seconds
+  - Visualization generation within 3 seconds for complex timeline views
+  - Memory usage remains below 4GB during all operations
+  - Export generation completes within 15 seconds for full reports
 
-2. **Statistical Validation Tests**
-   - Comparison of implemented statistical methods against reference implementations
-   - Verification of proper p-value calculations and corrections
-   - Testing with established clinical datasets with known correlations
-   - Edge case testing for rare but important clinical scenarios
+- **Edge Cases and Error Conditions**:
+  - Handling missing or incomplete clinical data
+  - Processing inconsistent terminology across data sources
+  - Managing statistical analysis with small sample sizes
+  - Detecting and flagging potential data quality issues
+  - Dealing with outliers and extreme values in clinical measurements
 
-3. **Medical Context Tests**
-   - Validation of reference range implementation
-   - Testing of medical terminology recognition
-   - Verification of proper contextual interpretation of values
-   - Handling of different medical measurement units and conversions
+- **Required Test Coverage Metrics**:
+  - 95% code coverage for all core functionality
+  - 100% coverage for privacy and anonymization modules
+  - All public APIs must have integration tests
+  - Key statistical functions must have validation tests against known outputs
 
-4. **Compliance Documentation Tests**
-   - Validation of export formats against regulatory requirements
-   - Verification of method description accuracy
-   - Testing of citation and reference formatting
-   - Validation of data provenance tracking
-
-5. **Longitudinal Analysis Tests**
-   - Testing of time-series visualization with irregular intervals
-   - Validation of trend detection algorithms
-   - Testing with interrupted treatment timelines
-   - Performance testing with large longitudinal datasets
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Clinical Research Data Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Complete functionality for all 5 key requirements with thorough test coverage
+2. Ability to handle realistic clinical datasets with proper anonymization
+3. Statistical analysis capabilities validated against established statistical tools
+4. Visualization generation appropriate for clinical research needs
+5. Export functionality meeting regulatory requirements for medical research
 
-1. Enables secure analysis of clinical data with automatic privacy protection
-2. Accurately identifies statistically significant relationships with proper corrections
-3. Enhances raw data with appropriate medical context and terminology
-4. Produces documentation suitable for regulatory submission without manual editing
-5. Facilitates longitudinal analysis across complex treatment timelines
-6. Handles real-world clinical datasets with their inherent messiness and inconsistencies
-7. Operates efficiently in restricted computing environments
-8. Supports the complete research workflow from data import to publication submission
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the clinical research coordinator's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

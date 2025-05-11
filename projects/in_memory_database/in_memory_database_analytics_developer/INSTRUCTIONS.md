@@ -1,158 +1,189 @@
-# LiveViewDB: In-Memory Database for Real-Time Analytics Dashboards
+# AnalyticaDB: In-Memory Database for Real-Time Analytics Dashboards
 
 ## Overview
-A specialized in-memory database designed for powering interactive business intelligence dashboards with live data, focusing on materialized views, efficient caching strategies, and multi-tenant isolation to deliver responsive analytical capabilities without impacting transactional performance.
+A specialized in-memory database optimized for real-time analytics dashboards that efficiently supports concurrent analytical queries, implements materialized views with incremental updates, provides time-window caching, delivers progressive query results, and ensures multi-tenant isolation to deliver responsive business intelligence visualizations without impacting transactional performance.
 
 ## Persona Description
 Elena builds interactive dashboards for business intelligence showing live data. She needs to support concurrent analytical queries without impacting transactional performance.
 
 ## Key Requirements
 
-1. **Materialized view maintenance with incremental updates**
-   - Critical for providing pre-computed results for common dashboard queries
-   - Must implement materialized views that update incrementally as underlying data changes
-   - Should support complex aggregations, window functions, and multi-table joins
-   - Must include dependency tracking to cascade updates appropriately
-   - Should provide monitoring and metrics for view freshness and update performance
+1. **Materialized View Maintenance with Incremental Updates**
+   - Implementation of materialized views that automatically update as underlying data changes
+   - Support for efficient incremental updates rather than full recalculation
+   - Dependency tracking between base tables and derived views
+   - This feature is critical for Elena as dashboard queries often involve complex aggregations that would be too expensive to compute on demand, while materialized views with incremental updates provide near real-time results without the performance cost of repeated calculations
 
-2. **Time-window caching strategies for report periods**
-   - Essential for efficiently serving time-based reports with different granularities
-   - Must implement caching for common time periods (hourly, daily, weekly, monthly, etc.)
-   - Should support sliding windows and calendar-aligned periods (week-to-date, month-to-date, etc.)
-   - Must include automatic invalidation based on data changes and time progression
-   - Should provide configurable trade-offs between freshness and performance
+2. **Time-Window Caching for Report Periods**
+   - Implementation of intelligent caching strategies optimized for common time-based report periods
+   - Support for configurable, sliding time windows with automatic invalidation
+   - Pre-aggregation of metrics for standard reporting intervals (hourly, daily, weekly, monthly)
+   - Business dashboards frequently analyze data over standard time periods, and caching these results significantly improves dashboard responsiveness for Elena's users while reducing system load during peak usage
 
-3. **Progressive query results with initial approximations**
-   - Vital for responsive dashboards when dealing with large datasets
-   - Must support streaming initial approximations that refine as computation completes
-   - Should implement sampling techniques for quick estimates on aggregate queries
-   - Must include confidence intervals or error bounds with approximate results
-   - Should provide user experience oriented timeouts and refinement strategies
+3. **Progressive Query Results**
+   - Implementation of a progressive query execution system that returns approximate results before final computation
+   - Support for confidence intervals or error bounds on partial results
+   - Progressive refinement of results as computation continues
+   - Interactive dashboards benefit from immediate feedback, making progressive results essential for Elena to create responsive user experiences even when queries involve large datasets or complex calculations
 
-4. **Multi-tenant isolation for performance stability**
-   - Important for enterprise dashboards serving multiple business units or customers
-   - Must implement resource isolation between tenants to prevent noisy neighbor problems
-   - Should support configurable resource allocation and query priorities
-   - Must include monitoring and alerting for tenant resource usage
-   - Should provide throttling mechanisms for preventing tenant monopolization
+4. **Multi-Tenant Isolation**
+   - Implementation of resource isolation to prevent one dashboard's queries from impacting others
+   - Support for per-tenant resource limits and query prioritization
+   - Performance monitoring and automatic throttling to maintain system stability
+   - Elena's dashboards serve multiple business units with varying workloads, requiring strong isolation to ensure that demanding queries from one tenant don't degrade performance for others
 
-5. **Visual query builder integration with cost estimation**
-   - Critical for empowering business users to create effective dashboards
-   - Must provide query analysis with cost and performance estimation
-   - Should offer alternative query suggestions for improving performance
-   - Must include explain plans in user-friendly formats
-   - Should support query templates with parameterization for common dashboard patterns
+5. **Visual Query Builder Integration**
+   - Implementation of a query cost estimation system that predicts execution time and resource usage
+   - Support for query plan visualization and optimization suggestions
+   - Compatibility with common dashboard query patterns and abstractions
+   - Integration with visual query builders allows Elena to help business users construct efficient queries while providing feedback on expected performance before execution, preventing problematic queries from impacting the system
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be thoroughly testable with pytest
-- Tests must verify materialized view consistency with underlying data changes
-- Caching tests must validate correctness and performance for various time windows
-- Progressive query tests must confirm approximation accuracy and refinement behavior
-- Multi-tenant tests must verify proper isolation under concurrent load
+- Materialized view accuracy must be verifiable against direct calculations
+- Caching efficiency must be measurable with different query patterns
+- Progressive query accuracy must be testable at different execution stages
+- Multi-tenant isolation must be demonstrable under concurrent load
+- Query cost estimation must be benchmarkable against actual execution
 
 ### Performance Expectations
-- Dashboard queries must return initial results in under 200ms even for large datasets
-- Materialized view updates must complete within 1 second of underlying data changes
-- Cached time-window queries must return in under 50ms for common periods
-- Query cost estimation must complete in under 100ms with 90% accuracy
-- System must maintain performance guarantees even with 100+ concurrent users
+- Materialized view updates should complete in under 100ms for typical data changes
+- Cached time-window queries should return in under 50ms
+- Initial progressive results should be available within 100ms of query start
+- System should support at least 100 concurrent dashboard users
+- Query cost estimation should be within 20% accuracy of actual execution time
 
 ### Integration Points
-- Must provide Python APIs for integration with dashboard frameworks
-- Should support standard BI connection protocols (ODBC, JDBC)
-- Must include connectors for popular visualization libraries and tools
-- Should offer hooks for custom metrics and analytics extensions
+- Compatible interfaces with popular visualization tools
+- Query language support for common BI operations
+- Export capabilities for offline analysis
+- Notification mechanisms for data freshness and updates
+- APIs for dashboard state management
 
 ### Key Constraints
-- No UI components - purely APIs and libraries for integration into dashboards
-- Must operate without external database dependencies - self-contained Python library
-- All operations must prioritize read performance while maintaining data freshness
-- Must support multi-tenant deployment scenarios with proper isolation
+- The implementation must use only Python standard library with no external dependencies
+- The system must operate efficiently within typical analytics server resource allocations
+- All query operations must have predictable and bounded resource usage
+- The solution must maintain data consistency during view maintenance
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation must provide:
+The system must provide the following core functionality:
 
-1. **Materialized View Engine**
-   - Definition and management of pre-computed result sets
-   - Incremental update mechanisms for efficient maintenance
-   - Dependency tracking between views and base data
-   - Freshness monitoring and update scheduling
+1. **Analytical Query Engine**
+   - Efficient processing of aggregation and grouping operations
+   - Support for complex analytical functions
+   - Optimization for common dashboard query patterns
 
-2. **Time-Window Cache System**
-   - Specialized caching for time-based reporting periods
-   - Automatic cache management for sliding windows
-   - Calendar-aligned period support for business reporting
-   - Cache invalidation and refresh strategies
+2. **Materialized View System**
+   - Definition and maintenance of derived data views
+   - Incremental update mechanisms
+   - Dependency tracking and invalidation management
 
-3. **Progressive Query Framework**
-   - Approximate query processing with result streaming
-   - Sampling techniques for large dataset estimation
-   - Confidence interval calculation for approximations
-   - Query cancellation and early termination support
+3. **Caching Framework**
+   - Time-based caching strategies
+   - Pre-aggregation for standard reporting periods
+   - Cache invalidation and refresh mechanisms
 
-4. **Multi-Tenant Resource Manager**
-   - Workload isolation between tenants
+4. **Progressive Execution Engine**
+   - Algorithms for approximate query processing
+   - Confidence interval calculation for partial results
+   - Progressive refinement of result accuracy
+
+5. **Resource Management System**
+   - Multi-tenant isolation mechanisms
    - Resource allocation and query prioritization
-   - Usage monitoring and quota enforcement
-   - Performance guarantee mechanisms
-
-5. **Query Analysis Tools**
-   - Cost estimation for complex analytical queries
-   - Performance optimization suggestions
-   - User-friendly query explanation
-   - Parameterized template support for common patterns
+   - Monitoring and automatic throttling
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Consistency of materialized views with underlying data
-- Correctness of time-window caches for various reporting periods
-- Accuracy of progressive query approximations
-- Effectiveness of multi-tenant isolation under load
-- Precision of query cost estimation and optimization
+- Accuracy of materialized views after data changes
+- Efficiency of time-window cache for common report periods
+- Convergence of progressive query results to exact answers
+- Effective isolation between multi-tenant workloads
+- Accuracy of query cost estimation for complex operations
 
 ### Critical User Scenarios
-- Interactive dashboard usage with multiple concurrent users
-- Real-time data updates reflected in live dashboards
-- Complex analytical queries over large datasets
-- Resource-intensive operations from one tenant not affecting others
-- Business users creating and modifying their own visualizations
+- Interactive dashboard exploration with sub-second response times
+- Concurrent usage by multiple business units
+- Real-time updates as underlying data changes
+- Complex analytical queries across large datasets
+- Dashboard performance during peak usage periods
 
 ### Performance Benchmarks
-- Measure query response time for various complexity levels and data sizes
-- Verify materialized view update latency after underlying data changes
-- Benchmark time-window cache hit rates and response times
-- Validate progressive query approximation quality over time
-- Test system stability with simulated multi-tenant workloads
+- Materialized view updates should complete in under 100ms for typical data changes
+- Cached time-window queries should return in under 50ms
+- Initial progressive results should be available within 100ms of query start
+- The system should maintain responsiveness with 100+ concurrent users
+- Query execution time should not vary more than 20% between identical runs
 
 ### Edge Cases and Error Conditions
-- Extremely complex analytical queries that push system limits
-- Rapid data changes affecting multiple dependent materialized views
-- Resource exhaustion scenarios with many concurrent users
-- Conflicting priorities among tenants with limited resources
-- Invalid query constructions from visual query builders
+- Behavior under heavy concurrent load
+- Recovery from interruptions during view maintenance
+- Performance with extremely complex analytical queries
+- System stability with unpredictable query patterns
+- Resource management during peak usage periods
 
-### Required Test Coverage
-- 90% code coverage for all components
-- 100% coverage of materialized view consistency logic
-- Comprehensive tests for cache invalidation scenarios
-- Performance tests validating progressive query behavior
-- Multi-tenant isolation tests with various workload patterns
+### Required Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of materialized view maintenance code
+- All multi-tenant isolation mechanisms must be tested
+- Performance tests must cover common dashboard scenarios
+- Progressive query accuracy must be verified at multiple stages
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it:
+The implementation will be considered successful if:
 
-1. Efficiently maintains materialized views with minimal update latency
-2. Provides responsive time-window queries through effective caching
-3. Delivers initial query results quickly with accurate progressive refinement
-4. Maintains performance isolation between tenants under concurrent load
-5. Accurately estimates query costs and suggests optimizations
-6. Supports interactive dashboard response times even with large datasets
-7. Handles concurrent users without significant performance degradation
-8. Properly reflects real-time data changes in dashboard visualizations
-9. Integrates smoothly with common BI and visualization tools
-10. Passes all test scenarios including performance and isolation requirements
+1. Materialized views correctly maintain accuracy with efficient incremental updates
+2. Time-window caching significantly improves performance for common report periods
+3. Progressive queries provide useful approximations that converge to exact results
+4. Multi-tenant workloads remain isolated without performance interference
+5. Query cost estimation provides accurate predictions of execution time and resource usage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Clone the repository and navigate to the project directory
+2. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+3. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+4. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+5. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

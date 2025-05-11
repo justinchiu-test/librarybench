@@ -1,117 +1,181 @@
-# Parallel Computing Simulation Virtual Machine
+# Parallel Computing Simulation Framework
 
 ## Overview
-A specialized virtual machine designed to simulate and visualize parallel execution environments, with support for multiple cores, race condition demonstration, synchronization primitives, thread scheduling visualization, and memory coherence modeling.
+A specialized virtual machine implementation designed for parallel algorithm research, providing accurate simulation of multi-core execution, synchronization primitives, and concurrency patterns to support the visualization and analysis of parallel computational behaviors.
 
 ## Persona Description
 Dr. Patel studies parallel algorithm design and needs to visualize concurrent execution patterns. He requires a virtual machine that can demonstrate multi-threaded behavior and synchronization mechanisms.
 
 ## Key Requirements
-1. **Multi-core simulation showing truly parallel instruction execution**: Essential for Dr. Patel to visualize and analyze how parallel algorithms perform across multiple execution units, providing insights into instruction-level parallelism, workload distribution, and the performance impacts of various core configurations and counts.
+1. **Multi-core Simulation**: Implement a true parallel execution engine capable of demonstrating multiple instruction streams running simultaneously across virtual cores. This feature is critical for Dr. Patel to analyze how parallel algorithms distribute workloads across processing units, observe genuine concurrency, and experiment with different core allocation strategies for computational tasks.
 
-2. **Race condition demonstration with reproducible concurrent access patterns**: Critical for teaching and researching this fundamental concurrency challenge, allowing controlled and deterministic recreation of race conditions to study their causes, effects, and potential solutions without the unpredictability that makes them difficult to analyze in real systems.
+2. **Race Condition Demonstration**: Create a deterministic environment for reproducing and analyzing race conditions with controllable thread interleaving and memory access patterns. This capability allows Dr. Patel to systematically study concurrency bugs, demonstrate why they occur, and test solutions in a controlled environment where typically non-deterministic behaviors become reproducible.
 
-3. **Synchronization primitive implementation (locks, semaphores, barriers)**: Necessary for modeling how concurrent algorithms coordinate access to shared resources, enabling experimentation with different synchronization strategies and analysis of their performance impacts, deadlock potential, and correctness guarantees.
+3. **Synchronization Primitive Implementation**: Develop a comprehensive suite of synchronization mechanisms including locks, semaphores, barriers, and atomic operations with detailed state tracking. These primitives are essential tools for parallel algorithm research, allowing Dr. Patel to explore different coordination strategies, measure their overhead, and evaluate their effectiveness in various concurrent scenarios.
 
-4. **Thread scheduling visualization showing context switches and core allocation**: Important for understanding how operating systems and runtime environments manage concurrent execution, providing visibility into scheduling decisions, context switch overhead, core utilization patterns, and their effects on parallel algorithm performance.
+4. **Thread Scheduling Visualization**: Implement a detailed visualization of thread scheduling decisions, context switches, and core allocation over time. This feature provides critical insight into how parallel workloads are managed by the system, helping Dr. Patel understand scheduling impacts on algorithm performance and identify optimization opportunities in thread management.
 
-5. **Memory coherence modeling illustrating cache consistency protocols**: Vital for researching how shared memory systems maintain a consistent view of data across cores with individual caches, visualizing the operation of protocols like MESI/MOESI, the performance impacts of cache coherence traffic, and the memory access patterns that lead to thrashing.
+5. **Memory Coherence Modeling**: Create an accurate simulation of cache coherence protocols showing how memory updates propagate across multiple cores. This modeling is fundamental for understanding the performance characteristics of parallel algorithms, as memory coherence maintenance significantly impacts scalability and often creates bottlenecks that aren't apparent in single-threaded execution models.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - Multi-core execution must be deterministically reproducible for testing
-  - Race condition scenarios must be precisely controllable and detectable
-  - Synchronization primitives must be verifiable for correctness
-  - Thread scheduling algorithms must produce consistent, testable behaviors
-  - Memory coherence protocols must demonstrably maintain data consistency
-
+  - Thread execution must be deterministic when seed values are specified
+  - Race condition scenarios must be reproducible on demand
+  - Synchronization primitive operations must be independently verifiable
+  - Memory coherence protocol behavior must match documented specifications
+  - Scheduling decisions must be traceable and explainable
+  
 - **Performance Expectations**:
-  - Support simulation of at least 16 virtual cores
-  - Execute at least 10,000 instructions per second per simulated core
-  - Context switching overhead should be realistically proportional to real systems
-  - Memory coherence simulation should scale efficiently with core count
-  - Visualization data generation should not significantly impact simulation performance
+  - Must support simulation of at least 32 concurrent execution threads
+  - Context switching overhead should be configurable to model different systems
+  - Memory coherence simulation should accurately reflect real-world latencies
+  - Thread creation and destruction should complete in millisecond range
+  - Complete system should handle moderately complex parallel algorithms in reasonable time
 
 - **Integration Points**:
-  - Parallel algorithm definition API
-  - Execution trace export mechanism
-  - Configurable thread scheduling policies
-  - Customizable memory hierarchy specifications
-  - Pluggable cache coherence protocol implementations
+  - Standard interface for loading parallel programs and algorithms
+  - Export formats for execution traces and scheduling visualizations
+  - API for custom synchronization primitive implementation
+  - Hooks for specialized memory consistency models
+  - Integration with parallel algorithm metrics and benchmarks
 
 - **Key Constraints**:
-  - Must be deterministic when required for analysis purposes
-  - Should accurately represent parallel execution semantics
-  - Must provide sufficient instrumentation without excessive performance impact
-  - Should isolate different aspects of parallel computing for focused study
+  - Implementation must be in pure Python for educational clarity
+  - No dependencies beyond standard library to ensure portability
+  - All concurrency simulations must be deterministic when using fixed seeds
+  - System must provide accurate timing ratios even if absolute performance differs
+  - Synchronization behavior must match standard parallel computing models
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Multi-Core Simulation Engine**: Implement a virtual machine supporting multiple execution cores with individual instruction streams, shared memory access, and coordination mechanisms.
+The core functionality of this parallel computing simulation framework includes:
 
-2. **Memory Hierarchy Simulation**: Create a detailed memory system model with multiple cache levels, main memory, and configurable coherence protocols to simulate realistic memory access patterns and constraints.
+1. A virtual machine capable of simulating true parallel execution across multiple cores
 
-3. **Synchronization Primitives**: Provide implementations of common synchronization mechanisms including mutexes, semaphores, condition variables, barriers, and atomic operations with correct semantics.
+2. A thread management system supporting creation, scheduling, and synchronization
 
-4. **Thread Scheduler**: Implement a configurable thread scheduling system with different policies, priority management, context switching, and core allocation strategies.
+3. A comprehensive set of synchronization primitives (mutexes, semaphores, barriers, etc.)
 
-5. **Race Condition Simulator**: Develop tools for creating, detecting, analyzing, and visualizing race conditions with controlled execution timing to ensure reproducibility.
+4. A memory model supporting various coherence protocols (MESI, MOESI, etc.)
 
-6. **Execution Tracing**: Create comprehensive instruction-level tracing of parallel execution, memory access patterns, synchronization events, and scheduling decisions.
+5. A deterministic scheduler with configurable policies and priorities
 
-7. **Performance Analysis**: Provide detailed metrics and analysis tools for measuring parallel efficiency, synchronization overhead, memory contention, and other critical parallel performance factors.
+6. Race condition detection and reproduction capabilities
+
+7. Thread execution visualization and tracing facilities
+
+8. Performance metrics for parallel execution efficiency
+
+9. Memory access pattern analysis tools
+
+10. Configurable communication latency between cores
+
+11. Support for common parallel algorithm patterns (map-reduce, producer-consumer, etc.)
+
+12. Serializable execution state for reproducibility and testing
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct parallel execution of instructions across multiple cores
-  - Proper implementation of synchronization primitives
-  - Accurate modeling of memory coherence protocols
-  - Realistic thread scheduling behavior
-  - Reliable reproduction of race conditions
+- **Key Functionalities that Must be Verified**:
+  - Correct parallel execution across multiple virtual cores
+  - Proper implementation of all synchronization primitives
+  - Accurate detection and reproduction of race conditions
+  - Correct thread scheduling according to specified policies
+  - Proper simulation of memory coherence protocols
+  - Accurate timing of parallel operations and synchronization
 
 - **Critical User Scenarios**:
-  - Executing common parallel algorithms like map-reduce or parallel sort
-  - Demonstrating synchronization issues like deadlock or priority inversion
-  - Analyzing the performance impact of different cache coherence protocols
-  - Comparing the efficiency of different thread scheduling policies
-  - Studying memory access patterns and their effect on parallel performance
+  - Running classic parallel algorithms with correct results (parallel sort, matrix multiplication)
+  - Demonstrating common concurrency issues (deadlocks, race conditions, priority inversion)
+  - Visualizing different thread scheduling strategies and their impact
+  - Comparing performance with different synchronization approaches
+  - Analyzing memory access patterns in parallel code
+  - Testing scalability of algorithms across varying numbers of cores
 
 - **Performance Benchmarks**:
-  - Support simulation of at least 16 virtual cores simultaneously
-  - Execute standard parallel benchmarks at a rate of at least 10,000 instructions per second per core
-  - Complete context switches in a proportionally realistic time frame
-  - Handle memory systems with at least 3 cache levels and configurable parameters
-  - Generate execution traces with minimal performance impact (less than 20% overhead)
+  - Support for at least 32 concurrent execution threads
+  - Processing of at least 1 million virtual instructions per second (aggregated across all cores)
+  - Thread creation and synchronization with less than 1ms overhead per operation
+  - Memory coherence simulation with realistic latency ratios
+  - Complete execution tracing with less than 50% overhead
 
 - **Edge Cases and Error Conditions**:
-  - Handle deadlock detection and reporting
-  - Properly identify and analyze race conditions
-  - Manage priority inversion scenarios
-  - Report memory consistency violations
-  - Handle resource exhaustion conditions
+  - Handling of complex deadlock scenarios
+  - Proper detection of subtle race conditions
+  - Correct behavior with extreme thread counts
+  - Appropriate response to priority inversion
+  - Graceful handling of resource exhaustion
 
 - **Required Test Coverage Metrics**:
-  - 95% code coverage for the core parallel execution engine
+  - Minimum 90% line coverage for all components
   - 100% coverage for synchronization primitive implementations
-  - 95% coverage for memory coherence protocol implementations
-  - 90% coverage for thread scheduling algorithms
-  - 90% coverage for race condition detection logic
+  - At least 95% branch coverage for scheduler logic
+  - Complete coverage of memory coherence protocol states
+  - At least 85% coverage for race condition detection code
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Accurately demonstrates parallel execution patterns across multiple simulated cores
-2. Reliably reproduces race conditions and other concurrency issues for analysis
-3. Correctly implements standard synchronization primitives with proper semantics
-4. Realistically models thread scheduling and context switching behavior
-5. Effectively simulates memory coherence protocols and their performance impacts
-6. Provides detailed and accurate performance metrics for parallel algorithm analysis
-7. Helps Dr. Patel gain new insights into parallel algorithm behavior and optimization
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Correctly simulates true parallel execution across multiple virtual cores
+
+2. Provides accurate implementations of standard synchronization primitives
+
+3. Successfully demonstrates and allows analysis of race conditions
+
+4. Clearly visualizes thread scheduling decisions and context switches
+
+5. Accurately models memory coherence protocols and their performance impact
+
+6. Reproduces known parallel algorithm behaviors and bottlenecks
+
+7. Enables deterministic testing of non-deterministic concurrent behaviors
+
+8. Provides useful insights into parallel algorithm performance characteristics
+
+9. Scales reasonably with increased thread counts and problem sizes
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

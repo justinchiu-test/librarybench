@@ -1,117 +1,180 @@
 # Compiler Target Virtual Machine
 
 ## Overview
-A specialized virtual machine implementation designed specifically for compiler students, offering detailed visualization of language construct mappings, symbol tables, static and dynamic analysis tools, optimization comparisons, and abstract syntax tree transformations.
+A specialized virtual machine implementation designed to help compiler students understand target code generation, providing visualization and analysis tools that show how high-level language constructs translate to low-level operations, supporting effective compiler backend development and optimization techniques.
 
 ## Persona Description
 Aisha is learning compiler design and needs to understand target code generation. She wants to see how high-level language constructs translate to low-level operations within a controlled environment.
 
 ## Key Requirements
-1. **Language construct mapping showing how features like loops and conditionals translate to bytecode**: Essential for Aisha to understand the fundamental connection between high-level programming patterns and their low-level implementation, providing clear visualization of how compilers transform common structures like for-loops, if-statements, and function calls into executable instructions.
+1. **Language Construct Mapping**: Implement a comprehensive visualization system showing how high-level constructs like loops, conditionals, and function calls translate to sequences of bytecode instructions. This feature is critical for Aisha to build the conceptual bridge between source language features and target code, helping her develop mental models for code generation strategies.
 
-2. **Symbol table visualization displaying variable storage and access patterns**: Critical for understanding how compilers track and manage variables, functions, and types, allowing Aisha to see how memory is allocated, how scope rules are implemented, and how different variable types are handled at the compilation and execution levels.
+2. **Symbol Table Visualization**: Create an interactive system displaying variable storage locations, scope relationships, and access patterns throughout code execution. This capability is essential for understanding how compilers track and manage identifiers, helping Aisha grasp how variables are allocated, referenced, and managed across different scopes and lifetimes.
 
-3. **Static vs. dynamic analysis tools for examining code properties before and during execution**: Important for comparing the differences between compile-time and runtime analysis, helping Aisha understand what optimizations and checks can be performed before execution versus those requiring runtime information, with tools to examine and compare both perspectives.
+3. **Static vs. Dynamic Analysis**: Develop complementary tools for examining code properties both before execution (static analysis) and during runtime (dynamic analysis). This dual approach helps Aisha understand the relationship between compile-time decisions and runtime behavior, illustrating what can be determined statically versus what requires runtime information.
 
-4. **Optimization comparison showing code before and after various compiler improvements**: Vital for learning how compilers transform code for efficiency, allowing Aisha to visualize the exact changes made by optimization passes like constant folding, dead code elimination, loop unrolling, and register allocation, with performance metrics to quantify improvements.
+4. **Optimization Comparison Visualizer**: Implement a side-by-side visualization showing code before and after various compiler optimization techniques are applied. This feature allows Aisha to see the concrete effects of optimization passes, understand their impact on code structure and performance, and learn how to implement effective optimizer components.
 
-5. **Abstract syntax tree to bytecode transformation visualization**: Necessary for understanding the entire compilation pipeline, showing how source code is parsed into an abstract syntax tree and then progressively lowered through intermediate representations until it becomes executable bytecode, with each transformation step clearly visible.
+5. **AST to Bytecode Transformation Viewer**: Create a step-by-step visualization of how abstract syntax trees are processed and transformed into executable bytecode. This detailed view helps Aisha understand the compiler backend's code generation process, revealing how logical program structures are methodically converted to linear instruction sequences.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All language construct translations must be independently testable
-  - Symbol table operations must be verifiable through automated tests
-  - Static and dynamic analysis tools must produce consistent, testable outputs
-  - Optimization transformations must be isolated and individually testable
-  - AST transformation visualization must be verifiable for correctness
-
+  - All visualization components must have programmatically verifiable outputs
+  - Code transformations must be deterministic and reproducible
+  - Symbol table operations must be independently testable
+  - Optimization effects must be measurable and comparable
+  - AST transformations must produce consistent, verifiable results
+  
 - **Performance Expectations**:
-  - Language construct mapping visualization generation in under 500ms
-  - Symbol table operations should complete in under 10ms for typical program sizes
-  - Static analysis should complete within 1 second for programs up to 1000 lines
-  - Optimization comparisons should be generated in under 2 seconds
-  - VM execution should support at least 100,000 instructions per second in normal mode
+  - Must handle source programs of at least 1000 lines
+  - Transformation process should complete in under 5 seconds for typical student programs
+  - Symbol table operations should have O(1) average case complexity
+  - Visualization generation should add minimal overhead to compilation
+  - Complete analysis pipeline should process moderately complex programs in under 10 seconds
 
 - **Integration Points**:
-  - Simple high-level language parser for demonstration examples
-  - Intermediate representation data structures
-  - Extensible optimization pass system
-  - Bytecode generation and execution engine
-  - Visualization data extraction for all compilation stages
+  - Standard interface for frontend integration (accepting ASTs or parse trees)
+  - Export formats for all visualization types (mapping tables, symbol data, code comparisons)
+  - Common intermediate format for optimization passes
+  - Instrumentation hooks for custom analysis modules
+  - Integration with standard compiler development tools and formats
 
 - **Key Constraints**:
-  - Must be implementable using only Python standard library
-  - Should prioritize clarity and educational value over performance
-  - Must support common programming language constructs
-  - Should be well-documented for educational purposes
+  - Implementation must be in pure Python for maximum clarity and educational value
+  - No dependencies beyond standard library to ensure portability
+  - All components must be well-documented with educational explanations
+  - System should be usable without knowledge of specific compiler implementation details
+  - Visualization outputs must be machine-readable for automated testing
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **High-Level Language Parser**: Implement a simple parser for a minimal but complete high-level language supporting common programming constructs like variables, loops, conditionals, and functions.
+The core functionality of this compiler target virtual machine includes:
 
-2. **Abstract Syntax Tree Representation**: Create a comprehensive abstract syntax tree (AST) representation with visitor pattern support for traversal and transformation.
+1. A stack-based virtual machine with a comprehensive bytecode instruction set
 
-3. **Symbol Table Management**: Implement a complete symbol table system supporting nested scopes, variable lookup, type checking, and scope lifetime management.
+2. A mapping system that traces high-level language constructs to their bytecode implementations
 
-4. **Optimization Framework**: Develop a system for defining and applying code transformations, with the ability to compare code before and after optimization and measure performance impacts.
+3. A symbol table implementation with full support for nested scopes, variable types, and access tracking
 
-5. **Bytecode Generation**: Create a bytecode generator that translates AST nodes or intermediate representations into executable instructions for the virtual machine.
+4. Static analysis tools for examining code properties before execution
 
-6. **Virtual Machine Execution Engine**: Implement a stack-based virtual machine that executes the generated bytecode with comprehensive state tracking and instrumentation.
+5. Dynamic analysis capability for tracking runtime behavior and performance
 
-7. **Analysis Tools**: Provide both static (compile-time) and dynamic (runtime) analysis capabilities, including data flow analysis, control flow analysis, and execution profiling.
+6. A flexible intermediate representation suitable for optimization
+
+7. Multiple optimization pass implementations with before/after comparison
+
+8. An AST processor that demonstrates incremental transformation to bytecode
+
+9. Execution tracing with symbol access and state change recording
+
+10. Performance metrics collection identifying execution hotspots and bottlenecks
+
+11. Export mechanisms for all analysis data in machine-readable formats
+
+12. Example implementations of common language constructs (loops, conditionals, functions, etc.)
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct translation of all language constructs to bytecode
-  - Proper management of symbol tables across nested scopes
-  - Accurate static and dynamic analysis results
-  - Effective application of different optimization techniques
-  - Correct transformation from AST to final bytecode
+- **Key Functionalities that Must be Verified**:
+  - Accurate mapping between language constructs and bytecode
+  - Correct symbol table management across different scopes
+  - Proper static analysis of code properties
+  - Accurate runtime tracking of program behavior
+  - Correct implementation of optimization passes
+  - Proper transformation from AST to bytecode
 
 - **Critical User Scenarios**:
-  - Compiling and executing programs with various language constructs
-  - Tracking variable access patterns across different scopes
+  - Tracing how loop constructs translate to branch and jump instructions
+  - Visualizing variable scope and lifetime management
   - Comparing optimized and unoptimized code execution
-  - Analyzing program behavior using both static and dynamic tools
-  - Following the complete transformation from source code to execution
+  - Analyzing function call implementations including parameter passing
+  - Tracking the complete compilation pipeline from AST to executable code
 
 - **Performance Benchmarks**:
-  - Parse and generate AST for 1000-line programs in under 500ms
-  - Complete symbol table operations in under 10ms for typical access patterns
-  - Execute optimization passes in under 1 second for programs up to 1000 lines
-  - Generate language construct visualizations in under 200ms
-  - Execute bytecode at a rate of at least 100,000 instructions per second
+  - Processing of 1000-line source programs in under 5 seconds
+  - Symbol table operations completing in microsecond range
+  - Optimization passes applying to medium-sized programs in under 2 seconds
+  - Complete AST-to-bytecode transformation in under 3 seconds for typical programs
+  - Full execution tracing adding no more than 50% overhead to runtime
 
 - **Edge Cases and Error Conditions**:
-  - Handle malformed source code with clear error reporting
-  - Manage complex nested scopes correctly
-  - Identify and report optimization opportunities that cannot be safely applied
-  - Handle recursion and complex control flow correctly
-  - Properly detect and report type errors and other static issues
+  - Handling of complex nested scopes and shadowed variables
+  - Proper operation with recursive and highly nested structures
+  - Correct analysis of corner cases in optimization opportunities
+  - Appropriate behavior with unusual or pathological AST structures
+  - Graceful handling of incomplete or invalid inputs
 
 - **Required Test Coverage Metrics**:
-  - 95% coverage of high-level language parsing
-  - 100% coverage of language construct translation
-  - 95% coverage of symbol table management
-  - 90% coverage of optimization implementations
-  - 95% coverage of bytecode generation and execution
+  - Minimum 90% line coverage for all components
+  - 100% coverage for symbol table operations
+  - At least 95% branch coverage for optimization passes
+  - Complete coverage of AST-to-bytecode transformation logic
+  - At least 85% coverage for analysis tools
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Aisha can clearly observe how high-level language constructs map to low-level operations
-2. Symbol table visualization correctly displays variable storage and access patterns across scopes
-3. Static and dynamic analysis tools provide complementary insights into code properties
-4. Optimization comparisons demonstrate measurable performance improvements
-5. The complete compilation pipeline from AST to bytecode is transparent and understandable
-6. The system serves as an effective learning tool for understanding compiler design concepts
-7. Aisha can develop and test her own compilation strategies using the framework
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Clearly demonstrates how common language constructs map to bytecode instructions
+
+2. Provides accurate visualization of symbol table operations and variable management
+
+3. Effectively illustrates the differences between static and dynamic code analysis
+
+4. Shows the concrete effects of optimization techniques on code structure and performance
+
+5. Clearly demonstrates the transformation process from AST to executable bytecode
+
+6. Handles a representative set of language features and programming patterns
+
+7. Provides useful insights into compiler backend implementation strategies
+
+8. Generates clear, understandable visualizations that enhance learning
+
+9. Offers measurable performance improvements through optimization techniques
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

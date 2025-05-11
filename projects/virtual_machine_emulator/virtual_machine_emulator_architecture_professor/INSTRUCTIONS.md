@@ -1,112 +1,169 @@
-# Educational Pipeline-Visualization Virtual Machine
+# Educational CPU Architecture Simulator
 
 ## Overview
-A transparent virtual machine implementation designed specifically for teaching computer architecture fundamentals that clearly demonstrates the fetch-decode-execute cycle, memory management, and processor operation without the complexity of modern CPU designs.
+A specialized virtual machine emulator designed for computer architecture education that provides clear visualization of CPU operation principles, including detailed pipeline stages, memory management, and instruction execution. This implementation focuses on transparency and demonstrability rather than performance, making complex concepts accessible to undergraduate students.
 
 ## Persona Description
 Dr. Rodriguez teaches undergraduate computer architecture courses and needs to help students understand CPU operation principles without the complexity of modern processor designs. She wants a transparent virtual machine that clearly demonstrates fundamental concepts like fetch-decode-execute cycles and memory management.
 
 ## Key Requirements
-1. **Pipeline visualization showing each instruction passing through fetch-decode-execute stages**: Critical for Dr. Rodriguez to visually demonstrate the instruction lifecycle to students, making abstract concepts tangible and observable. The visualization must clearly show how instructions flow through each stage and how pipeline hazards are resolved.
+1. **Pipeline Visualization System**: Implement a pipeline visualization component showing each instruction passing through fetch-decode-execute stages, allowing students to see how instructions flow through the CPU. This feature is critical for helping students understand the temporal nature of instruction processing and potential hazards like data dependencies.
 
-2. **Microarchitecture simulation revealing how high-level instructions decompose into micro-operations**: This feature allows students to understand how complex instructions are broken down into simpler operations, providing insights into instruction-level parallelism and the internal workings of a CPU.
+2. **Microarchitecture Simulation**: Create a detailed simulation revealing how high-level instructions decompose into micro-operations, exposing the internal workings of complex instructions. This capability is essential for bridging the gap between assembly language and actual hardware operations, helping students understand why different instructions have varying execution costs.
 
-3. **Cycle-accurate timing model demonstrating performance impacts of different instruction sequences**: Essential for teaching students about performance optimization and helping them understand why certain code sequences execute faster than others, with precise cycle counting and timing visualization.
+3. **Cycle-Accurate Timing Model**: Develop a timing model that demonstrates performance impacts of different instruction sequences, providing accurate cycle counts for operations. This feature allows students to understand performance bottlenecks, optimization techniques, and the critical relationship between code structure and execution efficiency.
 
-4. **Customizable architecture allowing modification of instruction set and memory model for comparison**: Enables Dr. Rodriguez to demonstrate different architecture designs in the classroom, comparing RISC vs. CISC approaches, or showing how different memory hierarchies impact performance.
+4. **Customizable Architecture**: Design a modular system allowing modification of instruction set and memory model for comparison between different architectural approaches. This flexibility enables students to experiment with architectural variations and understand trade-offs in CPU design decisions.
 
-5. **Lecture mode with annotation capabilities for highlighting specific concepts during classroom demonstrations**: Allows the professor to dynamically annotate the execution process during lectures, highlighting important concepts, potential bottlenecks, or interesting execution patterns to enhance student understanding.
+5. **Lecture Mode with Annotations**: Implement an annotation system for highlighting specific components and concepts during classroom demonstrations. This teaching aid allows the professor to focus student attention on particular aspects of the simulation during lectures, improving comprehension of complex topics.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All components must be unit-testable in isolation (pipeline stages, memory system, instruction execution)
-  - Integration tests must verify correct pipeline operation and cycle timing
-  - Architecture modifications must be testable through configuration files rather than code changes
-  - Annotation system must be testable programmatically
-
+  - All components must be independently testable with well-defined inputs and expected outputs
+  - Simulation states must be serializable and deserializable to verify correctness of execution
+  - Pipeline stages must provide introspection interfaces for testing state transitions
+  - Cycle count accuracy must be verifiable through automated test cases
+  
 - **Performance Expectations**:
-  - Must execute simple programs at a speed suitable for real-time classroom demonstration
-  - Visualization generation should not significantly impact execution performance
-  - Should support at least 10,000 instructions per second on standard hardware
-  - Pipeline visualization must update in real-time during execution
+  - The simulation must prioritize correctness and transparency over speed
+  - Must support running small programs (up to 1000 instructions) with full pipeline visualization in under 5 seconds
+  - State transitions should complete within predictable time bounds
+  - Annotation system must not significantly impact simulation performance
 
 - **Integration Points**:
-  - Clean API for integrating custom instruction sets
-  - Export interface for pipeline state and execution metrics
-  - Integration with standard instruction set definitions (RISC-V, custom educational ISA)
-  - Logging system for detailed analysis of execution flow
+  - Clean separation between core VM execution engine and visualization components
+  - Standard interface for loading programs in both assembled and raw bytecode formats
+  - API for educational tools to integrate with the simulator
+  - Export mechanism for execution traces and statistics
 
 - **Key Constraints**:
-  - Must prioritize clarity and educational value over performance
-  - Implementation must be transparent and well-documented for educational purposes
-  - All internal states must be observable and explainable
-  - Must not require specialized hardware to run
+  - Implementation must use pure Python for maximum educational clarity
+  - No external dependencies beyond standard library to ensure easy deployment in educational environments
+  - All architecture components must be modifiable through configuration rather than code changes
+  - Simulation must remain deterministic for reproducing specific behaviors
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Stack-based Virtual Machine**: Implement a complete stack-based virtual machine with a well-defined instruction set, featuring clear separation between fetch, decode, and execute phases that can be visualized and inspected.
+The core functionality of this educational CPU architecture simulator includes:
 
-2. **Pipeline Implementation**: Create a pipeline architecture that models realistic CPU stages (fetch, decode, execute, memory access, write-back) with visibility into stalls, hazards, and forwarding.
+1. A complete CPU simulation with explicit representation of all pipeline stages (fetch, decode, execute, memory access, write-back)
 
-3. **Execution Tracing**: Provide comprehensive execution tracing with cycle-accurate timing information, recording the state of each pipeline stage at each clock cycle.
+2. A memory subsystem with configurable cache levels, latency, and addressing modes
 
-4. **Microarchitecture Modeling**: Implement the decomposition of complex instructions into micro-operations, showing how each high-level instruction maps to fundamental operations.
+3. An instruction set implementation with micro-operation decomposition for complex instructions
 
-5. **Architecture Customization**: Develop a configuration system for modifying key architectural elements, including instruction set definitions, pipeline depth, memory hierarchy, and timing parameters.
+4. A cycle-accurate execution engine that properly models pipeline stalls, hazards, and forwarding
 
-6. **Annotation System**: Create an annotation mechanism that allows attaching explanatory notes to specific instructions, pipeline stages, or execution events for educational purposes.
+5. An annotation system that can tag specific components, instructions, or cycle events with educational notes
 
-7. **Memory Hierarchy**: Implement a configurable memory system with multiple levels (registers, cache, main memory) and visualizable access patterns and timing effects.
+6. A configuration system to adjust architectural parameters (pipeline depth, execution units, cache organization)
+
+7. A statistics collection mechanism to generate metrics on program execution (CPI, stall rates, cache hit ratios)
+
+8. A serializable execution trace capability for post-execution analysis
+
+9. Support for different architectural variants (scalar, superscalar, VLIW) through configuration
+
+10. The ability to introduce and demonstrate common architectural optimizations (branch prediction, out-of-order execution)
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct execution of all instructions in the instruction set
-  - Accurate pipeline visualization with proper stage progression
-  - Precise cycle counting and timing model accuracy
-  - Correct implementation of pipeline hazard detection and resolution
-  - Functional architecture customization and configuration loading
+- **Key Functionalities that Must be Verified**:
+  - Correct execution of all instruction types under various pipeline conditions
+  - Accurate decomposition of complex instructions into micro-operations
+  - Proper handling of data and control hazards
+  - Correct cycle counting across different architectural configurations
+  - Functional annotation system that can highlight relevant components
 
 - **Critical User Scenarios**:
-  - Executing example programs that demonstrate key computer architecture concepts
-  - Modifying the architecture configuration to compare different design approaches
-  - Tracing the execution of programs with complex control flow and data dependencies
-  - Annotating execution for classroom demonstrations
-  - Analyzing performance characteristics of different instruction sequences
+  - Running small benchmark programs with various optimization levels
+  - Demonstrating classic pipeline hazard scenarios (data dependencies, branch mispredictions)
+  - Comparing performance between different architectural configurations
+  - Visualizing the impact of memory hierarchy on program execution time
+  - Using annotations to explain specific architectural concepts
 
 - **Performance Benchmarks**:
-  - Execute a standard test program in under 100ms (excluding visualization generation)
-  - Generate pipeline visualization with less than 50ms of additional overhead per instruction
-  - Support at least 10 simultaneous pipeline stage visualizations
-  - Load architecture configurations in under 500ms
+  - Complete simulation of small programs (100-1000 instructions) in under 5 seconds
+  - Handling of all pipeline stages with appropriate timing for at least 5 instructions per second
+  - Memory subsystem simulation with realistic timing for at least 1000 memory accesses per second
+  - Generation of execution statistics with negligible overhead
 
 - **Edge Cases and Error Conditions**:
-  - Handle invalid instructions gracefully with clear error messages
-  - Manage pipeline hazards correctly, including data dependencies and control hazards
-  - Recover from illegal memory accesses with appropriate exception handling
-  - Provide clear diagnostics for misconfigurations of the architecture
-  - Handle extremely long-running programs without performance degradation
+  - Handling of illegal instructions and addressing modes
+  - Proper behavior with extreme pipeline conditions (all stalls, maximum forwarding)
+  - Correct operation with edge case memory patterns (cache thrashing, alignment issues)
+  - Graceful handling of malformed annotation requests
+  - Recovery from invalid architectural configurations
 
 - **Required Test Coverage Metrics**:
-  - 95% code coverage for the core execution engine
+  - Minimum 90% line coverage for core simulation components
   - 100% coverage of the instruction set implementation
-  - 90% coverage for the pipeline and hazard detection logic
-  - 90% coverage for the architecture configuration system
+  - Complete coverage of all pipeline stage transitions
+  - At least 85% branch coverage for hazard detection and resolution logic
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Computer architecture students can observe and understand the complete instruction lifecycle through the pipeline.
-2. Performance impacts of different instruction sequences are clearly measurable and analyzable.
-3. The microarchitecture simulation accurately demonstrates how complex instructions decompose into simpler operations.
-4. Architecture configurations can be easily modified to demonstrate different design tradeoffs.
-5. The annotation system effectively highlights important concepts during classroom demonstrations.
-6. Programs written for the virtual machine execute correctly and with predictable timing.
-7. Students can correlate theoretical concepts from lectures with observed behavior in the emulator.
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Correctly simulates the complete fetch-decode-execute pipeline with visible state transitions
+
+2. Accurately models instruction timing with cycle-by-cycle precision
+
+3. Properly demonstrates architectural concepts such as pipelining, hazards, and memory hierarchies
+
+4. Provides clear visualization of pipeline stages that makes internal CPU operations understandable
+
+5. Supports architectural customization to demonstrate different CPU design approaches
+
+6. Includes an effective annotation system suitable for classroom demonstrations
+
+7. Generates accurate performance statistics that help explain the relationship between code and execution time
+
+8. Handles a representative set of instructions sufficient to run educational examples
+
+9. Maintains correctness across all tested instruction sequences and architectural configurations
+
+10. Provides comprehensive test coverage validating all key requirements
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

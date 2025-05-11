@@ -1,117 +1,182 @@
-# Operating Systems Concept Virtual Machine
+# Operating Systems Concept Simulator
 
 ## Overview
-A specialized virtual machine implementation focused on demonstrating operating system concepts like process scheduling, memory management, system calls, and resource contention, designed specifically for classroom and laboratory teaching scenarios.
+A specialized virtual machine emulator designed to demonstrate fundamental operating system concepts like process scheduling, memory allocation, system calls, and resource management. This simulator provides a simplified, controllable environment for teaching operating systems principles without the complexity of real-world OS code.
 
 ## Persona Description
 Sophia conducts lab sessions for an operating systems course and needs to demonstrate concepts like process scheduling, memory allocation, and system calls. She wants a simplified environment that isolates these concepts from the complexity of real operating systems.
 
 ## Key Requirements
-1. **Process and thread simulation with various scheduling algorithms (round-robin, priority-based)**: Essential for Sophia to demonstrate different scheduling strategies in action, allowing students to visualize how the CPU allocates time to different processes and understand the tradeoffs of different algorithms in terms of fairness, response time, and throughput.
+1. **Process and Thread Simulation**: Implement a comprehensive process and thread management system with various scheduling algorithms (round-robin, priority-based, shortest-job-first). This feature is critical for teaching students how operating systems manage multiple concurrent tasks, handle context switching, and make scheduling decisions that impact system performance and fairness.
 
-2. **Memory management visualization showing segmentation, paging, and address translation**: Crucial for illustrating complex memory concepts that students often struggle with, providing clear visibility into how virtual addresses map to physical memory, how page tables work, and how segmentation and paging differ in their approaches to memory management.
+2. **Memory Management Visualization**: Create a detailed virtual memory system showing segmentation, paging, and address translation mechanisms, with insights into allocation policies. This capability is essential for helping students understand the complex relationship between logical addresses used by programs and physical memory resources, while visualizing concepts like fragmentation and page replacement strategies.
 
-3. **System call interface demonstrating the boundary between user code and kernel operations**: Key to teaching the fundamental concept of privilege separation in operating systems, allowing students to understand how applications request services from the kernel, how parameters are passed safely across privilege boundaries, and how the system maintains security and stability.
+3. **System Call Interface**: Develop a clear system call boundary demonstrating the transition between user code and kernel operations, with proper privilege separation. This feature allows students to understand the fundamental isolation mechanism in operating systems that protects kernel resources while providing services to user applications, illustrating a key OS architectural principle.
 
-4. **Resource contention scenarios illustrating deadlocks and race conditions**: Vital for demonstrating these challenging concurrency concepts that are difficult to reproduce reliably in real systems, giving students the ability to observe, analyze, and resolve synchronization problems in a controlled environment.
+4. **Resource Contention Scenarios**: Implement reproducible demonstrations of deadlocks, race conditions, and synchronization primitives in multi-process environments. These scenarios help students recognize common concurrency problems and learn how to apply appropriate synchronization techniques to solve them, a crucial skill for systems programming.
 
-5. **Virtual device drivers showing hardware abstraction and I/O operations**: Important for teaching how operating systems interact with hardware through abstraction layers, helping students understand device management, interrupt handling, buffering strategies, and the distinction between synchronous and asynchronous I/O.
+5. **Virtual Device Drivers**: Create simulated hardware abstractions showing device driver operations and I/O processing. This feature demonstrates how operating systems manage and abstract hardware devices, helping students understand the layered architecture of system software and how user applications interact with physical hardware through multiple abstraction layers.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All scheduler implementations must be independently testable with deterministic workloads
-  - Memory management operations must verify correct address translation and protection
-  - System call mechanisms must be testable for correct privilege enforcement
-  - Concurrency scenarios must reliably reproduce race conditions and deadlocks
-  - I/O subsystems must be testable with simulated device behavior
-
+  - All components must have deterministic execution for repeatable testing
+  - Scheduling algorithms must produce consistent, predictable process execution order
+  - Memory management operations must be traceable and verifiable
+  - System call behavior must be testable with mock processes
+  - Resource contention scenarios must reliably reproduce specific conditions
+  
 - **Performance Expectations**:
-  - Must support at least 20 simultaneous simulated processes
-  - Context switching should occur at a visible but not distracting rate (approximately 10 per second) for demonstration purposes
-  - Memory operations should execute quickly enough for interactive demonstration
-  - Should operate with minimal resource usage on standard laptop hardware
-  - Must provide the option to artificially slow execution for clearer demonstration
+  - Must support simulation of at least 50 concurrent processes for scheduling demonstrations
+  - Context switching should complete in under 10ms per switch
+  - Memory operations should process at least 1000 address translations per second
+  - System call overhead should be minimal and consistent
+  - Complete scenarios should execute within a reasonable timeframe for lab sessions (1-5 minutes)
 
 - **Integration Points**:
-  - Process definition API for creating custom demonstration scenarios
-  - Hooks for collecting and exporting execution statistics
-  - Configuration interface for all scheduler parameters
-  - Flexible memory configuration system
-  - Virtual device specification interface
+  - Modular architecture allowing individual components to be tested in isolation
+  - Clean separation between user space and kernel space operations
+  - Standardized interfaces between system components (scheduler, memory manager, device drivers)
+  - Observable internal state for all subsystems
+  - Export mechanism for execution traces and visualizations
 
 - **Key Constraints**:
-  - Simulation must remain simple enough to be fully understandable by undergraduate students
-  - Must prioritize clarity and educational value over realistic performance
-  - All internal states must be observable and explainable
-  - Should isolate individual OS concepts for focused learning
+  - Implementation must be in pure Python for educational clarity
+  - No dependencies beyond standard library to ensure portability
+  - System must be deterministic to ensure reproducible demonstrations
+  - All components must be well-documented with educational explanations
+  - Memory footprint must remain reasonable (< 512MB) for student machines
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Process Management System**: Implement a complete process lifecycle management system supporting creation, scheduling, execution, and termination of simulated processes, with support for multiple scheduling algorithms.
+The core functionality of this operating systems concept simulator includes:
 
-2. **Virtual Memory Manager**: Create a memory management subsystem with support for segmentation, paging, and address translation, tracking allocations, mapping virtual to physical addresses, and enforcing protection.
+1. A virtual CPU with registers, instruction execution, and privilege levels
 
-3. **System Call Interface**: Implement a privilege separation mechanism with defined system calls, parameter validation, and mode switching between user and kernel execution contexts.
+2. A process management system with creation, termination, and state transitions
 
-4. **Concurrency Control**: Provide primitives for synchronization including mutexes, semaphores, and condition variables, with the ability to create and detect deadlock and race condition scenarios.
+3. Multiple scheduling algorithms with configurable parameters
 
-5. **I/O Subsystem**: Create a virtual device framework with device drivers, interrupt handling, and both synchronous and asynchronous I/O operations.
+4. A virtual memory system with address translation and page management
 
-6. **Resource Monitoring**: Implement comprehensive tracking of all system resources including CPU utilization, memory usage, I/O operations, and waiting times to analyze system performance.
+5. A comprehensive system call interface with proper privilege transitions
 
-7. **State Visualization**: Provide mechanisms for extracting detailed system state information for all components at any point during execution for analysis and demonstration.
+6. Synchronization primitives (mutexes, semaphores, condition variables)
+
+7. Simulated device drivers for basic I/O operations
+
+8. Resource allocation and deadlock management systems
+
+9. Detailed execution tracing for analyzing system behavior
+
+10. Configurable system parameters for demonstrating performance trade-offs
+
+11. Scenario presets for common teaching examples (producer-consumer, dining philosophers)
+
+12. State visualization exporters for all major subsystems
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct implementation of all supported scheduling algorithms
-  - Proper address translation and protection in the memory management system
-  - Accurate privilege enforcement in the system call interface
-  - Reliable reproduction of concurrency problems and their solutions
-  - Correct handling of I/O operations across different device types
+- **Key Functionalities that Must be Verified**:
+  - Correct implementation of all scheduling algorithms
+  - Proper process lifecycle management (creation, execution, termination)
+  - Accurate virtual memory translation and management
+  - Correct system call handling with privilege separation
+  - Proper implementation of synchronization primitives
+  - Accurate detection and handling of deadlock conditions
+  - Proper operation of device driver abstractions
 
 - **Critical User Scenarios**:
-  - Demonstrating scheduling behavior with mixed workloads
-  - Showing memory allocation and address translation in action
-  - Illustrating safe system call handling and privilege separation
-  - Creating and resolving deadlock scenarios
-  - Demonstrating device driver operation and interrupt handling
+  - Demonstrating scheduling algorithms with variable process loads
+  - Showing memory allocation and fragmentation with different strategies
+  - Illustrating system call processing and protection boundaries
+  - Reproducing classic concurrency problems and solutions
+  - Demonstrating I/O operations through device driver abstractions
+  - Creating and resolving deadlock situations
 
 - **Performance Benchmarks**:
-  - Support at least 20 concurrent processes with interactive scheduling visualization
-  - Complete 1000 context switches per second when not in slowed demonstration mode
-  - Handle a virtual memory space of at least 1GB with page sizes from 4KB to 4MB
-  - Process at least 500 system calls per second
-  - Support at least 10 different virtual device types simultaneously
+  - Support for at least 50 concurrent processes with responsive scheduling
+  - Memory management handling at least 10,000 pages with translation
+  - System call processing with overhead under 5ms per call
+  - Complete scenario execution for typical lab demonstrations under 5 minutes
+  - Resource contention scenarios that clearly demonstrate timing-dependent issues
 
 - **Edge Cases and Error Conditions**:
-  - Handle process crashes without affecting the overall system
-  - Proper detection and reporting of memory access violations
-  - Appropriate handling of invalid system call parameters
-  - Detection of deadlock conditions with clear reporting
-  - Recovery from device errors and I/O failures
+  - Handling of resource exhaustion (memory, process table, etc.)
+  - Proper detection and reporting of illegal operations
+  - Correct behavior with extreme scheduling conditions
+  - Recovery from deadlock situations
+  - Handling of invalid memory accesses and protection violations
 
 - **Required Test Coverage Metrics**:
-  - 95% code coverage for the process scheduling subsystem
-  - 95% coverage for the memory management implementation
-  - 90% coverage for the system call interface
-  - 90% coverage for the concurrency control mechanisms
-  - 90% coverage for the I/O subsystem
+  - Minimum 90% line coverage for all components
+  - 100% coverage for scheduling algorithms
+  - At least 95% branch coverage for critical synchronization code
+  - Complete coverage of system call interfaces
+  - At least 85% coverage for memory management operations
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Students can clearly observe the effects of different scheduling algorithms on process execution
-2. Memory management visualization successfully demonstrates address translation and protection mechanisms
-3. The system call interface clearly shows the transition between user and kernel modes
-4. Deadlocks and race conditions can be reliably created and resolved in demonstration scenarios
-5. I/O operations visibly demonstrate the interaction between software and simulated hardware
-6. Lab exercises can be completed with students gaining measurable understanding of OS concepts
-7. The system is performant enough to run interactive demonstrations on standard classroom hardware
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Correctly implements multiple scheduling algorithms with observable differences in behavior
+
+2. Provides a clear visualization of memory management operations including segmentation and paging
+
+3. Implements a proper system call interface with privilege separation
+
+4. Successfully demonstrates classic resource contention scenarios with appropriate solutions
+
+5. Includes functional virtual device drivers that show hardware abstraction principles
+
+6. Produces consistent, deterministic results for repeatable demonstrations
+
+7. Supports creation of educational scenarios that clearly illustrate OS concepts
+
+8. Provides detailed execution traces for analysis and understanding
+
+9. Maintains clear separation of concerns between different OS components
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

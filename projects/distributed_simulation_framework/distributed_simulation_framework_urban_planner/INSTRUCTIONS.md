@@ -1,183 +1,185 @@
-# Metropolitan Traffic Simulation Framework
+# Urban Transportation Simulation Framework
 
 ## Overview
-A specialized distributed simulation framework designed for urban transportation planners to model and evaluate traffic patterns across entire metropolitan areas. This framework enables realistic simulation of traffic flows, driver behaviors, and infrastructure changes with efficient geographic partitioning to distribute computational load across available resources.
+A distributed simulation framework specialized for urban transportation planners to model and evaluate complex city traffic patterns and infrastructure changes. The framework enables simulation of entire metropolitan areas with realistic driver behavior models, allowing planners to assess the impact of new infrastructure and policy changes before implementation.
 
 ## Persona Description
 Miguel models city transportation networks to evaluate the impact of new infrastructure and policy changes. His primary goal is to simulate traffic patterns across entire metropolitan areas with realistic driver behavior models while efficiently distributing computation across department resources.
 
 ## Key Requirements
 
-1. **Geographic Partitioning with Boundary Synchronization**
-   - Divide large metropolitan areas into geographic zones for distributed processing
-   - Implement intelligent boundary management to handle vehicles crossing between partitions
-   - Ensure seamless synchronization of traffic state at partition boundaries
-   - Support dynamic repartitioning based on computational load and traffic density
-   - Critical for Miguel because metropolitan-scale simulations are computationally intensive, and geographic partitioning allows efficient use of available computing resources while maintaining simulation accuracy at boundary regions where major traffic flows occur
+1. **Geographic Partitioning with Boundary Synchronization**  
+   Implement an intelligent spatial decomposition system that divides urban areas into manageable regions with efficient boundary synchronization between partitions. This capability is critical for Miguel because city-scale traffic simulations are computationally intensive, and geographic partitioning allows him to simulate entire metropolitan areas by distributing the workload across multiple computing nodes while maintaining consistency at region boundaries.
 
-2. **Scenario Comparison Tools for Policy Evaluation**
-   - Run multiple simulation scenarios in parallel with different parameters
-   - Provide tools to compare key metrics between scenarios (travel time, congestion, emissions)
-   - Generate detailed differential reports highlighting the impacts of policy changes
-   - Support for statistical analysis of outcome variations across multiple runs
-   - Critical for Miguel because transportation planners need to evaluate multiple policy options and infrastructure changes to identify optimal solutions, requiring robust comparison tools to quantify differences between scenarios
+2. **Scenario Comparison Tools for Policy Evaluation**  
+   Develop comprehensive tools for defining, executing, and statistically comparing multiple infrastructure and policy scenarios with consistent metrics and visualization-ready outputs. This feature is vital because transportation planners need to evaluate numerous alternatives (lane additions, signal timing changes, congestion pricing, etc.) and provide evidence-based recommendations to decision-makers with clear comparisons of expected outcomes.
 
-3. **Stochastic Event Injection with Propagation Effects**
-   - Ability to introduce random or scheduled events (accidents, weather conditions, road closures)
-   - Model realistic propagation of traffic impacts from these events
-   - Configure event probability distributions based on historical data
-   - Track cascading effects across the transportation network
-   - Critical for Miguel because real-world traffic patterns are significantly affected by unpredictable events, and understanding how these events propagate through the network is essential for resilient transportation planning
+3. **Stochastic Event Injection with Propagation Effects**  
+   Create a system for modeling unexpected events (accidents, weather conditions, road closures) with realistic propagation effects throughout the transportation network. This functionality is essential because real-world transportation systems regularly experience disruptions, and understanding how these events propagate through networks allows Miguel to design more resilient infrastructure and develop effective incident response strategies.
 
-4. **Behavioral Model Library for Different Agent Types**
-   - Support for multiple driver behavior models (commuters, commercial, cautious, aggressive)
-   - Public transport vehicle modeling with scheduling and passenger interactions
-   - Pedestrian and cyclist agent models for multi-modal simulations
-   - Configurable decision-making parameters for each agent type
-   - Critical for Miguel because accurate traffic simulation requires modeling different transportation users with distinct behavioral patterns, route preferences, and responses to conditions
+4. **Behavioral Model Library for Different Agent Types**  
+   Build an extensible library of behavioral models for various transportation system users (commuters, commercial drivers, public transit, pedestrians, cyclists) with configurable parameters and decision-making processes. This capability enables Miguel to simulate how diverse populations will interact with and respond to changes in transportation systems, ensuring that plans accommodate the needs and behaviors of all user groups.
 
-5. **Infrastructure Cost-Benefit Analysis with Simulation Validation**
-   - Integration of infrastructure costs into simulation scenarios
-   - Calculate return-on-investment metrics based on simulation outcomes
-   - Identify optimal infrastructure investments based on cost-benefit ratios
-   - Validate simulation predictions against historical data where available
-   - Critical for Miguel because transportation departments have limited budgets and must justify infrastructure investments based on expected benefits, requiring tools that quantify the value of proposed changes
+5. **Infrastructure Cost-Benefit Analysis with Simulation Validation**  
+   Implement integrated economic analysis tools that calculate costs, benefits, and return on investment for infrastructure projects based on simulation outcomes. This feature is important because transportation projects require substantial public investment, and the ability to quantify benefits (reduced congestion, improved safety, lower emissions) helps Miguel justify projects to stakeholders and prioritize investments for maximum community benefit.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each component must have comprehensive unit tests with at least 90% code coverage
-- Integration tests should verify correct interaction between geographic partitions
-- Performance tests must validate scaling with increasing map size and vehicle count
-- Validation tests comparing simulation outputs to real-world data samples
-- Scenario reproducibility tests ensuring identical outputs with the same random seeds
+- All traffic flow models must be validatable against real-world traffic count data
+- Behavioral models must produce statistically realistic patterns compared to survey data
+- Geographic partitioning must yield identical results regardless of partition boundaries
+- Event propagation must realistically model observed congestion patterns
+- Economic calculations must be traceable and verifiable against established methodologies
 
 ### Performance Expectations
-- Support for metropolitan areas with 10,000+ road segments and 100,000+ vehicles
-- Simulation speed of at least 10x real-time for large scenarios
-- Linear scaling with additional computing nodes up to at least 8 nodes
-- Maximum boundary synchronization latency of 100ms between partitions
-- Event propagation calculations must complete within one simulation time step
+- Must support simulation of metropolitan areas with at least 5 million residents
+- Should process at least 24 simulated hours of city traffic within 1 hour of computation time
+- Must efficiently scale across at least 20 computing nodes with near-linear performance gains
+- Should handle road networks with at least 100,000 road segments and 50,000 intersections
+- Scenario comparison should complete analysis of 10+ alternatives within reasonable timeframes
 
 ### Integration Points
-- Import capabilities for OpenStreetMap and standard GIS data formats
-- Export interfaces for visualization tools and traffic analysis software
-- APIs for defining custom driver behavior models
-- Integration with cost modeling and financial analysis tools
-- Data import from traffic sensors and historical traffic databases
+- Data interfaces for importing standard GIS and transportation network formats
+- API for customizing driver behavior models and decision processes
+- Extension points for specialized traffic control systems
+- Connectors for economic analysis frameworks
+- Export capabilities for results in formats suitable for visualization tools
 
 ### Key Constraints
-- All components must be implementable in pure Python
-- Distribution mechanisms must use standard library capabilities
-- The system must work across heterogeneous computing environments
-- Simulation state must be serializable for checkpointing and recovery
-- All randomization must support seeding for reproducible results
+- Implementation must be in Python with no UI components
+- All simulation components must be deterministic when using fixed random seeds
+- Memory usage must be optimized for large-scale urban network simulation
+- System must operate efficiently on standard departmental computing resources
+- Data exchange formats must be compatible with common GIS and planning tools
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation should provide a Python library with the following core components:
+The Urban Transportation Simulation Framework needs to implement these core capabilities:
 
-1. **Geographic Simulation Engine**
+1. **Transportation Network Modeling**
    - Road network representation with detailed attributes
-   - Traffic flow modeling with vehicle interactions
-   - Signal control and intersection management
+   - Intersection and signal control implementation
+   - Public transit system integration
    - Multi-modal transportation support
-   - Time synchronization across distributed partitions
+   - Dynamic routing with congestion awareness
 
-2. **Distribution and Partitioning System**
-   - Geographic partitioning algorithms
-   - Boundary synchronization protocols
-   - Load balancing mechanisms
-   - Process/node management across computing resources
-   - Fault tolerance and recovery capabilities
+2. **Distributed Simulation Engine**
+   - Geographic partitioning with boundary handling
+   - Load balancing across computing resources
+   - Synchronized time advancement
+   - Deterministic execution with reproducibility
+   - Incremental result collection and aggregation
 
-3. **Agent Behavior Framework**
-   - Configurable decision-making models for different agent types
-   - Route planning and navigation capabilities
-   - Responsive behaviors to traffic conditions and events
-   - Learning and adaptation mechanisms
-   - Interaction rules between different transportation modes
+3. **Agent Behavior System**
+   - Diverse traveler profiles and preferences
+   - Route selection and adjustment algorithms
+   - Mode choice modeling
+   - Departure time decisions
+   - Responses to congestion and disruptions
 
-4. **Scenario Management**
-   - Configuration system for defining simulation parameters
-   - Parallel scenario execution management
-   - Result collection and aggregation
-   - Comparative analysis tools
-   - Reporting and visualization capabilities
+4. **Event Management Framework**
+   - Stochastic event generation with configurable distributions
+   - Propagation modeling through network effects
+   - Impact assessment on traffic conditions
+   - Emergency response simulation
+   - Recovery and return-to-normal patterns
 
-5. **Infrastructure and Policy Evaluation**
-   - Cost modeling for infrastructure changes
-   - Benefit calculation based on simulation outcomes
-   - ROI and cost-benefit analysis
-   - Policy impact assessment
-   - Validation against historical data
+5. **Scenario Comparison Tools**
+   - Parameter-based scenario definition
+   - Consistent metric calculation across alternatives
+   - Statistical significance testing
+   - Sensitivity analysis for key parameters
+   - Multi-criteria evaluation frameworks
+
+6. **Economic Analysis System**
+   - Infrastructure cost modeling with lifecycle consideration
+   - Benefit quantification across multiple dimensions
+   - Return on investment calculation
+   - Discount rate handling for future benefits
+   - Distributional impact assessment
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-1. **Geographic Partitioning**
-   - Correctness of boundary synchronization
-   - Performance scaling with partition count
-   - Load balancing effectiveness
-   - Recovery from partition failures
-
-2. **Traffic Simulation**
-   - Realistic traffic flow patterns
-   - Proper vehicle interactions and collision avoidance
-   - Correct signal timing and intersection behavior
-   - Accurate travel time calculations
-
-3. **Scenario Comparison**
-   - Accurate differential analysis between scenarios
-   - Statistical significance of result differences
-   - Proper aggregation of metrics across runs
-   - Correct handling of stochastic variations
-
-4. **Event Injection**
-   - Realistic propagation of traffic impacts from events
-   - Proper recovery of traffic flow after events
-   - Accurate modeling of different event types
-   - Consistency across repeated simulations with same seed
-
-5. **Agent Behavior**
-   - Distinct behavior patterns for different agent types
-   - Realistic route selection and navigation
-   - Proper response to changing conditions
-   - Interactions between different transportation modes
+- Accuracy of traffic flow models compared to observed data
+- Correctness of geographic partitioning and boundary synchronization
+- Realism of agent behaviors against survey data
+- Fidelity of event propagation through transportation networks
+- Accuracy of economic calculations for infrastructure investments
+- Performance scaling with network size and complexity
 
 ### Critical User Scenarios
-1. Simulating morning rush hour traffic across a major metropolitan area
-2. Evaluating the impact of adding a new highway interchange
-3. Assessing how a major sporting event affects surrounding traffic
-4. Comparing different public transportation scheduling strategies
-5. Modeling the effects of lane closures due to construction
+- Simulating morning rush hour across an entire metropolitan area
+- Comparing the impact of alternative highway expansion projects
+- Modeling the effects of a severe weather event on transportation networks
+- Evaluating new public transit routes and service frequencies
+- Analyzing the benefits of smart traffic signal coordination
+- Assessing the impact of congestion pricing in central business districts
 
 ### Performance Benchmarks
-1. Simulate 100,000 concurrent vehicles with at least 10x real-time speed
-2. Complete initialization of a metropolitan-scale network in under 60 seconds
-3. Process boundary synchronization in under 100ms per simulation step
-4. Generate comparative analysis reports in under 30 seconds
-5. Achieve linear scaling up to 8 compute nodes
+- Simulation speed: processing 24 hours of metropolitan traffic within 1 hour
+- Scaling efficiency: minimum 80% parallel efficiency when scaling from 4 to 20 nodes
+- Memory usage: maximum 4GB per partition for large urban networks
+- Scenario throughput: comparing 10 infrastructure alternatives within 8 hours
+- Network size: handling at least 100,000 road segments and 50,000 intersections
 
 ### Edge Cases and Error Conditions
-1. Handling extremely congested networks with gridlock conditions
-2. Recovery from compute node failures during simulation
-3. Managing boundary synchronization with highly imbalanced partition loads
-4. Proper behavior during rare event combinations (e.g., multiple accidents in the same area)
-5. Graceful degradation with insufficient computational resources
+- Handling of grid-locked traffic conditions
+- Management of severed network connections (bridge closures, etc.)
+- Detection of unrealistic travel patterns or behaviors
+- Recovery from computation node failures during simulation
+- Adaptation to extreme demand patterns (evacuations, major events)
 
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage of boundary synchronization logic
-- All event propagation paths must be tested
-- Performance tests must cover various network sizes and densities
-- All public APIs must have comprehensive integration tests
+### Test Coverage Requirements
+- Unit test coverage of at least 90% for all traffic flow models
+- Integration tests for multi-region boundary synchronization
+- Validation against real-world traffic data where available
+- Performance tests for scaling behavior
+- Verification of economic calculations against established methodologies
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully simulate traffic for a metropolitan area with 100,000+ vehicles across at least 8 distributed processes
-2. Demonstrate accurate propagation of traffic impacts from injected events
-3. Show clear quantitative differences between policy scenarios
-4. Validate simulation results against real-world traffic data with ≤15% deviation
-5. Calculate cost-benefit metrics for infrastructure changes with confidence intervals
-6. Achieve at least 80% resource utilization efficiency across distributed nodes
-7. Complete simulations at least 10x faster than real-time for large-scale scenarios
+
+The implementation of the Urban Transportation Simulation Framework will be considered successful when:
+
+1. The system can accurately simulate traffic patterns across entire metropolitan areas through efficient geographic partitioning
+2. Transportation planners can define, execute, and compare multiple infrastructure and policy scenarios with clear metrics
+3. Stochastic events realistically propagate through the transportation network with appropriate congestion effects
+4. Agent behaviors reflect the diversity of real-world transportation system users across different modes
+5. Economic analysis provides credible cost-benefit assessments for infrastructure investments based on simulation outcomes
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file must be included as proof that all tests pass and is a critical requirement for project completion.

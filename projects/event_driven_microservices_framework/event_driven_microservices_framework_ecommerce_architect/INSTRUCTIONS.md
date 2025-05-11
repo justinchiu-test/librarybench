@@ -1,7 +1,7 @@
 # E-commerce Transition Microservices Framework
 
 ## Overview
-A specialized event-driven microservices framework designed to support the incremental migration of a monolithic e-commerce platform to a microservices architecture without disrupting customer experience. The framework provides specific capabilities for managing the transition phase, including bridge patterns between old and new components, event replay for system validation, and tools for managing complex order processing flows.
+This project is a specialized event-driven microservices framework designed to facilitate the incremental migration of an e-commerce platform from a monolithic architecture to microservices. It focuses on maintaining business continuity during the transition, providing bridge patterns between old and new systems, and ensuring a seamless customer experience throughout the migration process.
 
 ## Persona Description
 Sophia leads architecture for a mid-sized online retailer transitioning from a monolithic application to microservices. Her primary goal is to design a resilient event-driven architecture that allows for incremental migration without disrupting the customer shopping experience during the transition.
@@ -9,147 +9,179 @@ Sophia leads architecture for a mid-sized online retailer transitioning from a m
 ## Key Requirements
 
 1. **Hybrid Architecture Support with Bridge Patterns**
-   - Implementation of bridge adapters that allow communication between monolithic components and new microservices
-   - Two-way event translation layer that maps legacy events to new event schemas and vice versa
-   - Compatibility layer for data format transformation between systems
-   - Monitoring for bridge component performance and reliability
-   - This is critical for Sophia as it enables incremental migration without requiring a complete system rewrite at once
+   - Implement adapter patterns that allow the monolith and microservices to communicate seamlessly
+   - Create event translation layers that map between legacy data models and new service models
+   - Provide bidirectional communication channels between monolith and microservices components
+   - This feature is critical as it allows for incremental migration without rebuilding the entire system at once
 
-2. **Incremental Migration Tooling with Event Replay Capabilities**
-   - Event capture mechanism to record production events from the monolith
-   - Event replay system to test new microservice implementations against real-world data patterns
-   - Comparison utilities to validate identical behavior between old and new implementations
-   - Comprehensive logging for identifying behavior differences during migration
-   - This enables Sophia to validate new microservices with production data before going live, reducing migration risk
+2. **Incremental Migration Tooling with Event Replay**
+   - Develop event capture mechanisms that record interactions with the monolith for testing microservices
+   - Create event replay functionality to validate that new microservices behave identically to monolith components
+   - Include data migration utilities that help move from monolithic databases to service-specific data stores
+   - This feature is essential to verify correctness of new services before cutting over from legacy implementations
 
 3. **Order Processing Saga Management with Compensation Transactions**
-   - Implementation of the saga pattern for distributed order processing transactions
-   - Coordination of multi-step business processes across services (inventory, payment, shipping)
-   - Compensation transaction management for handling failures at any step in the process
-   - Timeout and retry mechanisms for resilient order processing
-   - This ensures order integrity during processing even when parts of the system are being migrated
+   - Implement the saga pattern for order processing workflows spanning multiple services
+   - Create compensation transaction mechanisms to handle failures in the distributed process
+   - Support long-running transactions that may span hours or days in the order fulfillment process
+   - This feature ensures order integrity across services during the transition when some components may still be in the monolith
 
-4. **Transaction Boundary Visualization Showing Service Dependencies**
-   - Creation of a dependency graph that shows service relationships and transaction boundaries
-   - Real-time visualization of event flows between services
-   - Identification of critical paths and potential failure points
-   - Service boundary analysis for optimizing domain decomposition
-   - This helps Sophia understand and communicate the impact of architecture changes to stakeholders
+4. **Transaction Boundary Visualization**
+   - Create tools to map and visualize service dependencies and transaction boundaries
+   - Identify potential consistency issues across service boundaries
+   - Highlight critical paths in customer-facing transactions
+   - This feature helps architects understand the implications of splitting certain functions into separate services
 
-5. **A/B Deployment Capability for Validating New Service Implementations**
-   - Traffic splitting mechanism to route a percentage of requests to new service implementations
-   - Real-time comparison of performance and behavior between old and new implementations
-   - Automated rollback capability if new services fail to meet performance or correctness criteria
-   - Gradual transition support with configurable traffic routing rules
-   - This allows Sophia to safely test new microservice implementations with real users before fully committing
+5. **A/B Deployment Capability for Validating New Implementations**
+   - Support parallel running of legacy and new implementations of the same functionality
+   - Provide traffic splitting mechanisms to route a percentage of transactions to new services
+   - Include comparison tools to validate that results from both implementations match
+   - This feature allows for risk mitigation by testing new services with actual production traffic in a controlled manner
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must have comprehensive unit tests with minimum 90% code coverage
-- Integration tests must cover all service interaction points
-- Event replay tests must validate both functional correctness and performance
-- A/B testing functions must be testable without affecting production systems
-- Mock implementations of all external dependencies for isolated testing
+- All components must be individually testable with pytest
+- Service interactions must support mocking for isolated testing
+- Event flows must be traceable and reproducible in test environments
+- Provide simulation tools for various migration scenarios
 
 ### Performance Expectations
-- Bridge pattern overhead should not exceed 10ms per transaction
-- Event replay system must handle at least 10x real-time event rates for accelerated testing
-- Saga pattern implementation must support at least 1000 concurrent order processes
-- System must maintain the same or better response times compared to the monolithic system
-- Visualization components must update in near real-time with less than 5-second latency
+- Support for processing at least 1,000 orders per minute
+- Maximum event latency of 500ms between services
+- Support for at least 100 concurrent service instances
+- Migration tooling must handle historical data sets of at least 1 million orders
 
 ### Integration Points
-- Seamless integration with existing monolithic architecture components
-- Standardized interfaces for connecting new microservices
-- Event schema registry for maintaining compatibility across versions
-- Monitoring system integration for observability
-- Database integration supports both legacy and new storage systems
+- Seamless integration with SQL and NoSQL databases used by the monolith
+- Support for common e-commerce payment and shipping provider APIs
+- Integration with existing authentication and authorization systems
+- Compatibility with popular monitoring and logging solutions
 
 ### Key Constraints
-- Zero downtime during migration phases
-- Backward compatibility with existing clients and third-party integrations
-- Must function without requiring changes to the existing monolith's core code
-- Resource efficiency to prevent significant infrastructure cost increases during transition
-- Secure by design with no compromise on data protection during transition
+- Must support running in both cloud and on-premises environments
+- Cannot require changes to customer-facing components during the migration
+- Must operate without service interruption during deployment of new services
+- Must maintain full audit trail of all transactions during the migration process
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The E-commerce Transition Microservices Framework must provide:
+The framework must provide:
 
-1. **Event Bus Implementation**
-   - A message broker system supporting publish-subscribe patterns
-   - Support for both synchronous and asynchronous messaging
-   - Message persistence for reliability and replay capabilities
-   - Event routing with filtering capabilities
-   - Event schema validation and versioning
+1. **Event Bus and Message Routing**
+   - Publish-subscribe mechanism for inter-service communication
+   - Support for different message types (commands, events, queries)
+   - Message routing based on content and context
+   - Support for routing between monolith and microservices
 
-2. **Bridge Components**
-   - Two-way adapters connecting monolith and microservices
-   - Event translation between different schemas and formats
-   - Performance monitoring for bridge components
-   - Graceful degradation if either side becomes unavailable
+2. **Service Registry and Discovery**
+   - Dynamic service registration and discovery
+   - Health monitoring of services
+   - Version management for services
+   - Support for gradual service transition
 
-3. **Saga Pattern Implementation**
-   - Coordinator service for managing distributed transactions
-   - Step-by-step transaction orchestration
-   - Compensation transaction handling for rollback scenarios
-   - Timeout management and retry logic
-   - Transaction state persistence for recovery
+3. **Migration Support Tools**
+   - Event capture and replay functionality
+   - Data consistency verification between old and new implementations
+   - Transaction simulation for testing new services
+   - Rollback mechanisms if new services fail
 
-4. **Visualization and Monitoring**
-   - Dependency graph visualization tool
-   - Real-time event flow monitoring
-   - Performance metrics collection and analysis
-   - Alert system for anomalies and failures
+4. **Transaction Management**
+   - Implementation of the saga pattern for distributed transactions
+   - Compensation mechanisms for failed transactions
+   - Transaction monitoring and visualization
+   - Support for long-running business processes
 
-5. **A/B Testing Infrastructure**
-   - Traffic distribution controls
-   - Performance and behavior comparison tools
-   - Automated rollback mechanisms
-   - Gradual transition capability with configurable rules
+5. **Deployment and Testing Infrastructure**
+   - A/B testing capabilities for new service implementations
+   - Traffic splitting and routing
+   - Performance comparison between old and new implementations
+   - Gradual cutover support from monolith to microservices
 
 ## Testing Requirements
 
-### Key Functionalities to Verify
-- Event publication and subscription between all system components
-- Successful event translation between legacy and new formats
-- Complete saga execution with all success and failure scenarios
-- Accurate dependency visualization reflecting actual system structure
-- Proper traffic distribution in A/B testing scenarios
+### Key Functionalities that Must be Verified
+- Event propagation between monolith and microservices components
+- Correct implementation of the saga pattern for order processing
+- Successful execution of compensation transactions on failure
+- Accuracy of A/B deployment comparisons
+- Correctness of incremental migration with data consistency
 
 ### Critical User Scenarios
-- Complete order processing flow across monolith and microservices components
-- Handling of peak traffic scenarios (e.g., sales events)
-- System behavior during partial outages of either monolith or microservices
-- Rollback scenarios when new service implementations fail
-- Incremental migration of a service from monolith to microservices
+- Complete order processing flow from cart to shipment
+- Handling of partial failures in the order process
+- Migration of a component from monolith to microservice
+- Rollback of a failed migration
+- A/B testing of a new service implementation
 
 ### Performance Benchmarks
-- Latency in hybrid architecture must remain within 5% of original monolith
-- System must handle peak load of at least 200 orders per second
-- Event replay must process at least 10x real-time event rates
-- A/B deployment must handle traffic splitting without performance degradation
-- Visualization tools must update within 5 seconds of events occurring
+- Process 1,000 orders per minute with latency under 500ms
+- Support 1,000 concurrent users without performance degradation
+- Handle replay of 100,000 historical events for service validation
+- Complete migration data verification within 4 hours for 1 million records
 
 ### Edge Cases and Error Conditions
-- Network partitions between monolith and microservices
-- Database failures during critical transactions
-- Message broker outages
-- Incomplete or corrupted event data
-- Version incompatibilities between services
+- Network partitions between services
+- Partial system failures during order processing
+- Inconsistent data states between monolith and microservices
+- Version mismatch between communicating services
+- Replay of invalid or corrupt event data
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all components
-- 100% coverage of error handling paths
-- All API endpoints must have integration tests
-- Performance tests must cover both average and peak load scenarios
-- Security tests must validate proper isolation between tenants
+- Minimum 90% line coverage for all code
+- 100% coverage of critical paths in order processing saga
+- 100% coverage of failure scenarios and compensation transactions
+- 100% coverage of migration tooling functionality
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Zero customer-facing disruptions during migration phases
-- Successful incremental migration of at least three critical services from monolith to microservices
-- Order processing maintains 99.99% success rate during migration
-- Development teams can independently deploy new microservices without coordinating with monolith team
-- System maintains or improves on previous performance metrics for customer-facing operations
-- Clear visualization of service boundaries leads to better architecture decisions
+
+The implementation will be considered successful if:
+
+1. All components of the framework can be tested individually and in integration
+2. The system demonstrates the ability to process orders spanning both monolith and microservices components
+3. The migration tooling successfully validates new service implementations against monolith behavior
+4. The system can perform A/B testing between old and new implementations
+5. Transaction boundaries are correctly visualized and maintained during migration
+6. Performance meets the specified benchmarks under load
+7. All test cases pass with the required coverage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
+
+To set up the development environment:
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the project in development mode
+uv pip install -e .
+
+# Install test dependencies
+uv pip install pytest pytest-json-report
+
+# Run tests and generate the required JSON report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+CRITICAL: Generating and providing the pytest_results.json file is a mandatory requirement for project completion. This file serves as evidence that all functionality has been implemented correctly and passes all tests.

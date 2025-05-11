@@ -1,7 +1,7 @@
-# High-scale Media Streaming Microservices Framework
+# High-Scale Media Streaming Microservices Framework
 
 ## Overview
-A high-performance event-driven microservices framework designed for video streaming platforms handling millions of concurrent viewers. The framework provides robust backpressure handling, content metadata synchronization, viewer experience prioritization, efficient caching strategies, and advanced analytics processing to ensure seamless viewing experiences even during massive usage spikes.
+This project is a specialized event-driven microservices framework designed for video streaming platforms that handle millions of concurrent viewers. It focuses on backpressure handling, content metadata synchronization, viewer experience prioritization, efficient caching, and analytics processing to create a robust backend that delivers seamless viewing experiences even during usage spikes.
 
 ## Persona Description
 Olivia designs backend systems for a video streaming service handling millions of concurrent viewers. Her primary goal is to create a microservices framework that efficiently manages content delivery, user preferences, and viewing statistics while maintaining a seamless viewing experience during usage spikes.
@@ -9,147 +9,185 @@ Olivia designs backend systems for a video streaming service handling millions o
 ## Key Requirements
 
 1. **Backpressure Handling with Graceful Degradation Patterns**
-   - Intelligent load shedding mechanisms during traffic spikes
-   - Priority-based request handling during system overload
-   - Adaptive throughput control across service boundaries
-   - Graceful feature degradation strategies preserving core functionality
-   - This is critical for Olivia as streaming platforms experience massive traffic surges during popular content releases, and the system must remain operational even when overwhelmed
+   - Implement backpressure detection across service boundaries
+   - Create graceful degradation strategies for handling load spikes
+   - Support for prioritization of critical viewer experience functionality
+   - Include adaptive rate limiting based on system capacity
+   - This feature is critical for maintaining system stability during viral content spikes or unexpected traffic surges while preserving core viewing functionality
 
 2. **Content Metadata Synchronization Across Service Boundaries**
-   - Efficient content catalog synchronization between services
-   - Real-time metadata propagation for content updates
-   - Consistency management for distributed content information
-   - Version control for metadata changes
-   - This ensures that all services across the platform work with consistent content information, preventing issues like mismatched thumbnails, incorrect episode information, or outdated availability status
+   - Develop consistent metadata propagation between content services
+   - Create conflict resolution for concurrent metadata updates
+   - Support for metadata versioning with backward compatibility
+   - Include efficient delta-based synchronization
+   - This feature ensures viewers see consistent content information across different parts of the platform (recommendations, search, playback) even as it's updated
 
 3. **Viewer Experience Prioritization with Tiered Service Levels**
-   - Differentiated service quality tiers for different user segments
-   - Experience-focused resource allocation during constraints
-   - Quality of service guarantees for premium subscribers
-   - Adaptive streaming optimizations based on user importance
-   - This allows Olivia to protect the experience of high-value users during system stress while fairly managing resources across the user base
+   - Implement experience quality tiers with degradation paths
+   - Create playback continuity preservation during service disruption
+   - Support for personalization persistence even during system stress
+   - Include quality of service monitoring with viewer impact metrics
+   - This feature maintains the most critical aspects of viewing experience during system stress by intelligently reducing non-essential features
 
 4. **Caching Strategies with Invalidation Event Propagation**
-   - Multi-level content and metadata caching framework
-   - Cache invalidation event distribution system
-   - Cache warming strategies for anticipated popular content
-   - Cache efficiency analytics and optimization
-   - This maximizes system efficiency by reducing redundant processing and database load, while ensuring users always see the most current content
+   - Develop multi-level caching for content and metadata
+   - Create efficient cache invalidation through event propagation
+   - Support for popularity-based caching strategies
+   - Include geographic content distribution optimization
+   - This feature optimizes content delivery speed and reduces backend load through intelligent caching while ensuring viewers always see the latest content
 
 5. **Analytics Event Batching with Real-time and Historical Processing Paths**
-   - Dual-path analytics processing for streaming events
-   - Real-time viewer metrics for operational decisions
-   - Batched historical analysis for business intelligence
-   - Adaptive sampling during traffic spikes
-   - This provides Olivia with both immediate operational insights and comprehensive long-term analytics without overwhelming the system during peak usage
+   - Implement dual-path analytics for real-time and historical processing
+   - Create efficient event batching based on analytics importance
+   - Support for sampling strategies during extreme load
+   - Include guaranteed delivery for business-critical metrics
+   - This feature balances the need for real-time metrics for system operation with comprehensive historical data collection for business intelligence
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Load testing framework supporting millions of simulated viewers
-- Distributed system fault injection capabilities
-- Cache behavior verification tools
-- Analytics processing validation suite
-- End-to-end user experience simulation
+- Support for simulating millions of concurrent viewers
+- Ability to test degradation strategies under load
+- Testing of metadata consistency across services
+- Verification of caching and invalidation mechanisms
 
 ### Performance Expectations
-- Support for at least 5 million concurrent streaming sessions
-- Metadata synchronization latency under 5 seconds globally
-- Backpressure response time under 100ms during traffic spikes
-- Cache hit rates above 95% for popular content
-- Real-time analytics processing with less than 30-second delay
+- Support for at least 1 million concurrent viewers
+- Maximum 200ms latency for playback-critical operations
+- Ability to handle 10x traffic spikes through degradation
+- Support for processing 100,000+ analytics events per second
 
 ### Integration Points
-- Content delivery networks (CDNs)
-- Media encoding and transcoding pipelines
-- User authentication and management systems
-- Billing and subscription services
-- Business intelligence and analytics platforms
+- Integration with content delivery networks (CDNs)
+- Support for video encoding and transcoding pipelines
+- Compatibility with recommendation and personalization engines
+- Integration with business intelligence and analytics platforms
 
 ### Key Constraints
-- Global distribution across multiple regions
-- Variable network conditions for end users
-- Strict content rights management and regional restrictions
-- Mobile and bandwidth-constrained viewer support
-- Cost-effective infrastructure utilization at scale
+- Must maintain playback continuity as the highest priority
+- Must operate efficiently across global regions
+- Must preserve accurate analytics even during degraded operation
+- Must scale horizontally for all components
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The High-scale Media Streaming Microservices Framework must provide:
+The framework must provide:
 
-1. **Load Management System**
-   - Backpressure detection and handling
-   - Priority-based request processing
-   - Load shedding implementation
-   - Graceful degradation orchestration
+1. **Load Management and Backpressure System**
+   - Backpressure detection and propagation
+   - Graceful degradation strategies
+   - Priority-based request handling
+   - Adaptive rate limiting
 
 2. **Content Metadata Management**
-   - Distributed metadata synchronization
-   - Consistency enforcement mechanisms
-   - Real-time update propagation
-   - Catalog versioning and conflict resolution
+   - Consistent metadata distribution
+   - Conflict detection and resolution
+   - Version management and compatibility
+   - Efficient synchronization mechanisms
 
-3. **User Experience Management**
-   - Viewer tier classification and enforcement
-   - Experience quality monitoring
-   - Adaptive resource allocation
-   - Service level guarantee mechanisms
+3. **Service Quality Management**
+   - Experience quality tiering
+   - Playback continuity preservation
+   - Personalization persistence
+   - Quality of service monitoring
 
 4. **Caching Infrastructure**
-   - Multi-level cache implementation
-   - Invalidation event distribution
-   - Predictive cache warming
-   - Cache efficiency analytics
+   - Multi-level content and metadata caching
+   - Event-based cache invalidation
+   - Dynamic caching strategies
+   - Geographic distribution optimization
 
-5. **Analytics Processing Engine**
-   - Dual-path event processing (real-time and batch)
-   - Adaptive event sampling
-   - Metrics aggregation and distribution
-   - Analytics data repository management
+5. **Analytics Processing System**
+   - Dual-path analytics processing
+   - Efficient event batching and sampling
+   - Prioritized metric collection
+   - Guaranteed delivery mechanisms
 
 ## Testing Requirements
 
-### Key Functionalities to Verify
-- System behavior under extreme load conditions
-- Content metadata consistency across services
-- Tiered service level enforcement during constraints
-- Cache invalidation effectiveness and timing
-- Analytics processing accuracy and timeliness
+### Key Functionalities that Must be Verified
+- Graceful degradation under extreme load
+- Consistent metadata across services
+- Preservation of core viewing experience during system stress
+- Efficient cache invalidation and updates
+- Accurate analytics under various load conditions
 
 ### Critical User Scenarios
-- Popular content release with millions of simultaneous viewers
-- Live streaming event with rapidly changing viewer counts
-- Content metadata updates propagated during active viewing
-- Premium and regular user experience during system constraints
-- Analytics capture during major viewing events
+- Viral content causing massive traffic spikes
+- Content metadata updates propagating correctly
+- Viewer experience during partial system failure
+- Cache behavior with frequently changing content
+- Analytics accuracy during sampled collection
 
 ### Performance Benchmarks
-- System maintains stability with 5+ million concurrent viewers
-- Metadata updates propagate globally within 5 seconds
-- 99th percentile response time for premium users under 200ms during peaks
-- Cache hit rates above 95% for popular content
-- Real-time analytics available within 30 seconds of events
+- Handle 1 million+ concurrent viewers
+- Maintain playback start latency under 200ms at P99
+- Process 100,000+ analytics events per second
+- Propagate metadata updates to all services within 1 second
 
 ### Edge Cases and Error Conditions
-- Flash crowd scenarios (sudden 10x traffic increase)
-- Regional infrastructure failures
-- Content metadata corruption or inconsistency
+- Cascading failures between dependent services
+- Metadata inconsistencies during rapid updates
+- Regional service degradation
 - Cache poisoning or invalidation storms
-- Analytics processing pipeline backpressure
+- Analytics data loss during extreme conditions
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all components
-- Load testing covering up to 200% of expected peak traffic
-- All degradation paths must have explicit tests
-- Cache behavior tested across all invalidation scenarios
-- Analytics accuracy verified against known test patterns
+- Minimum 90% line coverage for all code
+- 100% coverage of degradation path logic
+- 100% coverage of metadata synchronization mechanisms
+- 100% coverage of caching and invalidation logic
+- 100% coverage of analytics processing paths
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Platform handles peak viewership without service disruption
-- Content metadata remains consistent across services
-- Premium viewers experience no degradation during traffic spikes
-- System cost scales sub-linearly with viewer count
-- Real-time operational insights available during major events
-- Zero viewer-impacting incidents during content releases
-- Analytics data completeness above 99.9%
-- Cache efficiency reduces infrastructure costs by at least 40%
+
+The implementation will be considered successful if:
+
+1. The system gracefully handles backpressure during traffic spikes
+2. Content metadata remains consistent across service boundaries
+3. Core viewing experience is preserved during system degradation
+4. Caching improves performance with timely invalidation
+5. Analytics are processed through appropriate real-time or historical paths
+6. Performance meets the specified benchmarks
+7. All test cases pass with the required coverage
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+### Development Environment Setup
+
+To set up the development environment:
+
+```bash
+# Create and activate a virtual environment
+uv venv
+source .venv/bin/activate
+
+# Install the project in development mode
+uv pip install -e .
+
+# Install test dependencies
+uv pip install pytest pytest-json-report
+
+# Run tests and generate the required JSON report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+CRITICAL: Generating and providing the pytest_results.json file is a mandatory requirement for project completion. This file serves as evidence that all functionality has been implemented correctly and passes all tests.

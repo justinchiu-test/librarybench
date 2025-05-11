@@ -1,10 +1,10 @@
-# Simplified Nonprofit Systems Monitor
+# Nonprofit Technology Monitoring Solution
 
-A streamlined, volunteer-friendly monitoring solution designed for nonprofit organizations with limited technical resources and diverse IT infrastructure.
+A simplified monitoring system designed for nonprofit organizations with limited technical resources, focusing on ease of use, clear status indicators, and volunteer management.
 
 ## Overview
 
-The Simplified Nonprofit Systems Monitor is a specialized implementation of the PyMonitor system tailored for nonprofit organizations with limited IT budgets and technical staff. It emphasizes simplicity, accessibility for non-technical stakeholders, guided issue resolution, maintenance planning, and compatibility with older donated hardware to create a monitoring solution that can be effectively managed by small teams and occasional volunteers.
+This implementation of PyMonitor is tailored for nonprofit organizations with limited technical staff, providing simplified status tracking, guided resolution steps, maintenance scheduling, volunteer access management, and minimal resource requirements to ensure critical systems remain operational with occasional volunteer assistance.
 
 ## Persona Description
 
@@ -12,161 +12,225 @@ Miguel supports IT systems for a nonprofit organization with limited budget and 
 
 ## Key Requirements
 
-1. **Simplified Status Indicators** - Implement an intuitive red/yellow/green status indication system for non-technical stakeholders. This is critical for Miguel because many decision-makers in the organization lack technical expertise, and simplified indicators enable them to quickly understand system health without requiring detailed technical knowledge.
+1. **Simplified Status Indicators**
+   - Implement clear red/yellow/green status indicators for system health
+   - Provide non-technical explanations of issues in plain language
+   - Include severity classification for prioritization
+   - Support categorization by service impact (e.g., "affects website" or "affects email")
+   - Generate simplified summary reports for non-technical stakeholders
+   - This is critical because nonprofit staff often lack technical expertise, and clear indicators help them understand when assistance is needed and which issues are most important.
 
-2. **Guided Resolution Steps** - Develop an automated system that suggests documented remediation steps for common issues. Miguel needs this feature because he relies on volunteers with varying levels of technical skill to help maintain systems, and having clear, step-by-step resolution guidance ensures that problems can be addressed even when Miguel is unavailable.
+2. **Automated Resolution Steps**
+   - Provide documented, step-by-step resolution procedures for common issues
+   - Include screenshots and simplified explanations with technical steps
+   - Track resolution attempts and their outcomes
+   - Support custom resolution guides for organization-specific systems
+   - Include safety checks to prevent accidental system damage
+   - This is critical because volunteers or non-technical staff may need to address issues when dedicated IT support is unavailable, and guided procedures reduce the risk of errors.
 
-3. **Scheduled Maintenance Mode** - Create functionality to temporarily suspend alerts during planned maintenance periods. This capability is essential for Miguel because it prevents alert fatigue during routine maintenance tasks and ensures that real issues don't get lost in the noise of expected alerts from planned work.
+3. **Scheduled Maintenance Mode**
+   - Implement maintenance windows to suppress alerts during planned work
+   - Support recurring maintenance schedules for regular tasks
+   - Include pre-maintenance checklists and post-maintenance verification
+   - Provide maintenance activity logging for accountability
+   - Automatically resume monitoring after scheduled maintenance period
+   - This is critical because nonprofits often perform maintenance during off-hours to minimize disruption, and preventing false alerts during these periods reduces alert fatigue.
 
-4. **Volunteer Access Controls** - Implement role-based monitoring access with granular permissions for volunteer staff. This is important for Miguel as it allows him to safely delegate monitoring responsibilities to volunteers based on their skill level, while limiting access to sensitive systems or critical infrastructure.
+4. **Volunteer Access Controls**
+   - Support role-based access for different volunteer skill levels
+   - Implement audit logging of all volunteer actions
+   - Allow temporary access grants with automatic expiration
+   - Provide view-only roles for minimally trained volunteers
+   - Include guided, limited-scope administrative functions for specific tasks
+   - This is critical because nonprofits rely on volunteers with varying technical skills, and appropriate access controls ensure they can help without risking system integrity.
 
-5. **Minimal Dependency Installation** - Design a lightweight monitoring system compatible with older donated hardware. Miguel requires this because nonprofits often operate with donated, older equipment, and the monitoring system must function effectively on these limited resources without requiring hardware upgrades.
+5. **Minimal Dependency Installation**
+   - Design for operation on older, donated hardware with limited resources
+   - Minimize external dependencies and software requirements
+   - Support offline installation for environments with limited connectivity
+   - Include fallback functionality when optimal resources are unavailable
+   - Provide clear minimum requirements documentation
+   - This is critical because nonprofit organizations often operate with donated, older hardware and cannot always update to the latest systems or install extensive dependencies.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All monitoring components must be testable with pytest
-- Status determination logic must be verifiable with predefined conditions
-- Resolution recommendation system must be testable with common issue scenarios
-- Maintenance mode functionality must be validated for alert suppression accuracy
-- Access control mechanisms must be verifiable with different permission sets
+- All monitoring components must be testable with minimal setup complexity
+- Status indicators must be verifiable with predefined test scenarios
+- Resolution steps must be testable for accuracy and completeness
+- Maintenance mode functionality must be verifiable with simulated schedules
+- Access control mechanisms must be testable for proper permission enforcement
+- Resource usage must be measured and verified during testing
 
 ### Performance Expectations
-- Extremely light resource utilization suitable for legacy hardware
-- Simple status checks completing within 30 seconds
-- System-wide status updates at least every 5 minutes
-- Support for at least 50 monitored nodes on a single monitoring server
-- Immediate application of maintenance mode changes when scheduled
+- Run efficiently on hardware with minimum 1GHz CPU and 512MB RAM
+- Support for monitoring at least 20 essential services
+- Startup time under 30 seconds on reference hardware
+- Alert generation within 1 minute of issue detection
+- Storage requirements under 1GB for 6 months of history
+- Minimal CPU usage during normal operation (less than 5%)
 
 ### Integration Points
-- Email and SMS notification systems
-- Simple knowledge base for resolution steps
-- Basic authentication and authorization systems
-- Simple scheduling system for maintenance windows
-- Support for heterogeneous, often older operating systems
+- Basic email alerting via SMTP
+- Simple file-based logging
+- Common services monitoring (web, email, file sharing, database)
+- Local authentication for volunteer management
+- Basic scheduler for maintenance windows
+- Standard system metrics collection (CPU, memory, disk, network)
 
 ### Key Constraints
-- Must function on hardware that is 5+ years old
-- Should operate with minimal dependencies beyond Python standard library
-- Must be understandable by volunteers with basic IT knowledge
-- Should minimize false alarms that could overwhelm limited staff
-- Must be extremely stable with minimal maintenance requirements
+- Must run on Windows 7/8/10 and common Linux distributions
+- Cannot require administrative access for basic monitoring
+- Must operate with SQLite or file-based storage (no external database requirement)
+- Should function without cloud dependencies
+- Cannot require specialized monitoring agents on all systems
+- Must be installable by following simple, documented steps
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Simplified Nonprofit Systems Monitor must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Accessible Status Monitoring**
-   - Clear red/yellow/green status categorization for all systems
-   - Plain-language system health summaries
-   - Critical service availability checking
-   - Simple threshold-based alerting
-   - Jargon-free status reporting API
+1. **Simplified Monitoring Core**
+   - Basic system metric collection (CPU, memory, disk, network)
+   - Service availability checking via standard protocols
+   - Status determination and classification
+   - Non-technical explanation generation
+   - Simplified reporting for stakeholders
 
-2. **Guided Issue Resolution**
-   - Problem categorization and identification
-   - Step-by-step resolution instructions for common issues
-   - Documentation linking for more complex problems
-   - Success verification steps after resolution attempts
-   - Resolution history tracking for recurring issues
+2. **Resolution Guide Manager**
+   - Procedure definition and storage
+   - Step-by-step resolution presentation
+   - Attempt tracking and outcome recording
+   - Custom guide management
+   - Validation of resolution effectiveness
 
-3. **Maintenance Management**
-   - Scheduled maintenance period definition
-   - Selective alert suppression during maintenance
-   - Automatic maintenance mode activation and deactivation
-   - Maintenance notification distribution
-   - Post-maintenance verification checks
+3. **Maintenance Scheduler**
+   - Maintenance window definition and management
+   - Alert suppression during planned maintenance
+   - Checklist generation and verification
+   - Activity logging during maintenance
+   - Automatic monitoring resumption
 
-4. **Volunteer Coordination**
-   - Role-based access control for monitoring functions
-   - Granular permissions for different volunteer skill levels
-   - Audit logging of monitoring actions taken
-   - Restricted access to sensitive systems
-   - Delegation and escalation workflows
+4. **Volunteer Access Controller**
+   - Role definition and permission management
+   - User authentication and authorization
+   - Action auditing and logging
+   - Temporary access management
+   - Guided administrative functions
 
-5. **Resource-Efficient Operations**
-   - Minimal dependency monitoring installation
-   - Efficient data storage with configurable retention
-   - Configurable monitoring frequency based on importance
-   - Optimized resource utilization on older hardware
-   - Simple backup and recovery mechanisms
+5. **Resource-Efficient Core**
+   - Optimized metric collection
+   - Configurable collection frequency
+   - Storage management with automatic pruning
+   - Offline operation capabilities
+   - Graceful degradation on resource constraints
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Accuracy of status determination for various system conditions
-- Correctness of resolution steps provided for common issues
-- Effectiveness of maintenance mode in suppressing appropriate alerts
-- Proper enforcement of access controls based on user roles
-- Efficiency of monitoring on resource-constrained systems
+### Key Functionalities to Verify
+- Accurate representation of system status with clear indicators
+- Effective presentation of resolution steps for common issues
+- Reliable management of maintenance windows and alert suppression
+- Proper enforcement of volunteer access controls
+- Efficient operation on limited hardware resources
 
 ### Critical User Scenarios
-- Non-technical board member checking overall system status
-- Volunteer troubleshooting common server issues with guided steps
-- Scheduled weekend maintenance with appropriate alert suppression
-- New volunteer with limited permissions assisting with monitoring
-- Deploying monitoring agents to varied donated hardware
+- Non-technical staff identifying and understanding system issues
+- Volunteers following guided resolution steps to fix problems
+- Scheduling and managing maintenance windows
+- Assigning appropriate access levels to different volunteers
+- Operating on donated hardware with limited specifications
 
 ### Performance Benchmarks
-- CPU and memory usage on typical nonprofit hardware
-- Time to determine and report system-wide status
-- Alert delivery time for critical issues
-- Response time for resolution step retrieval
-- Resource utilization during peak monitoring loads
+- System startup under 30 seconds on reference hardware
+- Alert generation within 1 minute of threshold violation
+- Support for at least 20 monitored services simultaneously
+- CPU usage below 5% during normal operation
+- Memory footprint under 100MB during operation
 
-### Edge Cases and Error Handling
-- Behavior when monitoring target systems are unreachable
-- Handling of incomplete or incorrect data from monitored systems
-- Response to unauthorized access attempts
-- Recovery after monitoring system restarts
-- Graceful degradation on extremely resource-limited hardware
+### Edge Cases and Error Conditions
+- Handling multiple simultaneous system issues
+- Managing conflicting maintenance windows
+- Recovering from incomplete resolution attempts
+- Dealing with volunteers exceeding their authorized access
+- Adapting to extremely resource-constrained environments
 
-### Required Test Coverage
-- 90% code coverage for core monitoring functionality
-- 100% coverage for status determination algorithms
-- 95% coverage for guided resolution components
-- 90% coverage for maintenance mode logic
-- 95% coverage for access control mechanisms
+### Test Coverage Metrics
+- Minimum 85% code coverage across all modules
+- 100% coverage of status determination logic
+- 100% coverage of resolution step presentation
+- 90% coverage of maintenance scheduling
+- 95% coverage of access control mechanisms
+- 90% coverage of resource optimization code
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. Non-technical stakeholders can understand system status within 30 seconds of viewing
-2. Volunteers can successfully resolve 80% of common issues by following the provided steps
-3. No false alerts are generated during properly configured maintenance periods
-4. Access controls correctly limit volunteer actions based on assigned roles
-5. The monitoring system runs efficiently on hardware that is at least 5 years old
-6. Installation requires fewer than 5 dependencies beyond the Python standard library
-7. The system can be effectively maintained by staff with basic IT knowledge
-8. All components pass their respective test suites with required coverage levels
+1. **Intuitive Status Presentation**
+   - Clear red/yellow/green indicators that accurately reflect system health
+   - Non-technical explanations that effectively communicate issues
+   - Appropriate categorization and prioritization of problems
 
----
+2. **Effective Resolution Guidance**
+   - Complete and accurate step-by-step procedures for common issues
+   - Clear documentation that non-technical volunteers can follow
+   - Tracking of resolution attempts and outcomes
+
+3. **Reliable Maintenance Management**
+   - Accurate suppression of alerts during scheduled maintenance
+   - Proper resumption of monitoring after maintenance completion
+   - Effective logging of maintenance activities
+
+4. **Secure Volunteer Management**
+   - Appropriate enforcement of role-based access controls
+   - Reliable tracking of volunteer actions
+   - Effective temporary access management
+
+5. **Resource-Efficient Operation**
+   - Demonstrated ability to run on limited hardware
+   - Minimal dependency requirements
+   - Appropriate resource usage under various conditions
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

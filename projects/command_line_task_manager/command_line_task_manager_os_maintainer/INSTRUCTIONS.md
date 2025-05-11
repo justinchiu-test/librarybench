@@ -1,167 +1,149 @@
-# TermTask for Open Source Project Maintainers
+# OSS-TaskHub - Command-Line Task Management for Open Source Projects
 
 ## Overview
-A specialized command-line task management system designed for open source project maintainers who coordinate across multiple repositories and contributors. This variant integrates with GitHub, provides contributor coordination features, release planning tools, newcomer-friendly task tagging, and comprehensive project health metrics.
+A specialized command-line task management system designed for open source project maintainers who need to coordinate tasks across multiple contributors and project roadmaps. The system enables bidirectional synchronization with GitHub Issues, tracks contributor activities, and provides comprehensive project health metrics and release planning capabilities.
 
 ## Persona Description
 Chen manages multiple open source projects and needs to coordinate tasks across contributors and project roadmaps. His primary goal is to synchronize project management across GitHub repositories and provide contributor-friendly task organization.
 
 ## Key Requirements
+1. **GitHub Issues Synchronization**: Implement bidirectional synchronization between the task manager and GitHub Issues, ensuring changes made in either system are reflected in the other. This feature is critical for Chen as it enables him to manage project tasks locally while maintaining transparency with the broader community, eliminates duplicate work of updating multiple systems, and ensures consistency between internal planning and public-facing issue tracking.
 
-1. **GitHub Issues Synchronization**
-   - Bidirectional syncing between local tasks and GitHub Issues
-   - Comment, label, and milestone synchronization
-   - Bulk issue operations from the command line
-   - Conflict resolution for concurrent updates
-   - This feature is critical because it allows Chen to manage GitHub Issues efficiently from his terminal workflow while maintaining consistency with the public-facing issue tracker, reducing context switching while engaging with contributors.
+2. **Contributor Assignment and Activity Tracking**: Create functionality to assign tasks to specific contributors and track their activity metrics. This capability allows Chen to monitor contributor engagement across multiple repositories, identify active/inactive contributors for better workload distribution, and recognize patterns in contributor interests and expertise for optimal task assignment.
 
-2. **Contributor Assignment and Tracking**
-   - Assign tasks to specific contributors
-   - Track contributor activity and completion rates
-   - Manage reviewer assignments for PRs
-   - Notify contributors of task updates
-   - This capability is essential because it provides visibility into who is working on what, helps balance workload across contributors, and ensures no tasks fall through the cracks in a distributed team environment.
+3. **Release Planning View**: Develop an organizational system that groups tasks by milestone and version, providing a comprehensive release planning mechanism. This feature enables Chen to strategically plan release timelines based on task dependencies and contributor availability, track progress toward specific milestones across multiple repositories, and maintain a clear roadmap for each project.
 
-3. **Release Planning and Milestone Management**
-   - Organize tasks by milestone and version
-   - Track progress toward release completion
-   - Forecast release dates based on task completion velocity
-   - Generate release notes from completed tasks
-   - This feature is vital because it helps Chen organize the project roadmap, communicate clear timelines to users and contributors, and ensures all necessary tasks are completed before releases.
+4. **Mentorship Mode**: Build a specialized tagging system that identifies tasks appropriate for new contributors, with additional context and support information. This system helps Chen grow his open source communities by highlighting beginner-friendly tasks, provides clear pathways for onboarding new contributors, and facilitates mentorship by connecting appropriate experienced members with newcomers.
 
-4. **Newcomer-Friendly Task Identification**
-   - Tag tasks appropriate for new contributors
-   - Categorize tasks by required expertise and complexity
-   - Provide mentorship pairing suggestions
-   - Track first-time contributor engagement metrics
-   - This functionality is critical because it helps Chen grow the contributor base by identifying approachable entry points for newcomers, reducing the barrier to entry for contributing to open source projects.
-
-5. **Project Health Metrics and Visualization**
-   - Visualize contribution patterns and completion rates
-   - Track issue response and resolution times
-   - Monitor bug vs. feature task distribution
-   - Analyze contributor retention metrics
-   - This feature is essential because it provides insights into project momentum, community health, and potential areas of improvement, helping Chen make data-driven decisions about project priorities.
+5. **Project Health Metrics**: Implement analytics functionality that visualizes contribution patterns, completion rates, and other project vitality indicators. These metrics allow Chen to identify projects needing additional attention or resources, recognize trends in community engagement over time, and make data-driven decisions about project priorities and resource allocation.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock GitHub API for testing Issues synchronization
-- Simulated contributor activity for testing assignment and tracking
-- Historical data generation for testing release planning
-- Synthetic contribution patterns for testing health metrics
-- Task classification testing for newcomer tagging accuracy
+- GitHub API integration must be testable with mock responses
+- Contributor tracking must be unit testable with simulated activity data
+- Release planning components must be verifiable with predefined milestone and task inputs
+- Mentorship tagging system must be testable in isolation from other components
+- Metrics calculations must be verifiable with predetermined inputs and expected outputs
+- All components must support testing with mock data sources
 
 ### Performance Expectations
-- Support for synchronizing 10,000+ GitHub issues
-- Handle 500+ contributors across multiple repositories
-- Process release planning for 1,000+ tasks per milestone
-- Generate project health metrics reports in under 3 seconds
-- Responsive CLI performance even with large repositories
+- GitHub synchronization must handle repositories with 10,000+ issues efficiently
+- Contributor metrics calculations must complete in <5 seconds for projects with 500+ contributors
+- Release planning operations must maintain performance with 50+ concurrent milestones
+- The system must support tracking at least 100 separate repositories simultaneously
+- Metrics visualization data must be generated in <3 seconds even for large projects
 
 ### Integration Points
-- GitHub API (issues, milestones, labels, comments)
-- Git repositories (branches, commits, tags)
-- Notification systems (email, webhook)
-- Documentation systems for release notes
-- Analytics visualization (for project health metrics)
+- GitHub REST and GraphQL APIs
+- Local data storage system with synchronization capability
+- Authentication mechanism for GitHub API access
+- Version control system for tracking release plans
+- Export formats for metrics and reports
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Respect GitHub API rate limits
-- Support offline operation with synchronization when online
-- Minimal resource usage for contributor accessibility
-- Handle intermittent connectivity gracefully
+- The implementation must handle rate limiting from GitHub APIs gracefully
+- All functionality must be accessible via programmatic API without UI components
+- Authentication tokens must be stored securely
+- The system must maintain state across synchronization operations
+- Performance must degrade gracefully with very large repositories or many contributors
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for open source project maintainers includes:
+1. **Task Management Engine**: A core module handling CRUD operations for tasks with attributes specific to open source project management including assignee, repository, milestone, and tagging capabilities.
 
-1. **Task Management Core**
-   - Create, read, update, and delete tasks
-   - Organize tasks by project, type, priority, and status
-   - Support for task dependencies and blockers
-   - Collaborative task editing and commenting
-   - Persistence with conflict resolution
+2. **GitHub Synchronization System**: A robust synchronization mechanism that maintains bidirectional updates between local tasks and GitHub Issues, handling conflicts and ensuring data consistency.
 
-2. **GitHub Synchronization Engine**
-   - Bidirectional synchronization with GitHub Issues
-   - Comment and metadata synchronization
-   - Conflict detection and resolution
-   - Rate limit handling and retry logic
-   - Selective synchronization options
+3. **Contributor Management**: Functionality to track contributors across repositories, including assignment history, activity metrics, and expertise areas.
 
-3. **Contributor Management System**
-   - Contributor profiles and expertise tracking
-   - Task assignment and ownership management
-   - Contribution history and metrics
-   - Mentorship relationship tracking
-   - Notification and communication channels
+4. **Release Planning Framework**: A structured organization system for grouping tasks by milestone, version, and release timeline, with dependency tracking and progress visualization.
 
-4. **Release Management Framework**
-   - Milestone and version definition
-   - Task organization by release target
-   - Progress tracking toward release goals
-   - Release notes generation
-   - Timeline forecasting and scheduling
+5. **Mentorship System**: Logic for tagging and organizing tasks appropriate for new contributors, including difficulty assessment, required skills, and mentorship information.
 
-5. **Newcomer Task Classification**
-   - Task complexity estimation
-   - Required expertise identification
-   - Good-first-issue tagging system
-   - Mentorship opportunity flagging
-   - Onboarding path generation
+6. **Analytics Engine**: Components for calculating and presenting project health metrics, contributor engagement patterns, and milestone progress across multiple repositories.
 
-6. **Project Analytics Engine**
-   - Contribution pattern analysis
-   - Response time and resolution metrics
-   - Contributor engagement scoring
-   - Trend analysis and forecasting
-   - Report generation and visualization
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- GitHub Issues synchronize correctly in both directions
-- Contributor assignments are tracked accurately
-- Release planning correctly organizes tasks and tracks progress
-- Tasks are appropriately tagged for newcomer accessibility
-- Project health metrics accurately reflect contribution patterns
+- Task creation, retrieval, updating, and deletion with open source specific metadata
+- GitHub synchronization with bidirectional updates
+- Contributor tracking and activity metrics calculation
+- Release planning organization and milestone tracking
+- Mentorship task tagging and identification
+- Project health metrics generation and accuracy
 
 ### Critical User Scenarios
-- Triaging new GitHub issues and assigning to contributors
-- Planning a release milestone and tracking progress
-- Onboarding a new contributor with appropriate first tasks
-- Generating release notes for a completed milestone
-- Analyzing project health metrics to identify areas for improvement
+- Complete workflow from GitHub Issue creation to local task management
+- Tracking contributor activity across multiple repositories
+- Planning a release with tasks grouped by milestone and priority
+- Identifying and tagging tasks appropriate for new contributors
+- Generating project health reports across multiple repositories
 
 ### Performance Benchmarks
-- GitHub synchronization of 1,000 issues completes in under 60 seconds
-- Assignment changes propagate to GitHub within 5 seconds
-- Release planning calculations for 500+ tasks complete in under 2 seconds
-- Newcomer task identification processes 100 tasks per second
-- Health metrics generation for projects with 10,000+ contributions in under 5 seconds
+- GitHub synchronization must process at least 100 issues per second
+- Contributor metrics calculations must handle repositories with 500+ contributors
+- Release planning must maintain performance with 50+ concurrent milestones
+- Task filtering and querying must complete in <100ms for common operations
+- Project health metrics generation must process at least 10,000 tasks in <5 seconds
 
 ### Edge Cases and Error Conditions
-- Handling GitHub API rate limiting and service disruptions
-- Managing conflicting updates from multiple contributors
-- Recovering from interrupted synchronization operations
-- Dealing with repository migrations or restructuring
-- Processing unusual contribution patterns or outliers
-- Handling projects with very large numbers of issues or contributors
+- Handling GitHub API rate limiting and service interruptions
+- Resolving conflicts between local and remote changes
+- Recovery from failed synchronization operations
+- Proper behavior with repositories of vastly different sizes and activity levels
+- Graceful degradation when dealing with extremely large datasets
+- Handling contributors who change usernames or use multiple accounts
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for GitHub synchronization logic
-- Comprehensive integration tests for all GitHub API interactions
-- Performance tests for large repository scenarios
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify GitHub API interaction patterns
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully keeps local and GitHub issues synchronized
-- Contributors clearly understand their assignments and overall project progress
-- Release planning provides accurate forecasts and complete release notes
-- New contributors can easily find appropriate tasks to start with
-- Project health metrics provide actionable insights for project improvement
-- Maintainer time spent on administrative tasks is reduced by at least 30%
-- The project attracts and retains more contributors due to improved organization
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates seamless bidirectional synchronization with GitHub Issues.
+3. Contributor tracking accurately records activity and assignments across repositories.
+4. Release planning effectively organizes tasks by milestone and version.
+5. Mentorship mode correctly identifies and tags tasks appropriate for new contributors.
+6. Project health metrics provide meaningful insights into project status and community engagement.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation handles errors, conflicts, and edge cases gracefully.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

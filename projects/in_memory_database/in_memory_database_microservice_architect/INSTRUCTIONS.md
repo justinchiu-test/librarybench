@@ -1,159 +1,189 @@
-# ResilientDB: Event-Sourced In-Memory Database for Microservices
+# ResilioStore: Distributed In-Memory Database for Microservices
 
 ## Overview
-A specialized in-memory database designed for microservices architecture that maintains local data consistency during network partitions, implements event sourcing for state reconstruction, and provides configurable consistency models for distributed operations.
+A specialized in-memory database designed for distributed microservice architectures that provides resilient local data storage, event sourcing capabilities, configurable consistency models, failure-handling patterns, and schema management functions to ensure system reliability during network partitions while supporting eventual data synchronization.
 
 ## Persona Description
 Anika designs distributed systems using microservices architecture. She needs local data storage for services that remains performant during network partitions while eventually synchronizing with other services.
 
 ## Key Requirements
 
-1. **Event sourcing capabilities for state reconciliation**
-   - Critical for maintaining a complete history of all state transitions
-   - Must implement an append-only event log as the source of truth for all data changes
-   - Should support replaying events to reconstruct state at any point in time
-   - Must include event versioning and migration for schema evolution
-   - Should provide utilities for event log compaction while preserving correctness
+1. **Event Sourcing for State Reconciliation**
+   - Implementation of an event sourcing system that preserves all state transitions
+   - Support for event replay and reconstruction of state from event history
+   - Mechanisms for conflict resolution during eventual reconciliation
+   - This feature is critical for Anika's microservice architecture as it provides a reliable foundation for state synchronization after network partitions, ensuring that distributed services can reconstruct a consistent view of data once connectivity is restored
 
-2. **Configurable consistency models with explicit tradeoffs**
-   - Essential for managing the balance between consistency, availability, and partition tolerance
-   - Must implement multiple consistency models (strong, causal, eventual, etc.)
-   - Should provide explicit configuration of consistency-performance tradeoffs per operation
-   - Must include monitoring to detect and alert on consistency violations
-   - Should offer simulation tools for testing behavior under different consistency settings
+2. **Configurable Consistency Models**
+   - Implementation of multiple consistency models with explicit trade-offs between consistency and availability
+   - Support for tunable consistency levels for different data types and operations
+   - Clear documentation of consistency guarantees for each model
+   - Microservice architectures require different consistency models for different data types and operations, allowing Anika to make appropriate trade-offs between consistency, availability, and performance based on business requirements
 
-3. **Circuit breaker patterns for service failure handling**
-   - Vital for maintaining system stability during partial failures
-   - Must implement circuit breakers that detect downstream service failures
-   - Should support configurable fallback strategies when services are unavailable
-   - Must include automatic service health checking and circuit reset
-   - Should provide detailed metrics on circuit state transitions and failure rates
+3. **Circuit Breaker Pattern Implementation**
+   - Implementation of circuit breaker patterns for detecting and responding to downstream service failures
+   - Configurable failure thresholds and recovery strategies
+   - Support for fallback behaviors during open circuit conditions
+   - When connections between microservices fail, circuit breakers prevent cascading failures and resource exhaustion, allowing Anika's services to degrade gracefully and recover automatically when conditions improve
 
-4. **Service mesh integration for distributed transactions**
-   - Important for coordinating operations across multiple microservices
-   - Must provide integration with common service mesh solutions for transaction coordination
-   - Should support two-phase commit and saga patterns for distributed transactions
-   - Must include recovery mechanisms for interrupted multi-service operations
-   - Should offer monitoring interfaces for transaction success/failure rates
+4. **Service Mesh Integration**
+   - Implementation of integration points with service mesh technologies for coordinated distributed transactions
+   - Support for distributed tracing contexts
+   - Compatibility with common service mesh communication patterns
+   - Service meshes have become a standard approach for managing microservice communication, and integration allows Anika to coordinate database operations with broader service interactions and observability
 
-5. **Schema registry integration for service compatibility**
-   - Critical for ensuring data compatibility across service boundaries
-   - Must implement schema versioning and compatibility checking
-   - Should provide integration with external schema registry services
-   - Must include forward and backward compatibility verification
-   - Should offer automatic schema evolution strategies for common changes
+5. **Schema Registry Integration**
+   - Implementation of schema versioning and compatibility enforcement
+   - Support for schema evolution while maintaining backward compatibility
+   - Integration with external schema registries for coordinated schema management
+   - As microservices evolve independently, schema management becomes critical for ensuring that data remains interoperable across services, preventing data corruption or misinterpretation during service interactions
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be thoroughly testable with pytest
-- Tests must verify behavior under various network conditions (partitions, latency, etc.)
-- Consistency model tests must validate correct operation across distributed scenarios
-- Circuit breaker tests must confirm proper handling of service failures
-- Transaction tests must verify data integrity across simulated service boundaries
+- Event sourcing must be testable with various concurrency scenarios
+- Different consistency models must have verifiable behavior under partition conditions
+- Circuit breaker implementations must be testable with simulated failures
+- Service mesh integration must be verifiable through standardized interfaces
+- Schema compatibility must be testable across version changes
 
 ### Performance Expectations
-- Event append operations must complete in under 5ms even under high load
-- State reconstruction from events must process at least 10,000 events per second
-- Transactions must maintain throughput of at least 1,000 operations per second per node
-- Circuit breakers must detect service failures within 100ms
-- Schema compatibility checks must add no more than 5ms overhead to operations
+- Local operations must complete in under 5ms at p99
+- Event sourcing overhead should not exceed 10% of base operation time
+- System should handle at least 10,000 operations per second per service instance
+- Recovery after partition should process at least 1,000 events per second
+- Schema validation should add no more than 1ms overhead per operation
 
 ### Integration Points
-- Must provide Python APIs for integration with microservice frameworks
-- Should support standard protocols for service communication (gRPC, REST, etc.)
-- Must include adapters for popular service mesh solutions
-- Should offer integration with external schema registries
-- Must support common messaging systems for event distribution
+- Interfaces for common service mesh implementations
+- Compatible APIs for distributed tracing systems
+- Integration with standard schema registry implementations
+- Support for health check and readiness probe protocols
+- Interfaces for monitoring and observability platforms
 
 ### Key Constraints
-- No UI components - purely APIs and libraries for integration into microservices
-- Must operate without external database dependencies - self-contained Python library
-- All operations must be designed for resilience to network failures
-- Must support both local development and production deployment scenarios
+- The implementation must use only Python standard library with no external dependencies
+- The system must operate efficiently within typical microservice resource allocations
+- All functionality must be resilient to unexpected process termination
+- The solution must maintain performance under partial failure conditions
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation must provide:
+The system must provide the following core functionality:
 
-1. **Event Sourcing System**
-   - Append-only event log for recording all state transitions
-   - Event replay mechanism for state reconstruction
-   - Versioning and migration support for schema evolution
-   - Log compaction utilities for managing storage growth
+1. **Local Data Store**
+   - Efficient in-memory storage for service-local data
+   - ACID-compliant transaction support
+   - Query capabilities optimized for microservice data access patterns
 
-2. **Consistency Management**
-   - Multiple consistency model implementations with clear tradeoffs
-   - Per-operation consistency level configuration
-   - Consistency monitoring and violation detection
-   - Conflict resolution strategies for eventual consistency
+2. **Event Sourcing System**
+   - Event capture and storage for all state-changing operations
+   - Event replay capabilities for state reconstruction
+   - Conflict detection and resolution mechanisms
 
-3. **Resilience Framework**
-   - Circuit breaker implementation for downstream service failure handling
-   - Health check mechanisms with automatic circuit reset
-   - Fallback strategy configuration for degraded operation
-   - Detailed failure and recovery metrics
+3. **Consistency Management**
+   - Implementation of various consistency models
+   - Explicit control over consistency-availability trade-offs
+   - Monitoring of consistency state and potential conflicts
 
-4. **Distributed Transaction Coordination**
-   - Transaction primitives supporting distributed operations
-   - Integration with service mesh for coordination
-   - Recovery mechanisms for handling partial failures
-   - Monitoring and observability for transaction status
+4. **Resilience Patterns**
+   - Circuit breaker implementation for external dependencies
+   - Backoff strategies for retry operations
+   - Graceful degradation under failure conditions
 
 5. **Schema Management**
-   - Schema versioning and compatibility verification
+   - Schema versioning and compatibility checking
+   - Support for schema evolution with backward compatibility
    - Integration with external schema registries
-   - Forward and backward compatibility checking
-   - Schema evolution strategies and guidance
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Correct event sourcing behavior with proper state reconstruction
-- Consistency guarantees maintained according to configured models
-- Circuit breaker activation and reset under various failure patterns
-- Successful coordination of distributed transactions across services
-- Schema compatibility enforcement across service boundaries
+- Correct local data operations with transactional integrity
+- Accurate event sourcing with proper reconstruction of state
+- Behavior of different consistency models under network partitions
+- Effective operation of circuit breakers during service failures
+- Proper handling of schema evolution and compatibility
 
 ### Critical User Scenarios
-- Service operation during network partitions with eventual reconciliation
-- State reconstruction after service restarts or failures
-- Graceful degradation when dependent services are unavailable
-- Cross-service transactions with partial failures and recovery
-- Schema evolution across services with minimal disruption
+- Normal operation with fully connected services
+- Continued operation during network partition
+- Recovery and reconciliation after partition healing
+- Graceful degradation when downstream services fail
+- Schema evolution while maintaining compatibility
 
 ### Performance Benchmarks
-- Measure event append and replay performance under various loads
-- Verify transaction throughput with different consistency settings
-- Benchmark circuit breaker response time to service failures
-- Measure overhead of schema compatibility checking
-- Test state reconstruction time from various event log sizes
+- Local read operations must complete in under 2ms at p99
+- Local write operations must complete in under 5ms at p99
+- Event sourcing overhead should not exceed 10% of base operation time
+- Each service instance should handle at least 10,000 operations per second
+- State reconstruction from events should process at least 1,000 events per second
 
 ### Edge Cases and Error Conditions
-- Complete network isolation with subsequent reconnection
-- Conflicting concurrent operations under eventual consistency
-- Cascading service failures affecting multiple dependencies
-- Incompatible schema changes between communicating services
-- Event log corruption or partial data loss scenarios
+- Behavior during prolonged network partitions
+- Recovery from process crashes during transaction processing
+- Handling of incompatible schema changes
+- Operation under extreme memory pressure
+- Performance with large accumulated event histories
 
-### Required Test Coverage
-- 90% code coverage for all components
-- 100% coverage of critical consistency and transaction logic
-- Comprehensive tests for all failure handling mechanisms
-- Performance tests validating operation under load
-- Distributed tests simulating realistic microservice environments
+### Required Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of conflict resolution and event sourcing code
+- All error recovery paths must be tested
+- Performance tests must cover normal and degraded conditions
+- Resilience tests must verify behavior under various failure scenarios
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it:
+The implementation will be considered successful if:
 
-1. Correctly implements event sourcing with complete state reconstruction capability
-2. Maintains configured consistency guarantees even during network disruptions
-3. Effectively detects and handles downstream service failures with circuit breakers
-4. Successfully coordinates distributed transactions across service boundaries
-5. Properly enforces schema compatibility between communicating services
-6. Performs within specified benchmarks under typical microservice workloads
-7. Gracefully handles network partitions with eventual state reconciliation
-8. Provides detailed metrics and monitoring for system health assessment
-9. Recovers cleanly from various failure scenarios without data loss
-10. Passes all test scenarios including simulated distributed environments
+1. Services maintain local data accessibility during network partitions
+2. Event sourcing enables accurate state reconciliation after connectivity is restored
+3. Consistency models provide appropriate trade-offs for different operational requirements
+4. Circuit breakers effectively prevent cascading failures
+5. Schema management ensures compatibility across service versions
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Clone the repository and navigate to the project directory
+2. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+3. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+4. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+5. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

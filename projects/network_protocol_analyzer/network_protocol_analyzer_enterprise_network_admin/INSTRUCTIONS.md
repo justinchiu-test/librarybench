@@ -1,126 +1,172 @@
-# NetScope for Enterprise Network Administration
+# Enterprise Network Analysis Framework
 
 ## Overview
-A specialized network protocol analyzer tailored for enterprise network administrators, focusing on troubleshooting complex infrastructure issues, identifying performance bottlenecks, validating segmentation policies, and ensuring proper configuration across diverse network environments.
+A comprehensive network protocol analysis library designed for enterprise network administrators to troubleshoot performance bottlenecks, verify network segmentation, map service dependencies, analyze bandwidth utilization, and validate network configurations and quality of service implementations.
 
 ## Persona Description
 Michael manages network infrastructure for a large corporation with complex connectivity requirements. He needs to troubleshoot performance bottlenecks, identify misconfigured services, and ensure proper segmentation between network zones.
 
 ## Key Requirements
-1. **VLAN boundary analysis verifying traffic segregation between network segments**
-   - Implement comprehensive VLAN traffic analysis to detect unauthorized cross-VLAN communications
-   - Develop visualization tools showing traffic patterns between defined network segments
-   - Create validation systems to compare actual traffic flows against defined segmentation policies
-   - Include reporting capabilities that identify segmentation violations with severity ratings
-   - Support for common enterprise tagging protocols including 802.1Q, Q-in-Q, and MPLS
 
-2. **Service dependency mapping showing which systems communicate with each other**
-   - Create automated discovery of service communications patterns across the network
-   - Implement algorithms to identify client-server relationships and service dependencies
-   - Develop visualization of communication graphs with traffic volume and protocol information
-   - Include change detection to identify new or modified service communication patterns
-   - Support for passive service identification based on traffic characteristics
+1. **VLAN Boundary Analysis**  
+   Create a module that verifies traffic segregation between network segments by analyzing packet flows across VLANs and security zones. This is critical for Michael because improper network segmentation can lead to serious security vulnerabilities, compliance violations, and inefficient traffic routing in a complex enterprise environment.
 
-3. **Bandwidth utilization breakdown by application, protocol, and user groups**
-   - Implement detailed traffic classification by application type, protocol, and business function
-   - Develop time-series analysis of bandwidth consumption patterns with anomaly detection
-   - Create attribution mechanisms linking traffic to user groups or business units where possible
-   - Include prediction algorithms for capacity planning based on historical trends
-   - Support for custom classification rules tailored to enterprise application portfolio
+2. **Service Dependency Mapping**  
+   Implement functionality to discover and visualize which systems communicate with each other, identifying critical dependencies and communication patterns. This feature is essential for Michael to understand the impact of network changes, plan maintenance windows, troubleshoot application connectivity issues, and properly design network segmentation policies.
 
-4. **Configuration validation identifying mismatched network settings between devices**
-   - Develop passive detection of network configuration issues from observed traffic
-   - Implement algorithms to identify duplex mismatches, MTU inconsistencies, and QoS misconfigurations
-   - Create heuristics for detecting suboptimal routing and switching configurations
-   - Include recommendations for configuration adjustments with estimated performance impact
-   - Support for detecting protocol-specific misconfigurations (spanning tree, routing protocols, etc.)
+3. **Bandwidth Utilization Analysis**  
+   Develop capabilities to break down network usage by application, protocol, and user groups to identify bandwidth hogs and optimization opportunities. This is crucial for Michael to manage network capacity, plan upgrades, identify anomalous usage patterns, and ensure critical business applications have sufficient network resources.
 
-5. **QoS (Quality of Service) verification ensuring priority traffic receives appropriate handling**
-   - Implement analysis of DSCP/ToS markings and actual handling across the network path
-   - Develop timing analysis to verify prioritization of marked traffic over lower-priority traffic
-   - Create tools to identify QoS policy inconsistencies across network boundaries
-   - Include reporting on QoS effectiveness for latency-sensitive applications
-   - Support for enterprise-specific QoS policies and verification against them
+4. **Configuration Validation**  
+   Build a system to identify mismatched network settings between communicating devices, such as MTU mismatches, duplex misconfigurations, and TCP parameter inconsistencies. This allows Michael to proactively identify configuration issues that cause subtle performance problems before they impact users or critical services.
+
+5. **QoS (Quality of Service) Verification**  
+   Create functionality to verify that priority traffic receives appropriate handling according to defined QoS policies. This feature is vital for Michael to ensure that critical applications like VoIP, video conferencing, and business transactions receive the necessary network resources even during periods of congestion.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- All segmentation analysis must be testable with predefined traffic patterns and policies
-- Service dependency mapping must be verifiable against known network topologies
-- Bandwidth classification algorithms must be testable with labeled traffic datasets
-- Configuration issue detection must identify known problems in test traffic captures
-- QoS analysis must verify correct handling against defined policies
+- All components must be testable with enterprise network traffic datasets
+- VLAN boundary analysis must be verifiable against known segmentation policies
+- Service dependency mapping must be validated against reference network topologies
+- Bandwidth analysis must be testable with synthetic traffic of known composition
+- QoS verification must be testable against predetermined traffic prioritization expectations
 
 ### Performance Expectations
-- Analysis tools must handle enterprise-scale traffic volumes (>10GB PCAP files)
-- Processing should analyze at least 1 hour of 10Gbps network traffic capture in under 30 minutes
-- Memory usage should scale linearly with traffic volume and remain under 8GB for typical analyses
-- Real-time monitoring capabilities should handle at least 1Gbps sustained traffic
+- Process at least 10GB of network traffic data in under 30 minutes
+- Analyze complex network topologies with at least 1,000 nodes and 10,000 connections
+- Generate service dependency maps for 100+ services in under 2 minutes
+- Calculate bandwidth utilization metrics across multiple time intervals simultaneously
+- Support incremental analysis of streaming data for near real-time monitoring
 
 ### Integration Points
-- Import capabilities for PCAP files from enterprise network monitoring systems
-- Integration with network configuration management databases (CMDBs)
-- Export formats compatible with common enterprise ticketing and reporting systems
-- APIs for integration with network management platforms and monitoring dashboards
+- Import traffic from standard PCAP/PCAPNG and NetFlow/IPFIX data sources
+- Export analysis in common formats (CSV, JSON, XML) for integration with other tools
+- Import network topology and segmentation policy information
+- Integration with SNMP and network device APIs for configuration validation
+- Support for importing QoS policies from common network vendor formats
 
 ### Key Constraints
-- All analysis must be possible offline without external service dependencies
-- Must support analysis of partial captures from distributed collection points
-- Must handle enterprise encryption scenarios including SSL inspection where legally permitted
-- Must support the wide variety of protocols found in enterprise environments (legacy to modern)
+- Must handle distributed capture points across multiple network segments
+- Analysis must work with incomplete visibility (sampled NetFlow, strategic capture points)
+- Should function effectively with limited historical data retention
+- Must scale to enterprise networks with 10,000+ endpoints
+- Should operate without requiring installation of agents on endpoints
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Enterprise Network Administration version of NetScope must provide comprehensive analysis capabilities focused on managing complex network environments. The system should enable administrators to validate network segmentation, understand service dependencies, monitor bandwidth utilization patterns, identify configuration issues, and verify QoS implementation.
 
-Key functional components include:
-- VLAN and network segmentation analysis framework
-- Service discovery and dependency mapping system
-- Traffic classification and utilization analysis
-- Configuration issue detection algorithms
-- QoS implementation verification tools
+The Enterprise Network Analysis Framework should provide the following core functionality:
 
-The system should provide both detailed technical analysis for troubleshooting and summary reports suitable for communicating with management and other IT teams. All components should be designed to handle the scale and complexity of enterprise network environments while providing actionable insights for network optimization.
+1. **Network Traffic Analysis Engine**
+   - Parse and analyze network protocols from multiple data sources
+   - Support for enterprise protocols (including routing, switching, and security protocols)
+   - Correlation of traffic across multiple capture points
+   - Statistical analysis with flexible time-series aggregation
+
+2. **Segmentation and Security Analysis**
+   - VLAN/subnet boundary crossing detection
+   - Security zone policy compliance verification
+   - Unauthorized access attempt identification
+   - Micro-segmentation validation for zero-trust architectures
+
+3. **Dependency and Topology Mapping**
+   - Discovery of service communication patterns
+   - Critical path identification for applications
+   - Protocol usage analysis between services
+   - Mapping of client-server and east-west traffic flows
+
+4. **Performance and Capacity Analysis**
+   - Protocol-level bandwidth consumption metrics
+   - Application and user group usage patterns
+   - Congestion detection and root cause analysis
+   - Trend analysis for capacity planning
+
+5. **Network Configuration Intelligence**
+   - Identification of suboptimal network configurations
+   - MTU, TCP window, and other parameter validation
+   - QoS marking and queue allocation verification
+   - Network optimization recommendations
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate detection of VLAN and segmentation boundary violations
-- Comprehensive discovery of service dependencies from network traffic
-- Precise classification of traffic by application, protocol, and business function
-- Reliable identification of common network configuration issues
-- Accurate verification of QoS implementation effectiveness
+- Accuracy of network protocol parsing and analysis
+- Correctness of VLAN boundary detection
+- Completeness of service dependency mapping
+- Precision of bandwidth utilization calculations
+- Effectiveness of configuration and QoS validation
 
 ### Critical User Scenarios
-- Validating segmentation after network changes or security policy updates
-- Mapping application dependencies for migration planning
-- Analyzing bandwidth consumption patterns during peak business hours
-- Troubleshooting performance issues related to network configuration
-- Verifying QoS effectiveness for critical business applications
+- Analyzing traffic patterns during a network slowdown incident
+- Verifying that a security policy prevents inter-VLAN traffic as expected
+- Mapping dependencies before migrating a critical application
+- Identifying the source of unexpected bandwidth consumption
+- Validating QoS implementation for VoIP traffic during network congestion
 
 ### Performance Benchmarks
-- Complete VLAN boundary analysis of 1-hour network capture in under 10 minutes
-- Generate comprehensive service dependency map from 24 hours of traffic in under 30 minutes
-- Process and classify at least 10,000 packets per second during bandwidth analysis
-- Identify configuration issues with at least 95% accuracy compared to manual analysis
-- Analyze QoS effectiveness across at least 5 priority levels simultaneously
+- Process at least 10,000 packets per second on reference hardware
+- Complete VLAN boundary analysis for a week of traffic in under 10 minutes
+- Generate complete service dependency maps for 50+ services in under 60 seconds
+- Calculate bandwidth utilization breakdowns with less than 1% margin of error
+- Validate configuration settings across 100+ devices in under 5 minutes
 
 ### Edge Cases and Error Conditions
-- Correct handling of non-standard VLAN implementations and overlay networks
-- Accurate dependency mapping with load-balanced and clustered services
-- Proper classification of encrypted and tunneled traffic
-- Graceful performance with asymmetric traffic captures
-- Resilience against malformed packets and protocol violations
-- Appropriate handling of virtualized network environments and SDN
+- Handling asymmetric routing where only one direction of traffic is visible
+- Processing traffic with VLAN tags, Q-in-Q, and other encapsulation methods
+- Analyzing traffic with multiple overlay technologies (VXLAN, GRE, IPsec)
+- Dealing with incomplete or sampled traffic data (NetFlow)
+- Handling multi-tier applications with complex communication patterns
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all analysis components
-- Complete coverage of all protocol parsers for supported enterprise protocols
-- Comprehensive tests for traffic classification with diverse application types
-- Full suite of tests for configuration issue detection with common misconfigurations
-- Complete validation tests for QoS analysis with various priority schemes
+- Minimum 90% code coverage for core functionality
+- 95% coverage for VLAN boundary analysis
+- 95% coverage for service dependency mapping
+- 90% coverage for bandwidth utilization analysis
+- 95% coverage for configuration and QoS validation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- VLAN boundary analysis correctly identifies at least 98% of segmentation violations in test scenarios
-- Service dependency mapping discovers at least 95% of known service relationships
-- Bandwidth utilization analysis correctly attributes at least 90% of traffic to specific applications/protocols
-- Configuration validation correctly identifies at least 95% of common misconfigurations
-- QoS verification accurately measures prioritization effectiveness with at least 90% correlation to hardware measurements
-- All analysis tools complete within specified performance benchmarks on enterprise-scale captures
+
+The Enterprise Network Analysis Framework implementation will be considered successful when:
+
+1. It can accurately identify and report on traffic crossing VLAN boundaries with at least 95% accuracy
+2. It successfully discovers and maps service dependencies with correct protocol identification
+3. It provides bandwidth utilization breakdowns by application, protocol, and user group with less than 2% error margin
+4. It identifies at least 90% of common network misconfigurations in test scenarios
+5. It correctly verifies QoS implementation and identifies when priority traffic is not receiving proper treatment
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

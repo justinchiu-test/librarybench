@@ -1,10 +1,10 @@
-# Marketing Campaign Performance Reporter
+# Campaign Performance Report Generator
 
-A specialized adaptation of PyReport designed for marketing professionals who need to compile, analyze, and visualize campaign performance data from multiple platforms into cohesive, visually engaging reports.
+A specialized automated report generation framework for marketing managers to compile performance metrics from various digital platforms into cohesive, visually engaging reports.
 
 ## Overview
 
-The Marketing Campaign Performance Reporter is a Python library that automates the collection and integration of marketing metrics from various advertising and social media platforms, transforms raw data into meaningful marketing KPIs, and generates visually compelling reports that communicate campaign performance effectively to clients and leadership.
+The Campaign Performance Report Generator is a Python-based library designed to automate the collection, analysis, and presentation of digital marketing campaign data. It connects directly to advertising and social media platforms, processes performance metrics, and generates comprehensive reports that effectively communicate campaign results. The system enables marketing managers to focus on strategy and insight rather than manual data aggregation.
 
 ## Persona Description
 
@@ -12,131 +12,196 @@ Diego manages digital marketing campaigns and needs to compile performance metri
 
 ## Key Requirements
 
-1. **Multi-Platform API Integrations**: Implement direct API connectors for major advertising and social media platforms (Google Ads, Facebook, Instagram, LinkedIn, TikTok, etc.) with authentication management and rate limiting support.
-   * *Importance*: Diego currently wastes hours manually exporting data from each platform; integrated API connections eliminate this tedious process and ensure real-time data accuracy across all marketing channels.
+1. **Marketing Platform API Integrations**: Implement direct API connections to major advertising platforms (Google Ads, Meta/Facebook Ads, LinkedIn, Twitter) and social media analytics.
+   - *Critical for Diego because*: Manually downloading data from each platform is extremely time-consuming and error-prone, especially when managing multiple campaigns across multiple platforms.
 
-2. **Marketing KPI Calculation Engine**: Develop customizable calculation modules for marketing-specific metrics including attribution modeling, conversion path analysis, ROI calculations, and cross-channel performance comparisons.
-   * *Importance*: Raw platform data requires significant transformation to become meaningful marketing insights; automated KPI calculations standardize this analysis across campaigns and eliminate inconsistencies in metric definitions.
+2. **Marketing KPI Framework**: Develop a comprehensive system for calculating standardized marketing KPIs and attribution models that transform raw platform data into meaningful metrics.
+   - *Critical for Diego because*: Different platforms report metrics differently, and Diego needs to present unified, cross-platform KPIs that clearly communicate performance regardless of where campaigns run.
 
-3. **Creative Asset Embedding**: Create a system to dynamically embed actual ad creative assets within reports, with support for images, videos, and interactive elements that provide visual context for performance metrics.
-   * *Importance*: Clients struggle to connect performance data to specific creative assets; embedding the actual ad content provides immediate visual context and helps explain performance variations across different creative approaches.
+3. **Creative Asset Embedding**: Create functionality to dynamically embed actual ad creatives, social media posts, and landing page screenshots within reports.
+   - *Critical for Diego because*: Marketing reports are significantly more valuable when the performance data is directly connected to the creative assets, providing context for why certain campaigns performed better than others.
 
-4. **Competitive Benchmark Integration**: Develop a benchmarking system that compares campaign performance against industry standards, historical performance, and competitor metrics where available.
-   * *Importance*: Performance metrics in isolation lack context; competitive benchmarking provides essential reference points that help clients understand relative performance and justify marketing investments.
+4. **Competitive Benchmarking**: Build a system to incorporate industry benchmarks and competitive performance data for comparison against campaign results.
+   - *Critical for Diego because*: Stakeholders always want to know how campaign performance compares to industry standards and competitors, providing crucial context for evaluating success.
 
-5. **Interactive Conversion Funnel Visualization**: Implement dynamic conversion funnel visualizations that clients can explore, showing user progression through marketing touchpoints with drop-off rates and conversion metrics at each stage.
-   * *Importance*: Understanding the full customer journey is critical for optimizing campaigns; interactive funnels allow Diego's clients to identify friction points and opportunities for improving conversion rates through the entire marketing process.
+5. **Conversion Funnel Visualization**: Implement sophisticated conversion funnel analytics that track user progression through marketing touchpoints.
+   - *Critical for Diego because*: Understanding the entire customer journey from initial awareness to conversion is essential for optimizing campaign performance and allocation of marketing budget.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- API connectors must support mock responses for testing without live platform access
-- All KPI calculation functions must be unit testable with predefined datasets
-- Visualization rendering must support headless testing with output validation
-- End-to-end testing capability for the entire report generation pipeline with sample data
+- All API connectors must be testable with mock responses that simulate platform data
+- KPI calculations must be verifiable against manually calculated values with test datasets
+- Report generation must be testable with synthetic campaign data
+- Creative asset handling must be testable with sample image files
 
 ### Performance Expectations
-- Must process campaign data from at least 5 different platforms in under 2 minutes
-- Report generation including all visualizations must complete in under 3 minutes
-- Must handle at least 12 months of historical campaign data for trend analysis
-- API connections should utilize parallel processing where possible to minimize total data collection time
+- Data extraction across all marketing platforms must complete within 10 minutes
+- Report generation must complete within 1 minute for standard campaign reports
+- The system must efficiently handle campaigns with up to 50 different ad variations
+- Memory usage must remain reasonable even when processing image-heavy reports
 
 ### Integration Points
-- Authentication and API integration with major marketing platforms
-- Image and video asset retrieval from content management systems and ad platforms
-- Support for importing client-provided benchmarks and target KPIs
-- Output formats compatible with digital presentation (HTML, PDF, interactive web)
+- Direct API connections to major advertising and social media platforms
+- Import capabilities for CSV/Excel exports from platforms without accessible APIs
+- Integration with image and creative asset repositories
+- Export capabilities to PDF, PowerPoint, and interactive HTML formats
 
 ### Key Constraints
-- Must maintain data privacy and comply with platform terms of service for API usage
-- Creative assets must be rendered at appropriate quality while keeping report file sizes manageable
-- Interactive elements must be compatible with standard PDF readers or provide alternative static versions
-- Should minimize API calls to avoid rate limiting issues with marketing platforms
+- Must handle authentication securely for multiple marketing platforms
+- Must accommodate frequent changes in platform APIs and data structures
+- Must process and store creative assets efficiently
+- Must support multiple client accounts with appropriate data separation
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Marketing Campaign Performance Reporter must provide the following core functionality:
+The Campaign Performance Report Generator must provide the following core functionality:
 
-1. **Data Collection System**
-   - Platform-specific API connectors with proper authentication
-   - Data normalization across different marketing platform formats
-   - Historical data retrieval and storage for trend analysis
-   - Support for both scheduled and on-demand data collection
+1. **Data Acquisition and Normalization**
+   - Connect to and extract data from various marketing platforms via APIs
+   - Normalize data from different platforms into a consistent format
+   - Handle authentication and rate limiting for each platform
+   - Support both real-time and historical data retrieval
 
-2. **Marketing Analytics Engine**
-   - Cross-platform performance aggregation
-   - Custom marketing KPI calculations and attribution modeling
-   - Audience segmentation analysis
-   - ROI and ROAS calculations with configurable attribution windows
+2. **Marketing Analytics Processing**
+   - Calculate standardized KPIs across platforms (CTR, CPC, ROAS, etc.)
+   - Implement attribution models for conversion tracking
+   - Perform campaign comparison and trend analysis
+   - Calculate statistical significance for A/B test results
 
-3. **Creative Performance Analysis**
-   - Asset-level performance metrics correlation
-   - A/B testing results visualization
-   - Creative element categorization and tagging
-   - Performance segmentation by creative attributes
+3. **Creative Asset Management**
+   - Retrieve and store creative assets from campaigns
+   - Process images for appropriate inclusion in reports
+   - Link performance metrics directly to creative variations
+   - Support various creative formats (images, videos, landing pages)
 
-4. **Benchmark Management**
-   - Industry standard benchmark integration
-   - Historical performance comparison
-   - Target vs. actual performance tracking
-   - Competitive intelligence integration where available
+4. **Benchmark Integration**
+   - Maintain industry benchmark datasets by vertical
+   - Compare campaign performance against relevant benchmarks
+   - Incorporate competitive intelligence when available
+   - Generate percentile rankings for key metrics
 
-5. **Report Generation System**
-   - Templatized reports for different client needs
-   - Dynamic data visualization generation
-   - Narrative insight generation based on data patterns
-   - Multi-format export with interactive and static options
+5. **Report Generation**
+   - Create formatted reports from marketing-specific templates
+   - Generate appropriate visualizations for marketing data
+   - Build interactive conversion funnels with drill-down capabilities
+   - Structure reports to tell a coherent story about campaign performance
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate data collection from each supported marketing platform
-- Correct calculation of all marketing KPIs and attribution models
-- Proper embedding and rendering of creative assets
-- Accurate benchmark comparisons against industry standards
-- Interactive elements function correctly in supported output formats
+
+1. **Platform API Integration**
+   - Verify that connectors can successfully authenticate and retrieve data
+   - Test error handling when APIs change or become unavailable
+   - Verify that rate limiting and pagination are handled correctly
+   - Confirm that data from different platforms is normalized consistently
+
+2. **Marketing Metric Calculation**
+   - Verify all KPI calculations against manually calculated values
+   - Test attribution models with various customer journey scenarios
+   - Verify trend analysis across campaign timeframes
+   - Confirm statistical validity of performance comparisons
+
+3. **Creative Asset Handling**
+   - Verify that creative assets are retrieved and stored correctly
+   - Test image processing for different report formats
+   - Confirm proper linking between assets and performance data
+   - Verify that reports remain performant with many creative elements
+
+4. **Benchmark Comparison**
+   - Verify accurate integration of benchmark data
+   - Test comparison logic for different metrics and verticals
+   - Confirm percentile calculations and rankings
+   - Verify appropriate contextual presentation of comparative data
+
+5. **Report Generation Process**
+   - Test the complete pipeline from data acquisition to final report
+   - Verify that reports are structured according to specifications
+   - Test performance with campaigns of different sizes and complexities
+   - Verify that conversion funnels accurately represent user journeys
 
 ### Critical User Scenarios
-- Monthly campaign performance reporting for clients
-- Mid-campaign optimization analysis
-- Campaign wrap-up reports with ROI analysis
-- Cross-channel comparison reports
-- Creative performance analysis and recommendations
+
+1. Generating a monthly performance report for a multi-channel campaign
+2. Creating a campaign comparison report showing performance differences between variants
+3. Generating an executive summary with key insights and benchmark comparisons
+4. Producing a detailed conversion funnel analysis with drop-off points
+5. Creating a creative performance report showing which assets performed best
 
 ### Performance Benchmarks
-- API data collection from 7 major platforms should complete in under 3 minutes
-- Report generation with up to 20 visualizations should complete in under 2 minutes
-- System should process campaign data volume equivalent to $1M monthly ad spend across platforms
-- Memory usage should not exceed 1GB during report generation process
-- Interactive elements should respond in under 250ms when used in web output format
+
+- API data retrieval from all platforms must complete within 10 minutes
+- KPI calculations must process data from 50 ad variations in under 1 minute
+- Report generation must complete within 1 minute for standard reports
+- Creative asset processing must handle up to 100 images efficiently
+- Memory usage must not exceed reasonable limits even with image-heavy reports
 
 ### Edge Cases and Error Conditions
-- Handling of API rate limits and temporary platform outages
-- Management of missing data for specific date ranges or metrics
-- Processing of campaigns with unusually large numbers of creative assets
-- Proper scale adaptation for metrics with extreme outliers
-- Graceful degradation when interactive features aren't supported in output format
+
+- Handling of API changes or temporary outages from marketing platforms
+- Proper treatment of campaigns that span multiple reporting periods
+- Graceful degradation when certain platforms or data points are unavailable
+- Appropriate handling of statistical outliers in performance data
+- Correct operation during platform maintenance windows
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all API connectors and data processors
+
+- Minimum 90% line coverage for all code
+- 100% coverage of API connector interfaces
 - 100% coverage of KPI calculation functions
-- All error handling paths must be tested for each API integration
-- Complete testing of visualization rendering for all supported creative asset types
-- Full test coverage of interactive element functionality
+- Comprehensive coverage of error handling and edge cases
+- Integration tests for complete report generation workflows
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+A successful implementation of the Campaign Performance Report Generator will meet the following criteria:
 
-1. Campaign data can be automatically collected from at least 5 major marketing platforms without manual intervention
-2. All standard marketing KPIs are calculated correctly and match manual verification
-3. Creative assets are properly embedded in reports with corresponding performance metrics
-4. Campaign performance can be accurately benchmarked against industry standards and historical data
-5. Interactive conversion funnels correctly display user journey data with accurate metrics at each stage
-6. The entire report generation process from data collection to final output can be completed in under 10 minutes
-7. Reports effectively communicate performance insights that inform marketing optimization decisions
-8. The system can be easily configured for new clients with different platform combinations
-9. Generated reports receive positive feedback from both clients and internal leadership
-10. The solution reduces report preparation time by at least 80% compared to manual methods
+1. **Automation Efficiency**: Reduces the time required to generate marketing campaign reports by at least 80% compared to manual processes.
 
-To get started with this project, use `uv venv` to setup a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+2. **Data Integration**: Successfully consolidates data from at least 5 major marketing platforms into a unified reporting framework.
+
+3. **Insight Generation**: Effectively highlights key performance trends, outliers, and opportunities within marketing campaigns.
+
+4. **Visualization Quality**: Produces visually engaging reports that effectively communicate campaign performance through appropriate charts and graphics.
+
+5. **Creative Context**: Successfully incorporates actual campaign creative assets into reports with direct performance linkage.
+
+6. **Comparison Framework**: Provides meaningful benchmark comparisons that help contextualize campaign performance.
+
+7. **Scalability**: Efficiently handles reporting for multiple clients and campaigns without performance degradation.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

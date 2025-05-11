@@ -1,145 +1,173 @@
-# Artisanal Bakery Content Management System
+# Bakery Showcase Content Management System
 
 ## Overview
-A specialized content management system tailored for small bakery businesses that enables easy menu updates, promotion scheduling, and customer engagement through a streamlined API-driven backend. This system focuses on food presentation, seasonal content management, and mobile-friendly image handling without requiring technical expertise.
+A specialized content management system designed for bakeries to showcase their products, share seasonal specialties, and manage customer-facing information. This system enables bakery owners to easily update their menu and special offers without technical assistance while maintaining a visually appealing site that reflects their brand's warm, artisanal aesthetic.
 
 ## Persona Description
 Sophia runs a small family bakery and wants to showcase her products and share seasonal specialties with customers. Her primary goal is to easily update her menu and special offers without technical assistance while maintaining a visually appealing site that reflects her brand's warm, artisanal aesthetic.
 
 ## Key Requirements
 
-1. **Menu Builder with Food-Specific Templates**
-   - Create a menu management system with specialized food item templates
-   - Critical for Sophia because it allows her to showcase bakery items with appropriate attributes (ingredients, allergens, prices) in a consistent format without needing to understand HTML or design principles
+1. **Visual drag-and-drop menu builder with food-specific display templates**
+   - Critical for Sophia to organize her baked goods by categories (breads, pastries, cakes) with appropriate templates that highlight key attributes (ingredients, allergens, price)
+   - Must allow visual arrangement of products to match in-store display for customer recognition
+   - Should support rich product photography with configurable layouts
 
-2. **Time-based Content Scheduling**
-   - Implement a scheduling system for seasonal offerings and limited-time promotions
-   - Essential for Sophia's bakery business which relies on holiday specials, seasonal ingredients, and limited-time offers that need to appear and disappear automatically
+2. **Time-based content scheduling for seasonal offerings and promotions**
+   - Essential for managing holiday specials, seasonal items, and limited-time offers that are core to bakery business
+   - Must automatically publish and unpublish content based on predefined schedules
+   - Should support recurring schedules for weekly specials and one-time events
 
-3. **Customer Review Management**
-   - Develop a review collection, display and moderation system
-   - Important for building customer trust and engagement while giving Sophia control over which feedback appears on her site, helping to maintain her brand reputation
+3. **Customer review integration with moderation controls**
+   - Important for building social proof and loyalty while maintaining control over displayed feedback
+   - Must include approval workflow before reviews go public
+   - Should support response functionality for owner engagement with customers
 
-4. **Mobile-optimized Image Management**
-   - Create an image processing system with automatic enhancement for food photography
-   - Crucial for Sophia who takes quick photos of her baked goods on her smartphone and needs them to look professional without manual editing or optimization
+4. **Mobile-optimized image management with automatic photo enhancement**
+   - Critical as food photography is essential to bakery marketing but Sophia lacks professional photography skills
+   - Must optimize images for web performance while maintaining appetizing appearance
+   - Should include basic enhancement tools (brightness, contrast, cropping) appropriate for food photography
 
-5. **Order Form Builder**
-   - Implement a customizable form creation system for special orders and requests
-   - Necessary for Sophia to collect detailed information for custom cake orders, catering requests, and other specialized products that require specific customer inputs
+5. **Order form builder with customizable fields for special requests**
+   - Necessary for handling special orders like custom cakes, holiday pre-orders, and catering requests
+   - Must allow creation of different forms for different types of orders with appropriate fields
+   - Should include validation and notification systems for new orders
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All content management functions must be accessible via a well-documented API
-- Each feature should be independently testable with clear input/output expectations
-- Mock adapters should be available for external dependencies (image processing, etc.)
-- Content scheduling should support time manipulation for testing temporal features
+- All components must have unit tests with at least 90% code coverage
+- Integration tests must verify the interaction between content management and scheduling systems
+- Performance tests must verify image optimization processes meet performance standards
+- Mock external dependencies for testing review submission and moderation
 
 ### Performance Expectations
-- Menu and product image gallery must support at least 200 items with < 200ms retrieval time
-- Image processing operations should complete within 3 seconds per image
-- System should handle at least 50 concurrent users (small local business scale)
-- Content scheduling checks should run with minimal overhead (< 50ms)
+- Menu page load time must not exceed 2 seconds even with 50+ product images
+- Image optimization must reduce file sizes by at least 40% without significant quality loss
+- System must handle concurrent content editing by up to 3 staff members
+- Order forms must process and validate submissions within 1 second
 
 ### Integration Points
-- Image processing pipeline for automatic enhancement of uploaded photos
-- JSON-based API for all content operations (create, read, update, delete)
-- Webhook support for integrating with external notification systems
-- Export capabilities for menu data in standard formats (JSON, CSV)
+- API for review system integration with moderation queue
+- Webhook support for order form submissions to external notification systems
+- Export capability for menu data to printed menu creation tools
+- Import interface for bulk product uploads via CSV
 
 ### Key Constraints
-- All functionality must be implemented without UI components
-- Storage layer must support both file system and database backends
-- Authentication and authorization must be separated from content management
-- System must function with minimal dependencies beyond Python standard library
+- All functionality must work without external JavaScript dependencies
+- Must not require server-side image processing capabilities
+- Data storage must use SQLite for easy backup and portability
+- All customer data must be encrypted at rest
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Artisanal Bakery CMS includes:
+The system must provide a Python library with the following core components:
 
-1. **Content Type Management**
-   - Define and manage specialized content types for bakery items with appropriate fields
-   - Support for different menu categories and sections
-   - Custom field types for prices, ingredients, allergens, and availability
+1. **Content Management Core**
+   - Product catalog data model with support for categories, attributes, and media
+   - Content scheduling engine with time-based publishing rules
+   - Content versioning system with history tracking
+   - Permission system for different staff roles
 
-2. **Media Management**
-   - Process and optimize images specifically for food presentation
-   - Automatic enhancement of bakery product photos
-   - Storage and categorization of media assets
-   - Retrieval API with filtering and sorting capabilities
+2. **Menu Management Module**
+   - Product entry with support for food-specific attributes (ingredients, allergens, nutritional info)
+   - Menu structure manager (categories, featured items)
+   - Pricing and availability controls
+   - Template rendering system for different product display formats
 
-3. **Scheduling and Time-based Publishing**
-   - Define content visibility based on date ranges
-   - Schedule future content publication and expiration
-   - Seasonal/holiday promotion automation
-   - Recurring schedule support for weekly specials
+3. **Media Management Module**
+   - Image upload and storage management
+   - Automatic optimization for web delivery
+   - Basic enhancement processing (adjusting brightness, contrast, cropping)
+   - Image tagging and organization system
 
-4. **Customer Interaction**
-   - Review collection and storage architecture
-   - Moderation workflow and approval process
+4. **Review System**
+   - Review submission validation and storage
+   - Moderation queue with approval workflow
+   - Response management for owner comments
    - Rating aggregation and statistics
-   - Custom order form creation and submission handling
 
-5. **Data Access Layer**
-   - Clear API design for content CRUD operations
-   - Query capabilities for content retrieval with filtering
-   - Data validation and sanitization
-   - Content versioning and history tracking
+5. **Order Management**
+   - Form definition and builder functionality
+   - Field validation and conditional logic
+   - Submission handling and notification
+   - Order tracking and status management
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Content creation, retrieval, update, and deletion operations
-- Image processing and optimization pipeline
-- Scheduling and time-based content visibility
-- Review submission and moderation workflow
-- Custom form field validation and submission handling
+- Menu item creation, update, and deletion with all attributes correctly stored
+- Scheduled content appears and disappears at exactly the configured times
+- Images are properly optimized and enhanced according to specifications
+- Review moderation correctly filters and controls displayed reviews
+- Order forms correctly validate input and process submissions
 
 ### Critical User Scenarios
-- Creating a new seasonal menu item with custom attributes
-- Scheduling a promotion to automatically start and end on specific dates
-- Processing and enhancing a batch of bakery product images
-- Moderating customer reviews based on content policies
-- Creating a custom order form with specialized fields for cake decoration
+- Creating a seasonal menu with scheduled publication dates
+- Managing a holiday pre-order campaign with custom order form
+- Processing and responding to customer reviews
+- Setting up recurring weekly specials with different featured items
+- Creating a new product catalog with categorized items and images
 
 ### Performance Benchmarks
-- Menu retrieval time under varied load conditions
-- Image processing throughput and optimization ratio
-- Concurrent content operation handling
-- Scheduling system overhead under load
-- Database query performance with growing content volume
+- Image optimization processing must complete within 3 seconds per image
+- Database queries for menu display must complete within 100ms
+- Full content publication process must complete within 5 seconds
+- System must support at least 100 concurrent order form submissions
 
 ### Edge Cases and Error Conditions
-- Handling malformed content submissions
+- Handling incomplete product information
 - Managing conflicting scheduled content
-- Recovering from failed image processing operations
-- Handling very large or invalid image uploads
-- Managing duplicate content submissions
-- Handling time zone edge cases in scheduling
+- Processing malformed or spam review submissions
+- Recovering from interrupted image uploads
+- Handling special characters in custom order requests
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of API endpoints
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for access control and input validation
+- Minimum 90% code coverage across all modules
+- 100% coverage of data validation functions
+- 100% coverage of scheduled publication logic
+- 100% coverage of order form validation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. A bakery owner can define and publish menu items with specialized attributes through the API
-2. Seasonal content automatically appears and disappears based on scheduled dates
-3. Customer reviews can be submitted, moderated, and displayed with a simple API call
-4. Food images are automatically enhanced and optimized upon upload
-5. Custom order forms can be created with bakery-specific field types and validation
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. All tests pass, demonstrating the functionality works as expected
+1. The library provides a comprehensive API for managing bakery product content with support for all required product attributes
+2. The scheduling system correctly publishes and unpublishes content based on configured times
+3. Image management includes automatic optimization and enhancement appropriate for food photography
+4. Review system includes complete moderation workflow with approval controls
+5. Order form creation supports all required customization with proper validation
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

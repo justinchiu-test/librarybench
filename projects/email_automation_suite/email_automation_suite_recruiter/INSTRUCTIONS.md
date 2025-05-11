@@ -1,175 +1,184 @@
-# RecruitMailFlow - Recruitment Email Management System
+# Recruiter Email Automation Suite
 
 ## Overview
-RecruitMailFlow is a specialized email automation system designed for independent recruiters who need to efficiently manage candidate communications, job openings, interview scheduling, client updates, and placement tracking. The system streamlines the entire recruitment process through intelligent email categorization, applicant tracking, interview coordination, and client reporting to maximize placement success while minimizing administrative overhead.
+TalentMail is a specialized email automation library designed for independent recruiters who manage communications between candidates and clients throughout the hiring process. It enables efficient tracking of candidate interactions, streamlined interview scheduling, organized communications by position, professional candidate presentations, and automated stage-based communications, allowing recruiters to manage multiple hiring pipelines simultaneously with precision and professionalism.
 
 ## Persona Description
 Alex works as a recruitment consultant connecting candidates with companies and managing the entire hiring process via email. His primary goal is to track candidate and client communications throughout the hiring pipeline while sending timely updates to all parties.
 
 ## Key Requirements
 
-1. **Candidate Tracking with Resume Management**
-   - Implement intelligent resume extraction and parsing from email attachments
-   - Create candidate profiles with skill tagging based on resume content
-   - Organize communications by candidate and maintain conversation history
-   - Enable advanced candidate search by skills, experience, and requirements
-   - This feature is critical because it transforms unstructured resume data into searchable candidate profiles, enabling quick matching to opportunities while maintaining complete communication history for relationship management.
+1. **Candidate Tracking and Resume Management System**
+   - Organize candidate communications with resume attachment management
+   - Implement skill tagging and searchable candidate profiles
+   - Track candidate status and interaction history
+   - This feature is critical because it creates a searchable database of candidates with relevant skills and experience, allowing the recruiter to quickly identify suitable candidates for new positions while maintaining a complete history of all interactions
 
-2. **Interview Scheduling and Confirmation System**
-   - Create automated interview coordination emails with availability options
-   - Send confirmation and reminder sequences to candidates and hiring managers
-   - Track interview status and follow-up requirements
-   - Handle rescheduling requests and conflicts efficiently
-   - This feature is essential because interview coordination typically consumes 30-40% of a recruiter's time, with complex scheduling across multiple parties that can be largely automated to focus attention on high-value activities.
+2. **Interview Scheduling Coordination Engine**
+   - Manage interview scheduling between candidates and hiring companies
+   - Generate automatic follow-up reminders for scheduled interviews
+   - Track interview outcomes and feedback
+   - This feature is essential because it streamlines the complex task of coordinating schedules between candidates and multiple stakeholders at client companies, ensuring all parties are properly prepared and reducing the risk of missed interviews
 
-3. **Position-Based Email Threading and Organization**
+3. **Position-based Email Threading System**
    - Organize all communications related to specific job openings
-   - Link candidates to appropriate openings with status tracking
-   - Maintain position requirement details and hiring progress
-   - Enable cross-referencing between positions with similar requirements
-   - This feature is vital because keeping communications organized by position prevents confusion, ensures all candidates are properly tracked, and provides clear visibility into the status of each opening.
+   - Link candidates to their respective position applications
+   - Maintain complete communication histories by position
+   - This feature is vital because it allows the recruiter to maintain clear organization of all communications related to each open position, preventing confusion and ensuring that all candidate-position relationships are properly tracked
 
 4. **Client Update and Candidate Presentation System**
-   - Generate professional candidate presentation templates
-   - Create customizable client update reports on hiring progress
-   - Schedule regular client communication based on hiring urgency
-   - Track client feedback and hiring manager preferences
-   - This feature is crucial because presenting candidates professionally and keeping clients informed about hiring progress in a consistent, timely manner dramatically improves client satisfaction and increases placement rates.
+   - Create professional candidate presentations for clients
+   - Generate customizable candidate comparison reports
+   - Provide structured updates on hiring pipeline status
+   - This feature is important because it enables the recruiter to consistently present candidates to clients in a professional, branded format that highlights relevant qualifications, streamlining the client's review process and strengthening the recruiter's value proposition
 
-5. **Hiring Stage Automation and Milestone Tracking**
-   - Define customizable hiring pipeline stages for different clients and positions
-   - Trigger stage-appropriate communications automatically
-   - Track milestone completion and time-in-stage metrics
-   - Generate alerts for stalled processes or required interventions
-   - This feature is invaluable because it ensures no candidate falls through the cracks, maintains momentum in the hiring process, and provides valuable analytics on pipeline efficiency and bottlenecks.
+5. **Hiring Stage Automation with Communication Sequences**
+   - Define multi-stage hiring pipelines with appropriate messaging for each stage
+   - Automatically trigger communications based on candidate stage transitions
+   - Track candidates through the complete hiring lifecycle
+   - This feature ensures candidates and clients receive appropriate, timely communications as candidates progress through different stages of the hiring process, maintaining engagement while reducing the manual effort of sending stage-appropriate updates
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All email classification and routing must be testable with mock recruitment messages
-- Resume parsing accuracy must be measurable with test resumes
-- Template variable substitution must be verifiable with different candidate and position data
-- Pipeline stage progression must be testable with simulated hiring scenarios
-- All scheduling operations must be verifiable with test calendar data
+- All email generation and categorization functions must be testable with mock data
+- Resume parsing and skill tagging must be verifiable with sample resumes
+- Interview scheduling logic must be testable with simulated calendar scenarios
+- Position linking and organization must be testable with multiple candidate-position relationships
+- Stage-based communication triggering must be verifiable with test pipeline progressions
 
 ### Performance Expectations
-- Email processing and classification must complete in under 400ms per message
-- Resume parsing and skill extraction must complete in under 3 seconds per resume
-- The system must handle at least 100 active candidates across 20 open positions
-- Search operations must return results in under 1 second across 5,000+ candidate profiles
-- Report generation must complete in under 10 seconds for client updates
+- Candidate tracking should efficiently handle databases of at least 1000 candidates
+- Interview scheduling should process at least 50 interview requests per day
+- Position-based organization should support at least 100 active positions simultaneously
+- Candidate presentation generation should complete in under 500ms per candidate
+- The system should handle at least 30 active hiring pipelines without performance degradation
 
 ### Integration Points
-- IMAP/SMTP support for connecting to standard email providers
-- Calendar integration for interview scheduling
-- ATS/CRM integration options for extended recruitment management
-- Document parsing capabilities for resume and job description analysis
-- Optional job board integration for posting and application collection
+- IMAP and SMTP libraries for email retrieval and sending
+- Template engine for dynamic content generation
+- SQLite or similar database for candidate and position information
+- Calendar system for interview scheduling
+- Basic text processing for resume parsing and skill extraction
 
 ### Key Constraints
-- All candidate personal information must be securely stored and handled
-- Client confidentiality must be maintained when dealing with sensitive positions
-- The system must function without reliance on expensive third-party services
-- Email operations must be fault-tolerant to prevent missed communications
-- The system must be operable by users with limited technical expertise
+- All candidate data must be handled in compliance with privacy regulations
+- Client communications must maintain consistent professional branding
+- The system must be resilient to scheduling conflicts and changes
+- Resume and attachment handling must be secure and efficient
+- The implementation must respect email rate limits and anti-spam requirements
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-RecruitMailFlow must provide a comprehensive API for email management focused on recruitment operations:
+The core of the Recruiter Email Automation Suite should provide:
 
-1. **Email Processing Engine**
-   - Connect to email accounts via IMAP/SMTP
-   - Apply classification rules to incoming messages
-   - Categorize communications by candidate, client, and position
-   - Extract and process resume attachments automatically
+1. **Candidate Management Engine**
+   - Processing and organizing candidate information and resumes
+   - Extracting and tagging skills and qualifications
+   - Tracking candidate status and interactions
+   - Supporting search and filtering of the candidate database
 
-2. **Candidate Management System**
-   - Parse and analyze resume content for skills and experience
-   - Maintain candidate profiles with status and history
-   - Track candidate progression through hiring pipelines
-   - Manage communication history and engagement metrics
+2. **Position Management System**
+   - Maintaining position requirements and status
+   - Linking candidates to appropriate positions
+   - Tracking position-specific communication histories
+   - Supporting position pipeline analytics
 
-3. **Position and Client Database**
-   - Store position requirements and status information
-   - Track client preferences and hiring patterns
-   - Maintain hiring manager contacts and communication preferences
-   - Monitor position filling progress and milestone achievement
+3. **Interview Coordination Module**
+   - Managing interview scheduling between candidates and clients
+   - Generating interview confirmation and preparation materials
+   - Sending automated reminders to all parties
+   - Tracking interview results and feedback
 
-4. **Interview Coordination System**
-   - Manage scheduling and calendar availability
-   - Generate appropriate interview communications
-   - Send reminders and confirmations to all parties
-   - Track interview outcomes and feedback
+4. **Client Communication Engine**
+   - Creating professional candidate presentations
+   - Generating position status updates
+   - Managing client-specific communication preferences
+   - Tracking client engagement and feedback
 
-5. **Reporting and Analytics Engine**
-   - Generate client-ready candidate presentations
-   - Create hiring progress reports with key metrics
-   - Track pipeline efficiency and conversion rates
-   - Provide insights for recruitment process improvement
+5. **Hiring Pipeline Workflow**
+   - Defining and managing multi-stage hiring processes
+   - Transitioning candidates between pipeline stages
+   - Triggering stage-appropriate communications
+   - Analyzing pipeline efficiency and conversion metrics
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Email classification accuracy must be >90% for typical recruitment communications
-- Resume parsing must correctly extract key skills and experience with >85% accuracy
-- Template variable substitution must work correctly across all recruitment templates
-- Pipeline stage tracking must accurately reflect candidate progression
-- Interview scheduling must correctly handle availability conflicts and rescheduling
+- Candidate information extraction and organization from emails
+- Interview scheduling coordination between multiple parties
+- Position-based email organization and threading
+- Candidate presentation generation for clients
+- Stage-based communication triggering in hiring pipelines
 
 ### Critical User Scenarios
-- A new job opening is received from a client and set up in the system
-- A candidate submits a resume that is automatically parsed and profiled
-- An interview is coordinated between a candidate and hiring manager
-- A client receives a professional presentation of qualified candidates
-- A candidate progresses through the entire recruitment pipeline to placement
+- Processing a new candidate application with resume attachment
+- Coordinating and confirming an interview between a candidate and client
+- Organizing multiple candidate communications for a specific position
+- Generating professional candidate presentations for client review
+- Managing a candidate's progression through a multi-stage hiring pipeline
 
 ### Performance Benchmarks
-- System must handle at least 200 incoming candidate emails per day
-- Resume parsing must process at least 50 resumes per hour
-- Search operations must maintain sub-second response with 10,000+ stored profiles
-- Interview scheduling must support at least 30 interview arrangements per day
-- Report generation must support at least 20 client updates per day
+- Resume processing should complete in under 1 second per resume
+- Interview scheduling should handle coordination between 5+ parties efficiently
+- Position organization should support at least.100 active positions
+- Candidate presentation generation should complete in under 500ms
+- The system should handle at least 30 concurrent hiring pipelines without degradation
 
 ### Edge Cases and Error Conditions
-- System must handle unusual resume formats and attachments
-- Interview scheduling must gracefully handle timezone differences and conflicts
-- Candidate withdrawal mid-process must be properly reflected in all reports
-- The system must gracefully handle email server connection failures
-- Position requirement changes must be appropriately propagated to candidate matching
+- Handling candidates applying for multiple positions
+- Managing interview rescheduling and cancellations
+- Processing position requirement changes mid-pipeline
+- Dealing with incomplete candidate information
+- Handling client feedback that affects multiple candidates
 
 ### Required Test Coverage Metrics
-- Unit test coverage must exceed 90% for all core modules
-- Integration tests must verify all system components working together
-- Performance tests must validate system under high-volume recruitment scenarios
-- Security tests must verify proper handling of candidate personal information
-- Regression tests must ensure functionality is preserved across updates
+- Minimum 90% code coverage across all modules
+- 100% coverage of resume processing and skill extraction
+- 100% coverage of interview scheduling coordination
+- 100% coverage of candidate presentation generation
+- Minimum 95% coverage of pipeline stage transition logic
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-A successful implementation of RecruitMailFlow will meet the following criteria:
+- Candidate tracking accurately processes and organizes test candidate data
+- Interview scheduling correctly coordinates test interview scenarios
+- Position-based threading properly organizes communications by open role
+- Candidate presentations are professionally generated with appropriate information
+- Hiring stage automation correctly triggers communications based on pipeline progress
+- All performance benchmarks are met under load testing
+- The system correctly handles all specified edge cases and error conditions
 
-1. **Efficiency Improvements**
-   - Reduce time spent on email management by at least 70%
-   - Decrease time-to-fill positions by at least 30%
-   - Automate at least 80% of routine recruitment communications
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Business Impact**
-   - Increase candidate placement rate by at least 25%
-   - Improve client satisfaction scores by at least 40%
-   - Enable management of 50% more open positions simultaneously
-   - Reduce interview no-show rate by at least 80%
+## Getting Started
+To set up the development environment:
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-3. **Technical Quality**
-   - Pass all specified test requirements with >90% coverage
-   - Meet or exceed all performance expectations
-   - Provide a clean, well-documented API that could be extended
-   - Operate reliably without unexpected crashes or data loss
-   - Maintain security and confidentiality of candidate and client information
+CRITICAL: When testing your implementation, you MUST run tests with pytest-json-report and provide the pytest_results.json file:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
 
-4. **User Experience**
-   - Enable processing of new job openings in under 5 minutes
-   - Allow candidate profile creation from resume in under 2 minutes
-   - Provide clear visibility into recruitment pipeline status
-   - Generate professional client-ready reports automatically
-
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+Providing the pytest_results.json file is MANDATORY for demonstrating that your implementation meets the requirements.

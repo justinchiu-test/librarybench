@@ -1,153 +1,181 @@
-# Censorship-Resistant Information Sharing System
+# ResistShare - Censorship-Resistant File Sharing Network
 
 ## Overview
-A secure peer-to-peer file sharing system designed to enable the anonymous exchange of information in restrictive network environments, incorporating traffic obfuscation, multi-layered anonymity protections, and resilient discovery mechanisms to preserve freedom of information despite network interference.
+ResistShare is a specialized peer-to-peer file sharing library designed to operate in restrictive network environments, providing secure and anonymous file sharing capabilities. It focuses on traffic obfuscation, anonymity routing, censorship-resistant discovery, dead drop functionality, and plausible deniability to enable information freedom and circumvent network restrictions.
 
 ## Persona Description
 Sophia promotes information freedom and censorship resistance through decentralized technologies. She needs secure, anonymous file sharing capabilities that can operate even in restrictive network environments.
 
 ## Key Requirements
+
 1. **Traffic Obfuscation**
-   - Protocol mimicry making P2P traffic appear as regular HTTPS browsing
-   - Deep packet inspection resistance through traffic shaping and padding
-   - Pluggable transport support for adapting to changing censorship techniques
-   - Critical for bypassing network-level blocking that would prevent information exchange in restrictive environments
+   - Implement techniques to make P2P communication appear as regular web browsing
+   - Critical for Sophia's work in regions where P2P traffic may be blocked or monitored
+   - Must disguise protocol signatures to evade deep packet inspection
+   - Should adapt to changing network conditions and detection methods
 
 2. **Onion Routing Integration**
-   - Multi-layered encryption protecting sender and receiver identities
-   - Configurable routing path selection with trust levels
-   - Exit node rotation and circuit building controls
-   - Essential for providing anonymity to participants who may face consequences for sharing certain information
+   - Create a multi-layered encryption system providing anonymity for participating peers
+   - Essential for protecting the identity of users sharing sensitive information
+   - Must route traffic through multiple intermediaries with layered encryption
+   - Should minimize metadata leakage that could compromise anonymity
 
 3. **Censorship-Resistant Peer Discovery**
-   - Multiple redundant discovery mechanisms including domain fronting
-   - Bootstrap node concealment through steganography
-   - Adaptive discovery strategies based on network conditions
-   - Necessary to enable initial connection to the network despite active blocking of known P2P infrastructure
+   - Develop multiple fallback mechanisms for finding peers despite blocking attempts
+   - Vital for maintaining network functionality when primary discovery methods are blocked
+   - Must support diverse discovery techniques (DHT, domain fronting, rendezvous points, etc.)
+   - Should automatically switch methods based on local network restrictions
 
 4. **Dead Drop Functionality**
-   - Asynchronous file pickup without direct peer connection
-   - Time-based availability windows for enhanced security
-   - Secure authentication without revealing participant identities
-   - Vital for scenarios where direct connections between specific peers would raise suspicion or reveal associations
+   - Implement a system allowing scheduled pickup of shared files without direct contact
+   - Important for scenarios where direct peer connections may be risky or impossible
+   - Must support time-delayed and indirect file transfers
+   - Should include methods to verify file integrity and authenticity
 
 5. **Plausible Deniability in Storage**
-   - Encrypted headers preventing identification of file contents
-   - File sharding across multiple storage locations
-   - Hidden volumes for sensitive content with deniable access
-   - Critical for protecting individuals when devices are physically inspected or seized
+   - Create encrypted storage with separated headers and content for protection against forced disclosure
+   - Critical for protecting users in situations where they may be compelled to reveal content
+   - Must support hidden volumes with mathematically deniable existence
+   - Should include emergency measures for rapid content protection
 
 ## Technical Requirements
-### Testability Requirements
-- All cryptographic components must have comprehensive security tests
-- Obfuscation techniques must be verified against current DPI methods
-- Censorship circumvention approaches must be tested against simulated blockers
-- Anonymous routing must be verified for information leakage
-- Simulated adversary tests for various threat models
 
-### Performance Expectations
-- Reasonable transfer speeds despite anonymity overhead
-- Minimal fingerprinting surface to avoid detection
-- Acceptable latency for interactive use when necessary
-- Resource usage compatible with consumer hardware
-- Resilience to high packet loss and intermittent connectivity
+- **Testability Requirements**
+  - Obfuscation must be testable against simulated deep packet inspection
+  - Anonymity must be verifiable through metadata analysis
+  - Censorship resistance must be testable in simulated restrictive network environments
+  - Security properties must be formally verifiable where possible
 
-### Integration Points
-- Tor network compatibility for enhanced anonymity
-- I2P network bridging capabilities
-- Pluggable transport framework integration
-- Standard cryptographic libraries adherence
-- Steganography tools for bootstrap information
+- **Performance Expectations**
+  - System must still provide reasonable performance despite security overhead
+  - Obfuscation techniques should not reduce throughput by more than 50%
+  - Anonymity routing must maintain acceptable latency for interactive use
+  - Storage operations must complete within reasonable timeframes even with encryption
 
-### Key Constraints
-- Must operate in highly restricted network environments
-- Minimal metadata generation and collection
-- No dependencies on centralized services
-- No permanent storage of user identification data
-- Must maintain effectiveness despite partial network visibility
+- **Integration Points**
+  - Standard cryptographic libraries for secure operations
+  - Network traffic analysis evasion techniques
+  - Established anonymity networks where appropriate
+  - Secure storage mechanisms with plausible deniability
+
+- **Key Constraints**
+  - Implementation must be pure Python for maximum portability
+  - All cryptographic operations must use well-reviewed, standard libraries
+  - System must avoid dependencies that may be blocked in restrictive regions
+  - All operations must prioritize user safety and information security
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must be implemented as a library with the following components:
 
-1. **Traffic Obfuscation Engine**
-   - Protocol detection evasion techniques
+The ResistShare implementation should provide these core functions:
+
+1. **Traffic Disguise System**
+   - Protocol obfuscation and transformation
    - Traffic pattern normalization
-   - Deep packet inspection resistance mechanisms
-   - Adaptive behavior based on network conditions
+   - DPI evasion techniques
+   - Adaptive camouflage strategies
 
-2. **Anonymity Network**
-   - Multi-layered encryption implementation
-   - Route selection and management
-   - Circuit building and rotation
-   - Identity protection mechanisms
+2. **Anonymous Routing**
+   - Multi-hop encrypted routing
+   - Path selection and rotation
+   - Traffic mixing and padding
+   - Metadata minimization
 
-3. **Resilient Discovery System**
-   - Multiple discovery protocol implementations
-   - Bootstrapping from concealed information
-   - Fallback mechanisms when primary methods are blocked
-   - Network condition-based strategy selection
+3. **Resilient Discovery**
+   - Multi-method peer discovery
+   - Fallback mechanisms
+   - Bootstrap node rotation
+   - Steganographic rendezvous
 
-4. **Asynchronous Exchange Framework**
-   - Dead drop coordination protocol
-   - Secure time-based access mechanism
-   - Anonymous authentication system
-   - Reliable pickup verification
+4. **Indirect File Transfer**
+   - Dead drop creation and management
+   - Time-delayed pickup mechanisms
+   - Out-of-band coordination
+   - Secure retrieval verification
 
-5. **Deniable Storage Engine**
-   - Header encryption and content separation
-   - Distributed storage with redundancy
+5. **Protected Storage**
+   - Deniable encryption implementation
+   - Header/content separation
    - Hidden volume management
-   - Secure deletion and plausible coverup
+   - Emergency protection measures
 
 ## Testing Requirements
-### Key Functionalities to Verify
-- Effectiveness of traffic obfuscation against detection systems
-- Anonymity preservation through routing infrastructure
-- Success rate of peer discovery in restricted environments
-- Reliability of asynchronous file exchange
-- Security of storage system against forensic analysis
 
-### Critical Scenarios to Test
-- Operation in networks with deep packet inspection
-- Performance under active probing and fingerprinting attempts
-- Discovery success with various blocking techniques active
-- Dead drop functionality with high latency and timeouts
-- Deniable storage under simulated forensic examination
+- **Key Functionalities to Verify**
+  - Traffic successfully evades detection by common DPI techniques
+  - Routing effectively hides the origin and destination of transfers
+  - Peer discovery works despite simulated blocking of primary methods
+  - Dead drop file transfers complete successfully without direct contact
+  - Storage provides plausible deniability under forensic analysis
 
-### Performance Benchmarks
-- Traffic analysis resistance score against current detection methods
-- Discovery success rates in simulated restrictive environments
-- Anonymity set size and unlinkability metrics
-- Time required for successful dead drop operations
-- Storage overhead for deniability features
+- **Critical User Scenarios**
+  - Sharing sensitive information in a network environment with deep packet inspection
+  - Maintaining anonymity when connecting to peers in a monitored network
+  - Discovering and connecting to the network when primary discovery methods are blocked
+  - Exchanging files with another user without establishing a direct connection
+  - Protecting stored content against forced disclosure
 
-### Edge Cases and Error Conditions
-- Adaptive censorship that learns and blocks in real-time
-- Highly degraded network conditions (extreme jitter, blocking, loss)
-- Targeted attacks against specific protocol weaknesses
-- Incomplete dead drop operations due to network failure
-- Forced shutdown during sensitive operations
-- Partial compromise of routing infrastructure
+- **Performance Benchmarks**
+  - Obfuscated transfers must achieve at least a specified minimum throughput
+  - Anonymous routing must complete transfers within acceptable time frames
+  - Discovery must find peers within 60 seconds even with primary methods blocked
+  - Dead drops must reliably transfer files of at least specified size
+  - Storage operations must maintain reasonable performance despite encryption
 
-### Required Test Coverage
-- 100% coverage of cryptographic and security-critical code
-- ≥95% coverage of obfuscation components
-- ≥90% coverage for discovery mechanisms
-- ≥90% coverage for asynchronous exchange protocols
-- ≥95% coverage for deniable storage systems
+- **Edge Cases and Error Handling**
+  - Correct behavior when all standard discovery methods are blocked
+  - Graceful handling of compromised routing nodes
+  - Recovery from interrupted transfers in high-risk situations
+  - Proper function during active network interference
+  - Safe failure modes for all security-critical operations
+
+- **Test Coverage Requirements**
+  - Security-critical components must have 100% test coverage
+  - Obfuscation must be tested against multiple DPI simulation models
+  - Anonymity must be verified with rigorous metadata analysis
+  - Censorship resistance must be tested against diverse blocking techniques
+  - Storage security must be verified with forensic analysis tools
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Traffic is undetectable as P2P communication by current DPI technologies
-2. User anonymity is preserved even when some network nodes are compromised
-3. The system can establish connections in networks with active P2P blocking
-4. Files can be exchanged without direct connections between peers
-5. Stored data provides plausible deniability under examination
-6. All five key requirements are fully implemented and testable via pytest
-7. The system remains functional in the world's most restrictive network environments
-8. Independent security audit verifies absence of critical vulnerabilities
+The implementation will be considered successful if:
 
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Network traffic successfully evades detection and blocking
+2. Users can share files while maintaining strong anonymity
+3. The network remains accessible even when primary discovery methods are blocked
+4. Files can be exchanged without requiring direct connections
+5. Stored content maintains plausible deniability against forced disclosure
+6. All security properties are formally verified through rigorous testing
+7. The system remains usable despite the security overhead
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Install test dependencies with `uv pip install pytest pytest-json-report`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

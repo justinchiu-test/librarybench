@@ -1,168 +1,153 @@
-# TermTask for Security Analysts
+# SecureTask CLI - Command-Line Task Management for Security Professionals
 
 ## Overview
-A specialized command-line task management system designed for security analysts who conduct security audits and penetration testing. This variant focuses on secure evidence storage, vulnerability severity assessment, remediation workflows, compliance mapping, and secure reporting to streamline security operations while maintaining strict confidentiality and data protection.
+A specialized command-line task management system designed for security analysts conducting security audits and penetration testing. The system enables methodical tracking of security findings, documentation of vulnerabilities with proper evidence, and verification of remediation efforts with comprehensive compliance mapping.
 
 ## Persona Description
 Trevor conducts security audits and penetration testing, needing to methodically track security findings and remediation tasks. His primary goal is to document security vulnerabilities with proper evidence and track verification of fixes.
 
 ## Key Requirements
+1. **Secure Evidence Storage**: Implement a robust mechanism for storing vulnerability documentation, screenshots, and proof-of-concept code with appropriate encryption. This feature is critical for Trevor as it ensures sensitive security findings are protected from unauthorized access, provides a secure repository for potentially dangerous exploit code, and maintains client confidentiality while allowing authorized team members to access necessary evidence.
 
-1. **Secure Evidence Storage**
-   - Encrypt sensitive vulnerability documentation
-   - Support for secure screenshots and file attachments
-   - Implement access controls for different evidence sensitivity levels
-   - Audit logging for all evidence access and modifications
-   - This feature is critical because security findings often include sensitive information that could be exploited if exposed, requiring Trevor to maintain strict confidentiality while still documenting vulnerabilities thoroughly.
+2. **CVSS Scoring Integration**: Create functionality to associate formal CVSS (Common Vulnerability Scoring System) scores with each security finding. This capability enables Trevor to apply industry-standard severity assessments to vulnerabilities, ensure consistent prioritization of security issues across different clients and systems, and communicate risk levels in standardized terminology that stakeholders understand.
 
-2. **CVSS Scoring Integration**
-   - Calculate and track CVSS scores for vulnerabilities
-   - Support for both CVSS v3.1 and legacy scoring
-   - Generate severity ratings based on CVSS metrics
-   - Prioritize findings based on calculated risk levels
-   - This capability is essential because standardized severity scoring enables objective risk assessment, consistent prioritization of remediation efforts, and clear communication of security impact to stakeholders.
+3. **Remediation Workflow**: Develop a structured workflow system for vulnerability remediation with explicit verification requirements. This feature allows Trevor to track the complete lifecycle of security findings from discovery to verification, ensure proper validation of implemented fixes before closing issues, and maintain accountability throughout the remediation process with clear ownership and approval steps.
 
-3. **Remediation Workflow Management**
-   - Track vulnerability from discovery through remediation
-   - Implement verification steps for fix confirmation
-   - Manage remediation deadlines based on severity
-   - Document mitigation strategies and compensating controls
-   - This feature is vital because it creates accountability for security fixes, ensures vulnerabilities don't remain open indefinitely, and provides a systematic process for verifying that remediation is effective.
+4. **Compliance Mapping**: Build a comprehensive system that links security findings to specific regulatory requirements and frameworks (e.g., NIST, ISO, PCI-DSS). This mapping helps Trevor demonstrate how identified vulnerabilities impact compliance status, generate tailored reports for specific compliance frameworks, and provide clear remediation guidance based on regulatory requirements.
 
-4. **Compliance Framework Mapping**
-   - Link findings to regulatory requirements (GDPR, PCI, HIPAA, etc.)
-   - Track compliance status across multiple frameworks
-   - Generate compliance gap analyses and reports
-   - Map remediation activities to compliance obligations
-   - This functionality is critical because it connects security findings to compliance requirements, helps prioritize remediation based on regulatory impact, and streamlines compliance reporting and audit preparation.
-
-5. **Security Reporting with Redaction**
-   - Generate security reports with appropriate detail levels
-   - Implement redaction options for sensitive details
-   - Support multiple report formats for different audiences
-   - Include executive summaries and technical details
-   - This feature is essential because effective security communication requires different detail levels for different audiences, and automated redaction ensures sensitive information is protected while still conveying necessary security information.
+5. **Security Report Generation**: Implement sophisticated reporting capabilities with appropriate redaction options for sensitive details. This functionality enables Trevor to produce professional security reports for different audience types, automatically handle sensitive information differently based on report type, and maintain consistency across all deliverables while saving significant report preparation time.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock vulnerability database for testing CVSS scoring
-- Simulated evidence files for testing secure storage
-- Workflow simulation for testing remediation tracking
-- Sample compliance frameworks for testing mapping features
-- Report template validation for testing redaction capabilities
+- Evidence storage security must be verifiable through encryption testing
+- CVSS scoring calculations must be testable against official CVSS examples
+- Remediation workflow state transitions must be fully testable
+- Compliance mapping must be verifiable with predefined regulatory frameworks
+- Report generation must produce consistent outputs given identical inputs
+- All components must be unit testable without security impacts
 
 ### Performance Expectations
-- Support for storing and retrieving 10,000+ pieces of evidence
-- CVSS calculation in under 100ms per vulnerability
-- Handle 1,000+ concurrent remediation workflows
-- Map findings to 20+ compliance frameworks simultaneously
-- Generate redacted reports for 500+ findings in under 10 seconds
+- Evidence storage must efficiently handle artifacts up to 100MB
+- CVSS calculations must complete in <50ms
+- Remediation workflow must support tracking 1000+ active findings
+- Compliance mapping must maintain performance with 50+ regulatory frameworks
+- Report generation must process comprehensive reports with 500+ findings in <30 seconds
 
 ### Integration Points
-- Evidence capture tools (screenshots, network captures)
-- Vulnerability databases (NVD, vendor advisories)
-- Issue tracking systems for remediation
-- Compliance management frameworks
-- Security reporting and distribution systems
+- Secure storage system with encryption capabilities
+- Official CVSS calculation algorithms
+- Workflow state management engine
+- Compliance framework database
+- Template-based report generation system
+- Redaction engine for sensitive information
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- End-to-end encryption for all sensitive data
-- Air-gap operation support for secure environments
-- No cloud dependencies for core functionality
-- Must maintain data confidentiality even during crash recovery
+- The implementation must never store sensitive data in plain text
+- All functionality must be accessible via programmatic API without UI components
+- The system must support air-gapped operation for high-security environments
+- Evidence must be tamper-evident with verification capabilities
+- Compliance frameworks must be updatable as regulations evolve
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for security analysts includes:
+1. **Security Finding Management**: A core module handling CRUD operations for security findings with comprehensive metadata, including vulnerability details, affected systems, and timelines.
 
-1. **Security Task Management Core**
-   - Create, read, update, and delete security tasks
-   - Organize findings by project, system, and severity
-   - Track task status throughout security lifecycle
-   - Support for security assessment workflows
-   - Persistence with strong encryption
+2. **Evidence Vault**: A secure storage system for vulnerability evidence with encryption, access control, and integrity verification capabilities.
 
-2. **Evidence Management System**
-   - Securely store vulnerability evidence
-   - Implement access controls and encryption
-   - Support for various evidence types (screenshots, logs, etc.)
-   - Manage evidence lifecycle and retention
-   - Audit all evidence access and modifications
+3. **CVSS Calculator**: Components for performing official CVSS scoring calculations with all required metrics and producing standard severity ratings.
 
-3. **Vulnerability Assessment Engine**
-   - Implement CVSS scoring algorithms
-   - Calculate risk levels based on technical factors
-   - Track scoring changes as more information is discovered
-   - Generate severity ratings for prioritization
-   - Support for custom scoring extensions
+4. **Remediation Tracker**: A workflow engine for managing the complete vulnerability lifecycle from discovery through remediation to verification.
 
-4. **Remediation Tracking Framework**
-   - Define remediation workflows and states
-   - Track remediation progress and deadlines
-   - Implement verification requirements and testing
-   - Document fix approaches and alternatives
-   - Manage exceptions and compensating controls
+5. **Compliance Framework**: A flexible system for mapping findings to regulatory requirements across multiple frameworks with relationship tracking.
 
-5. **Compliance Management System**
-   - Maintain compliance requirement database
-   - Map findings to compliance controls
-   - Track compliance status by framework
-   - Generate compliance gap analyses
-   - Support for custom compliance frameworks
+6. **Report Generator**: Tools for creating customized reports with appropriate content selection, formatting, and redaction based on audience and purpose.
 
-6. **Reporting Engine**
-   - Generate security reports from findings
-   - Implement selective redaction capabilities
-   - Support multiple output formats and templates
-   - Create audience-specific report versions
-   - Secure report distribution and access controls
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Evidence is properly encrypted and access-controlled
-- CVSS scoring accurately calculates severity levels
-- Remediation workflows correctly track fixes through verification
-- Compliance mapping correctly links findings to requirements
-- Reports correctly redact sensitive information based on audience
+- Security finding creation, retrieval, updating, and deletion with appropriate metadata
+- Evidence storage with proper encryption and access controls
+- CVSS scoring calculation accuracy and consistency
+- Remediation workflow state transitions and validation
+- Compliance mapping with accurate regulatory relationships
+- Report generation with appropriate content selection and redaction
 
 ### Critical User Scenarios
-- Documenting a new security vulnerability with evidence
-- Assessing the severity of a finding using CVSS
-- Tracking a critical vulnerability through remediation
-- Mapping findings to compliance requirements for an audit
-- Generating different report versions for technical and executive audiences
+- Complete vulnerability lifecycle from discovery to verification
+- Managing multiple concurrent security assessments
+- Generating different report types for various stakeholders
+- Tracking remediation progress across multiple client systems
+- Demonstrating compliance status and gaps
+- Securely sharing findings with appropriate team members
 
 ### Performance Benchmarks
-- Evidence storage and retrieval operations under 1 second
-- CVSS calculations for 100+ vulnerabilities in under 2 seconds
-- Remediation tracking updates in real-time (< 500ms)
-- Compliance mapping for 1,000+ findings across 10+ frameworks in under 3 seconds
-- Report generation with redaction for 500+ findings in under 5 seconds
+- Finding operations must complete in <50ms for individual operations
+- Evidence storage must efficiently handle artifacts up to 100MB
+- CVSS calculations must process at least 1000 scores per second
+- Remediation workflow must support transitioning 100+ findings per second
+- Compliance mapping must handle frameworks with 1000+ controls
+- Report generation must process at least 10 pages of content per second
 
 ### Edge Cases and Error Conditions
-- Handling corrupted evidence files
-- Processing incomplete CVSS metric information
-- Managing stalled or abandoned remediation workflows
-- Dealing with conflicting compliance requirements
-- Recovering from interrupted report generation
-- Operating in highly restricted network environments
+- Handling attempts to store extremely large evidence files
+- Proper behavior with invalid CVSS metric combinations
+- Ensuring workflow state consistency with concurrent operations
+- Maintaining accurate compliance mapping when frameworks change
+- Appropriate content redaction for different audience levels
+- Recovery from interrupted operations involving sensitive data
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for core functionality
-- 100% coverage for encryption and security-critical operations
-- Comprehensive integration tests for all system connections
-- Performance tests for large-scale security assessment scenarios
-- API contract tests for all public interfaces
+- Minimum 95% line coverage for all security-critical components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Security controls must be explicitly verified
+- Performance tests must verify all stated benchmarks
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully protects sensitive security information while enabling effective documentation
-- CVSS scoring provides consistent severity assessment across all findings
-- Remediation workflows increase the percentage of verified fixes by at least 30%
-- Compliance mapping reduces time spent on audit preparation by at least 50%
-- Report generation with appropriate redaction streamlines security communication
-- Security analyst productivity increases by at least 25%
-- Time from vulnerability discovery to verified fix decreases by at least 20%
-- Compliance reporting accuracy improves with fewer gaps and inconsistencies
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system securely stores vulnerability evidence with appropriate encryption.
+3. CVSS scoring accurately calculates severity ratings according to official standards.
+4. Remediation workflows properly track vulnerability lifecycles from discovery to verification.
+5. Compliance mapping correctly associates findings with relevant regulatory requirements.
+6. Report generation produces appropriate output with correct redaction based on audience.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation maintains the highest security standards for sensitive data.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+- Security-critical code must pass additional security-focused tests
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

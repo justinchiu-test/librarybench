@@ -1,7 +1,7 @@
-# PropertyMailFlow - Real Estate Email Automation System
+# Real Estate Agent Email Automation Suite
 
 ## Overview
-PropertyMailFlow is a specialized email automation system designed specifically for independent real estate agents who need to manage high volumes of property-related communications. The system helps agents efficiently respond to property inquiries, organize listings, track client interactions, and measure marketing effectiveness through smart email management and automation.
+MailFlow for Real Estate is a specialized email automation library designed for independent real estate agents who manage multiple property listings and client communications. It enables agents to efficiently organize property-related emails, send personalized listing information, track client inquiries, and maintain consistent follow-up sequences with minimal manual intervention.
 
 ## Persona Description
 Sofia manages listings and client communications for her independent real estate business, handling dozens of property inquiries daily. Her primary goal is to promptly respond to potential buyers and sellers with personalized information while automatically organizing communications by property and client status.
@@ -9,161 +9,176 @@ Sofia manages listings and client communications for her independent real estate
 ## Key Requirements
 
 1. **Property Listing Template System**
-   - Create dynamic email templates for different property types (residential, commercial, rental, etc.)
-   - Support for variable field insertion to automatically populate property details (price, square footage, bedrooms, amenities, etc.)
-   - Enable batch creation of listing emails for newly acquired properties
-   - This feature is critical because it allows Sofia to create professional, consistent property communications in seconds rather than minutes per inquiry, dramatically increasing response speed while maintaining personalization.
+   - Create dynamic email templates with variable insertion for different property types (residential, commercial, land)
+   - Support for automatic population of property details including price, square footage, bedrooms, bathrooms, and amenities
+   - Allow customization of template styling and formatting to maintain brand consistency
+   - This feature is critical because it allows the agent to quickly respond to property inquiries with accurate, detailed information without having to manually craft each email
 
-2. **Client Follow-up Sequence Automation**
+2. **Client Follow-up Sequence Engine**
    - Implement time-based follow-up sequences triggered by specific client interactions
-   - Allow configuration of different sequence patterns based on client interest level and property type
-   - Track which clients have received which sequences and their engagement rate
-   - This feature is essential because consistent follow-up is proven to increase conversion rates in real estate, but manual follow-up is time-consuming and prone to being forgotten during busy periods.
+   - Configure multi-stage sequences (initial response, 3-day follow-up, 7-day check-in, etc.)
+   - Support conditional logic based on client response or lack thereof
+   - This feature is essential for nurturing leads and maintaining engagement without requiring the agent to remember and manually track dozens of follow-up timelines
 
-3. **Client Categorization and Segmentation System**
-   - Implement a tagging system for client emails (buyer/seller, price range, neighborhood preference)
-   - Create automated rules to categorize incoming emails based on content analysis
-   - Enable search and filtering of communications by category
-   - This feature is vital because organizing clients by their specific needs helps Sofia prioritize communications and match the right properties to the right clients quickly.
+3. **Client Categorization System**
+   - Create a robust classification system for contacts (buyer/seller, price range, property preferences)
+   - Support for tagging and segmentation based on client status and requirements
+   - Enable automatic categorization based on email content analysis
+   - This feature helps the agent organize their client database and prioritize communications based on likelihood to transact, preventing important clients from falling through the cracks
 
-4. **Listing-Specific Email Organization**
-   - Create automatic folder/labeling system for each active property listing
-   - Implement intelligent attachment management for property photos and documents
-   - Link all communications related to a specific property
-   - This feature is crucial because it keeps all communications about a particular property organized in one place, making it easy to find history and track interest in specific listings.
+4. **Property-specific Email Organization**
+   - Implement property-based threading and organization of all communications
+   - Support automatic filing and retrieval of property-related attachments (photos, documents)
+   - Create property dossiers that aggregate all communications about a specific listing
+   - This feature is vital because it centralizes all communications related to each property, making it easy to track the history and status of each listing
 
 5. **Inquiry Source Tracking and Analytics**
-   - Track which marketing channels (websites, platforms, referrals) generate inquiries
-   - Generate reports on inquiry-to-showing and showing-to-sale conversion rates by source
-   - Provide insights on which marketing channels produce the highest quality leads
-   - This feature is invaluable because it helps Sofia optimize her marketing budget by identifying which channels produce the best return on investment.
+   - Identify and track the source of inquiries (websites, referrals, advertising channels)
+   - Generate reports on conversion rates by source
+   - Measure response time and effectiveness across marketing channels
+   - This feature allows the agent to assess which marketing channels are most effective, enabling data-driven decisions about where to allocate marketing resources
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All email processing rules must be testable with mock email data
-- Template rendering must be verifiable with different data combinations
-- Client categorization accuracy must be measurable with test datasets
-- All analytics calculations must produce consistent, verifiable results
-- Storage and retrieval operations must be validated for integrity
+- All email processing functions must be testable with mock email data
+- Template rendering must be verifiable with different property data inputs
+- Follow-up sequence logic must be testable with simulated time progression
+- Client categorization algorithms must be verifiable with test classification cases
+- Analytics functions must produce consistent, verifiable outputs
 
 ### Performance Expectations
-- Email rule processing must complete in under 500ms per message
-- Template application must render in under 200ms
-- The system must handle a minimum of 100 new messages per day with all rules applied
-- Search operations must return results in under 1 second
-- Analytics reports must generate in under 5 seconds
+- Template processing should complete in under 100ms per template
+- Email classification and filing should process at a rate of at least 50 emails per second
+- Follow-up scheduling must handle at least 1000 active sequences without performance degradation
+- Database operations for client categorization should complete within 200ms
+- The system should be able to handle a database of at least 10,000 clients and 500 property listings
 
 ### Integration Points
-- IMAP/SMTP support for connecting to standard email providers
-- Contact data export/import capability with CSV format
-- Property data import from MLS systems via standardized formats
-- Calendar integration for scheduling property viewings
-- Backup system for all templates and automation rules
+- IMAP and SMTP libraries for email retrieval and sending
+- Template engine for dynamic content generation
+- SQLite or similar database for storing client information and property details
+- Scheduling system for follow-up sequences
+- Analytics engine for marketing channel effectiveness reporting
 
 ### Key Constraints
-- All email content must be securely stored and never shared outside the system
-- No client data should be sent to external services without explicit configuration
-- The system must function without an active internet connection for core operations
-- All operations must be non-blocking to prevent system hangs during email processing
-- Storage requirements must not exceed 5GB for a typical installation
+- All email content must be generable as both plain text and HTML
+- The implementation must respect email rate limits to prevent being flagged as spam
+- Client data must be securely stored with appropriate encryption
+- Property photos and attachments must be handled efficiently to minimize storage requirements
+- The system must be resilient to network interruptions and email service downtime
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-PropertyMailFlow must provide a comprehensive API for email management focused on real estate operations:
+The core of the Real Estate Agent Email Automation Suite should provide:
 
-1. **Email Processing Engine**
-   - Connect to email accounts via IMAP/SMTP
-   - Apply rules to incoming messages based on content and metadata
-   - Categorize and organize emails automatically
-   - Trigger automated responses and follow-ups based on rules
+1. **Email Management Engine**
+   - Retrieving and sending emails via IMAP and SMTP
+   - Classifying incoming emails by client, property, and inquiry type
+   - Filing and organizing emails into appropriate categories
+   - Handling attachments related to properties
 
 2. **Template Management System**
-   - Create, store, and manage reusable email templates
-   - Support variable substitution for personalization
-   - Manage property-specific content blocks
-   - Handle multimedia content including property images
+   - Creating and storing property listing templates
+   - Variable substitution for dynamic content
+   - Support for different property types and marketing angles
+   - Template versioning and effectiveness tracking
 
-3. **Client and Property Database**
-   - Maintain relationships between clients and properties
-   - Store client preferences, history, and status
-   - Track property listings, details, and status
-   - Link emails to relevant clients and properties
+3. **Client Relationship Management**
+   - Storing and categorizing client information
+   - Tracking client preferences and requirements
+   - Maintaining communication history
+   - Prioritizing clients based on engagement and likelihood to transact
 
-4. **Follow-up Scheduler**
-   - Create time-based sequences of communications
-   - Track client engagement with previous communications
-   - Adjust follow-up timing based on engagement metrics
-   - Manage multiple concurrent follow-up sequences
+4. **Automated Follow-up System**
+   - Scheduling follow-up communications based on configurable rules
+   - Handling multi-stage communication sequences
+   - Adjusting follow-up timing based on client engagement
+   - Providing notification of sequence completion or client response
 
-5. **Analytics Engine**
-   - Track email metrics (open rates, response rates)
-   - Analyze communication patterns and effectiveness
-   - Monitor marketing channel performance
-   - Generate actionable reports on communication effectiveness
+5. **Analytics Module**
+   - Tracking inquiry sources and conversion rates
+   - Measuring response times and effectiveness
+   - Analyzing communication patterns
+   - Reporting on marketing channel ROI
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Email classification accuracy must be >95% for standard inquiries
-- Template variable substitution must work correctly in all templates
-- Follow-up sequences must trigger at the specified intervals
-- Email attachments must be correctly associated with listings
-- Marketing source attribution must work for standard referral patterns
+- Email retrieval and classification accuracy
+- Template rendering with various property data inputs
+- Client categorization logic correctness
+- Follow-up sequence execution with proper timing
+- Inquiry source identification and tracking
 
 ### Critical User Scenarios
-- A new property listing is created and inquiry emails are automatically responded to
-- A potential buyer expresses interest and receives the appropriate follow-up sequence
-- A client changes their preferences and their categorization updates accordingly
-- Multiple inquiries about the same property are linked in the system
-- A marketing campaign's effectiveness is tracked from inquiry to sale
+- Processing new client inquiries about a specific property
+- Generating and sending dynamic property listings with complete details
+- Creating and executing multi-stage follow-up sequences
+- Properly categorizing clients based on their needs and status
+- Tracking and reporting on marketing channel effectiveness
 
 ### Performance Benchmarks
-- System must handle at least 200 emails per day with full processing
-- Search operations must maintain sub-second response with 10,000+ stored emails
-- Report generation must complete in <10 seconds with 12 months of data
-- Rule processing overhead must not exceed 20% of total email handling time
-- Storage efficiency must maintain <1MB per processed email including attachments
+- Template rendering must complete in under 100ms
+- Email processing (retrieval, classification, filing) should handle 50+ emails per second
+- Database operations should complete within 200ms
+- Follow-up scheduling must handle 1000+ active sequences simultaneously
+- The system should efficiently store and retrieve attachments for 500+ property listings
 
 ### Edge Cases and Error Conditions
-- System must gracefully handle email server connection failures
-- Malformed emails must not crash the processing pipeline
-- Template rendering must fail gracefully with missing variables
-- Duplicate emails must be detected and handled appropriately
-- System must recover from interrupted operations without data loss
+- Handling malformed or spam emails
+- Dealing with bounced emails or invalid addresses
+- Managing template rendering when property data is incomplete
+- Recovering from network interruptions during email operations
+- Handling duplicate client records or property listings
 
 ### Required Test Coverage Metrics
-- Unit test coverage must exceed 90% for all core modules
-- Integration tests must verify all system components working together
-- Performance tests must validate system under various load conditions
-- Boundary tests must verify system behavior with extreme inputs
-- Regression tests must preserve functionality across changes
+- Minimum 90% code coverage across all modules
+- 100% coverage of core email processing functions
+- 100% coverage of template rendering system
+- 100% coverage of client categorization logic
+- Minimum 95% coverage of follow-up sequence engine
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-A successful implementation of PropertyMailFlow will meet the following criteria:
+- All email templates render correctly with dynamic property data
+- Client categorization accurately classifies test client data
+- Follow-up sequences execute according to specified timelines
+- Inquiry source tracking correctly identifies marketing channels
+- Email organization properly files communications by property and client
+- All performance benchmarks are met under load testing
+- The system correctly handles all specified edge cases and error conditions
 
-1. **Efficiency Improvements**
-   - Reduce time spent on email management by at least 60%
-   - Increase response rate to new inquiries to >95% within 2 hours
-   - Ensure consistent follow-up with 100% of qualified leads
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Business Impact**
-   - Enable handling of 50% more listing inquiries without additional time investment
-   - Improve client conversion rates by at least 20% through timely follow-up
-   - Provide actionable insights on marketing channel effectiveness
+## Getting Started
+To set up the development environment:
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-3. **Technical Quality**
-   - Pass all specified test requirements with >90% coverage
-   - Meet or exceed all performance expectations
-   - Provide a clean, well-documented API that could be extended
-   - Operate reliably without unexpected crashes or data loss
-   - Maintain security of sensitive client and property information
+CRITICAL: When testing your implementation, you MUST run tests with pytest-json-report and provide the pytest_results.json file:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
 
-4. **User Experience**
-   - Enable creation of new property templates in under 5 minutes
-   - Allow configuration of new automation rules without programming
-   - Provide clear visibility into system operation and effectiveness
-   - Generate useful analytics that drive business decisions
-
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+Providing the pytest_results.json file is MANDATORY for demonstrating that your implementation meets the requirements.

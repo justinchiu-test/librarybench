@@ -1,150 +1,173 @@
-# Non-Profit Campaign Management System
+# Nonprofit Impact Content Management System
 
 ## Overview
-A specialized content management system for environmental non-profits that enables campaign tracking, volunteer management, impact visualization, grant reporting, and newsletter management. This system focuses on inspiring community action through compelling content while allowing multiple staff members to contribute with minimal training.
+A specialized content management system designed for environmental nonprofit organizations to showcase impact stories, maintain event calendars, and coordinate volunteer activities. This system enables nonprofit coordinators to inspire community action while allowing multiple staff members to contribute content with minimal training.
 
 ## Persona Description
 Jamal coordinates activities for a local environmental organization that needs to inspire community action and recruit volunteers. His primary goal is to showcase impact stories and maintain an active calendar of events while enabling multiple staff members to contribute content with minimal training.
 
 ## Key Requirements
 
-1. **Campaign Page Templates with Donation Goal Tracking**
-   - Implement a campaign management system with progress visualization toward financial goals
-   - Critical for Jamal because it allows his organization to create compelling campaign pages that inspire action and transparently communicate fundraising progress to supporters and stakeholders
+1. **Campaign page templates with donation goal tracking**
+   - Critical for Jamal to create compelling fundraising campaigns with clear goals and progress visualization
+   - Must support multiple concurrent campaigns with different targets and timelines
+   - Should include donation recording with progress metrics and milestone celebrations
 
-2. **Volunteer Opportunity Database with Signup Workflow**
-   - Create a volunteer management system that organizes opportunities and facilitates registration
-   - Essential for Jamal to coordinate the organization's volunteer base, match skills with needs, and streamline the recruitment process for environmental projects and events
+2. **Volunteer opportunity database with signup workflow**
+   - Essential for organizing volunteer activities and managing participant registration
+   - Must track skills needed, time commitments, locations, and capacity limits
+   - Should include volunteer hour logging and recognition system
 
-3. **Impact Visualization Tools**
-   - Develop data visualization capabilities for communicating project outcomes and environmental impact
-   - Important for demonstrating the tangible results of the organization's work, helping to justify continued support and inspire further community engagement through clear, compelling metrics
+3. **Impact visualization tools showing project outcomes**
+   - Important for demonstrating the organization's effectiveness to supporters and stakeholders
+   - Must convert raw data (trees planted, waste collected, emissions reduced) into compelling visual narratives
+   - Should support before/after comparisons and progress over time
 
-4. **Grant-Specific Reporting Page Generator**
-   - Implement a flexible reporting system that organizes content according to grant requirements
-   - Necessary for Jamal to efficiently prepare the documentation required by funders, ensuring the organization can easily demonstrate compliance with grant stipulations
+4. **Grant-specific reporting page generator**
+   - Necessary for fulfilling reporting requirements to different funding organizations
+   - Must organize project data according to various funders' specified formats
+   - Should track grant deliverables against actual outcomes
 
-5. **Newsletter Template System with Subscriber Management**
-   - Create a newsletter content management system with audience segmentation
-   - Crucial for maintaining consistent communication with supporters, allowing the organization to share updates, success stories, and calls to action with appropriate audience targeting
+5. **Newsletter template system with subscriber management**
+   - Valuable for maintaining regular communication with supporters and volunteers
+   - Must support content curation from website activities into newsletter format
+   - Should include subscriber list management with interest-based segmentation
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Campaign progress tracking must be testable with simulated donation data
-- Volunteer management must support mock registration scenarios
-- Impact visualization must be testable with sample metrics and outcomes
-- Report generation must verify correct data inclusion based on grant requirements
-- Newsletter system must be testable with subscriber segments and delivery tracking
+- All components must have unit tests with at least 85% code coverage
+- Integration tests must verify campaign tracking data accuracy
+- Performance tests must verify volunteer registration system under load
+- Mock data system for testing visualization components
 
 ### Performance Expectations
-- Campaign pages should update donation goals in near real-time (< 5 second delay)
-- Volunteer opportunity database should support searching 1000+ opportunities in < 200ms
-- Impact data calculations should process organization-wide metrics in < 2 seconds
-- Report generation should compile complex grant documents in < 30 seconds
-- Newsletter content management should handle lists of 50,000+ subscribers efficiently
+- Campaign pages must load within 2 seconds regardless of donation volume
+- Volunteer registration must process signups within 3 seconds
+- Impact visualizations must render within 5 seconds with datasets of up to 10,000 points
+- Newsletter generation must complete within 10 seconds regardless of content volume
 
 ### Integration Points
-- Payment processor integration for donation tracking
-- Calendar system for volunteer opportunity scheduling
-- Data collection framework for impact metrics
-- Document generation for grant reports
-- Email delivery service integration for newsletters
+- Donation processing system integration for campaign tracking
+- Calendar export for volunteer opportunities
+- Data export for external grant reporting systems
+- Email delivery service for newsletter distribution
 
 ### Key Constraints
-- No UI components, only API endpoints and business logic
-- Support for content contribution by minimally trained staff
-- Compliance with non-profit reporting standards
-- Accessibility considerations for all content
-- Privacy protection for volunteer and donor information
+- All personal volunteer data must be encrypted and handled according to privacy regulations
+- System must work in low-bandwidth environments for field work
+- Data visualizations must be accessible for screen readers
+- Content editing must be possible for non-technical staff
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Non-Profit Campaign Management System includes:
+The system must provide a Python library with the following core components:
 
 1. **Campaign Management**
-   - Campaign definition with goals and metrics
-   - Donation tracking and progress visualization
+   - Campaign data models with goal tracking
+   - Donation recording and progress calculation
    - Campaign timeline management
-   - Multi-contributor support with oversight
+   - Outcome reporting and metrics
 
 2. **Volunteer Coordination**
-   - Opportunity definition and categorization
-   - Skill and interest matching
-   - Registration workflow and confirmation
-   - Attendance tracking and recognition
+   - Opportunity definition and scheduling
+   - Skill and requirement specification
+   - Registration and capacity management
+   - Hour tracking and recognition system
 
-3. **Impact Measurement**
-   - Metric definition and data collection
-   - Statistical analysis and aggregation
-   - Visualization template management
-   - Comparative reporting across initiatives
+3. **Impact Reporting**
+   - Data collection and validation
+   - Metric calculation and aggregation
+   - Visualization data preparation
+   - Comparative analysis tools
 
-4. **Grant Reporting**
-   - Grant requirement template definition
-   - Data collection specific to funder needs
-   - Report generation with appropriate formatting
-   - Submission tracking and follow-up
+4. **Grant Compliance**
+   - Grant requirement specification
+   - Project-to-grant mapping
+   - Custom report generation
+   - Deliverable tracking and verification
 
-5. **Newsletter Management**
-   - Template creation and content planning
-   - Subscriber list management and segmentation
-   - Content scheduling and distribution
-   - Engagement tracking and analysis
+5. **Constituent Communication**
+   - Subscriber list management
+   - Content curation from website activities
+   - Newsletter template system
+   - Audience segmentation and targeting
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Campaign creation and progress tracking
-- Volunteer opportunity management and signup processing
-- Impact data collection and visualization generation
-- Grant-specific report compilation and formatting
-- Newsletter template management and subscriber segmentation
+- Campaigns correctly track donations and progress toward goals
+- Volunteer system accurately manages registrations and prevents overbooking
+- Impact visualizations correctly represent actual project data
+- Grant reporting accurately compiles required information in specified formats
+- Newsletter system properly curates content and manages subscriber lists
 
 ### Critical User Scenarios
-- Creating a fundraising campaign with specific environmental goals
-- Managing a beach cleanup event with volunteer registration
-- Visualizing the impact of a tree planting initiative
-- Generating a comprehensive report for a conservation grant
-- Creating and targeting a newsletter to specific supporter segments
+- Creating a new fundraising campaign with specific goals and timeline
+- Setting up a volunteer event with required skills and registration workflow
+- Generating impact visualizations from project outcome data
+- Preparing a grant report with project metrics and outcomes
+- Creating and distributing a newsletter to segmented subscriber lists
 
 ### Performance Benchmarks
-- Campaign page update performance with concurrent donations
-- Volunteer database search and filtering response times
-- Impact calculation performance with complex metrics
-- Report generation speed with varied grant requirements
-- Newsletter management performance with large subscriber lists
+- System must support at least 50 concurrent campaign page views
+- Volunteer registration must handle at least 100 simultaneous signups
+- Impact visualization must process datasets with at least 10,000 data points
+- Newsletter generation must support documents with at least 50 content elements
 
 ### Edge Cases and Error Conditions
-- Handling campaign goal adjustments mid-fundraising
-- Managing volunteer cancellations and capacity changes
-- Addressing incomplete or inconsistent impact data
-- Handling special formatting requirements for unusual grants
-- Managing bounced emails and subscriber list hygiene
+- Handling campaign goal adjustments mid-campaign
+- Managing volunteer cancellations and waitlist processing
+- Dealing with incomplete or inconsistent impact data
+- Adapting to changing grant reporting requirements
+- Recovering from interrupted newsletter distribution
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of financial calculation code paths
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for sensitive data handling
+- Minimum 85% code coverage across all modules
+- 100% coverage of donation calculation logic
+- 100% coverage of volunteer registration workflows
+- 100% coverage of data visualization preparation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Campaign pages can be created with accurate donation goal tracking
-2. Volunteer opportunities can be managed with functional signup workflow
-3. Project outcomes can be visualized with compelling impact metrics
-4. Grant-specific reports can be generated with appropriate formatting
-5. Newsletters can be managed with effective subscriber segmentation
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. Multiple staff members can contribute content without conflicts
-9. All tests pass, demonstrating the functionality works as expected
+1. The campaign system accurately tracks donations and progress toward goals
+2. The volunteer system effectively manages opportunities and participant registration
+3. The impact visualization system correctly represents project outcomes
+4. The grant reporting system generates accurate reports in required formats
+5. The newsletter system properly manages subscribers and content curation
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

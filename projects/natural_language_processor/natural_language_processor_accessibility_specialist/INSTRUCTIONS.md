@@ -1,147 +1,236 @@
-# Accessible Content Analyzer
+# Accessible Content Analysis Toolkit
+
+A specialized natural language processing framework for analyzing and improving text clarity, simplifying complex content, and optimizing digital materials for people with cognitive or reading disabilities.
 
 ## Overview
-A specialized natural language processing toolkit designed for accessibility specialists to analyze text complexity, identify clarity issues, and generate recommendations to make digital content more accessible for people with cognitive or reading disabilities.
+
+This project provides content accessibility specialists with powerful tools to analyze text complexity, identify clarity issues, suggest simplifications, and ensure digital content meets accessibility guidelines. The toolkit focuses on plain language conversion, sentence structure simplification, cognitive load estimation, jargon detection, and screen reader optimization.
 
 ## Persona Description
+
 Miguel ensures digital content meets accessibility guidelines for people with disabilities. He needs to analyze text complexity, identify clarity issues, and suggest improvements to make content more accessible to people with cognitive or reading disabilities.
 
 ## Key Requirements
-1. **Plain Language Conversion**: Develop algorithms to identify complex terminology, jargon, and unnecessarily difficult wording, suggesting simpler alternatives that maintain the original meaning. This is essential for making content accessible to people with cognitive disabilities, lower literacy levels, or non-native language speakers who struggle with advanced vocabulary and complex phrasing.
 
-2. **Sentence Structure Simplification**: Implement analysis and transformation capabilities to identify and reformat complicated syntactic patterns, including long sentences, passive voice, nested clauses, and convoluted structures. This addresses cognitive processing challenges by reducing the working memory load required to parse and comprehend content.
+1. **Plain Language Conversion Engine**: Develop algorithms to identify complex terminology and suggest simpler alternatives while preserving the original meaning of the content.
+   - This feature is critical for Miguel as it enables him to transform specialized or technical content into language that's more accessible to users with cognitive disabilities or limited reading proficiency.
+   - The system must distinguish between necessary technical terms that should be explained and unnecessarily complex language that can be simplified without losing meaning.
 
-3. **Cognitive Load Estimation**: Create quantitative measures for estimating the processing demands of different text sections based on linguistic complexity, information density, abstraction level, and prerequisite knowledge. This helps identify content that may overwhelm users with cognitive limitations, allowing targeted simplification of the most challenging sections.
+2. **Sentence Structure Simplification**: Create tools to identify and reformat complex syntactic patterns that may pose cognitive barriers, such as double negatives, long embedded clauses, and passive voice constructions.
+   - This capability allows Miguel to restructure difficult-to-process sentences into clearer, more direct statements that reduce cognitive load for users with reading disabilities.
+   - The simplification must preserve the semantic content while making structural changes that improve readability and comprehension.
 
-4. **Jargon and Abbreviation Detection**: Build pattern recognition to highlight specialized terms, technical language, abbreviations, and acronyms requiring explanation, with suggestions for clear definitions or replacements. This prevents accessibility barriers created by assumed knowledge and specialized vocabulary that excludes many users.
+3. **Cognitive Load Estimation Framework**: Implement a system to measure the processing demands of different text sections based on linguistic complexity, information density, and structural factors.
+   - This feature helps Miguel identify content sections that may overwhelm readers with cognitive disabilities, allowing prioritization of the most challenging areas for revision.
+   - The estimation must consider multiple factors beyond simple readability formulas, including abstract reasoning requirements, working memory demands, and attentional load.
 
-5. **Screen Reader Optimization**: Develop analysis tools to ensure content is structured appropriately for audio presentation, including proper heading hierarchy, meaningful link text, image alternatives, and pronunciation guidance for unusual terms. This enhances accessibility for users with visual impairments who rely on screen readers to access digital content.
+4. **Jargon and Abbreviation Detection**: Build a comprehensive system to highlight specialized terminology, acronyms, and abbreviations that require explanation for general audience comprehension.
+   - This capability ensures Miguel can identify domain-specific language that creates barriers for users with cognitive disabilities or limited background knowledge.
+   - The detection must recognize both obvious technical terms and subtle professional jargon that content creators might not realize needs explanation.
+
+5. **Screen Reader Optimization Analysis**: Develop tools to evaluate how content will be experienced through screen readers and suggest structural improvements for better audio presentation.
+   - This feature is essential for Miguel to ensure content is equally accessible to users with visual impairments who rely on screen readers, especially those who also have cognitive disabilities.
+   - The analysis must consider how text structure, formatting, and organization affect the screen reader experience and suggest improvements that benefit both audio and visual users.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - All analysis algorithms must produce consistent, deterministic results
-  - Readability metrics must align with established accessibility standards
-  - Plain language recommendations must maintain semantic equivalence
-  - All transformations must preserve essential meaning and information
-  - Results must be reproducible across different text types
 
-- **Performance Expectations**:
-  - Process website-scale content (50+ pages) in reasonable timeframes
-  - Support incremental analysis for content updates
-  - Handle document-length text (10K+ words) efficiently
-  - Generate recommendations in near real-time for interactive use
-  - Maintain performance with diverse content types and structures
+### Testability Requirements
+- All language simplification suggestions must be testable against readability metrics
+- Sentence restructuring algorithms must produce measurable complexity reductions
+- Cognitive load estimates must correlate with established accessibility guidelines
+- Jargon detection must be verifiable against domain-specific term dictionaries
+- Screen reader optimizations must be testable for improved linear presentation
 
-- **Integration Points**:
-  - Support for common content formats (HTML, Markdown, DOCX, etc.)
-  - Alignment with WCAG (Web Content Accessibility Guidelines) standards
-  - Integration with readability frameworks (Flesch-Kincaid, SMOG, etc.)
-  - Export capabilities for accessibility audit reports
-  - Support for custom terminology dictionaries and plain language standards
+### Performance Expectations
+- Process and analyze documents up to 50,000 words in under 30 seconds
+- Generate plain language alternatives in real-time for interactive use
+- Complete comprehensive accessibility analysis of typical web pages (<10,000 words) in under 5 seconds
+- Support batch processing of multiple documents for large-scale content audits
+- Handle content with diverse formatting, structure, and technical complexity
 
-- **Key Constraints**:
-  - Use only Python standard library without external dependencies
-  - Maintain high precision to prevent meaning distortion
-  - Respect diverse reading abilities and cognitive profiles
-  - Support for multilingual content where possible
-  - Balance simplification with information preservation
+### Integration Points
+- Accept content in common formats (HTML, Markdown, DOCX, PDF, plain text)
+- Provide programmatic access to all analysis results
+- Export suggestions in formats suitable for content management systems
+- Support integration with accessibility standards (WCAG, ADA, Section 508)
+- Enable customization for different target audiences and accessibility needs
+
+### Key Constraints
+- Implementation must use only Python standard library
+- Analysis must work without reliance on external APIs or services
+- System must handle diverse content domains without domain-specific training
+- Suggestions must balance accessibility with preservation of essential meaning
+- Processing must be adaptable to different target audience cognitive profiles
+- All components must be independently testable and verifiable
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement:
 
-1. Text complexity analysis frameworks for:
-   - Vocabulary complexity assessment
-   - Sentence structure and syntax analysis
-   - Reading level estimation using multiple methodologies
-   - Information density and cognitive load calculation
-   - Document structure and organization evaluation
+The system consists of five main components:
 
-2. Plain language transformation capabilities:
-   - Complex vocabulary identification and simplification
-   - Sentence restructuring and length optimization
-   - Passive voice identification and active voice conversion
-   - Nominalization detection and verbification
-   - Abstract concept concretization
+1. **Plain Language Converter**: A framework for identifying and simplifying complex language. It should:
+   - Detect overly complex or specialized vocabulary
+   - Suggest simpler alternatives that preserve meaning
+   - Recognize when technical terms must be retained and need explanation
+   - Support different target reading levels for suggestions
+   - Maintain a balance between simplicity and precision
 
-3. Specialized content accessibility analysis:
-   - Technical jargon and specialized terminology detection
-   - Abbreviation and acronym identification
-   - Cultural reference and idiom recognition
-   - Assumed knowledge assessment
-   - Ambiguity and multiple meaning detection
+2. **Syntactic Simplification Engine**: A system for restructuring complex sentences. It should:
+   - Identify sentences with difficult syntactic structures
+   - Recognize passive voice, double negatives, and embedded clauses
+   - Suggest restructuring into simpler, more direct patterns
+   - Split long sentences into more manageable units
+   - Preserve semantic relationships while simplifying structure
 
-4. Screen reader and assistive technology optimization:
-   - Document structure analysis for logical flow
-   - Heading hierarchy verification
-   - Link text meaningfulness assessment
-   - Alternative text evaluation and recommendations
-   - Pronunciation guidance generation for unusual terms
+3. **Cognitive Accessibility Analyzer**: A framework for estimating processing demands. It should:
+   - Calculate cognitive load based on multiple linguistic factors
+   - Measure information density and conceptual complexity
+   - Identify sections requiring high working memory capacity
+   - Evaluate abstract reasoning demands in the content
+   - Generate section-by-section cognitive accessibility scores
 
-5. Accessibility improvement recommendation engines:
-   - Plain language alternatives with equivalent meanings
-   - Structure simplification with content preservation
-   - Explanation generation for necessary complex terms
-   - Format and presentation optimization
-   - Progressive complexity implementation for layered access
+4. **Terminology Management System**: A tool for detecting specialized language. It should:
+   - Identify domain-specific terminology and professional jargon
+   - Detect acronyms and abbreviations requiring expansion
+   - Recognize subtle jargon that appears to be common language
+   - Suggest explanations for necessary technical terms
+   - Track consistency of terminology use throughout documents
+
+5. **Screen Reader Experience Optimizer**: A framework for audio presentation analysis. It should:
+   - Evaluate content structure from a linear audio perspective
+   - Identify elements that create confusion in audio presentation
+   - Suggest improvements for headings, lists, and navigation elements
+   - Analyze descriptive text adequacy for non-textual elements
+   - Recommend structural changes to improve the listening experience
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of complexity analysis against established readability metrics
-  - Semantic preservation in plain language conversions
-  - Precision of jargon and abbreviation detection
-  - Effectiveness of screen reader optimization recommendations
-  - Compliance of output with accessibility guidelines
 
-- **Critical User Scenarios**:
-  - Analyzing technical documentation for accessibility barriers
-  - Simplifying educational content for diverse learning abilities
-  - Optimizing public health information for universal understanding
-  - Evaluating legal notices for plain language compliance
-  - Ensuring digital interfaces have accessible instructions
+### Key Functionalities to Verify
 
-- **Performance Benchmarks**:
-  - Complete analysis of 10,000-word documents in under 2 minutes
-  - Process website content (50+ pages) in under 10 minutes
-  - Generate meaningful recommendations for 90%+ of identified issues
-  - Achieve readability improvements of at least 20% for complex texts
-  - Maintain accuracy across different content domains and types
+1. Plain Language Conversion:
+   - Test vocabulary simplification while preserving meaning
+   - Verify appropriate handling of necessary technical terms
+   - Test reading level reduction across different content types
+   - Validate meaning preservation in simplified versions
+   - Verify handling of domain-specific terminology
 
-- **Edge Cases and Error Conditions**:
-  - Handling highly technical or specialized content
-  - Processing multilingual or code-switching texts
-  - Managing content with necessary complexity (e.g., legal requirements)
-  - Analyzing texts with unconventional structures or formats
-  - Balancing simplification with precision in scientific content
+2. Sentence Structure Simplification:
+   - Test recognition of complex syntactic patterns
+   - Verify restructuring of passive voice constructions
+   - Test splitting of long sentences with multiple clauses
+   - Validate preservation of logical relationships
+   - Verify handling of different writing styles and genres
 
-- **Required Test Coverage**:
-  - 90%+ coverage of all analysis algorithms
-  - Comprehensive testing of transformation recommendations
-  - Validation against established accessibility standards
-  - Testing with diverse text types (technical, educational, legal, etc.)
-  - Verification with actual screen reader technologies
+3. Cognitive Load Estimation:
+   - Test correlation with established readability metrics
+   - Verify detection of high cognitive demand sections
+   - Test factor weighting in composite cognitive scores
+   - Validate consistency across similar content types
+   - Verify alignment with accessibility research findings
 
-IMPORTANT: 
+4. Jargon and Abbreviation Detection:
+   - Test identification of specialized terminology
+   - Verify recognition of domain-specific abbreviations
+   - Test detection of unexplained acronyms
+   - Validate classification of jargon severity
+   - Verify performance across different content domains
+
+5. Screen Reader Optimization:
+   - Test identification of problematic structural elements
+   - Verify recommendations for improved linear presentation
+   - Test analysis of heading structure and navigation
+   - Validate detection of description inadequacies
+   - Verify suggestions improve actual screen reader output
+
+### Critical User Scenarios
+
+1. Analyzing technical documentation to make it accessible to users with cognitive disabilities
+2. Simplifying legal or policy content while preserving all required information
+3. Optimizing educational materials for learners with reading disabilities
+4. Improving government communications for universal accessibility
+5. Enhancing healthcare instructions for patients with cognitive impairments
+
+### Performance Benchmarks
+
+- Plain language conversion should reduce average reading level by at least 2 grades while preserving meaning
+- Sentence structure simplification should reduce cognitive complexity measures by at least 30%
+- Cognitive load estimation should achieve at least 85% correlation with expert accessibility evaluations
+- Jargon detection should identify at least 90% of specialized terms in test documents
+- Screen reader optimization should improve linear navigation measures by at least 40%
+
+### Edge Cases and Error Conditions
+
+- Test with highly technical or specialized content
+- Verify behavior with content containing deliberate complexity (e.g., legal documents)
+- Test with content that is already simplified to verify no loss of meaning
+- Validate performance on content with mixed reading levels
+- Test with multilingual or code-switching content
+- Verify handling of content with unusual structural elements
+- Test with content containing cultural references that affect comprehension
+
+### Required Test Coverage Metrics
+
+- Line coverage: Minimum 90%
+- Branch coverage: Minimum 85%
+- Function coverage: Minimum 95%
+- All public APIs must have 100% test coverage
+- All error handling paths must be tested
+- All simplification algorithms must be thoroughly tested
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. Plain language conversion maintains semantic equivalence while reducing complexity
-2. Sentence structure simplification measurably reduces cognitive load
-3. Cognitive load estimation aligns with human expert assessment
-4. Jargon and abbreviation detection identifies 95%+ of specialized terms
-5. Screen reader optimization recommendations comply with WCAG standards
-6. The system provides actionable improvements that enhance accessibility
-7. Content processed through the system shows measurable readability improvements
-8. Analysis results align with professional accessibility evaluation
-9. The toolkit integrates effectively with accessibility compliance workflows
-10. Users with diverse cognitive abilities demonstrate improved comprehension with optimized content
+- The system successfully reduces average reading level of test content by at least 2 grade levels while preserving meaning
+- Sentence structure simplification correctly identifies and restructures at least 85% of complex syntactic patterns
+- Cognitive load estimation correlates with expert accessibility evaluations at r ≥ 0.80
+- Jargon detection identifies at least 90% of domain-specific terms requiring explanation
+- Screen reader optimization suggestions improve standard accessibility audit scores by at least 25%
 
-## Development Environment
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up your development environment:
+
+1. Create a virtual environment using uv:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Install testing tools:
+   ```
+   pip install pytest pytest-json-report
+   ```
+
+5. Run tests with JSON reporting:
+   ```
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+IMPORTANT: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion. This file serves as proof that all tests pass and the implementation meets the specified requirements.

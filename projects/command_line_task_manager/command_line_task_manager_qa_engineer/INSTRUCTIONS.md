@@ -1,168 +1,151 @@
-# TermTask for QA Engineers
+# TestTrack CLI - Command-Line Task Management for QA Professionals
 
 ## Overview
-A specialized command-line task management system designed for QA engineers who need to track test cases and bug reports methodically. This variant focuses on test case templating, bug reporting workflows, evidence management, test coverage visualization, and regression testing coordination to streamline the quality assurance process.
+A specialized command-line task management system designed for QA engineers who need to methodically track test cases and bug reports across multiple product features. The system enables systematic test case management, comprehensive bug reporting, visual evidence capture, and insightful test coverage visualization.
 
 ## Persona Description
 Jamal performs quality assurance testing across multiple product features and needs to track test cases and bug reports methodically. His primary goal is to associate test tasks with specific features and efficiently document test results with evidence.
 
 ## Key Requirements
+1. **Test Case Templating**: Implement a sophisticated templating system for test cases with expected results and pass/fail tracking. This feature is critical for Jamal as it ensures consistency across test documentation, standardizes the information captured for each test scenario, and streamlines the creation of comprehensive test suites for new features.
 
-1. **Test Case Templating System**
-   - Create structured test case templates with steps and expected results
-   - Track test execution with pass/fail status
-   - Support parametrized test cases for different configurations
-   - Maintain test case versioning as features evolve
-   - This feature is critical because it standardizes test documentation, ensures comprehensive coverage, and enables Jamal to efficiently execute tests with clear expectations and results tracking.
+2. **Bug Reporting Workflow**: Create a structured workflow for capturing bug reports with automatic environment information collection. This capability enables Jamal to document issues with complete technical context, ensure all necessary information is captured for developers to reproduce problems, and maintain consistent quality of bug reports across different testers and projects.
 
-2. **Bug Reporting Workflow**
-   - Capture detailed bug information with reproduction steps
-   - Automatically collect environment information
-   - Generate formatted bug reports for developer handoff
-   - Track bug lifecycle from discovery to verification
-   - This capability is essential because it streamlines the process of documenting and communicating bugs, ensuring all necessary information is captured at discovery time and tracked through resolution.
+3. **Screenshot/Recording Attachment**: Develop functionality to capture and attach visual evidence (screenshots and recordings) to test results and bug reports. This feature allows Jamal to provide clear visual documentation of issues, eliminate ambiguity in bug descriptions, and create a visual record of test results that can be easily referenced by developers and stakeholders.
 
-3. **Screenshot and Recording Management**
-   - Attach visual evidence to test results and bug reports
-   - Organize and tag visual artifacts for easy retrieval
-   - Compare images for visual regression testing
-   - Annotate screenshots to highlight specific issues
-   - This feature is vital because visual evidence is crucial for effective bug communication, and efficient management of these assets saves significant time in the QA process.
+4. **Test Coverage Visualization**: Build analytics functionality that visualizes test coverage by feature and component. This visualization helps Jamal identify gaps in testing efforts, prioritize testing activities for maximum coverage, and demonstrate testing thoroughness to project stakeholders with clear metrics and visualizations.
 
-4. **Test Coverage Visualization**
-   - Map test cases to features and components
-   - Visualize coverage metrics by product area
-   - Identify gaps in test coverage
-   - Track coverage trends over time
-   - This functionality is critical because it helps Jamal ensure adequate testing across the entire product, prioritize testing efforts, and communicate quality status to stakeholders with clear visualizations.
-
-5. **Regression Test Coordination**
-   - Identify related tests needed when code changes occur
-   - Automate test suite creation based on impacted areas
-   - Schedule and prioritize regression testing
-   - Track regression test completion and results
-   - This feature is essential because it ensures that code changes don't introduce regressions, optimizes the scope of retesting needed for each change, and prevents quality issues from reaching production.
+5. **Regression Tracking**: Implement intelligence for identifying related tests that should be run when specific code changes occur. This capability enables Jamal to efficiently target regression testing efforts based on code modifications, prioritize tests most likely to uncover regression issues, and maintain quality assurance efficiency as the codebase evolves.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock test case database for testing template functionality
-- Simulated bug reports for testing workflow processing
-- Virtual screenshot system for testing image management
-- Test coverage data simulation for testing visualization
-- Code change simulation for testing regression identification
+- Test template rendering must be verifiable with predefined inputs and expected outputs
+- Bug report generation must be testable with simulated environment data
+- Media attachment functionality must be testable without actual screenshots/recordings
+- Test coverage calculation must be verifiable with predetermined test and feature data
+- Regression analysis must be testable with mock code change data
+- All components must be unit testable with mock data sources
 
 ### Performance Expectations
-- Support for 10,000+ test cases across multiple products
-- Handle 1,000+ bug reports with attachments
-- Store and retrieve 5,000+ screenshots and recordings
-- Generate coverage visualizations for 100+ components in under 2 seconds
-- Identify regression test requirements in under 1 second
+- Template rendering must complete in <50ms
+- Bug report generation with environment capture must complete in <200ms
+- The system must handle test suites with 10,000+ test cases efficiently
+- Coverage calculation must process large test suites (5,000+ tests) in <10 seconds
+- Regression analysis must identify related tests for a given code change in <5 seconds
 
 ### Integration Points
-- Bug tracking systems (Jira, GitHub Issues, etc.)
-- Version control systems for code change tracking
-- Continuous integration systems for test execution
-- Screenshot and recording capture tools
-- Test automation frameworks for result import
+- Source code repository for regression analysis
+- Environment information capture system
+- Screenshot/recording capture mechanism
+- Test results database
+- Bug tracking system integration
+- Code coverage data import/export
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Support for offline test execution and result recording
-- Efficient storage of visual artifacts
-- Minimal memory footprint during test execution
-- Must not interfere with application under test
+- The implementation must work across different operating systems
+- All functionality must be accessible via programmatic API without UI components
+- Media attachments must be stored efficiently without excessive duplication
+- Environment information capture must be configurable for different testing environments
+- The system must maintain performance with very large test suites and bug databases
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for QA engineers includes:
+1. **Test Case Management**: A core module handling CRUD operations for test cases with templating, categorization, and expected result management.
 
-1. **Test Management Core**
-   - Create, read, update, and delete test cases
-   - Organize tests by feature, component, and type
-   - Track test execution status and history
-   - Support for test suites and execution plans
-   - Persistence with version history
+2. **Bug Tracking Engine**: Functionality for capturing, documenting, and tracking bugs with automatic environment information collection and status management.
 
-2. **Test Case Templating Engine**
-   - Define structured test case templates
-   - Support for test steps and expected results
-   - Implement parametrization for variations
-   - Track test case versions as features evolve
-   - Generate executable test procedures
+3. **Evidence Management System**: Components for capturing, storing, and retrieving visual evidence (screenshots and recordings) linked to specific test runs or bug reports.
 
-3. **Bug Tracking System**
-   - Capture comprehensive bug information
-   - Implement bug lifecycle workflows
-   - Link bugs to test cases and product features
-   - Generate formatted bug reports
-   - Track bug resolution and verification
+4. **Coverage Analysis Framework**: Logic for calculating and visualizing test coverage across different dimensions (features, components, requirements).
 
-4. **Evidence Management Framework**
-   - Capture and store screenshots and recordings
-   - Organize visual evidence by test and feature
-   - Implement tagging and search capabilities
-   - Support image comparison and annotation
-   - Manage storage efficiency for visual artifacts
+5. **Regression Intelligence**: Algorithms to analyze code changes and identify potentially affected test cases based on historical data and code organization.
 
-5. **Coverage Analysis Engine**
-   - Map tests to product components and features
-   - Calculate coverage metrics by area
-   - Identify testing gaps and priorities
-   - Visualize coverage through customizable views
-   - Track coverage evolution over time
+6. **Environment Capture**: Functionality to automatically collect relevant system information, application state, and configuration details during test execution.
 
-6. **Regression Testing Coordinator**
-   - Analyze code changes for impact assessment
-   - Identify affected test cases for regression
-   - Create optimized regression test suites
-   - Prioritize tests based on risk and impact
-   - Track regression testing progress and results
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Test case templates correctly structure test information
-- Bug reporting workflow captures complete information
-- Visual evidence is properly captured and managed
-- Coverage visualization accurately represents test distribution
-- Regression test identification correctly finds affected tests
+- Test case creation, retrieval, updating, and deletion with template support
+- Bug report generation with automatic environment information capture
+- Screenshot and recording attachment to test results and bug reports
+- Test coverage calculation and analysis by feature and component
+- Regression test identification based on code changes
+- Environment information capture accuracy and completeness
 
 ### Critical User Scenarios
-- Creating and executing a new test case for a feature
-- Reporting a bug with complete environment information and evidence
-- Analyzing test coverage for a product area
-- Determining which tests to run after a code change
-- Planning test strategy for a new sprint based on coverage gaps
+- Complete QA workflow from test planning to execution to reporting
+- Bug discovery, documentation, and lifecycle management
+- Test suite organization for new feature development
+- Regression testing for software updates
+- Test coverage reporting for stakeholder reviews
+- Historical analysis of test effectiveness
 
 ### Performance Benchmarks
-- Test case creation and modification in under 1 second
-- Bug report generation with attachments in under 3 seconds
-- Screenshot capture and storage in under 2 seconds
-- Coverage visualization generation in under 2 seconds for large products
-- Regression test identification in under 1 second for typical code changes
+- Test case operations must complete in <50ms for individual operations
+- Bug report generation must handle 100+ reports per minute during intensive testing
+- The system must efficiently store and retrieve media attachments up to 10MB in size
+- Coverage calculation must handle projects with 1000+ features/components
+- Regression analysis must process codebases with 100,000+ lines efficiently
 
 ### Edge Cases and Error Conditions
-- Handling test failures with complex output
-- Managing corrupted or unusable screenshots
-- Processing conflicting test results across environments
-- Dealing with incomplete code change information
-- Recovering from interrupted test execution
-- Supporting very large test suites (10,000+ cases)
+- Handling incomplete environment information during bug reporting
+- Proper management of failed screenshot/recording capture attempts
+- Recovery from interrupted test runs with partial results
+- Accurate coverage calculation with overlapping or nested features
+- Regression analysis with major code refactoring or restructuring
+- Handling unusually large media attachments or environment data
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for bug reporting and regression identification
-- Comprehensive integration tests for all system connections
-- Performance tests for large test suite scenarios
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify all external system interfaces
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully structures test cases in a standardized format
-- Bug reports include all information needed for efficient resolution
-- Visual evidence management reduces time spent handling screenshots
-- Coverage visualization clearly identifies areas needing additional testing
-- Regression testing is efficiently targeted to affected areas
-- QA engineer productivity increases by at least 25%
-- Bug report quality improves with fewer "cannot reproduce" issues
-- Regression issues are reduced by at least 30% after implementation
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates effective templating for test cases with expected results tracking.
+3. Bug reporting automatically captures relevant environment information.
+4. Screenshots and recordings can be attached to test results and bug reports.
+5. Test coverage visualization accurately represents testing status by feature and component.
+6. Regression tracking correctly identifies tests that should be run based on code changes.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation provides clear evidence of test results and bug conditions.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

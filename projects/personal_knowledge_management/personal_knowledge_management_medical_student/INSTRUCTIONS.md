@@ -1,138 +1,163 @@
-# MedicalMind: Knowledge Management System for Medical Students
+# MedicalMind - A Knowledge Management System for Medical Students
 
 ## Overview
-MedicalMind is a specialized personal knowledge management system designed for medical students who need to organize vast amounts of interconnected medical knowledge across body systems, diseases, and treatment approaches while optimizing retention through spaced repetition and clinical case integration.
+MedicalMind is a specialized knowledge management system designed for medical students who need to organize and connect vast amounts of information across different body systems, diseases, and treatment approaches. The system enables users to create anatomical relationships, build diagnostic frameworks, manage pharmacological information, optimize study through spaced repetition, and integrate theoretical knowledge with clinical cases.
 
 ## Persona Description
 Jamal is studying medicine, absorbing vast amounts of information across different body systems, diseases, and treatment approaches. He needs to create interconnected medical knowledge that links symptoms, pathophysiology, and interventions.
 
 ## Key Requirements
-1. **Anatomical relationship mapping**: Create and navigate connections between body structures, physiological functions, and associated pathologies. This feature is crucial for Jamal to understand how anatomical structures relate to each other both spatially and functionally, and how abnormalities in structure lead to specific disease presentations and clinical findings.
+1. **Anatomical relationship mapping** - Develop a comprehensive system for connecting anatomical structures with their functions and associated pathologies. This capability is critical for Jamal to understand the complex interrelationships in human anatomy, visualize how structural abnormalities lead to functional impairments, and build an integrated mental model that connects physical structures to disease processes. The system must support multi-level relationships across different body systems while maintaining biomedical accuracy.
 
-2. **Diagnostic decision trees**: Develop interactive clinical reasoning paths that link symptoms to potential conditions with associated probabilities and key differentiating factors. This capability helps Jamal develop systematic diagnostic thinking, understand the relative likelihood of different conditions for presenting symptoms, and identify the most useful tests or observations to narrow diagnostic possibilities.
+2. **Diagnostic decision trees** - Create a framework for building and navigating diagnostic reasoning pathways that link symptoms to potential conditions with associated probabilities. This feature allows Jamal to develop clinical reasoning skills, understand the differential diagnosis process, and practice the systematic elimination approach used in clinical medicine. The system should support evidence-based probability estimates and incorporate key diagnostic criteria for various conditions.
 
-3. **Pharmacological reference**: Build a comprehensive medication knowledge base that connects drugs with their mechanisms of action, indications, contraindications, and interaction profiles. This reference system is essential for learning the complex world of pharmacology, understanding why specific medications are chosen for particular conditions, and recognizing potential adverse effects or interactions.
+3. **Pharmacological reference** - Implement a robust system for organizing medication information including mechanisms of action, indications, contraindications, and drug interactions. This capability helps Jamal master the extensive pharmacology knowledge required in medical education, understand the biochemical basis of drug effects, and learn to anticipate potential medication interactions. The reference system must maintain current information while supporting the theoretical understanding needed during pre-clinical years.
 
-4. **Spaced repetition optimization**: Implement an intelligent review system that prioritizes medical knowledge review based on exam schedules, difficulty, and importance. This learning optimization is critical for managing the enormous volume of information in medical education, ensuring that high-yield content receives appropriate focus, and timing reviews to align with upcoming assessments.
+4. **Spaced repetition optimization** - Develop an adaptive learning system that prioritizes medical knowledge review based on forgetting curves and exam schedules. This feature is essential for Jamal to efficiently retain the massive volume of medical information, focus study time on challenging material, and prepare strategically for specific assessments in the curriculum. The system should analyze performance data to customize repetition intervals for optimal retention.
 
-5. **Clinical case integration**: Link theoretical medical knowledge with patient presentations by connecting pathophysiological concepts to their real-world manifestations in clinical scenarios. This bridging of theory and practice helps Jamal contextualize abstract medical concepts, understand how diseases present in actual patients, and develop clinical reasoning skills necessary for medical practice.
+5. **Clinical case integration** - Create tools for connecting theoretical medical knowledge with patient presentations and clinical scenarios. This functionality allows Jamal to bridge the gap between classroom learning and clinical application, develop pattern recognition for disease presentations, and practice applying basic science concepts to patient care contexts. The system should support both structured case studies and personal clinical encounter notes.
 
 ## Technical Requirements
-- **Testability requirements**:
-  - All relationship mapping functions must be independently testable
-  - Diagnostic algorithms must be verifiable against established clinical guidelines
-  - Pharmacological data accuracy must be testable against authoritative references
-  - Spaced repetition scheduling must be validated for optimal retention
-  - Clinical case linkage must be verifiable for accuracy and relevance
+- **Testability Requirements**:
+  - All components must be testable through well-defined APIs
+  - Anatomical relationships must be verifiable against established medical references
+  - Diagnostic algorithms must be testable with standardized case scenarios
+  - Pharmacological data must be validated against authoritative sources
+  - Spaced repetition algorithms must be verifiable with simulated learning patterns
 
-- **Performance expectations**:
-  - System must efficiently handle 10,000+ interconnected medical concepts
-  - Anatomical relationship visualization should render in under 3 seconds
-  - Diagnostic path generation should complete in under 2 seconds
-  - Full-text search across all medical knowledge should return results in under 2 seconds
-  - Spaced repetition scheduling should process 5,000+ items in under 5 seconds
+- **Performance Expectations**:
+  - System must efficiently handle knowledge bases with 50,000+ interconnected medical concepts
+  - Anatomical relationship queries must complete in under 500ms
+  - Diagnostic tree traversal must process complex symptom combinations in under 1 second
+  - Full-text search across pharmacological data must return results in under 2 seconds
+  - Spaced repetition scheduling must process 10,000+ knowledge items in under 3 seconds
 
-- **Integration points**:
-  - Plain text and Markdown file support
-  - Structured medical knowledge databases (optional)
-  - Evidence-based medicine resources
-  - Exam and study schedule management
-  - Clinical case repository
+- **Integration Points**:
+  - Support for standard medical terminology (SNOMED CT, ICD-10, etc.)
+  - Import capabilities for common medical reference formats
+  - Export functionality for study materials and clinical notes
+  - Integration with evidence-based medicine databases
+  - Support for medical image annotation and reference (text-based descriptions only)
 
-- **Key constraints**:
-  - All data must be stored locally in accessible, plain-text formats
-  - No dependency on external web services for core functionality
-  - Must support offline operation
-  - Must maintain medical accuracy and currency
-  - System must be navigable under time pressure (e.g., during clinical rotations)
+- **Key Constraints**:
+  - All data must be stored locally without cloud dependencies
+  - System must maintain medical accuracy while simplifying complex relationships
+  - No user interface components - all functionality exposed through APIs
+  - Implementation must support frequent knowledge base updates
+  - System must operate efficiently with limited memory resources
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement a comprehensive knowledge management foundation with specialized features for medical education:
+MedicalMind needs to implement these core capabilities:
 
-1. **Medical Knowledge Organization**:
-   - Create structured representations of anatomical and physiological concepts
-   - Organize information by body systems, disease processes, and clinical presentations
-   - Link related concepts across traditional medical education boundaries
-   - Support both hierarchical and network-based organization of medical knowledge
+1. **Anatomical Knowledge Graph**: A comprehensive system for representing bodily structures and functions:
+   - Entity representation for organs, tissues, cells, and systems
+   - Relationship modeling for structural and functional connections
+   - Pathological process integration linking structures to diseases
+   - Multi-scale representation from molecular to organ system levels
+   - Bidirectional navigation between related anatomical concepts
 
-2. **Clinical Reasoning Framework**:
-   - Build diagnostic pathways from symptoms to potential diagnoses
-   - Assign likelihood values to different diagnostic possibilities
-   - Identify key distinguishing features between similar conditions
-   - Integrate evidence-based decision support for diagnostic processes
+2. **Clinical Reasoning Engine**: A framework for diagnostic thinking:
+   - Symptom-based decision tree construction
+   - Bayesian probability modeling for differential diagnoses
+   - Rule-in and rule-out criteria for various conditions
+   - Lab value interpretation and significance assessment
+   - Diagnostic pathway visualization using text-based formats
 
-3. **Pharmacological Information Management**:
-   - Create comprehensive medication profiles with mechanism, indications, and effects
-   - Track drug interactions and contraindications
-   - Link medications to the conditions they treat and the mechanisms of those conditions
-   - Organize pharmacological knowledge by drug class and clinical application
+3. **Pharmacology Database**: A structured system for medication knowledge:
+   - Comprehensive drug information with mechanism categorization
+   - Medication classification by therapeutic category
+   - Interaction detection between multiple medications
+   - Side effect profiling with frequency and severity data
+   - Pharmacokinetic and pharmacodynamic principle modeling
 
-4. **Learning Optimization System**:
-   - Implement spaced repetition algorithms tuned for medical knowledge
-   - Prioritize review based on exam schedules, difficulty, and clinical relevance
-   - Track knowledge retention and identify areas needing additional focus
-   - Optimize study time allocation across different medical domains
+4. **Adaptive Learning System**: A sophisticated spaced repetition framework:
+   - Individual forgetting curve calculation based on performance
+   - Exam-aware scheduling prioritizing relevant content
+   - Difficulty-based repetition interval adjustment
+   - Knowledge dependency tracking for prerequisite concepts
+   - Performance analytics to identify knowledge gaps
 
-5. **Clinical Application Integration**:
-   - Create and manage clinical case repositories
-   - Link theoretical concepts to their clinical manifestations
-   - Build pattern recognition for common and atypical disease presentations
-   - Bridge basic science foundations with clinical applications
+5. **Clinical Case Repository**: A system for applied medical knowledge:
+   - Structured case representation with key clinical elements
+   - Mapping between theoretical concepts and clinical manifestations
+   - Pattern recognition support for similar case identification
+   - Progressive case revelation simulating clinical discovery
+   - Reflection capability for comparing approaches to similar cases
 
 ## Testing Requirements
-The implementation must be thoroughly testable with comprehensive pytest coverage:
+The implementation must include comprehensive tests that verify all aspects of the system:
 
-- **Key functionalities that must be verified**:
-  - Anatomical relationship mapping correctly represents structural and functional connections
-  - Diagnostic pathways correctly link symptoms to potential conditions with appropriate probabilities
-  - Pharmacological reference accurately captures medication properties and relationships
-  - Spaced repetition scheduling produces optimal review intervals for different content types
-  - Clinical case integration properly connects theoretical concepts with practical applications
+- **Key Functionalities to Verify**:
+  - Anatomical relationship mapping correctly connects structures, functions, and pathologies
+  - Diagnostic decision trees accurately guide from symptoms to potential conditions
+  - Pharmacological reference properly organizes medication data and identifies interactions
+  - Spaced repetition system appropriately prioritizes content based on forgetting curves and exam schedules
+  - Clinical cases are effectively integrated with relevant theoretical knowledge
 
-- **Critical user scenarios that should be tested**:
-  - Exploring interconnected anatomical structures across body systems
-  - Working through a diagnostic pathway from presenting symptoms to potential conditions
-  - Accessing comprehensive information about medications and their clinical applications
-  - Receiving optimized review schedules based on exam timing and content difficulty
-  - Connecting theoretical knowledge to clinical presentations through representative cases
+- **Critical User Scenarios**:
+  - Exploring the anatomical relationships of the cardiovascular system and related pathologies
+  - Building a diagnostic pathway for a patient presenting with specific symptoms
+  - Researching a medication's mechanism, interactions, and contraindications
+  - Creating a study schedule optimized for an upcoming pathology examination
+  - Analyzing a clinical case and connecting its features to basic science concepts
 
-- **Performance benchmarks that must be met**:
-  - Sub-second response time for most knowledge retrieval operations
-  - Efficient handling of 10,000+ interconnected medical concepts
-  - Responsive generation of complex relationship visualizations
-  - Memory-efficient operation suitable for standard laptop environments
+- **Performance Benchmarks**:
+  - Anatomical graph traversal must handle queries spanning multiple body systems in under 1 second
+  - Diagnostic algorithms must evaluate a complex case with 20+ symptoms in under 3 seconds
+  - Drug interaction checking must process regimens with 10+ medications in under 2 seconds
+  - Spaced repetition scheduling must optimize 5,000+ items for a specific exam in under 5 seconds
+  - Case-to-concept mapping must identify relevant theoretical connections in under 2 seconds
 
-- **Edge cases and error conditions that must be handled properly**:
-  - Rare or atypical disease presentations
-  - Complex anatomical variations
-  - Medications with extensive interaction profiles
-  - Conflicting information from different medical sources
-  - Ambiguous symptoms with multiple possible interpretations
+- **Edge Cases and Error Conditions**:
+  - Handling rare anatomical variations or anomalies
+  - Managing unusual symptom combinations not fitting standard diagnostic patterns
+  - Processing medications with complex or poorly understood mechanisms
+  - Adapting to irregular study patterns or interrupted learning sequences
+  - Dealing with atypical clinical presentations of common conditions
 
-- **Required test coverage metrics**:
-  - Minimum 90% code coverage across all core modules
-  - 100% coverage of diagnostic pathways and spaced repetition functionality
-  - All public APIs must have comprehensive integration tests
-  - All error handling paths must be explicitly tested
+- **Required Test Coverage Metrics**:
+  - Minimum 90% line coverage for all core modules
+  - 100% coverage for diagnostic decision algorithms
+  - 100% coverage for drug interaction detection
+  - 95% branch coverage for spaced repetition scheduling
+  - 95% coverage for anatomical relationship navigation
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when it demonstrably:
+The implementation will be considered successful if it meets the following criteria:
 
-1. Provides clear visualization and navigation of complex anatomical and physiological relationships
-2. Delivers accurate diagnostic pathways that reflect evidence-based clinical reasoning
-3. Maintains comprehensive pharmacological information with proper relationship mapping
-4. Optimizes learning through spaced repetition tuned to exam schedules and content importance
-5. Effectively bridges theoretical medical knowledge with clinical applications through case integration
-6. Performs efficiently with large collections containing thousands of interconnected medical concepts
-7. Preserves all data in accessible formats that ensure long-term availability
-8. Passes all specified tests with the required code coverage metrics
+1. Medical students can map and explore anatomical relationships across body systems with associated pathologies
+2. Users can build and navigate diagnostic decision trees connecting symptoms to potential conditions
+3. Comprehensive pharmacological information is accessible with interaction detection capabilities
+4. Study material is prioritized through spaced repetition optimized for specific exam schedules
+5. Theoretical knowledge can be connected to clinical case presentations for applied learning
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
 To set up the development environment:
-```bash
-# Create and activate a virtual environment
-uv venv
-source .venv/bin/activate
+1. Use `uv venv` to create a virtual environment
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-# Install required dependencies
-uv pip install -e .
+CRITICAL REMINDER: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

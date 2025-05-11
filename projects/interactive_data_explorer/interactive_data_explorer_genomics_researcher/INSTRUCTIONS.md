@@ -1,169 +1,162 @@
-# Interactive Data Explorer for Genomic Sequence Analysis
+# Genomic Sequence Explorer
 
 ## Overview
-A specialized variant of the Interactive Data Explorer tailored for genomics researchers analyzing DNA sequencing data. This tool emphasizes sequence alignment visualization, phylogenetic analysis, gene expression profiling, variant significance evaluation, and pathway mapping to identify patterns associated with specific traits or conditions.
+A specialized terminal-based data exploration framework designed for genomics researchers who need to analyze complex genetic datasets, visualize sequence alignments, identify statistically significant variations, and explore relationships between genetic patterns and phenotypic traits. This tool enables comprehensive genomic analysis without requiring graphical interfaces or specialized hardware.
 
 ## Persona Description
 Dr. Mbeki analyzes genomic sequencing data to identify patterns associated with specific traits or conditions. She needs to explore complex genetic datasets, visualize sequence alignments, and identify statistically significant variations.
 
 ## Key Requirements
+1. **Sequence alignment visualization** - Create clear, terminal-based visualizations of DNA/RNA sequence alignments with mutation highlighting and annotation. This is critical for researchers to identify conserved regions, mutations, and structural variations across multiple sequences to understand genetic diversity and evolution.
 
-1. **Sequence Alignment Visualization with Mutation Highlighting**
-   - Implement specialized visualization of DNA/RNA sequence alignments with automatic mutation identification
-   - Critical because comparing genetic sequences is fundamental to identifying variations associated with traits or conditions
-   - Must handle large-scale alignments (millions of base pairs) with efficient navigation and zooming
-   - Should highlight different types of mutations (SNPs, indels, structural variants) with customizable annotation
+2. **Phylogenetic tree generation** - Build and visualize evolutionary relationships between genetic sequences to reveal taxonomic groupings and evolutionary history. Researchers need to understand how different sequences relate to each other over evolutionary time and identify clades that share common genetic characteristics.
 
-2. **Phylogenetic Tree Generation**
-   - Create tools for constructing and visualizing evolutionary relationships between genetic sequences
-   - Essential for understanding how genetic variants are related and have evolved over time
-   - Must implement multiple tree construction algorithms (neighbor-joining, maximum likelihood, etc.)
-   - Should provide interactive tree visualization with customizable taxonomy labeling and branch metrics
+3. **Gene expression heatmaps** - Generate visual representations correlating gene activation patterns across different experimental conditions, tissues, or time points. This allows researchers to identify genes that are co-regulated and discover expression patterns associated with specific biological states or disease conditions.
 
-3. **Gene Expression Heatmaps**
-   - Develop visualization tools for mapping expression patterns across different genes and conditions
-   - Important for identifying which genes are activated or suppressed under specific circumstances
-   - Must support normalization methods for comparing expression levels across different samples
-   - Should include clustering algorithms to group genes with similar expression patterns
+4. **Variant significance scoring** - Calculate and visualize the statistical significance of genetic variants using multiple probabilistic models. This helps researchers prioritize which genetic variations are most likely to have functional importance or disease associations from among thousands of possibilities.
 
-4. **Variant Significance Scoring**
-   - Implement statistical frameworks for evaluating the biological significance of genetic variations
-   - Critical for prioritizing which variants are most likely to be functionally important
-   - Must incorporate multiple scoring models appropriate for different types of genetic analysis
-   - Should calculate confidence intervals and multiple testing corrections for statistical rigor
-
-5. **Pathway Analysis Mapping**
-   - Create tools to map genetic variations to functional biological processes and pathways
-   - Essential for understanding the broader biological impact of genetic changes
-   - Must integrate with standard biological pathway databases and ontologies
-   - Should identify significantly enriched pathways affected by sets of genetic variants
+5. **Pathway analysis** - Map genetic variations to functional biological processes and visualize the interconnections between affected genes. This is essential for understanding how genetic changes may impact biological systems and translate to observable traits or disease mechanisms.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Alignment algorithms must be verified against established bioinformatics tools (BLAST, Clustal)
+  - Phylogenetic tree construction must produce consistent results with known sequence relationships
+  - Statistical methods for variant significance must be validated with published benchmarks
+  - Gene expression analysis must match results from standard tools (DESeq2, edgeR)
+  - All visualizations must be testable for content and format accuracy
 
-### Testability Requirements
-- All components must be testable via pytest with reproducible results
-- Sequence analysis algorithms must be validated against benchmark genomic datasets
-- Statistical methods must be verifiable against established bioinformatics approaches
-- Visualization outputs must have quantifiable accuracy metrics
-- Performance must be measurable with genomic datasets of varying sizes
+- **Performance Expectations**:
+  - Must handle sequence datasets of up to 1GB in total size
+  - Alignment of 100 sequences (1000bp each) should complete within 30 seconds
+  - Phylogenetic tree generation for 500 sequences should complete within 2 minutes
+  - Gene expression analysis for 20,000 genes across 50 samples within 1 minute
+  - Memory usage must stay below 4GB during all operations
 
-### Performance Expectations
-- Must handle whole-genome sequence data (billions of base pairs)
-- Alignment visualization should remain responsive with thousands of sequences
-- Phylogenetic analysis should process hundreds of sequences efficiently
-- Expression analysis should handle datasets with thousands of genes across hundreds of samples
-- All operations should be optimized for both memory efficiency and processing speed
+- **Integration Points**:
+  - Support for standard bioinformatics file formats (FASTA, FASTQ, SAM/BAM, VCF, BED, GTF)
+  - Import functionality for reference genomes and annotation databases
+  - Export to common analysis formats for use in other specialized tools
+  - Integration with biological pathway databases (KEGG, GO, Reactome)
 
-### Integration Points
-- Data import from common genomic formats (FASTQ, BAM, VCF, GTF/GFF)
-- Integration with standard genomic databases and references
-- Support for biological ontologies and pathway databases
-- Export capabilities for publication-quality visualizations
-- Compatibility with common bioinformatics tools and pipelines
+- **Key Constraints**:
+  - All visualizations must be terminal-compatible with no external GUI dependencies
+  - Analyses must run on standard computational hardware without specialized accelerators
+  - Must maintain data provenance for scientific reproducibility
+  - Should minimize memory footprint to handle larger genomic datasets
+  - Must handle incomplete or noisy data common in genomic research
 
-### Key Constraints
-- Must respect the memory and processing limitations of standard research workstations
-- Should operate effectively without requiring specialized high-performance hardware
-- Must maintain data provenance for reproducible research
-- Should handle the noise and uncertainty inherent in genomic data
-- Must accommodate the continuous evolution of genomic reference data
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The Genomic Sequence Explorer must provide a comprehensive toolkit for genomic data analysis:
 
-The implementation must provide the following core capabilities:
+1. **Sequence Analysis and Alignment**:
+   - Import and parse various sequence file formats (FASTA, FASTQ, etc.)
+   - Implement efficient pairwise and multiple sequence alignment algorithms
+   - Calculate sequence similarity metrics and distance matrices
+   - Identify conserved regions, SNPs, insertions, deletions, and other variations
+   - Visualize sequence alignments with highlighting for important features
 
-1. **Genomic Sequence Processing**
-   - Efficient handling of large sequence files and alignments
-   - Multiple sequence alignment algorithms and visualizations
-   - Mutation detection and classification
-   - Conservation and diversity analysis
-   - Reference genome integration and coordinate mapping
+2. **Evolutionary Analysis**:
+   - Generate distance matrices from sequence alignments
+   - Implement multiple phylogenetic tree construction algorithms (Neighbor-Joining, Maximum Likelihood)
+   - Calculate evolutionary distances and branch support values
+   - Visualize phylogenetic trees in terminal-friendly formats
+   - Identify monophyletic groups and evolutionary clades
 
-2. **Evolutionary Relationship Analysis**
-   - Implementation of phylogenetic tree construction algorithms
-   - Distance metric calculations between sequences
-   - Tree visualization with customizable features
-   - Bootstrap and consensus methods for tree validation
-   - Taxonomic annotation and evolutionary rate analysis
+3. **Expression Analysis**:
+   - Process gene expression data from various experiment types
+   - Normalize expression values using appropriate statistical methods
+   - Identify differentially expressed genes across conditions
+   - Perform clustering to find co-expressed gene groups
+   - Generate heatmaps and other visualizations of expression patterns
 
-3. **Expression Data Analysis**
-   - Normalization methods for expression data
-   - Statistical testing for differential expression
-   - Clustering algorithms for expression patterns
-   - Heatmap visualization with dendrograms
-   - Time-series analysis for expression dynamics
+4. **Variant Analysis**:
+   - Parse variant call formats (VCF) and extract relevant information
+   - Calculate allele frequencies and population genetics metrics
+   - Implement multiple scoring algorithms to assess variant significance
+   - Annotate variants with functional predictions and existing knowledge
+   - Prioritize variants based on combined evidence from multiple models
 
-4. **Variant Analysis Framework**
-   - Statistical evaluation of variant significance
-   - Multiple testing correction implementation
-   - Variant annotation with functional predictions
-   - Population frequency comparison
-   - Variant prioritization algorithms
-
-5. **Biological Context Integration**
-   - Pathway enrichment analysis
-   - Gene ontology term association
-   - Protein domain impact assessment
-   - Regulatory element identification
-   - Disease association mapping
+5. **Biological Pathway Integration**:
+   - Map genes and variants to known biological pathways
+   - Calculate enrichment statistics for gene sets
+   - Visualize pathway involvement of gene lists
+   - Perform Gene Ontology (GO) term enrichment analysis
+   - Identify biological processes affected by gene expression changes or variants
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Sequence alignment correctly identifies similarities and differences between sequences
+  - Phylogenetic trees accurately represent evolutionary relationships for test sequences
+  - Gene expression analysis correctly identifies differentially expressed genes
+  - Variant scoring accurately prioritizes known pathogenic variants
+  - Pathway analysis correctly identifies enriched biological processes
 
-The implementation must be thoroughly tested with:
+- **Critical User Scenarios**:
+  - Aligning a set of homologous gene sequences from different species
+  - Constructing a phylogenetic tree from a set of viral strains
+  - Identifying differentially expressed genes between disease and control samples
+  - Prioritizing genetic variants from a whole-exome sequencing experiment
+  - Mapping a set of genes to biological pathways and identifying enriched processes
 
-1. **Sequence Analysis Tests**
-   - Validation of alignment algorithms against benchmark datasets
-   - Testing with sequences of varying similarity and length
-   - Verification of mutation detection accuracy
-   - Performance testing with large sequence files
-   - Edge case testing for non-standard sequences
+- **Performance Benchmarks**:
+  - Align 100 sequences (1000bp) within 30 seconds
+  - Generate phylogenetic tree for 500 sequences within 2 minutes
+  - Process expression data for 20,000 genes x 50 samples within 1 minute
+  - Score and prioritize 100,000 variants within 5 minutes
+  - Memory usage below 4GB during all operations
 
-2. **Phylogenetic Analysis Tests**
-   - Validation of tree construction against known phylogenies
-   - Testing with diverse evolutionary scenarios
-   - Verification of distance metric calculations
-   - Performance testing with large sequence sets
-   - Robustness testing with incomplete or noisy sequence data
+- **Edge Cases and Error Conditions**:
+  - Handling extremely divergent sequences in alignments
+  - Managing phylogenetic analysis with incomplete or ambiguous data
+  - Processing expression data with batch effects or missing values
+  - Dealing with variants in repetitive or complex genomic regions
+  - Handling inconsistent or outdated pathway annotations
 
-3. **Expression Analysis Tests**
-   - Validation of normalization methods with standard datasets
-   - Testing with simulated expression data with known patterns
-   - Verification of statistical test implementations
-   - Performance testing with large expression matrices
-   - Edge case testing for extreme expression values
+- **Required Test Coverage Metrics**:
+  - 90% code coverage for all core functionality
+  - 100% coverage for critical statistical calculations
+  - All public APIs must have integration tests
+  - All visualization functions must be tested for output format correctness
+  - All file parsers must be tested with valid and invalid file formats
 
-4. **Variant Significance Tests**
-   - Validation of statistical methods against established tools
-   - Testing with variants of known significance
-   - Verification of multiple testing correction
-   - Performance testing with whole-genome variant sets
-   - Sensitivity analysis for threshold parameters
-
-5. **Pathway Analysis Tests**
-   - Validation of enrichment calculations
-   - Testing with gene sets of known pathway associations
-   - Verification of database integration
-   - Performance testing with large gene sets
-   - Testing with diverse organism and pathway databases
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation of the Genomic Sequence Explorer will demonstrate:
 
-The implementation will be considered successful when it:
+1. Accurate sequence alignment visualization with proper identification of variations
+2. Phylogenetic tree generation that correctly represents evolutionary relationships
+3. Gene expression analysis that identifies biologically meaningful patterns
+4. Variant significance scoring that prioritizes known functional variants
+5. Pathway analysis that correctly maps genes to biological processes
 
-1. Accurately visualizes complex sequence alignments highlighting biologically relevant mutations
-2. Effectively constructs phylogenetic trees that represent evolutionary relationships
-3. Clearly displays gene expression patterns that reveal biological insights
-4. Reliably identifies and prioritizes statistically significant genetic variants
-5. Meaningfully maps genetic variations to their functional biological context
-6. Handles genome-scale datasets with acceptable performance on standard research hardware
-7. Provides results consistent with established bioinformatics methods and tools
-8. Enables researchers to identify genetic patterns associated with specific traits or conditions
-9. Supports the complete genomic analysis workflow from raw data to biological interpretation
-10. Maintains the statistical rigor required for genomics research publications
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-IMPORTANT: 
-- Implementation must be in Python
-- All functionality must be testable via pytest
-- There should be NO user interface components
-- Design code as libraries and APIs rather than applications with UIs
-- The implementation should be focused solely on the genomics researcher's requirements
+To set up the development environment, use:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

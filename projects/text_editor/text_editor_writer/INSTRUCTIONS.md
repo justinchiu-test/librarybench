@@ -1,128 +1,181 @@
-# Creative Writing Assistant Library
+# Creative Writing Text Editor
+
+A specialized text editor library designed for fiction writers with focus on distraction-free writing and narrative management.
 
 ## Overview
-A text editor library specifically designed for fiction writers, focusing on distraction-free writing, narrative element tracking, non-linear document navigation, and draft management. The implementation prioritizes creative writing workflows and provides analytical tools that help authors manage and improve their content.
+
+This project implements a text editor library specifically designed for fiction writers who need a distraction-free environment with powerful narrative management features. It provides focus mode, writing statistics tracking, character and plot tracking, non-linear document navigation, and revision marking with draft comparison.
 
 ## Persona Description
+
 Elena writes novels and short stories, focusing on creative writing rather than programming. She needs a distraction-free environment that helps manage narrative elements while providing powerful text manipulation capabilities.
 
 ## Key Requirements
-1. **Focus Mode Text Management**: Implement a system that isolates and emphasizes the current paragraph or sentence while maintaining context, allowing the writer to concentrate on immediate content. This is critical for Elena to maintain creative flow by reducing distractions while preserving the ability to reference nearby text.
 
-2. **Writing Analytics Engine**: Create a comprehensive text analysis system that tracks word count, reading level metrics (like Flesch-Kincaid), writing pace over time, and other statistical measures. This enables Elena to monitor her productivity, set and track goals, and assess the reading difficulty of her work.
+1. **Focus Mode**: Implement a system that can isolate and highlight the current paragraph or sentence while visually de-emphasizing surrounding content. This is critical for Elena to eliminate distractions and immerse herself in the current section of writing, improving concentration and creative flow.
 
-3. **Narrative Element Tracking**: Develop a system that identifies, indexes, and cross-references character names, locations, plot elements, and other narrative components throughout a manuscript. This helps Elena maintain consistency in characters and plot elements across long works.
+2. **Writing Statistics Tracking**: Develop analytics functionality that tracks word count, reading level metrics, and writing pace over time. This allows Elena to monitor her productivity, set goals, manage project deadlines, and assess the complexity and consistency of her writing style across different works.
 
-4. **Non-linear Document Navigation**: Implement a document navigation framework organized around narrative elements (scenes, chapters, character arcs) rather than linear line numbers. This allows Elena to move through her manuscript based on story structure rather than text positioning.
+3. **Character and Plot Element Tracking**: Create a system that identifies and tracks character names and key terms across chapters or sections. This helps Elena maintain consistency in character descriptions and behaviors throughout long narratives, preventing continuity errors common in complex stories.
 
-5. **Revision Management System**: Build functionality for tracking multiple drafts, marking revisions, comparing different versions, and selectively merging changes between drafts. This addresses Elena's need to manage the iterative writing process while maintaining the ability to experiment with different approaches.
+4. **Non-linear Document Navigation**: Implement a document organization system based on narrative elements (scenes, chapters, character arcs) rather than simple linear text. This enables Elena to work with the story structure conceptually, moving between related scenes or character perspectives regardless of their sequential placement in the document.
+
+5. **Revision Marking with Draft Comparison**: Develop functionality for maintaining multiple drafts of the same document with the ability to compare and selectively merge changes. This supports Elena's editing workflow, allowing her to experiment with alternative versions of scenes or dialogue while maintaining the ability to revert or combine elements from different drafts.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - All text analysis functions must provide consistent results for identical inputs
-  - Navigation functions must maintain document integrity during transitions
-  - Narrative element tracking must correctly identify references even with naming variations
-  - Revision tracking must accurately identify and represent differences between versions
-  - Performance metrics must be measurable with simulated writing sessions
 
-- **Performance Expectations**:
-  - Focus mode transitions should be instantaneous (under 100ms)
-  - Text analysis should run in the background without impacting writing experience
-  - Element tracking should handle manuscripts up to novel length (>100,000 words)
-  - Document navigation should be responsive even for very large documents
-  - Draft comparison operations should complete within 3 seconds for full manuscripts
+### Testability Requirements
+- Focus mode state must be programmatically testable without visual rendering
+- Statistics calculations must be verifiable with known input text samples
+- Character/plot tracking must be testable with predefined narrative content
+- Navigation structure must be verifiable through programmatic state inspection
+- Revision comparison and merging must be testable with predetermined diff scenarios
 
-- **Integration Points**:
-  - Support for common manuscript formats (plain text, Markdown, RTF)
-  - Export capabilities for industry-standard submission formats
-  - Integration with natural language processing libraries for advanced analysis
-  - Support for external backup and synchronization
-  - Compatibility with standard diffing algorithms for revision comparison
+### Performance Expectations
+- Text operations must remain responsive even in documents over 300,000 words (novel length)
+- Statistics calculations should run in background threads without impacting editing performance
+- Character/plot element indexing should complete within 5 seconds for full novel-length documents
+- Navigation between narrative elements should occur in under 100ms
+- Revision comparison should scale efficiently to handle documents with thousands of differences
 
-- **Key Constraints**:
-  - Must operate effectively with minimal memory footprint for long writing sessions
-  - Text analysis must not interrupt the writing flow
-  - Narrative element tracking must balance accuracy with performance
-  - Must preserve document structure during mode transitions
-  - Must handle large documents (>100,000 words) without performance degradation
+### Integration Points
+- Natural language processing tools for character and term recognition
+- Text statistics libraries for reading level and linguistic analysis
+- Diff algorithms for revision comparison
+- Document structure representation for non-linear navigation
+- Export capabilities to standard document formats
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- Character recognition must work without requiring manual tagging
+- Navigation structure must preserve original document ordering when needed
+- Revision tracking must maintain complete history without excessive storage requirements
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Text Buffer Management**: A system for storing and manipulating manuscript text with support for isolation and focus on specific segments.
+The library should implement a text editor core with the following functionality:
 
-2. **Text Analysis Engine**: Components for analyzing writing style, complexity, pace, and other metrics relevant to fiction writing.
+1. A focus system that:
+   - Identifies and isolates current paragraph or sentence context
+   - Maintains edit capabilities while in focus mode
+   - Provides smooth transitions between different focus points
+   - Preserves document structure while focusing
 
-3. **Narrative Element Detection**: Algorithms for identifying, tracking, and cross-referencing characters, locations, and other narrative elements.
+2. A statistics tracking system that:
+   - Calculates and monitors word count, sentence structure, and reading level
+   - Tracks writing pace and productivity over time
+   - Analyzes linguistic patterns and vocabulary usage
+   - Generates reports on writing trends and goal progress
 
-4. **Document Structure Representation**: A system for representing and navigating documents based on narrative structure rather than just lines of text.
+3. A narrative element tracking system that:
+   - Identifies and indexes character names and key terms
+   - Maintains cross-references of elements across document sections
+   - Detects potential continuity issues or inconsistencies
+   - Provides element lookup and reference capabilities
 
-5. **Version Control for Drafts**: Mechanisms for tracking multiple drafts, identifying changes, and supporting selective merging.
+4. A non-linear navigation system that:
+   - Organizes document by narrative elements rather than just linear text
+   - Enables quick movement between related sections regardless of position
+   - Maintains multiple organizational views of the same content
+   - Preserves document integrity while enabling non-linear access
 
-6. **Writing Session Analytics**: Tools for capturing and analyzing writing sessions to track productivity and patterns.
-
-The library should use advanced text data structures (piece tables or ropes) optimized for the operations most common in creative writing. It should provide programmatic interfaces for all functions without requiring a graphical interface, allowing it to be integrated with various front-ends or used headlessly for automation.
+5. A revision management system that:
+   - Maintains multiple drafts of the same document
+   - Provides detailed comparison between different versions
+   - Enables selective merging of changes from different drafts
+   - Tracks the history and evolution of content over time
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of text manipulation operations in different focus modes
-  - Correctness of writing analytics and statistical measurements
-  - Precision of narrative element detection and cross-referencing
-  - Integrity of document navigation based on narrative structures
-  - Reliability of revision tracking and draft management
 
-- **Critical User Scenarios**:
-  - Extended writing sessions with frequent mode switches
-  - Managing a full-length novel with numerous characters and locations
-  - Comparing and selectively merging multiple draft versions
-  - Analyzing writing patterns and productivity over time
-  - Navigating complex narrative structures non-linearly
+### Key Functionalities to Verify
+- Focus mode correctly isolates the current paragraph or sentence
+- Statistics calculations accurately reflect writing metrics
+- Character and plot element tracking correctly identifies narrative elements
+- Non-linear navigation properly organizes and accesses document by narrative structure
+- Revision marking successfully manages multiple drafts and enables comparison
 
-- **Performance Benchmarks**:
-  - Focus mode transitions should complete in under 100ms
-  - Full manuscript analysis should complete in under 10 seconds for 100,000 words
-  - Element detection should identify >95% of character references
-  - Document navigation operations should respond in under 200ms
-  - Draft comparison should process at least 10,000 words per second
+### Critical User Scenarios
+- Writing a new scene with focus on the current paragraph
+- Analyzing writing statistics for a completed chapter
+- Tracking a character's appearances and descriptions across a novel
+- Navigating between related scenes in different chapters
+- Comparing two drafts of the same scene and selectively merging changes
 
-- **Edge Cases and Error Conditions**:
-  - Handling extremely long paragraphs or sentences
-  - Managing documents with complex nested structures
-  - Processing unusual writing styles or experimental formats
-  - Recovering from corrupted draft versions
-  - Dealing with ambiguous narrative element references
+### Performance Benchmarks
+- Focus mode transitions should occur in under 50ms
+- Statistics calculations should process at least 10,000 words per second
+- Character indexing should identify at least 95% of character names without explicit tagging
+- Navigation structure should handle documents with at least 100 scenes/chapters
+- Revision comparison should complete in under 3 seconds for 10,000-word documents
 
-- **Required Test Coverage**:
-  - 90% line coverage for core text manipulation functions
-  - 95% coverage for analytics and metrics calculations
-  - 90% coverage for narrative element detection
-  - 95% coverage for draft comparison and merging
-  - Comprehensive tests for all public API functions
+### Edge Cases and Error Conditions
+- Handling extremely long paragraphs or sentences in focus mode
+- Managing statistics for unusual writing styles or multilingual content
+- Dealing with ambiguous character names or references
+- Navigating complex non-linear structures with circular references
+- Managing revision history for documents with frequent and extensive changes
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 90% code coverage across all core modules
+- 100% coverage of text processing functions
+- Complete coverage of all public API methods
+- All statistical metrics must have verification tests
+- All draft comparison operations must have test coverage
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. Writers can effectively isolate and focus on specific portions of text while maintaining context.
+1. Focus mode effectively isolates current writing context without losing surrounding document awareness
+2. Writing statistics provide accurate and useful metrics on writing style and productivity
+3. Character and plot tracking successfully identifies and maintains consistency of narrative elements
+4. Non-linear navigation enables intuitive movement through document based on narrative structure
+5. Revision marking and comparison effectively manages the evolution of document drafts
 
-2. Writing analytics provide accurate and useful metrics on document statistics and writing patterns.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Narrative element tracking correctly identifies and cross-references characters and locations throughout a manuscript.
+## Environment Setup
 
-4. Document navigation allows efficient movement through manuscripts based on narrative structure.
+To set up the development environment:
 
-5. Revision management accurately tracks changes between drafts and supports selective merging.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. Performance remains responsive even with novel-length documents (>100,000 words).
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the reliability and accuracy of the implementation for creative writing workflows.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

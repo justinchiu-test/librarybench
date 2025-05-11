@@ -1,117 +1,181 @@
-# Security Vulnerability Demonstration Virtual Machine
+# Secure Systems Vulnerability Simulator
 
 ## Overview
-A specialized virtual machine designed to safely demonstrate and analyze low-level security vulnerabilities, providing controlled environments for memory corruption, code injection, access control, and other attack vectors without real-world consequences.
+A specialized virtual machine emulator designed for security research and education, providing a controlled environment to safely demonstrate and analyze memory corruption, code injection, privilege escalation, and other low-level security vulnerabilities without real-world consequences.
 
 ## Persona Description
 Dr. Chen studies low-level security vulnerabilities and exploitation techniques. He needs a controlled environment to demonstrate memory corruption, code injection, and other attack vectors without real-world consequences.
 
 ## Key Requirements
-1. **Memory protection simulation with configurable enforcement**: Critical for Dr. Chen to demonstrate how memory protection mechanisms work and how they can be bypassed under certain conditions, allowing him to show both the importance of these protections and their potential weaknesses in a controlled environment.
+1. **Memory Protection Simulation**: Implement a configurable memory protection system with adjustable enforcement levels, permission controls, and boundary checking. This feature is critical for Dr. Chen to demonstrate how memory safety mechanisms work, how they can be bypassed, and how different protection strategies affect vulnerability exploitability.
 
-2. **Exploitation playground for safely demonstrating buffer overflows and code injection**: Essential for teaching and researching common attack vectors without risking actual systems, enabling Dr. Chen to develop and test proof-of-concept exploits that illustrate vulnerability patterns while containing their effects within the virtual environment.
+2. **Exploitation Playground**: Create a safe environment for demonstrating buffer overflows, format string vulnerabilities, code injection, and return-oriented programming attacks. This capability allows Dr. Chen to showcase real attack techniques in a contained environment, providing hands-on experience with exploitation mechanics without risk to actual systems.
 
-3. **Permission and privilege level modeling to illustrate access control mechanisms**: Necessary for showing how privilege escalation attacks work and how proper access controls can prevent them, allowing demonstration of how attackers can move from limited to elevated privileges by exploiting weaknesses in permission systems.
+3. **Permission and Privilege Models**: Develop a comprehensive permission and privilege level system to illustrate access control mechanisms, privilege escalation vulnerabilities, and security boundaries. This feature helps explain the critical concept of least privilege and demonstrates how attackers can move laterally through a system by exploiting permission weaknesses.
 
-4. **Control flow integrity visualization showing normal and compromised execution paths**: Vital for illustrating how attacks like return-oriented programming alter a program's intended execution flow, making abstract concepts tangible by visually contrasting normal control flow with malicious redirections caused by exploits.
+4. **Control Flow Integrity Visualization**: Implement visualization tools showing normal and compromised execution paths, highlighting how attacks manipulate program flow. This visualization makes abstract concepts like return address manipulation concrete for students, demonstrating exactly how control flow hijacking attacks redirect execution in exploited programs.
 
-5. **Isolation breach detection identifying when virtualization boundaries are compromised**: Important for researching advanced attacks that attempt to escape sandboxed environments, helping Dr. Chen understand and demonstrate techniques that might compromise isolation between virtualized components or between the virtual machine and the host.
+5. **Isolation Breach Detection**: Create mechanisms for detecting and analyzing when virtualization or protection boundaries are compromised, with detailed forensic information. This feature is essential for security researchers to understand the indicators of successful attacks and develop detection methods for real-world exploitation attempts.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All security mechanisms must be individually testable for both correct operation and expected failure modes
-  - Exploitation techniques must be reproducible with deterministic outcomes
-  - Memory corruption scenarios must be precisely controllable and measurable
-  - Control flow integrity checks must verify both valid and invalid execution paths
-  - Isolation mechanisms must be testable for effectiveness against known escape vectors
-
+  - All security mechanisms must be independently testable
+  - Exploitation scenarios must be repeatable and deterministic
+  - Memory corruption attacks must produce consistent, verifiable results
+  - Protection bypasses must be detectable and measurable
+  - Attack success or failure must be programmatically verifiable
+  
 - **Performance Expectations**:
-  - Must execute standard test exploits without significant performance degradation
-  - Memory protection checks should add minimal overhead to normal execution
-  - Should support detailed instruction-level tracing with less than 10x execution slowdown
-  - Must handle programs with at least 100,000 instructions for realistic vulnerability demonstration
-  - Control flow visualization must remain responsive during exploit execution
+  - Memory operations must be traceable with minimal overhead
+  - Protection checks should add no more than 10% execution overhead
+  - Attack demonstrations should complete within seconds, not minutes
+  - System should handle programs with at least 10,000 instructions
+  - Forensic data collection should not significantly impact system performance
 
 - **Integration Points**:
-  - Exploit definition API for creating reproducible security scenarios
-  - Memory layout and protection configuration interface
-  - Hooks for security monitoring and breach detection
-  - Inspection API for analyzing system state during exploit attempts
-  - Export mechanism for analysis results and execution traces
+  - Clean separation between VM core and security monitoring components
+  - Well-defined interfaces for custom protection mechanisms
+  - Extensible logging and event notification system
+  - Export formats for execution traces and memory state
+  - Hooks for custom analysis and detection modules
 
 - **Key Constraints**:
-  - Must contain all exploit effects within the virtual environment
-  - Should never risk the security of the host system
-  - Must accurately represent real-world security mechanisms and vulnerabilities
-  - Should be usable for both educational demonstrations and serious security research
+  - Implementation must be in pure Python for educational clarity and portability
+  - No dependencies beyond standard library to ensure easy deployment
+  - System must never execute arbitrary code on the host machine
+  - All exploitation techniques must be contained within the VM
+  - Security boundaries between simulator and host must be absolute
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Memory Protection System**: Implement a configurable memory protection mechanism supporting read/write/execute permissions, address space layout randomization, stack canaries, and non-executable memory regions.
+The core functionality of this secure systems vulnerability simulator includes:
 
-2. **Exploitation Framework**: Create a framework for defining, executing, and analyzing different types of security exploits, including buffer overflows, format string attacks, use-after-free scenarios, and return-oriented programming.
+1. A virtual machine with a detailed memory model supporting various protection mechanisms
 
-3. **Privilege Management**: Implement a multi-level privilege system with clear boundaries between execution contexts, controlled transition mechanisms, and proper validation of cross-privilege operations.
+2. A comprehensive instruction set supporting both legitimate and attack-oriented operations
 
-4. **Control Flow Monitoring**: Provide detailed tracking and visualization of program execution paths, highlighting deviations from expected control flow and identifying gadget chains in return-oriented programming attacks.
+3. Configurable security boundaries with adjustable enforcement levels
 
-5. **Isolation Enforcement**: Create a strong isolation architecture between different components of the virtual machine, with monitoring for potential escape attempts and boundary violations.
+4. Memory corruption vulnerability demonstrations (buffer overflows, heap spraying, use-after-free)
 
-6. **Vulnerability Analysis**: Implement tools for analyzing and categorizing observed vulnerabilities, tracking exploitation methods, and measuring the effectiveness of different protection mechanisms.
+5. Code injection capabilities with various payload execution methods
 
-7. **State Inspection**: Provide comprehensive inspection capabilities for examining memory contents, register values, stack state, and execution history before, during, and after exploitation attempts.
+6. Privilege separation with multiple security domains and transition mechanisms
+
+7. Control flow integrity monitoring and visualization
+
+8. Return-oriented programming (ROP) and jump-oriented programming (JOP) attack support
+
+9. Format string vulnerability demonstrations and exploitation
+
+10. Data execution prevention (DEP) and address space layout randomization (ASLR) implementations
+
+11. Detailed forensic logging of system state before, during, and after attacks
+
+12. Predefined scenarios demonstrating common vulnerability classes and exploitation techniques
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
+- **Key Functionalities that Must be Verified**:
   - Correct implementation of memory protection mechanisms
-  - Successful demonstration of common exploitation techniques
-  - Proper enforcement of privilege boundaries and access controls
-  - Accurate detection of control flow integrity violations
-  - Reliable containment of all exploit effects within the virtual environment
+  - Accurate simulation of various attack vectors
+  - Proper privilege level enforcement and transitions
+  - Reliable detection of protection boundary violations
+  - Accurate control flow tracking and visualization
+  - Consistent behavior of exploitation techniques
 
 - **Critical User Scenarios**:
-  - Demonstrating a buffer overflow attack with and without various protections
-  - Showing privilege escalation through confused deputy problems
+  - Demonstrating classic buffer overflow attacks
   - Illustrating return-oriented programming techniques
-  - Analyzing format string vulnerability exploitation
-  - Testing the effectiveness of different memory protection configurations
+  - Showing privilege escalation through various vectors
+  - Testing effectiveness of different protection strategies
+  - Creating and analyzing novel exploitation techniques
+  - Comparing different mitigation approaches
 
 - **Performance Benchmarks**:
-  - Execute standard test programs at normal speed with protection mechanisms disabled
-  - Limited overhead (less than 2x slowdown) with basic protection mechanisms enabled
-  - Support detailed tracing with acceptable performance degradation (less than 10x)
-  - Handle at least 100MB of virtual memory with protection checks
-  - Process security violation events within 10ms for responsive feedback
+  - Memory protection checks adding no more than 10% overhead
+  - Support for programs with at least 10,000 instructions
+  - Attack demonstrations completing in under 10 seconds
+  - Forensic data collection with less than 15% performance impact
+  - Memory operations processing at least 10,000 accesses per second
 
 - **Edge Cases and Error Conditions**:
-  - Handle extremely large buffer overflow attempts without crashing the emulator
-  - Properly contain exploits that attempt to corrupt the VM's own state
-  - Detect and report attempted isolation breaches with clear diagnostics
-  - Manage malformed instructions and deliberate CPU state corruption
-  - Recover from intentional resource exhaustion attacks
+  - Handling of extremely large buffer overflows
+  - Proper detection of subtle control flow manipulations
+  - Accurate tracking of complex memory corruption chains
+  - Correct behavior with unusual instruction sequences
+  - Appropriate response to sophisticated protection bypasses
 
 - **Required Test Coverage Metrics**:
-  - 100% coverage of all memory protection implementations
-  - 95% coverage of privilege enforcement mechanisms
-  - 90% coverage of control flow integrity monitoring
-  - 95% coverage of isolation boundary enforcement
-  - 90% coverage of the exploitation framework
+  - Minimum 95% line coverage for core security mechanisms
+  - 100% coverage for privilege transition code
+  - At least 90% branch coverage for attack detection logic
+  - Complete coverage of memory protection implementations
+  - At least 85% coverage for exploit demonstration code
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully demonstrates common memory corruption vulnerabilities with predictable, controlled outcomes
-2. Clearly illustrates the effectiveness of different protection mechanisms against specific attack vectors
-3. Provides accurate visualization of control flow during both normal execution and exploit attempts
-4. Maintains complete isolation of exploit effects within the virtual environment
-5. Offers detailed analysis of the exploitation process for educational and research purposes
-6. Supports development and testing of novel protection mechanisms
-7. Generates reproducible results that can be used in security research publications
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Accurately simulates a variety of memory protection mechanisms with adjustable enforcement
+
+2. Provides a safe and effective environment for demonstrating exploitation techniques
+
+3. Implements a proper privilege model with security boundaries and transitions
+
+4. Clearly visualizes control flow paths before and after exploitation
+
+5. Reliably detects and reports security boundary violations
+
+6. Supports common attack vectors like buffer overflows, ROP chains, and code injection
+
+7. Provides detailed forensic information about successful and attempted exploits
+
+8. Enables comparison between different protection strategies
+
+9. Maintains complete isolation between simulated attacks and the host system
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

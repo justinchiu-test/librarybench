@@ -1,10 +1,10 @@
 # Manufacturing Operations Intelligence System
 
-A specialized adaptation of PyReport designed for operations directors who need real-time production monitoring, efficiency metrics analysis, and targeted distribution of operational insights across different manufacturing teams.
+A specialized automated report generation framework for operations directors to monitor production metrics, identify bottlenecks, and distribute targeted insights to different operational teams.
 
 ## Overview
 
-The Manufacturing Operations Intelligence System is a Python library that creates a complete data pipeline for manufacturing operations reporting. It collects real-time production data, applies anomaly detection algorithms, performs shift-based comparative analysis, and generates targeted reports for different operational teams, enabling quick identification of bottlenecks and quality control issues.
+The Manufacturing Operations Intelligence System is a Python-based library designed to generate comprehensive production reports that highlight efficiency metrics and quality control issues. It collects data from production systems in real-time, performs anomaly detection, and creates role-specific reports for different departments to enable quick identification of operational bottlenecks and quality concerns.
 
 ## Persona Description
 
@@ -12,131 +12,196 @@ Marcus oversees manufacturing operations and needs daily production reports that
 
 ## Key Requirements
 
-1. **Real-time Production Data Collection**: Implement a system for gathering data from IoT devices, production line sensors, and manufacturing execution systems with support for various industrial protocols and data formats.
-   * *Importance*: Manufacturing issues require immediate attention; real-time data collection provides Marcus with up-to-the-minute visibility into production line status, allowing his team to respond to critical issues before they cascade into larger problems.
+1. **Real-time Production Data Integration**: Implement connectors for IoT devices, production line sensors, and manufacturing execution systems to collect operational data in real-time.
+   - *Critical for Marcus because*: Manufacturing efficiency depends on identifying issues as they occur, not after a production run has completed, allowing for immediate intervention and minimizing lost productivity.
 
-2. **Automated Anomaly Detection**: Develop algorithms that automatically identify deviations from normal operations based on historical patterns, statistical thresholds, and machine learning models trained on past production data.
-   * *Importance*: In complex manufacturing environments with thousands of data points, manual monitoring is impossible; automated anomaly detection immediately highlights potential issues and prevents quality problems from reaching customers.
+2. **Anomaly Detection System**: Develop algorithms that automatically identify deviations from normal operations and highlight unusual patterns in production metrics.
+   - *Critical for Marcus because*: With thousands of data points generated daily, manually reviewing all metrics is impossible, and automated detection of significant deviations is essential for timely problem-solving.
 
-3. **Shift Comparison Analytics**: Create analysis tools that compare performance metrics across different shifts while accounting for variables such as staffing levels, equipment configurations, and production mix.
-   * *Importance*: Performance variations between shifts often indicate process inconsistencies or training gaps; normalized shift comparison provides fair, accurate benchmarking that helps identify best practices and standardize operations.
+3. **Shift Comparison Analytics**: Create a framework to compare performance across different shifts while accounting for staffing levels, equipment configurations, and other variables.
+   - *Critical for Marcus because*: Understanding the true drivers of performance variation between shifts allows for standardizing best practices and ensuring consistent productivity regardless of which team is working.
 
-4. **Role-Based Report Distribution**: Implement a system that automatically generates customized report content for different operational teams (maintenance, quality control, production, logistics) based on their specific responsibilities and KPIs.
-   * *Importance*: Each department needs different operational metrics; role-based distribution ensures team members receive precisely the information they need to perform their functions without wading through irrelevant data.
+4. **Role-Based Report Distribution**: Build a system to generate and distribute customized report versions for different operational teams based on their specific responsibilities.
+   - *Critical for Marcus because*: Each department (production, quality, maintenance, etc.) needs focused information relevant to their responsibilities without being overwhelmed by irrelevant data from other areas.
 
-5. **Root Cause Analysis Templates**: Develop structured templates for root cause analysis that automatically link quality issues to specific production factors, enabling systematic problem investigation and resolution tracking.
-   * *Importance*: Effective problem-solving requires structured analysis; templated root cause investigation ensures consistent problem-solving methodology across all manufacturing issues and facilitates knowledge sharing between teams.
+5. **Root Cause Analysis Templates**: Implement structured templates for linking quality issues to specific production factors and tracking resolution progress.
+   - *Critical for Marcus because*: Systematically connecting quality problems to their causes accelerates problem resolution and enables preventive actions to avoid recurrence of similar issues.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All data collection interfaces must support simulation modes for testing without live production systems
-- Anomaly detection algorithms must be verifiable with historical test datasets containing known issues
-- Report generation must be testable with predefined operational scenarios
-- End-to-end testing capability with synthetic manufacturing data representing various production conditions
+- All data connectors must be testable with simulated production data
+- Anomaly detection algorithms must be verifiable with labeled test datasets
+- Shift comparison functionality must be testable with controlled variable scenarios
+- Report generation and distribution must be testable without actual email delivery
 
 ### Performance Expectations
-- Must process real-time data from at least 100 different production sensors with sub-minute latency
-- Anomaly detection must execute within 30 seconds of data collection to enable rapid response
-- Report generation for all operational teams must complete within 5 minutes
-- System must maintain at least 1 year of historical production data for trend analysis and algorithm training
+- Real-time data processing must handle up to 1,000 sensor inputs with sub-second latency
+- Daily report generation must complete within 5 minutes for a complete facility
+- Anomaly detection must process 24 hours of production data in under 2 minutes
+- System must perform efficiently with 5+ years of historical production data for trend analysis
 
 ### Integration Points
-- Support for common industrial protocols (OPC UA, Modbus, MQTT, etc.)
-- Integration with manufacturing execution systems and ERP platforms
-- Compatibility with production scheduling and maintenance management systems
-- Secure notification systems for alerting relevant personnel to critical issues
+- Standard connectors for industrial IoT devices and sensors
+- Integration with manufacturing execution systems (MES)
+- Compatibility with quality management systems (QMS)
+- Output to email, shared drives, and optional dashboard systems
 
 ### Key Constraints
-- System must operate in environments with limited or intermittent network connectivity
-- Processing must be resilient to sensor failures and data gaps
-- Must support operation on edge computing devices located on the factory floor
-- All functionality must operate within existing IT security constraints for industrial systems
+- Must handle periodic data gaps from sensor failures
+- Must support 24/7 operation with high availability
+- Must accommodate various manufacturing shift patterns
+- Must maintain data integrity during network interruptions
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
 The Manufacturing Operations Intelligence System must provide the following core functionality:
 
-1. **Data Acquisition Framework**
-   - Multi-protocol support for industrial communication standards
-   - Sensor configuration and metadata management
-   - Fault-tolerant data collection with offline operation modes
-   - Data validation and quality assurance
+1. **Production Data Acquisition**
+   - Connect to and ingest data from industrial sensors and systems
+   - Validate data quality and handle anomalous inputs
+   - Synchronize data from different sources with varying timescales
+   - Buffer data during connectivity interruptions for later processing
 
-2. **Production Analytics Engine**
-   - Real-time performance metrics calculation (OEE, cycle time, yield, etc.)
-   - Trend analysis across temporal dimensions (hourly, daily, shift-based)
-   - Product and equipment-specific performance profiling
-   - Comparative analysis with configurable baselines
+2. **Operational Analytics Engine**
+   - Calculate key production metrics (OEE, yield, cycle time, etc.)
+   - Detect anomalies and deviations from expected performance
+   - Compare metrics across shifts, products, and equipment
+   - Identify trends and patterns in production data
 
-3. **Anomaly Detection System**
-   - Statistical process control implementation
-   - Machine learning models for pattern recognition
-   - Multi-variate anomaly detection across related parameters
-   - Prioritization of alerts based on operational impact
+3. **Quality Control Integration**
+   - Link quality defects to production parameters
+   - Track defect rates and categories
+   - Support root cause analysis workflows
+   - Generate quality control charts and metrics
 
-4. **Report Distribution Framework**
-   - Role-based content filtering and formatting
-   - Delivery scheduling with escalation paths
-   - Interactive and static report formats
-   - Mobile-optimized layouts for shop floor consumption
+4. **Report Generation and Distribution**
+   - Create role-specific report templates
+   - Generate daily and shift-based production reports
+   - Distribute reports to appropriate teams
+   - Support scheduled and on-demand reporting
 
-5. **Problem Management Tools**
-   - Structured root cause analysis methodology
-   - Issue tracking and resolution workflow
-   - Knowledge base integration for similar historical problems
-   - Effectiveness verification for implemented solutions
+5. **Historical Analysis Framework**
+   - Maintain historical production data
+   - Provide comparative analysis against historical performance
+   - Support long-term trend identification
+   - Enable data-driven process improvement
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Accurate collection of data from all supported sensor types and protocols
-- Correct calculation of all manufacturing KPIs and efficiency metrics
-- Proper identification of anomalies in production data
-- Appropriate customization of reports for different operational roles
-- Effective linking of quality issues to production factors in root cause templates
+
+1. **Data Collection Reliability**
+   - Verify that connectors can reliably collect data from various sources
+   - Test handling of interrupted connections and data recovery
+   - Verify time synchronization across different data sources
+   - Confirm appropriate handling of invalid or out-of-range data
+
+2. **Anomaly Detection Accuracy**
+   - Verify detection of common manufacturing anomalies
+   - Test detection sensitivity and specificity with labeled datasets
+   - Verify appropriate handling of seasonal and cyclical variations
+   - Confirm that legitimate process changes are not flagged as anomalies
+
+3. **Shift Comparison Functionality**
+   - Verify accurate normalization for staffing and equipment variables
+   - Test comparison logic across different shift patterns
+   - Confirm proper isolation of shift-specific factors
+   - Verify appropriate handling of shift transitions
+
+4. **Report Distribution Mechanics**
+   - Verify that role-based filtering correctly targets information
+   - Test report generation for all defined roles
+   - Confirm that sensitive information is appropriately controlled
+   - Verify distribution mechanisms function as expected
+
+5. **Root Cause Analysis Tools**
+   - Verify the linking of quality issues to production parameters
+   - Test tracking of resolution progress
+   - Confirm appropriate template population
+   - Verify historical tracking of recurring issues
 
 ### Critical User Scenarios
-- Daily production overview generation for management review
-- Real-time monitoring dashboard for current production status
-- Shift handover reporting with highlighted issues and priorities
-- Quality incident investigation and root cause analysis
-- Efficiency improvement tracking across production lines
+
+1. Generating daily production reports highlighting significant deviations
+2. Creating shift handover reports with key issues requiring attention
+3. Performing comparison analysis between shifts to identify best practices
+4. Distributing targeted quality alerts to relevant departments
+5. Conducting root cause analysis for a recurring quality issue
 
 ### Performance Benchmarks
-- Data collection system must handle at least 10,000 data points per minute
-- Anomaly detection algorithms must achieve >90% accuracy with <5% false positives
-- Reports must be generated and distributed within 5 minutes of scheduled time
-- System must support concurrent usage by at least 50 operational staff
-- Historical data queries must return results in under 10 seconds for typical date ranges
+
+- Real-time data collection must process 1,000 data points per second
+- Anomaly detection must identify critical issues within 5 minutes of occurrence
+- Report generation must complete within 5 minutes for comprehensive daily reports
+- System must support at least 100 concurrent users accessing reports
+- Historical queries must return results for 1 year of data within 30 seconds
 
 ### Edge Cases and Error Conditions
-- Handling of sensor outages and communication failures
-- Management of production line changeovers and new product introductions
-- Processing of maintenance periods and planned downtime
-- Adaptation to seasonal production variations and demand fluctuations
-- Recovery from system interruptions with data consistency maintenance
+
+- Handling of sensor failures and data gaps
+- Appropriate processing during production line changeovers
+- Correct operation during facility maintenance periods
+- Handling of product introductions with limited historical data
+- Appropriate analysis during abnormal operating conditions (e.g., partial facility shutdown)
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for data collection and processing modules
+
+- Minimum 90% line coverage for all code
+- 100% coverage of data ingestion interfaces
 - 100% coverage of anomaly detection algorithms
-- Complete testing of report generation for all role-based templates
-- Full coverage of error handling for all data source types
-- Comprehensive testing of system behavior under various network conditions
+- Comprehensive coverage of error handling and recovery mechanisms
+- Integration tests for complete report generation workflows
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful when:
+A successful implementation of the Manufacturing Operations Intelligence System will meet the following criteria:
 
-1. Production data is collected reliably from at least 5 different source types with appropriate error handling
-2. Anomalies in production processes are accurately detected with minimal false positives
-3. Performance metrics correctly account for shift variables such as staffing and equipment configuration
-4. Reports are automatically customized and distributed to the appropriate operational teams
-5. Root cause analysis templates effectively guide problem investigation and resolution
-6. The system can process a typical manufacturing facility's data volume within performance parameters
-7. Operational teams report that the system provides actionable insights that improve efficiency
-8. The solution reduces the time to identify and respond to production issues by at least 50%
-9. Historical data analysis capabilities support continuous improvement initiatives
-10. The system adapts to changes in production environment without requiring code modifications
+1. **Operational Visibility**: Provides clear, timely insights into manufacturing performance across all production lines.
 
-To get started with this project, use `uv venv` to setup a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+2. **Anomaly Identification**: Automatically detects and highlights significant deviations from normal operations for immediate attention.
+
+3. **Comparative Analysis**: Enables meaningful comparisons between shifts, products, and equipment to identify best practices and improvement opportunities.
+
+4. **Targeted Communication**: Successfully delivers relevant, role-specific information to different operational teams without overwhelming them.
+
+5. **Problem Resolution**: Facilitates systematic root cause analysis and tracking of quality issues to resolution.
+
+6. **Efficiency Impact**: Reduces the time to identify and address production issues by at least 50% compared to manual methods.
+
+7. **Data Integration**: Successfully consolidates data from multiple production systems into a unified analytical framework.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

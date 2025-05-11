@@ -1,129 +1,172 @@
-# NetScope for Cybersecurity Education
+# Educational Network Protocol Analysis Framework
 
 ## Overview
-A specialized network protocol analyzer designed for cybersecurity education, providing clear visualization of protocol structures, attack vectors, and security concepts to help students gain hands-on experience with network security analysis in a controlled environment.
+A network protocol analysis library specifically designed for cybersecurity education, providing clear visualization of protocol structures, controlled demonstration of common attack vectors, adjustable complexity levels for different student experience levels, collaborative analysis capabilities, and structured learning scenarios to teach network security concepts.
 
 ## Persona Description
 Professor Wong teaches network security courses and needs to provide students with hands-on experience analyzing network protocols and security vulnerabilities. He requires a tool that clearly illustrates protocol structures and common attack vectors for educational purposes.
 
 ## Key Requirements
-1. **Protocol breakdown visualization showing each field and its purpose in packet headers**
-   - Implement detailed protocol dissectors that expose the structure and purpose of every field
-   - Create interactive visualizations highlighting header fields and their relationships
-   - Develop annotation capabilities to explain protocol design decisions and security implications
-   - Include cross-protocol relationships showing how protocols interact in a network stack
-   - Support for both common protocols and historically significant protocols for teaching purposes
 
-2. **Attack simulation sandboxing demonstrating common exploits in a controlled environment**
-   - Develop a library of preconfigured attack scenarios with corresponding network traces
-   - Implement safe replay capabilities to demonstrate attacks without executing malicious code
-   - Create step-by-step explanations of attack mechanics tied to specific packets
-   - Include before/after comparisons showing normal traffic versus attack traffic
-   - Support for customizing attack parameters for educational demonstration
+1. **Protocol Breakdown Visualization System**  
+   Create a module that decomposes network packets to show each field and its purpose in protocol headers with educational annotations. This is critical for Professor Wong because it helps students understand protocol implementations at a granular level, making abstract networking concepts concrete and facilitating deeper comprehension of how vulnerabilities arise from protocol design.
 
-3. **Progressive complexity modes revealing different levels of detail based on student experience**
-   - Implement multiple detail levels from simplified overviews to expert-level analysis
-   - Develop guided learning paths that progressively reveal protocol complexity
-   - Create concept-focused views that highlight specific networking principles
-   - Include adaptive complexity based on user interactions and demonstrated understanding
-   - Support for instructor-defined complexity profiles tailored to curriculum needs
+2. **Attack Simulation Sandbox**  
+   Implement functionality to safely demonstrate common network exploits in a controlled environment without requiring actual vulnerable systems. This feature is essential for Professor Wong to illustrate attack techniques like man-in-the-middle, packet injection, and protocol abuse patterns in a hands-on way while ensuring students cannot accidentally use these techniques outside the learning environment.
 
-4. **Collaborative analysis allowing students to share and discuss findings within the tool**
-   - Implement exportable analysis reports with annotations and findings
-   - Develop mechanisms for comparing multiple analysts' interpretations of the same traffic
-   - Create annotation and discussion capabilities linked to specific packets or patterns
-   - Include peer review workflows for student analysis submissions
-   - Support for instructor oversight and feedback on student analysis
+3. **Progressive Complexity Modes**  
+   Develop capabilities to reveal different levels of protocol detail based on student experience level, from basic to advanced analysis. This is crucial for Professor Wong because it allows him to tailor the learning experience to different class levels, gradually introducing more complex concepts as students progress, and preventing beginners from becoming overwhelmed by technical details.
 
-5. **Challenge scenarios with guided discovery of specific protocol vulnerabilities**
-   - Create a framework for defining network analysis challenges with clear learning objectives
-   - Implement hint systems that provide progressive guidance without revealing solutions
-   - Develop evaluation metrics to assess completeness and accuracy of student analysis
-   - Include debriefing materials explaining the security concepts demonstrated in each challenge
-   - Support for custom challenge creation by instructors
+4. **Collaborative Analysis Framework**  
+   Build a system allowing students to share and discuss findings within the tool, including annotations and observations about protocol behaviors. This allows Professor Wong to facilitate group learning activities where students can collaborate on analyzing traffic captures, sharing insights, and learning from each other's observations, which reinforces learning through peer education.
+
+5. **Challenge Scenario System**  
+   Create functionality to present guided discovery exercises focused on specific protocol vulnerabilities with progressive hints. This feature is vital for Professor Wong to create engaging, gamified learning experiences where students apply theoretical knowledge to discover real vulnerabilities, with structured guidance available when needed to prevent frustration while maintaining educational value.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- Protocol visualization components must be testable with predefined packet samples
-- Attack simulations must be verifiable against known vulnerability patterns
-- Complexity mode transitions must be testable for appropriate content changes
-- Collaborative features must be testable with simulated multi-user scenarios
-- Challenge frameworks must be verifiable against defined learning objectives
+- All components must be testable with educational network captures
+- Protocol visualization must be verifiable against reference protocol specifications
+- Attack simulations must be reproducible with deterministic outcomes
+- Collaborative features must be testable in isolated environments
+- Challenge scenarios must be verifiable for correct solution detection
 
 ### Performance Expectations
-- Visualization components must render within 1 second even for complex protocols
-- The system should handle packet captures up to 1GB in size on standard classroom computers
-- Challenge scenarios should load within 5 seconds to maintain student engagement
-- Collaborative features should support at least 30 simultaneous users when deployed in a classroom
-- All analysis should be performable offline without external resources
+- Support simultaneous analysis by classes of 50+ students
+- Process standard educational capture files (up to 500MB) in under 30 seconds
+- Render protocol breakdowns with under 1-second latency
+- Support at least 10 concurrent attack simulations without performance degradation
+- Load and validate challenge scenarios in under 5 seconds
 
 ### Integration Points
-- Import capabilities for standard PCAP files from common capture tools
-- Export formats suitable for inclusion in course materials and reports
-- APIs for creating custom educational modules and challenges
-- Support for integration with learning management systems for assignment submission
+- Import from standard PCAP/PCAPNG files and educational capture libraries
+- Export annotations and findings in formats suitable for assignment submission
+- Integration with common protocol standards documentation
+- Support for custom challenge scenario definitions
+- Compatibility with standard cybersecurity curriculum frameworks
 
 ### Key Constraints
-- All functionality must operate without requiring administrative privileges
-- No actual exploitation or malicious traffic generation should be possible
-- Must function in restricted lab environments with limited internet connectivity
-- Should support deployment in various educational computing environments
-- Must include appropriate sanitization of sensitive data in shared analysis
+- Must function securely in academic network environments
+- Should never generate actual attack traffic outside the sandbox
+- Must be accessible to students with varying technical backgrounds
+- Should operate with reasonable performance on standard student hardware
+- Must include proper ethical use guidelines and controls
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Cybersecurity Education version of NetScope must provide a comprehensive teaching and learning platform for network protocol analysis and security concepts. The system should enable instructors to clearly demonstrate protocol structures, security vulnerabilities, and analysis techniques while providing students with hands-on experience in a safe environment.
 
-Key functional components include:
-- Interactive protocol visualization and exploration system
-- Safe attack simulation and analysis framework
-- Adjustable complexity levels for progressive learning
-- Collaborative analysis and discussion tools
-- Challenge-based learning with guided discovery
+The Educational Network Protocol Analysis Framework should provide the following core functionality:
 
-The system should balance technical accuracy with clear explanations appropriate for various educational levels. All components should reinforce security concepts and analysis methodologies while providing engaging, hands-on learning experiences.
+1. **Protocol Analysis Engine**
+   - Parse and decode common network protocols with educational annotations
+   - Layer-by-layer breakdown of packet structures
+   - Clear marking of protocol fields with purpose descriptions
+   - Highlighting of security-relevant protocol elements
+
+2. **Educational Attack Demonstration**
+   - Simulated environments for common network attacks
+   - Safe reproduction of vulnerability exploitation scenarios
+   - Detailed explanation of attack mechanics and prevention
+   - Containment to prevent unintended consequences
+
+3. **Adaptive Learning System**
+   - Multiple detail levels for different student experience
+   - Progressive disclosure of advanced protocol features
+   - Customizable complexity settings for different courses
+   - Learning path recommendations based on student progress
+
+4. **Collaborative Learning Platform**
+   - Shared analysis sessions for group exercises
+   - Annotation and commenting on protocol elements
+   - Merging of insights from multiple analysts
+   - Export and exchange of findings
+
+5. **Cybersecurity Challenges**
+   - Scenario-based learning exercises
+   - Guided discovery of specific vulnerabilities
+   - Hint system with progressive assistance
+   - Validation of student solutions
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate and clear visualization of all supported protocol structures
-- Safe and educational simulation of network-based attacks
-- Appropriate content presentation at different complexity levels
-- Reliable collaborative annotation and discussion features
-- Effective challenge scenarios with appropriate learning scaffolding
+- Accuracy of protocol parsing and visualization
+- Safety and effectiveness of attack simulations
+- Proper functionality of different complexity modes
+- Reliability of collaborative analysis features
+- Correctness of challenge scenario validation
 
 ### Critical User Scenarios
-- Instructor demonstrating protocol structure and security implications to a class
-- Students analyzing attack patterns in a guided lab exercise
-- Progressive learning from basic concepts to advanced protocol analysis
-- Collaborative incident analysis exercises among student teams
-- Students completing challenges with minimal instructor intervention
+- Students analyzing a TCP handshake with detailed field explanations
+- Demonstrating a DNS poisoning attack in the sandbox environment
+- Adjusting complexity levels for introductory versus advanced classes
+- Collaborative analysis of suspicious network traffic by a student group
+- Students working through a challenge to identify a protocol vulnerability
 
 ### Performance Benchmarks
-- Load and display protocol breakdowns for 100 different protocol types in under 30 seconds
-- Initialize attack simulation environments in under 10 seconds
-- Switch between complexity modes with screen update in under 1 second
-- Support collaborative sessions with at least 30 simultaneous users
-- Load and initialize challenge scenarios in under 5 seconds
+- Process a standard 100MB capture file in under 15 seconds
+- Generate protocol visualizations within 500ms of request
+- Support at least 30 concurrent users without performance degradation
+- Execute attack simulations with less than 2-second initialization time
+- Load and validate challenge scenarios in under 3 seconds
 
 ### Edge Cases and Error Conditions
-- Graceful handling of malformed packets with educational explanations
-- Appropriate management of incomplete protocol implementations
-- Clear indicators when theoretical attacks would not work in real environments
-- Resilience against incorrect student inputs or analysis
-- Proper handling of edge cases in protocol specifications
-- Appropriate scaffolding when students repeatedly fail to progress
+- Handling malformed packets and protocol violations
+- Managing extremely large capture files (1GB+)
+- Supporting older or uncommon protocol versions
+- Dealing with encrypted traffic analysis limitations
+- Preventing actual exploit code execution outside the sandbox
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all visualization components
-- Complete coverage of attack simulation scenarios
-- Comprehensive tests for each complexity level and transition
-- Full suite of tests for collaborative features under various user loads
-- Complete validation of challenge framework with sample challenges
+- Minimum 90% code coverage for core functionality
+- 95% coverage for protocol visualization components
+- 95% coverage for attack simulation sandbox
+- 90% coverage for complexity adjustment features
+- 95% coverage for challenge scenario system
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Students demonstrate measurably improved understanding of protocol structures after use
-- Attack simulations effectively communicate key security concepts without enabling actual exploitation
-- Progressive complexity features successfully accommodate students at different knowledge levels
-- Collaborative features enable effective peer learning and discussion
-- Challenge completion correlates with demonstrated understanding in formal assessments
-- Instructors report at least 90% satisfaction with teaching effectiveness
-- Students report at least 85% satisfaction with learning experience
+
+The Educational Network Protocol Analysis Framework implementation will be considered successful when:
+
+1. It accurately visualizes at least 10 common network protocols with proper field descriptions
+2. It successfully demonstrates at least 5 different network attack scenarios in a safe sandbox
+3. It provides at least 3 distinct complexity levels that effectively filter information for different student levels
+4. It enables effective collaborative analysis with annotation and insight sharing capabilities
+5. It includes at least 10 functional challenge scenarios with appropriate hint systems
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

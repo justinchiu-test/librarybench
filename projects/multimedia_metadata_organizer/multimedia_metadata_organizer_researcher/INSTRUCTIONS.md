@@ -1,138 +1,141 @@
-# Scientific Research Media Metadata System
+# Scientific Research Media Metadata Management System
 
 ## Overview
-A specialized metadata management system for scientific researchers that organizes research media with scientific taxonomies, protocol linkages, geospatial mapping, specimen tracking, and publication preparation features. The system enables efficient organization of research media within scientific frameworks while maintaining connections to study methodologies and findings.
+A specialized metadata organization system for scientific researchers who need to manage thousands of research media files with detailed scientific metadata that connects to study protocols and research findings.
 
 ## Persona Description
 Dr. Patel conducts marine biology research generating thousands of underwater photographs and videos. She needs to organize research media with scientific metadata that connects to her study protocols and findings.
 
 ## Key Requirements
+1. **Scientific taxonomy integration**: Implement functionality to use standardized species classification systems and scientific naming conventions. This is essential for maintaining consistent and accurate identification of organisms across research media and enabling integration with broader scientific databases.
 
-1. **Scientific Taxonomy Integration**
-   - Implements standardized species classification systems and scientific naming conventions
-   - Critical for Dr. Patel because it organizes observations according to formal biological taxonomy, ensuring scientific accuracy and enabling analysis across taxonomic hierarchies
-   - Must support multiple taxonomy standards (e.g., ITIS, WoRMS) with proper handling of scientific nomenclature, taxonomic ranks, and phylogenetic relationships
+2. **Research protocol linking**: Create a system to connect media to specific experiments, methodologies, and research phases. This provides crucial context for understanding the conditions under which observations were made and ensures proper experimental control tracking.
 
-2. **Research Protocol Linking**
-   - Connects media to specific experiments, methodologies, and research questions
-   - Essential for Dr. Patel's scientific rigor as it maintains the methodological context for each observation and ensures reproducibility
-   - Must track experimental conditions, equipment configurations, and protocol versions associated with each media item
+3. **Geospatial habitat mapping**: Develop tools to place observations within ecological contexts using precise geographic coordinates and habitat classification. This enables spatial analysis of species distribution and environmental factors across research sites.
 
-3. **Geospatial Habitat Mapping**
-   - Places observations within ecological and geographical contexts
-   - Crucial for Dr. Patel's spatial analysis as it enables correlation between species observations and environmental factors
-   - Must support marine-specific coordinate systems, depth measurements, and habitat classification schemes
+4. **Specimen tracking**: Build functionality to associate multiple observations of the same individual organism across different times or conditions. This is critical for longitudinal studies tracking changes in specific organisms over time.
 
-4. **Specimen Tracking**
-   - Associates multiple observations of the same individual organism over time
-   - Valuable for Dr. Patel's longitudinal studies as it allows tracking changes in specific organisms and establishing observation histories
-   - Must create and maintain reliable specimen identifiers and relationship networks between observations of the same individual
-
-5. **Publication Preparation**
-   - Extracts appropriate media and metadata for journal submissions and presentations
-   - Indispensable for Dr. Patel's research dissemination as it streamlines the preparation of visual materials for scientific publication
-   - Must generate publication-ready media with properly formatted scientific metadata according to journal requirements
+5. **Publication preparation**: Create mechanisms to extract appropriate media and metadata for journal submissions, following specific publication requirements and formats. This streamlines the process of preparing visual evidence for scientific publications and ensures all required metadata is included.
 
 ## Technical Requirements
 
-- **Testability Requirements**
-  - Taxonomy classification functions must be independently testable against reference databases
-  - Protocol linking must verify correct relationship mapping
-  - Geospatial functions must be testable with known coordinate sets
-  - Specimen tracking must verify identity relationships across observations
-  - Publication outputs must validate against scientific journal specifications
+### Testability Requirements
+- All taxonomy and classification functions must be independently testable
+- Geospatial functions must support precise coordinate validation
+- Use test fixtures with sample scientific metadata and classification hierarchies
+- Support simulation of data collection across multiple research protocols
 
-- **Performance Expectations**
-  - Must efficiently handle research collections with 50,000+ media items
-  - Taxonomy lookups should complete in under 500ms
-  - Geospatial queries should return results in under 2 seconds
-  - Must support batch processing of at least 1,000 items for metadata operations
+### Performance Expectations
+- Process metadata for at least 1,000 research images per minute
+- Support research collections with up to 500,000 items
+- Geospatial queries should complete in under 3 seconds
+- Support batch operations for publication preparation
 
-- **Integration Points**
-  - Standard scientific taxonomy databases (ITIS, WoRMS, etc.)
-  - Geographic information systems and coordinate reference systems
-  - Research protocol documentation formats
-  - Scientific publication metadata standards and formats
+### Integration Points
+- Common image and video formats used in scientific research
+- Standard scientific taxonomy databases (e.g., Integrated Taxonomic Information System)
+- Geographic information systems and coordinate standards
+- Research information management systems
+- Academic publication formats and requirements
 
-- **Key Constraints**
-  - Must preserve raw scientific data without modification
-  - Must maintain precise provenance for all metadata
-  - Must handle specialized scientific file formats
-  - No UI components; all functionality exposed through Python APIs
+### Key Constraints
+- No UI components - all functionality exposed through Python APIs
+- All operations must maintain scientific accuracy and precision
+- System must support both online and offline field research scenarios
+- Data structures must accommodate evolving scientific classification systems
 
 ## Core Functionality
 
-The system must provide comprehensive metadata management for scientific research with these core capabilities:
+The system must provide a Python library that enables:
 
-1. **Scientific Classification and Identification**
-   - Apply taxonomic classification to observed organisms
-   - Validate scientific nomenclature against reference databases
-   - Track taxonomic revisions and naming changes
+1. **Scientific Metadata Management**
+   - Implement standard scientific taxonomies for species classification
+   - Support custom research-specific metadata fields
+   - Validate scientific naming and classification accuracy
 
-2. **Research Context Management**
-   - Link media to specific research protocols and questions
-   - Document experimental conditions and methodologies
-   - Track equipment configurations and calibration status
+2. **Research Context Integration**
+   - Link media to research protocols and methodologies
+   - Track experimental conditions and parameters
+   - Maintain relationships between observations and hypotheses
 
-3. **Spatial and Environmental Documentation**
-   - Record precise location data including depth/altitude
-   - Classify and document habitat characteristics
-   - Enable spatial analysis across observation sets
+3. **Geospatial Analysis**
+   - Extract and normalize geographic coordinates from various formats
+   - Classify and map habitat types and environmental conditions
+   - Support spatial querying of research observations
 
-4. **Individual Organism Tracking**
-   - Establish and maintain specimen identifiers
-   - Link multiple observations of the same individual
-   - Document changes in individual organisms over time
+4. **Specimen and Subject Tracking**
+   - Identify and associate observations of the same individual
+   - Track changes in subjects over time or experimental conditions
+   - Support measurement and morphological data association
 
-5. **Scientific Output Preparation**
-   - Generate publication-ready media with appropriate metadata
-   - Format citations and attributions according to scientific standards
-   - Prepare data packages for journal submission or data repositories
+5. **Academic Output Preparation**
+   - Filter and select media based on research criteria
+   - Format metadata according to publication requirements
+   - Generate appropriate citations and attributions
 
 ## Testing Requirements
 
-- **Key Functionalities to Verify**
-  - Accurate application of taxonomic classifications
-  - Correct linking between media and research protocols
-  - Precise geospatial mapping and habitat classification
-  - Reliable tracking of individual specimens across observations
-  - Proper formatting of publication outputs according to requirements
+The implementation must include tests that verify:
 
-- **Critical User Scenarios**
-  - Processing new media from a research expedition
-  - Searching for observations by taxonomic classification
-  - Analyzing spatial distribution of species observations
-  - Tracking changes in specific specimens over time
-  - Preparing media packages for journal publication
+1. **Taxonomy Implementation**
+   - Test correct implementation of scientific classification hierarchies
+   - Verify handling of taxonomic revisions and updates
+   - Test search and filtering by taxonomic criteria
 
-- **Performance Benchmarks**
-  - Taxonomy lookups must complete in under 500ms even for complex hierarchies
-  - Spatial queries must efficiently handle complex region definitions
-  - Batch processing must handle at least 1,000 items simultaneously
-  - System must scale to manage research collections growing over many years
+2. **Research Protocol Integration**
+   - Test linking of media to specific research protocols
+   - Verify tracking of experimental conditions
+   - Test filtering and organization by research parameters
 
-- **Edge Cases and Error Conditions**
-  - Organisms with uncertain or disputed taxonomic classification
-  - Observations with incomplete location data
-  - Ambiguous specimen identification
-  - Equipment malfunctions affecting metadata reliability
-  - Changes in taxonomic classification systems over time
+3. **Geospatial Functionality**
+   - Test coordinate extraction and normalization
+   - Verify habitat classification and mapping
+   - Test spatial queries and proximity analysis
 
-- **Required Test Coverage Metrics**
-  - Minimum 95% code coverage for taxonomy functions
-  - 100% coverage for geospatial coordinate handling
-  - Comprehensive coverage of specimen relationship mapping
-  - Complete verification of publication output formatting
+4. **Specimen Tracking**
+   - Test association of observations across time and conditions
+   - Verify identification of the same individual in different media
+   - Test longitudinal analysis of individual subjects
+
+5. **Publication Workflows**
+   - Test extraction of media for publication
+   - Verify formatting of metadata for academic requirements
+   - Test generation of figure sets and supplementary materials
+
+**IMPORTANT:**
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
+
+## Setup Instructions
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment: `source .venv/bin/activate`
+3. Install the project: `uv pip install -e .`
 
 ## Success Criteria
 
-1. The system successfully applies correct taxonomic classifications to at least 98% of identifiable organisms.
-2. Research protocol information is accurately linked to all media with complete methodological context.
-3. Geospatial data is precisely recorded and mapped with appropriate coordinate systems and depth measurements.
-4. Individual specimens are reliably tracked across multiple observations over time.
-5. Publication outputs meet the formatting requirements of major scientific journals.
-6. The system handles taxonomy revisions and scientific nomenclature changes appropriately.
-7. Search operations efficiently find media based on scientific, spatial, or methodological criteria.
-8. Performance benchmarks are met for research collections with 50,000+ media items.
-9. The system maintains data integrity with no modification of original scientific observations.
-10. All functionality is accessible through well-documented Python APIs without requiring a UI.
+The implementation will be considered successful if:
+
+1. All five key requirements are fully implemented
+2. The system correctly implements and maintains scientific taxonomies
+3. Research protocol linking successfully connects media to experimental contexts
+4. Geospatial habitat mapping accurately places observations in ecological contexts
+5. Specimen tracking correctly associates observations of the same individual
+6. Publication preparation streamlines the creation of journal-ready materials
+7. All operations maintain scientific accuracy and precision
+8. All tests pass when run with pytest
+9. A valid pytest_results.json file is generated showing all tests passing
+
+**REMINDER: Generating and providing pytest_results.json is a CRITICAL requirement for project completion.**
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

@@ -1,177 +1,154 @@
-# LegalVault - Evidentiary-Grade Document Backup System
+# LegalVault - Incremental Backup System with Chain of Custody
 
 ## Overview
-LegalVault is a specialized incremental backup system designed for law firms handling sensitive client documents with strict chain of custody requirements. The system provides legal hold enforcement, tamper-proof audit logging, intelligent handling of redacted content, case-based organization, and jurisdiction-specific retention policies to meet the stringent requirements of legal practice.
+A specialized incremental backup system designed for legal professionals handling sensitive client documents. The system enables strict chain of custody for all documents, immutable legal holds to prevent modification or deletion, and comprehensive audit logging while organizing backups by case matter and implementing jurisdiction-specific retention policies.
 
 ## Persona Description
 Eleanor works at a law firm handling sensitive client documents requiring strict chain of custody. She needs to maintain verifiable document history with tamper-proof audit logs for evidentiary purposes.
 
 ## Key Requirements
+1. **Legal Hold Functionality**: Implement a robust mechanism to prevent modification or deletion of designated backup sets regardless of standard retention policies. This capability is critical for Eleanor to ensure that documents subject to litigation, investigation, or regulatory inquiry remain intact and unaltered until the hold is explicitly lifted with proper authorization.
 
-1. **Legal Hold Functionality**
-   - Implement immutable preservation of designated backup sets
-   - Create legal hold classification and tagging system
-   - Develop hold enforcement that overrides normal retention policies
-   - Support for hold notification and acknowledgment tracking
-   - This feature is critical for Eleanor as it prevents modification or deletion of documents subject to litigation holds, protecting the firm from spoliation claims and sanctions by ensuring evidence remains pristine and admissible in court
+2. **Chain of Custody Documentation**: Create a comprehensive, tamper-evident logging system that records all access, viewing, and restoration attempts for legal documents. This feature provides Eleanor with verifiable documentation of who accessed what documents and when, establishing an unbroken chain of custody that can withstand scrutiny in legal proceedings.
 
-2. **Chain of Custody Documentation**
-   - Design comprehensive audit logging of all document access and actions
-   - Implement cryptographic verification of log integrity
-   - Create detailed tracking of restoration attempts and activities
-   - Support exportable chain of custody reports for legal proceedings
-   - This documentation is essential as it provides defensible evidence of document authenticity by recording every interaction with the backup system, crucial for maintaining document admissibility and withstanding legal challenges
+3. **Redaction-aware Backup**: Develop specialized handling for confidential content that recognizes redacted documents and applies appropriate security controls. This ensures that Eleanor can properly manage multiple versions of documents with different redaction levels, maintaining both the original unredacted versions under strict access controls and the appropriately redacted versions for broader use.
 
-3. **Redaction-Aware Backup Handling**
-   - Develop detection of redacted content in documents
-   - Implement specialized storage for pre and post-redaction versions
-   - Create access controls specific to redaction status
-   - Support for tracking redaction decisions and authorizations
-   - This redaction awareness ensures that documents containing confidential information are handled appropriately, preventing accidental disclosure of privileged content while maintaining document history
+4. **Case-based Organization**: Implement a logical organization system that mirrors the firm's matter management system, allowing documents to be backed up and restored based on case relationships rather than just file system structure. This enables Eleanor to manage backups in a way that aligns with how legal professionals actually work with and think about their documents.
 
-4. **Case-Based Organization**
-   - Implement organization structure mirroring law firm's matter management
-   - Create matter/case hierarchies with appropriate metadata
-   - Develop client and case linking with conflict checking
-   - Support for matter lifecycle management within backups
-   - This organization is vital as it aligns backup structures with how attorneys naturally work, enabling Eleanor to quickly locate documents by case and maintain proper client-matter segregation required for legal practice
-
-5. **Jurisdiction-Specific Retention Policies**
-   - Design rule engine for implementing retention requirements by jurisdiction
-   - Create conflict resolution for multi-jurisdictional matters
-   - Implement practice area-specific retention rules
-   - Support automated disposition with approval workflows
-   - These specialized retention policies ensure the firm complies with varying legal requirements across different jurisdictions and practice areas, protecting against both premature destruction and unnecessary retention of sensitive materials
+5. **Jurisdiction-specific Retention**: Create a configurable policy engine implementing legal requirements for different jurisdictions and practice areas with automatic enforcement. This capability ensures that Eleanor's firm meets all applicable legal and regulatory requirements for document retention across different types of matters and geographical jurisdictions.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Legal hold mechanisms must be verifiable for absolute enforcement
-- Chain of custody logs must be testable for tamper resistance
-- Redaction handling must be validated for security across all document types
-- Case organization must be tested for proper segregation and access control
-- Retention policies must be verified against regulatory requirements
+- All components must have isolated unit tests with dependency injection for external systems
+- Legal hold mechanisms must be verified against unauthorized modification attempts
+- Chain of custody logs must be testable for completeness and tamper-evidence
+- Redaction handling must be tested with various redaction patterns and formats
+- Case organization must be verifiable with different matter structures
+- Retention policies must be tested against various jurisdictional requirements
 
 ### Performance Expectations
-- Support for at least 10 million documents with full audit history
-- Legal hold application should be processed within 30 minutes for large matters
-- Chain of custody reports should generate in under 2 minutes
-- Case organization should maintain responsiveness with 100,000+ matters
-- Retention analysis should process 100,000 documents per hour
+- The system must efficiently handle law firm document sets of at least 10 million files
+- Legal hold application must complete within 60 seconds for matter sets up to 100,000 documents
+- Chain of custody logging must add less than 50ms overhead per operation
+- Redaction detection must process at least 20 documents per second
+- Case organization indexing must update in under 5 seconds after document changes
+- Retention policy evaluation must process at least 10,000 documents per minute
 
 ### Integration Points
-- Document management systems used by legal firms
-- E-discovery platforms and litigation support software
-- Matter management and practice management systems
-- Court filing systems for chain of custody documentation
-- Client portals for secure access and disposition approval
+- Legal practice management systems
+- Document management systems used in legal settings
+- Redaction and document processing tools
+- Digital signature and certification services
+- Secure storage with encryption capabilities
+- Time-stamping authorities for verified date logging
 
 ### Key Constraints
-- Must maintain defensible chain of custody for all documents
-- All operations must be non-repudiable with cryptographic verification
-- System must operate within attorney-client privilege boundaries
-- Backup and access must comply with bar association rules
-- Storage must meet standards for evidentiary admissibility
+- The implementation must work across Windows and macOS (primary law firm platforms)
+- All operations must maintain cryptographic integrity verification
+- The system must comply with bar association and court requirements for electronic records
+- Storage formats must be technology-neutral for long-term accessibility
+- Processing must be optimized to handle extremely large case files and discovery productions
+- System must provide irrefutable evidence of document authenticity and handling
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The system must provide these core capabilities:
+1. **Incremental Backup Engine**: A core module handling document change detection, tamper-evident storage, and immutable version history for legal documents with cryptographic verification.
 
-1. **Legal Hold Engine**
-   - Hold classification and tagging
-   - Immutable storage implementation
-   - Policy override mechanisms
-   - Notification and acknowledgment tracking
+2. **Legal Hold Manager**: A robust system for designating document sets as legally protected, preventing modifications or deletions regardless of other policies, with proper authorization controls.
 
-2. **Custody Chain Management**
-   - Comprehensive audit logging
-   - Cryptographic log verification
-   - Access and activity tracking
-   - Chain of custody reporting
+3. **Chain of Custody Logger**: A secure, append-only logging system that records all document interactions with cryptographic verification to ensure logs cannot be altered or fabricated.
 
-3. **Redaction Processing**
-   - Content analysis for redaction detection
-   - Version management for redacted documents
-   - Access control by redaction status
-   - Authorization tracking
+4. **Redaction Processor**: Specialized handling for documents with redacted content, managing different versions and their appropriate access controls while maintaining original unredacted copies securely.
 
-4. **Matter Organization**
-   - Case hierarchy implementation
-   - Client-matter association
-   - Conflict checking integration
-   - Matter lifecycle management
+5. **Matter Organization System**: A logical framework mapping document backups to legal matters, clients, and practice areas independent of file system structure.
 
-5. **Retention Management**
-   - Jurisdiction rule engine
-   - Practice area policy implementation
-   - Conflict resolution logic
-   - Disposition workflow
+6. **Jurisdictional Policy Engine**: Configurable retention rules implementing the legal requirements of different jurisdictions, practice areas, and matter types with automatic enforcement.
+
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by various legal tools (though implementing a UI is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Absolute enforcement of legal holds against any modification attempts
-- Tamper-evident audit logs that detect any unauthorized changes
-- Proper handling of redacted content with appropriate access controls
-- Correct organization of documents within the case management structure
-- Accurate application of retention policies based on jurisdiction and practice area
+- Legal hold application and enforcement with proper authorization controls
+- Chain of custody logging with tamper detection and complete access tracking
+- Redaction version management with appropriate security controls
+- Matter-based organization with correct relationship maintenance
+- Jurisdictional retention policy enforcement with timely disposition
+- Cryptographic verification of document integrity and authenticity
 
 ### Critical User Scenarios
-- Applying legal hold to documents related to active litigation
-- Generating chain of custody report for document presented as evidence
-- Handling document with multiple redacted versions for different audiences
-- Organization of documents from multi-jurisdictional, multi-client matter
-- Application of appropriate retention based on changing jurisdictional rules
+- Applying legal holds across multiple related matters
+- Producing chain of custody documentation for court proceedings
+- Managing multiple redaction versions of sensitive documents
+- Reorganizing documents when matters are transferred or consolidated
+- Complying with conflicting retention requirements across jurisdictions
+- Verifying document authenticity for evidentiary purposes
 
 ### Performance Benchmarks
-- Process legal hold application to 100,000 documents in under 1 hour
-- Generate tamper-proof audit log for 5 years of document history in under 5 minutes
-- Handle 10,000 redacted documents with their original versions with appropriate access controls
-- Maintain organization performance with 100,000+ matters and 10 million+ documents
-- Apply retention rules to 100,000 documents in under 1 hour
+- Initial backup of a 100,000-document matter completing in under 4 hours
+- Legal hold application propagating to all documents within 5 minutes
+- Chain of custody queries returning complete access history within 10 seconds
+- Redaction detection and processing at a rate of at least 15 pages per second
+- Matter reorganization reflecting in the backup system within 5 minutes
+- Retention policy evaluation completing within 30 minutes for a full system audit
 
 ### Edge Cases and Error Conditions
-- Conflicting legal holds from multiple matters
-- Attempt to modify documents under legal hold
-- Redacted document with inconsistent versions
-- Case reorganization or renumbering
-- Conflicting retention requirements across jurisdictions
-- Partial backup restoration for privilege review
+- Handling of conflicting legal holds and retention policies
+- Recovery from attempted unauthorized modifications to held documents
+- Proper functioning with very large legal documents (e.g., trial transcripts, discovery productions)
+- Correct behavior when matters span multiple jurisdictions with different requirements
+- Appropriate handling of encrypted or password-protected legal documents
+- Graceful operation during litigation support database integration
 
 ### Required Test Coverage Metrics
-- 100% coverage of legal hold mechanisms
-- 100% coverage of chain of custody logging
-- 95% coverage of redaction handling
-- 90% coverage of case organization
-- 95% coverage of retention policy implementation
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Integration tests must verify all external system interfaces
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. The system proves capable of absolutely preventing modification or deletion of documents under legal hold
-2. Chain of custody documentation provides cryptographically verifiable proof of document handling suitable for court proceedings
-3. Redacted content is properly identified and handled with appropriate access controls and version tracking
-4. Documents are organized in a structure that mirrors the firm's matter management system for intuitive access
-5. Retention policies correctly implement the requirements of different jurisdictions and practice areas
-6. All operations maintain a complete and tamper-evident audit trail
-7. The system performs efficiently with the document volumes typical of a regional law firm
-8. Document integrity and authenticity can be verified to legal evidentiary standards
-9. The system properly handles conflicts between different legal and regulatory requirements
-10. The implementation passes all test suites with the required coverage metrics
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system demonstrates effective legal hold functionality with proper authorization controls.
+3. Chain of custody documentation provides complete, tamper-evident access records.
+4. Redaction-aware backup correctly manages different versions with appropriate security.
+5. Case-based organization accurately reflects legal matter relationships.
+6. Jurisdiction-specific retention policies correctly implement regulatory requirements.
+7. All performance benchmarks are met under the specified load conditions.
+8. Code quality meets professional standards with appropriate documentation.
 
-To get started with implementation:
-1. Set up a Python virtual environment: `uv venv`
-2. Activate the environment: `source .venv/bin/activate`
-3. Install development dependencies
-4. Implement the core modules following the requirements
-5. Create comprehensive tests for all functionality
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

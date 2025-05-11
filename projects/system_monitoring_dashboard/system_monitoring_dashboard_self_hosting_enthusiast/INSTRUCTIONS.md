@@ -1,10 +1,10 @@
 # Home Infrastructure Monitoring System
 
-A comprehensive monitoring solution for self-hosted services that operates independently without cloud dependencies, optimized for home environments.
+A comprehensive monitoring solution designed specifically for self-hosted home services, with a focus on power usage, hardware health, and service accessibility.
 
 ## Overview
 
-The Home Infrastructure Monitoring System is a specialized implementation of the PyMonitor system designed for self-hosting enthusiasts who run multiple services on personal hardware. It emphasizes energy efficiency tracking, hardware health monitoring, and remote accessibility while maintaining complete independence from third-party services or cloud infrastructure.
+This implementation of PyMonitor is tailored for home lab environments where individuals run multiple services (media servers, home automation, personal cloud storage) on their own hardware. It emphasizes energy efficiency, remote accessibility, and hardware health monitoring without requiring enterprise-grade equipment or complex infrastructure.
 
 ## Persona Description
 
@@ -12,159 +12,222 @@ Sophia runs multiple services (media server, home automation, personal cloud) on
 
 ## Key Requirements
 
-1. **Power Consumption Tracking** - Implement functionality to monitor and correlate system activity with energy usage. This is critical for Sophia as it helps her maintain energy-efficient operations, optimize server scheduling, and understand the cost implications of running her self-hosted infrastructure.
+1. **Power Consumption Tracking**
+   - Monitor power usage across systems using compatible power meters or estimation algorithms
+   - Correlate system activity (CPU/GPU/disk) with energy consumption
+   - Generate reports on energy efficiency and cost impacts
+   - Identify power-hungry processes and optimization opportunities
+   - Track long-term trends in power usage by service and system
+   - This is critical because self-hosting enthusiasts are often concerned about the ongoing electricity costs of running home servers 24/7.
 
-2. **Mobile-Friendly Access** - Create an API-based system that allows checking system status from anywhere via mobile devices. Sophia needs this because she wants to monitor her home systems while away, ensuring she can respond to critical issues regardless of her location.
+2. **Mobile-Friendly Interface**
+   - Provide REST API endpoints optimized for mobile consumption
+   - Support secure remote access to monitoring data from outside the home network
+   - Implement bandwidth-efficient data summaries for mobile viewing
+   - Enable alert acknowledgment and basic control functions remotely
+   - Support push notifications for critical system events
+   - This is critical because home lab operators need visibility into their systems while away from home to address issues before they become critical.
 
-3. **Internet Connection Quality Monitoring** - Develop capabilities to detect, log, and analyze internet connection quality, including outages. This is essential for Sophia as her self-hosted services depend on reliable internet connectivity, and she needs to diagnose connectivity issues affecting external access to her services.
+3. **Internet Connection Quality Monitoring**
+   - Track latency, packet loss, and bandwidth to key internet destinations
+   - Detect and log internet outages with precise timing
+   - Monitor DNS resolution performance and failures
+   - Test accessibility of self-hosted services from external perspectives
+   - Correlate connection issues with ISP performance
+   - This is critical because internet reliability directly impacts the accessibility of self-hosted services from outside the home.
 
-4. **Temperature and Hardware Health Monitoring** - Implement detailed temperature tracking and hardware health metrics for consumer-grade equipment without built-in management features. This requirement is important because Sophia's home hardware lacks enterprise monitoring capabilities but still needs protection from thermal issues and hardware failures.
+4. **Temperature and Hardware Health Metrics**
+   - Monitor CPU, GPU, disk temperatures and fan speeds
+   - Track S.M.A.R.T. data for storage devices
+   - Monitor UPS status and runtime estimates
+   - Detect and alert on hardware anomalies before failure
+   - Support consumer-grade hardware without enterprise management features
+   - This is critical because consumer hardware used in home labs often lacks enterprise management capabilities and can be prone to thermal issues when run continuously.
 
-5. **Dynamic DNS Integration** - Create functionality to track the external accessibility of self-hosted services, particularly with changing IP addresses. Sophia requires this to ensure her services remain accessible from outside her network, detecting when DNS updates fail or when services become unreachable.
+5. **Dynamic DNS Integration**
+   - Monitor and verify dynamic DNS updates
+   - Track record changes and update history
+   - Test external accessibility through DNS names
+   - Alert on DNS resolution failures or inconsistencies
+   - Support common Dynamic DNS providers (DuckDNS, No-IP, etc.)
+   - This is critical because self-hosting enthusiasts rely on dynamic DNS services to make their home services accessible from the internet despite changing IP addresses.
 
 ## Technical Requirements
 
 ### Testability Requirements
 - All monitoring components must be testable with pytest
-- Hardware metrics collection must support mocking for testing without physical sensors
-- Network monitoring must include simulation capabilities for testing without actual connection issues
-- Power consumption correlation algorithms must be verifiable with predefined data sets
+- Hardware sensor monitoring must support simulated inputs for testing
+- Network tests must be mockable to simulate various connectivity scenarios
+- Power monitoring algorithms must be verifiable with test fixtures
+- API endpoints must be fully testable without requiring actual mobile devices
 
 ### Performance Expectations
-- Monitoring system must use minimal resources (less than 5% CPU, 200MB RAM)
-- Data collection should be configurable from 10-second to 15-minute intervals
-- Database must efficiently store at least 12 months of data for trend analysis
-- API responses should be delivered in under 500ms even on low-power hardware
+- Minimal impact on monitored systems (less than 3% CPU, 100MB RAM)
+- Support for monitoring at least 10 services on modest hardware (Raspberry Pi-level)
+- Data retention of at least 12 months with efficient storage (under 5GB)
+- API response times under 300ms even on resource-constrained systems
+- Bandwidth usage for remote monitoring under 5MB per day
 
 ### Integration Points
-- SNMP for compatible network devices
-- SMART data for disk health monitoring
-- Standardized power monitoring APIs or devices (where available)
-- Dynamic DNS providers' APIs
-- Temperature sensors (software and hardware-based where available)
+- Power meters and UPS monitoring (via USB, network, or estimation)
+- Hardware sensors (via standard libraries like lm-sensors, py-sensors)
+- Dynamic DNS providers (via APIs)
+- Internet quality testing (via configurable external endpoints)
+- Network diagnostics (ping, traceroute, DNS resolution)
 
 ### Key Constraints
-- Must function without cloud dependencies or internet access
-- Must operate on consumer hardware (including Raspberry Pi, NAS devices, etc.)
-- Cannot rely on specialized enterprise monitoring hardware
-- Must work with dynamic IP addresses and residential internet connections
-- Must support secure remote access without requiring VPN configuration
+- Must operate on consumer hardware including ARM devices (Raspberry Pi)
+- Cannot rely on enterprise management protocols not available on consumer hardware
+- Must function without cloud dependencies
+- Should minimize external dependencies to reduce security exposure
+- Must operate efficiently on low-power devices
+- Storage must use efficient formats to work within home storage constraints
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The Home Infrastructure Monitoring System must implement the following core functionality:
+The system should consist of these core modules:
 
-1. **Energy Efficiency Monitoring**
-   - Power consumption tracking via compatible smart plugs or built-in sensors
-   - Correlation between system workload and energy consumption
-   - Idle vs. active power usage analysis
-   - Power efficiency recommendations based on usage patterns
-   - Long-term cost estimation based on energy pricing
+1. **Power Monitoring Module**
+   - Direct integration with supported UPS and power monitoring devices
+   - Power estimation based on component utilization when direct measurement is unavailable
+   - Historical trend analysis for power consumption
+   - Cost calculation based on configurable electricity rates
+   - Correlation engine to link system activities with power usage
 
-2. **Remote Monitoring Capabilities**
-   - RESTful API for remote service monitoring
-   - Secure access with token-based authentication
-   - Essential metrics accessible via lightweight API calls
-   - Status summary endpoints optimized for mobile consumption
-   - Push notification mechanism for critical alerts
+2. **System Health Monitor**
+   - Temperature monitoring for CPU, GPU, and system ambient sensors
+   - S.M.A.R.T. data collection and analysis
+   - Fan speed monitoring and control (where supported)
+   - Hardware performance metrics (CPU frequency, throttling events)
+   - Predictive failure analysis based on hardware metrics
 
-3. **Network Quality Analysis**
-   - Internet connection uptime monitoring
-   - Bandwidth utilization tracking
-   - Latency and packet loss measurement
-   - ISP performance trend analysis
-   - Outage detection and logging with timestamps
+3. **Internet Quality Monitor**
+   - Connection quality testing to configurable endpoints
+   - Outage detection and duration tracking
+   - Bandwidth monitoring and trend analysis
+   - DNS resolution testing and performance metrics
+   - External service accessibility verification
 
-4. **Hardware Health Management**
-   - Temperature monitoring for CPUs, drives, and enclosures
-   - Fan speed tracking where applicable
-   - SMART attribute monitoring for storage devices
-   - Early warning system for hardware issues
-   - Historical trend analysis for wear prediction
+4. **Dynamic DNS Manager**
+   - Integration with popular DDNS providers
+   - Update verification and failure handling
+   - Historical tracking of IP changes
+   - External resolution testing from configurable checkpoints
+   - Alerting on resolution failures or inconsistencies
 
-5. **External Access Verification**
-   - Dynamic DNS update verification
-   - External service accessibility checking
-   - Port availability monitoring
-   - SSL certificate expiration tracking
-   - Service response time measurement from outside the network
+5. **API and Notification System**
+   - RESTful API with optimized endpoints for mobile consumption
+   - Authentication and secure remote access
+   - Push notification integration for mobile alerts
+   - Bandwidth-efficient data summaries and visualizations
+   - Remote control capabilities for basic system functions
 
 ## Testing Requirements
 
-The implementation must include comprehensive tests that validate:
-
-### Key Functionalities Verification
-- Accuracy of power consumption measurements and correlation
-- Reliability of hardware temperature and health data collection
-- Precision of network quality metrics under various conditions
-- Effectiveness of dynamic DNS monitoring and verification
-- Security of the remote access API implementation
+### Key Functionalities to Verify
+- Accurate power consumption monitoring and correlation with system activity
+- Reliable temperature and hardware health monitoring
+- Precise internet connection quality metrics and outage detection
+- Effective dynamic DNS monitoring and verification
+- Secure and efficient remote access to monitoring data
 
 ### Critical User Scenarios
-- Detecting and alerting on hardware overheating conditions
-- Identifying power consumption anomalies during different usage patterns
-- Receiving alerts during internet connection outages or degradation
-- Monitoring multiple services running on the same physical hardware
-- Accessing critical system information remotely during potential issues
+- Monitoring power consumption trends over time
+- Receiving alerts about hardware issues before failure occurs
+- Tracking and responding to internet outages
+- Verifying external accessibility of self-hosted services
+- Remotely checking system status while away from home
 
 ### Performance Benchmarks
-- Resource utilization of the monitoring system itself
-- Storage efficiency for long-term metric retention
-- API response times under various system loads
-- Alert notification delivery times for critical issues
-- Data collection impact on monitored system performance
+- Power monitoring accuracy within 10% of actual measurements
+- Temperature monitoring within 2°C of actual readings
+- Internet quality metrics with 95% accuracy compared to reference tools
+- API response times under 300ms on reference hardware
+- Data storage efficiency maintaining 12 months of history in under 5GB
 
-### Edge Cases and Error Handling
-- Behavior during complete internet outages
-- Handling of hardware sensor failures or incorrect readings
-- Recovery after monitoring system restarts or crashes
-- Operation during dynamic IP address changes
-- Data integrity during power interruptions
+### Edge Cases and Error Conditions
+- Handling sensor failures or unavailable hardware metrics
+- Graceful operation during internet outages
+- Recovery after power failures without data loss
+- Managing conflicting data from multiple measurement sources
+- Adapting to system sleep states and power management
 
-### Required Test Coverage
-- 90% code coverage for core monitoring functionality
-- 100% coverage for alert and notification logic
-- 95% coverage for network monitoring components
-- 95% coverage for hardware health monitoring
-- 90% coverage for power correlation algorithms
+### Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of hardware health monitoring logic
+- 100% coverage of power estimation algorithms
+- 100% coverage of internet quality testing
+- 95% coverage of dynamic DNS integration
+- 90% coverage of API endpoints
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it meets the following criteria:
+A successful implementation will satisfy the following requirements:
 
-1. Power consumption correlation is accurate within 10% of actual measurements
-2. Hardware temperature monitoring provides early warning at least 10 minutes before critical thresholds
-3. Internet outages are detected within 30 seconds and logged with correct timestamps
-4. System is accessible remotely within 5 seconds of requesting data, even on mobile connections
-5. External service accessibility is verified at least every 5 minutes with correct status reporting
-6. All data is retained for at least 12 months for long-term trend analysis
-7. System operates reliably on low-power devices like Raspberry Pi
-8. All components pass their respective test suites with required coverage levels
+1. **Effective Power Monitoring**
+   - Demonstrated ability to track and correlate power usage with system activity
+   - Generation of accurate power consumption reports and trends
+   - Identification of power-intensive processes and services
 
----
+2. **Accessible Remote Monitoring**
+   - Secure access to system data from outside the home network
+   - Efficient mobile-optimized API endpoints
+   - Functional remote notification and control capabilities
+
+3. **Comprehensive Internet Quality Tracking**
+   - Accurate detection and logging of internet outages
+   - Reliable measurement of connection quality metrics
+   - Correlation of internet issues with service accessibility
+
+4. **Detailed Hardware Health Monitoring**
+   - Accurate temperature and fan speed monitoring
+   - Effective S.M.A.R.T. data analysis for early warning
+   - Reliable detection of hardware anomalies
+
+5. **Robust Dynamic DNS Management**
+   - Verified integration with common DDNS providers
+   - Accurate tracking of DNS updates and accessibility
+   - Reliable alerting on DNS resolution issues
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
 
 To set up your development environment:
 
-1. Create a virtual environment:
-   ```
-   uv venv
-   ```
+```bash
+# Create a virtual environment
+uv venv
 
-2. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
+# Activate the virtual environment
+source .venv/bin/activate
 
-3. Install the required dependencies
-   ```
-   uv pip install -e .
-   ```
+# Install the project in development mode
+uv pip install -e .
+
+# Install testing dependencies
+uv pip install pytest pytest-json-report
+```
+
+REMINDER: Running tests with pytest-json-report is MANDATORY for project completion:
+```bash
+pytest --json-report --json-report-file=pytest_results.json
+```

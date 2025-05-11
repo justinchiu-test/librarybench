@@ -1,112 +1,174 @@
-# Genomic Data Processing Pipeline Scheduler
+# Genomic Data Processing Pipeline
 
 ## Overview
-A specialized concurrent task scheduler designed for processing genomic sequencing data through complex analytical pipelines with strict data integrity requirements. This system ensures reliable, traceable genomic data processing while maximizing throughput on specialized sequencing equipment.
+A specialized concurrent task scheduler designed for processing genomic sequencing data through complex analytical pipelines with stringent data integrity requirements. This system optimizes throughput on expensive sequencing equipment while ensuring data provenance, validation, and error recovery throughout all processing stages.
 
 ## Persona Description
 Dr. Zhang processes genomic sequencing data through complex analytical pipelines with strict accuracy requirements. His primary goal is to ensure data integrity throughout processing while maximizing throughput on expensive sequencing equipment.
 
 ## Key Requirements
+
 1. **Data Provenance Tracking System**
-   - Implement comprehensive provenance tracking that records all data transformations, processing parameters, and computational environments throughout the analysis pipeline
-   - Critical for Dr. Zhang as it ensures reproducibility of results, enables regulatory compliance for clinical applications, and provides an auditable record of all processing steps applied to sensitive genomic data
+   - Implement comprehensive tracking of all data transformations and processing steps across the entire analysis pipeline
+   - This feature is critical for Dr. Zhang as it enables verification of results, validation of methods, and compliance with scientific reproducibility standards
+   - The system must record detailed metadata about each processing step, including software versions, parameters, and environmental conditions
 
-2. **Pipeline Validation with Integrity Checks**
-   - Create a validation framework that performs pre-execution verification of pipeline configurations, input data quality, and expected outputs
-   - Essential for Dr. Zhang to prevent costly processing errors on large genomic datasets, where errors might only be detected after days of computation, wasting both time and expensive sequencing resources
+2. **Pipeline Validation Framework**
+   - Create a validation system that performs pre-execution integrity checks on data, dependencies, and configurations
+   - This feature is essential for Dr. Zhang as it prevents costly errors by ensuring that pipelines are correctly configured and that input data meets quality standards before committing expensive computational resources
+   - Must validate both structural correctness (formats, schemas) and domain-specific quality metrics
 
-3. **Stage-Specific Error Handling Strategies**
-   - Develop customizable error handling that can be tailored to different pipeline stages (e.g., alignment, variant calling, annotation) with appropriate recovery mechanisms
-   - Vital for genomic pipelines where different stages have distinct error profiles and recovery requirements, allowing graceful handling of common issues without pipeline failure
+3. **Stage-Specific Error Handling**
+   - Implement customizable error-handling strategies for different analysis stages based on their specific characteristics and requirements
+   - This feature is crucial for Dr. Zhang as different genomic analysis steps have unique failure modes and recovery options that require specialized handling
+   - Must support automatic retries, alternative processing paths, and graceful degradation depending on the stage
 
-4. **Sample Degradation-Based Prioritization**
-   - Implement a priority system that automatically adjusts task scheduling based on biological sample stability timelines
-   - Crucial for Dr. Zhang who works with time-sensitive biological samples that can degrade, ensuring that samples with limited stability are processed first to preserve data quality
+4. **Sample Priority Management**
+   - Develop a priority adjustment system based on sample degradation timelines and other biological constraints
+   - This feature is vital for Dr. Zhang as biological samples have varying stability periods after which they become unusable, requiring their processing to be prioritized accordingly
+   - Must dynamically reorder tasks based on time-sensitive biological constraints
 
 5. **Equipment Utilization Optimization**
-   - Build a scheduler that maximizes utilization of sequencing and analysis equipment while integrating with predictive maintenance systems
-   - Important for Dr. Zhang to minimize expensive equipment downtime, schedule maintenance during natural processing gaps, and ensure continuous operation of critical genomic analysis infrastructure
+   - Create a scheduling system that maximizes expensive sequencing equipment utilization while integrating with predictive maintenance information
+   - This feature is important for Dr. Zhang as sequencing hardware represents a significant capital investment with maintenance requirements that must be factored into scheduling decisions
+   - Must balance maximum throughput against equipment reliability and maintenance needs
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All pipeline components must be independently testable with synthetic genomic data
-  - Provenance tracking must be verifiable with known input-output transformations
-  - Error handling strategies must be testable through fault injection
-  - Scheduling algorithms must be testable with simulated sample degradation timelines
-  - System must achieve >95% test coverage with deterministic outcomes
 
-- **Performance Expectations**
-  - Pipeline validation must complete in under 60 seconds for complex workflows
-  - Provenance tracking overhead must not exceed 3% of total processing time
-  - Scheduler must maintain >90% equipment utilization during normal operation
-  - System must handle at least 50 concurrent genomic analysis pipelines
-  - Priority recalculations must complete in under 5 seconds when new samples arrive
+### Testability Requirements
+- All components must be independently testable with clear interfaces
+- System must support simulation of sequencing equipment and sample processing
+- Test scenarios must verify data integrity throughout processing stages
+- Test coverage should exceed 90% for all data handling and integrity verification components
 
-- **Integration Points**
-  - Bioinformatics tools and frameworks (Biopython, samtools, BWA, GATK)
-  - Laboratory Information Management Systems (LIMS) for sample tracking
-  - Equipment control and monitoring systems for sequencers and compute clusters
-  - Data storage systems for raw and processed genomic data
-  - Scientific workflow management systems for pipeline definition
+### Performance Expectations
+- Support for at least 50 concurrent sequencing and analysis pipelines
+- Overhead for provenance tracking should not exceed 3% of total processing time
+- Scheduling decisions must complete in under 100ms even with complex constraints
+- System should achieve at least 95% equipment utilization during normal operations
 
-- **Key Constraints**
-  - Must maintain perfect data integrity throughout all processing stages
-  - Must comply with relevant regulatory requirements (HIPAA, GDPR for clinical applications)
-  - Must operate within existing bioinformatics infrastructure
-  - All operations must be fully auditable and reproducible
-  - Implementation must accommodate both research and clinical genomics workflows
+### Integration Points
+- Integration with common bioinformatics tools (BWA, GATK, Samtools)
+- Support for standard genomic data formats (FASTQ, BAM, VCF)
+- Interfaces for laboratory information management systems (LIMS)
+- Compatibility with scientific workflow systems (Galaxy, Nextflow)
+
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- The system must maintain complete data provenance for regulatory compliance
+- All operations must be fully auditable and reproducible
+- Must operate in environments with strict data privacy requirements
+- System must be resilient to failures while preserving data integrity
 
 ## Core Functionality
-The system must provide a comprehensive framework for defining, validating, and executing genomic analysis pipelines as directed acyclic graphs with complex interdependencies. It should implement intelligent scheduling algorithms that prioritize time-sensitive samples while maximizing equipment utilization, with special attention to data integrity and provenance tracking.
 
-Key components include:
-1. A pipeline definition system using Python decorators/functions that captures all processing parameters
-2. A validation engine that performs pre-execution checks on pipeline configurations and input data
-3. A provenance tracking system that records all data transformations with complete parameter sets
-4. A priority-based scheduler that factors in sample stability, equipment availability, and computational requirements
-5. Stage-specific error handling strategies with appropriate recovery mechanisms
-6. An equipment utilization optimizer that coordinates with maintenance schedules
+The Genomic Data Processing Pipeline must provide:
+
+1. **Genomic Workflow Definition**
+   - A declarative API for defining complex genomic analysis workflows with their dependencies
+   - Support for specifying data quality requirements and validation criteria
+   - Integration with standard bioinformatics tools and formats
+
+2. **Data Integrity and Provenance**
+   - Comprehensive tracking of all data transformations from raw sequencing to final results
+   - Checksums and validation at each processing stage
+   - Complete audit trail for regulatory compliance and research reproducibility
+
+3. **Intelligent Resource Management**
+   - Optimal scheduling of tasks to maximize equipment utilization
+   - Priority-based resource allocation that accounts for sample degradation timelines
+   - Integration with maintenance schedules to prevent processing interruptions
+
+4. **Error Handling and Recovery**
+   - Customizable error handling strategies for different pipeline stages
+   - Automatic retries and fallback options for recoverable errors
+   - Data preservation and safe states during failure conditions
+
+5. **Performance Monitoring and Optimization**
+   - Collection of detailed performance metrics for all pipeline components
+   - Analysis of throughput and resource utilization patterns
+   - Identification of bottlenecks and optimization opportunities
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Provenance tracking correctly captures all data transformations and parameters
-  - Pipeline validation detects configuration errors before execution begins
-  - Error handling correctly applies stage-appropriate recovery strategies
-  - Sample prioritization correctly schedules based on degradation timelines
-  - Equipment utilization optimizer maintains high throughput while accommodating maintenance
 
-- **Critical User Scenarios**
-  - Processing a time-sensitive clinical sample that requires expedited handling
-  - Recovery from a failed sequencing run with partial data salvage
-  - Coordinating multiple concurrent research projects with shared equipment
-  - Validating a complex multi-stage pipeline before production deployment
-  - Tracking provenance for a sample from raw sequencing through variant calling and annotation
+### Key Functionalities to Verify
+- Data provenance correctly tracks all processing steps and transformations
+- Pipeline validation properly identifies configuration and data quality issues
+- Error handling appropriately manages different failure types across pipeline stages
+- Priority adjustments correctly account for sample degradation timelines
+- Equipment utilization consistently meets or exceeds target thresholds
 
-- **Performance Benchmarks**
-  - Equipment utilization increases by at least 25% compared to current scheduling
-  - Pipeline failures due to preventable errors reduced by 90%
-  - Provenance tracking overhead less than 3% of total processing time
-  - Validation of complex pipelines completes in under 60 seconds
-  - Sample prioritization accuracy exceeds 95% for degradation-sensitive scheduling
+### Critical Scenarios to Test
+- Processing of large genomic datasets through complete analysis pipelines
+- Recovery from simulated hardware and software failures at various stages
+- Management of multiple competing pipelines with different priority levels
+- Handling of samples with imminent degradation deadlines
+- Integration with scheduled equipment maintenance windows
 
-- **Edge Cases and Error Conditions**
-  - Recovery from partial equipment failure during processing
-  - Handling of data corruption with appropriate isolation and reporting
-  - Management of resource contention during peak demand periods
-  - Recovery from pipeline definition errors discovered mid-execution
-  - Handling of invalid or unexpected data formats in the processing stream
+### Performance Benchmarks
+- Provenance tracking overhead should not exceed 3% of total processing time
+- System should support at least 50 concurrent analysis pipelines
+- Equipment utilization should exceed 95% during normal operations
+- Validation checks should complete in under a minute for typical datasets
 
-- **Required Test Coverage Metrics**
-  - >95% line coverage for all pipeline components
-  - 100% coverage of provenance tracking logic
-  - 100% coverage of error handling and recovery strategies
-  - >95% branch coverage for scheduling and prioritization logic
-  - Integration tests must verify end-to-end data integrity
+### Edge Cases and Error Conditions
+- Handling of malformed or corrupted genomic data files
+- Recovery from partial processing failures without data loss
+- Correct behavior when equipment unexpectedly becomes unavailable
+- Proper prioritization when multiple high-priority samples require processing
+- Graceful degradation under extreme resource contention
+
+### Required Test Coverage
+- Minimum 90% line coverage for all data handling components
+- Comprehensive integration tests for complete processing pipelines
+- Performance tests simulating production-scale genomic analysis workflows
+- Data integrity verification tests for all transformation operations
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Sequencing equipment utilization increases from 70% to >90%
-- Pipeline failures due to preventable errors reduced by 90%
-- Sample processing throughput increases by at least 30%
-- Time from sample arrival to results delivery decreases by 40%
-- Data provenance is 100% traceable and reproducible
-- Dr. Zhang's team can process 2x more samples with the same infrastructure
+
+The implementation will be considered successful if:
+
+1. Data provenance tracking captures all processing steps with complete metadata
+2. Pipeline validation prevents execution of improperly configured workflows
+3. Error handling strategies effectively manage different failure types
+4. Sample prioritization correctly accounts for degradation timelines
+5. Equipment utilization consistently exceeds 95% while respecting maintenance requirements
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using UV:
+   ```
+   uv venv
+   source .venv/bin/activate
+   ```
+
+2. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+3. CRITICAL: Run tests with pytest-json-report to generate pytest_results.json:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

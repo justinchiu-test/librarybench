@@ -1,158 +1,189 @@
-# FeatureDB: In-Memory Feature Store for Machine Learning
+# VectorDB: Vector-Optimized In-Memory Database for ML Applications
 
 ## Overview
-A specialized in-memory database designed as a feature store for machine learning operations, providing efficient vector data storage, versioning, transformation, and optimized retrieval for ML inference workloads.
+A specialized in-memory database optimized for machine learning feature storage and retrieval that provides efficient vector operations, feature versioning, batch prediction support, automatic feature transformations, and A/B testing capabilities to accelerate ML inference workflows while ensuring data consistency.
 
 ## Persona Description
 Wei builds prediction systems that need to quickly access feature data during inference. He requires efficient storage of model features with specialized query patterns for machine learning operations.
 
 ## Key Requirements
 
-1. **Vector data types with optimized distance calculations**
-   - Critical for efficient similarity searches and nearest-neighbor queries
-   - Must implement native vector data types with configurable dimensions
-   - Should support multiple distance metrics (Euclidean, cosine, Manhattan, Hamming, etc.)
-   - Must include optimized implementations of vector operations using SIMD where available
-   - Should provide indexing structures for accelerating similarity searches (KD-trees, HNSW, etc.)
+1. **Vector Data Types with Optimized Distance Calculations**
+   - Implementation of native vector data types optimized for common distance metrics (Euclidean, cosine, Manhattan, etc.)
+   - Support for efficient nearest-neighbor queries on high-dimensional vectors
+   - Indexing structures optimized for similarity searches (e.g., approximate nearest neighbors)
+   - This feature is critical for Wei as many ML models operate on vector embeddings, requiring fast similarity searches and efficient storage of high-dimensional data to enable real-time recommendations, classification, and retrieval tasks
 
-2. **Feature store functionality with versioning and lineage**
-   - Essential for reproducibility and governance in machine learning pipelines
-   - Must track feature definitions, transformations, and versions
-   - Should maintain lineage information linking features to source data and transformations
-   - Must support point-in-time feature retrieval for training/serving consistency
-   - Should include metadata for feature statistics, distributions, and drift detection
+2. **Feature Store with Versioning and Lineage**
+   - Implementation of a feature store that tracks data lineage and transformation history
+   - Support for feature versioning to ensure reproducibility of model predictions
+   - Historical feature value access for debugging and auditing
+   - ML systems require reproducibility and auditability, making feature versioning and lineage tracking essential for Wei to understand how feature values were derived and to ensure consistent model behavior across development and production
 
-3. **Batch prediction optimization with vectorized retrieval**
-   - Vital for high-throughput inference scenarios
-   - Must support efficient batch feature retrieval optimized for vectorized operations
-   - Should implement prefetching and caching strategies for common access patterns
-   - Must include parallel retrieval capabilities for multi-entity predictions
-   - Should provide performance metrics and optimization suggestions
+3. **Batch Prediction Optimization**
+   - Implementation of vectorized data retrieval optimized for batch inference scenarios
+   - Support for efficient loading of features for multiple prediction requests
+   - Parallelized feature transformations for high-throughput prediction pipelines
+   - Batch prediction is a common pattern in ML systems that can significantly improve throughput, requiring specialized optimization to efficiently retrieve and prepare feature data for multiple predictions simultaneously
 
-4. **Automatic feature normalization and transformation**
-   - Important for consistent model inputs across training and inference
-   - Must support standard transformations (normalization, standardization, encoding)
-   - Should automatically apply registered transformations during feature retrieval
-   - Must preserve transformation parameters for consistency between training and serving
-   - Should include monitoring for feature distribution shifts
+4. **Automatic Feature Normalization and Transformation**
+   - Implementation of configurable feature transformations that apply automatically during queries
+   - Support for common ML preprocessing operations (scaling, normalization, encoding, etc.)
+   - Runtime application of transformations without redundant data storage
+   - ML models expect consistently preprocessed features, and automatic transformation during retrieval ensures that all data is properly prepared without requiring separate preprocessing steps or duplicate storage of raw and transformed values
 
-5. **A/B testing support with randomized selection**
-   - Critical for evaluating model changes in production
-   - Must implement consistent entity-based randomization for experiment assignment
-   - Should support multiple concurrent experiments with stable assignments
-   - Must include utilities for experiment configuration and tracking
-   - Should provide statistical analysis tools for experiment results
+5. **A/B Testing Support**
+   - Implementation of randomized but consistent record selection for experimental groups
+   - Support for percentage-based traffic allocation to different model variants
+   - Tracking and analysis of outcomes across experimental cohorts
+   - A/B testing is fundamental to improving ML systems, requiring consistent user assignment to experimental groups and reliable tracking of outcomes to evaluate model changes
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be thoroughly testable with pytest
-- Tests must verify correctness of vector operations and distance calculations
-- Feature versioning tests must confirm proper lineage tracking and point-in-time retrieval
-- Performance tests must validate batch operations under various loads
-- Transformation tests must verify consistency between training and inference scenarios
+- Vector operations must be benchmarkable against reference implementations
+- Feature versioning must be verifiable through lineage tracking
+- Batch prediction performance must be measurable under various load conditions
+- Feature transformations must produce results matching standalone preprocessing
+- A/B testing must demonstrate statistical properties of proper randomization
 
 ### Performance Expectations
-- Vector similarity queries must return results in under 10ms for collections up to 1 million vectors
-- Batch feature retrieval must support at least 10,000 entities per second
-- Transformation operations must add no more than 5ms overhead per entity
-- Feature version tracking must maintain performance with at least 100 versions per feature
-- A/B test assignment must complete in under 1ms per entity
+- Vector similarity queries should return results in under 10ms for collections up to 1 million vectors
+- Feature retrieval should support at least 1,000 queries per second
+- Batch operations should show near-linear scaling with batch size
+- Transformation overhead should not exceed 5% of base retrieval time
+- A/B group assignment should add no more than 1ms overhead per query
 
 ### Integration Points
-- Must provide Python APIs compatible with popular ML frameworks (PyTorch, TensorFlow, scikit-learn)
-- Should support common feature engineering libraries and workflows
-- Must include connectors for model serving frameworks
-- Should offer export capabilities to standard formats for portability
+- Compatible interfaces with popular ML frameworks (sklearn, PyTorch, TensorFlow)
+- Support for standard feature engineering pipelines
+- Export capabilities for offline analysis
+- Integration with model serving frameworks
+- Hooks for observability and monitoring systems
 
 ### Key Constraints
-- No UI components - purely APIs and libraries for integration into ML pipelines
-- Must operate without external database dependencies - self-contained Python library
-- All operations must be designed for reproducibility and consistency
-- Must support both development and production ML workflows
+- The implementation must use only Python standard library with no external dependencies
+- The system must operate efficiently within typical ML serving resource allocations
+- All vector operations must be numerically stable and accurate
+- The solution must scale to handle common ML feature dimensionalities (hundreds to thousands)
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation must provide:
+The system must provide the following core functionality:
 
-1. **Vector Storage System**
-   - Efficient in-memory storage for multi-dimensional vector data
-   - Native vector types with optimized operations
-   - Distance calculation functions for various similarity metrics
-   - Indexing structures for accelerating similarity searches
+1. **Vector Storage and Indexing**
+   - Efficient storage of high-dimensional vectors
+   - Indexing structures optimized for similarity searches
+   - Support for common distance metrics and query patterns
 
-2. **Feature Management Framework**
-   - Feature definition registry with versioning capabilities
-   - Lineage tracking connecting features to sources and transformations
-   - Point-in-time retrieval for consistent training and serving
-   - Metadata storage for feature statistics and properties
+2. **Feature Management System**
+   - Storage of feature values with versioning and lineage
+   - Efficient retrieval of features for inference
+   - Historical tracking of feature evolution
 
 3. **Batch Processing Engine**
-   - Vectorized operations for efficient batch processing
-   - Parallel retrieval capabilities for high-throughput scenarios
-   - Prefetching and caching based on access pattern analysis
-   - Performance monitoring and optimization tools
+   - Vectorized data access for multiple records
+   - Parallel processing of batch requests
+   - Optimization for different batch sizes and patterns
 
-4. **Transformation Pipeline**
-   - Standard transformation implementations (normalization, encoding, etc.)
-   - Transformation registry with parameter storage
-   - Automatic application during feature retrieval
-   - Distribution monitoring for drift detection
+4. **Transformation Framework**
+   - Runtime application of feature transformations
+   - Support for common preprocessing operations
+   - Configuration of transformation pipelines
 
 5. **Experimentation System**
-   - Consistent randomization for stable experiment assignment
-   - Multi-variant testing support with allocation control
-   - Experiment configuration and tracking utilities
-   - Statistical analysis tools for results evaluation
+   - Consistent assignment of entities to experimental groups
+   - Control over traffic allocation percentages
+   - Support for collecting and analyzing experimental results
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Correct vector operations and distance calculations across different metrics
-- Proper feature versioning with accurate point-in-time retrieval
-- Efficient batch processing performance under various loads
-- Consistent transformation application between training and inference
-- Stable experiment assignment with proper statistical properties
+- Accurate and efficient vector similarity searches
+- Proper versioning and tracking of feature lineage
+- Performance scaling with batch size for prediction scenarios
+- Correctness of automatic feature transformations
+- Statistical properties of A/B group assignment
 
 ### Critical User Scenarios
-- Feature retrieval during high-throughput model inference
-- Training dataset creation with point-in-time feature consistency
-- Feature evolution with version tracking and lineage
-- Complex similarity searches using vector distance metrics
-- A/B testing deployment with multiple concurrent experiments
+- Real-time feature retrieval for model inference
+- Batch processing for offline predictions
+- Feature value evolution over time
+- A/B testing of model variants
+- Debugging of prediction discrepancies
 
 ### Performance Benchmarks
-- Measure vector operation performance with different dimensionalities
-- Verify batch retrieval throughput under varying entity counts
-- Benchmark similarity search performance with different index structures
-- Validate transformation overhead during feature retrieval
-- Test experiment assignment stability and performance
+- Vector similarity searches should complete in under 10ms for 1M vector collections
+- Feature retrieval should support at least 1,000 queries per second
+- Batch operations should demonstrate at least 5x throughput improvement over individual queries
+- Transformation overhead should not exceed 5% of base retrieval time
+- The system should handle at least 10,000 feature dimensions efficiently
 
 ### Edge Cases and Error Conditions
-- Very high-dimensional vectors pushing memory limits
-- Rapid feature version changes creating complex lineage graphs
-- Missing or corrupted transformation parameters
-- Conflicting experiment assignments with overlapping criteria
-- Feature distribution shifts impacting model performance
+- Behavior with extremely high-dimensional vectors
+- Handling of missing or corrupt feature values
+- Performance with skewed data distributions
+- Consistency during concurrent updates
+- Resource usage under high query loads
 
-### Required Test Coverage
-- 90% code coverage for all components
-- 100% coverage of critical vector operations and distance calculations
-- Comprehensive tests for feature versioning and lineage tracking
-- Performance tests validating batch operations and similarity searches
-- Statistical validation of experiment assignment properties
+### Required Test Coverage Metrics
+- Minimum 90% code coverage for all modules
+- 100% coverage of vector operation and distance calculation code
+- All transformation pipelines must be tested for correctness
+- Performance tests must cover various vector dimensions and batch sizes
+- A/B testing must be verified for statistical correctness
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it:
+The implementation will be considered successful if:
 
-1. Efficiently stores and retrieves vector data with multiple distance metrics
-2. Maintains complete feature versioning and lineage information for reproducibility
-3. Achieves batch processing performance targets for high-throughput inference
-4. Correctly applies consistent transformations during feature retrieval
-5. Provides stable and statistically valid experiment assignments
-6. Integrates smoothly with popular ML frameworks and workflows
-7. Operates within performance targets across all critical operations
-8. Supports both development experimentation and production deployment
-9. Handles edge cases and error conditions gracefully
-10. Passes all test scenarios including performance and statistical validation
+1. Vector operations efficiently support similarity searches and nearest neighbor queries
+2. Feature versioning correctly tracks lineage and enables reproducible predictions
+3. Batch operations demonstrate significant performance improvements over individual queries
+4. Feature transformations produce correctly preprocessed data for models
+5. A/B testing provides consistent group assignment with proper statistical properties
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Clone the repository and navigate to the project directory
+2. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+3. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+4. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+5. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

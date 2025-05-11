@@ -1,112 +1,174 @@
-# Long-Term Climate Simulation Orchestration System
+# Long-Running Simulation Orchestrator
 
 ## Overview
-A specialized concurrent task scheduler designed for managing large-scale scientific simulations that run continuously for months across hundreds of computing nodes. This system ensures reliable execution of complex climate models with comprehensive checkpointing, dependency tracking, and resilience to hardware failures.
+A specialized concurrent task scheduler designed for managing large-scale scientific simulations that run for months across hundreds of compute nodes. This system maximizes research output through efficient scheduling with robust checkpointing, fault tolerance, and scenario prioritization capabilities tailored to long-duration computational science workloads.
 
 ## Persona Description
 Dr. Jackson runs large-scale climate simulations requiring months of continuous computing across hundreds of nodes. His primary goal is to maximize research output by efficiently scheduling simulation tasks with checkpointing and fault tolerance.
 
 ## Key Requirements
-1. **Long-Running Job Management with Preemption Protection**
-   - Implement a job protection system that shields critical long-running simulations from preemption while allowing strategic pausing at safe checkpoints when absolutely necessary
-   - Critical for Dr. Jackson because climate simulations can run for months, and unexpected termination can waste weeks of computation, requiring sophisticated management of which jobs can be paused and when
 
-2. **Simulation Dependency Tracking with Stage Transitions**
-   - Create a comprehensive dependency system that manages transitions between simulation stages (initialization, spin-up, main run, analysis) with validation between phases
-   - Essential for Dr. Jackson's complex climate models which have distinct computational phases with different resource requirements, ensuring proper sequencing and validation between stages of multi-month simulations
+1. **Long-Running Job Management System**
+   - Implement a sophisticated job management system that protects extended simulations from preemption while efficiently managing resource allocation over periods of months
+   - This feature is critical for Dr. Jackson as climate simulations can require continuous computation for extremely long durations, and interruptions can invalidate results or waste substantial computing time
+   - The system must balance the protection of long-running jobs against the need for system maintenance and fair resource sharing
 
-3. **Equipment Failure Resilience with Minimal Recalculation**
-   - Develop advanced fault tolerance that minimizes recalculation after node failures by maintaining distributed checkpoints and smart recovery strategies
-   - Vital for maintaining progress in long-running simulations when hardware inevitably fails, avoiding costly restarts from the beginning by strategically placing checkpoints and implementing partial recovery mechanisms
+2. **Simulation Dependency Tracking**
+   - Create a comprehensive dependency management framework that tracks relationships between simulation stages and automates transitions between phases of complex models
+   - This feature is essential for Dr. Jackson as climate models involve multiple interdependent simulation stages (atmospheric, oceanic, land surface, etc.) that must be coordinated precisely
+   - Must support both predetermined workflows and dynamically generated dependencies based on intermediate results
 
-4. **Resource Usage Forecasting for Planning**
-   - Build a predictive resource usage system that provides accurate forecasting of computation needs for grant reporting and infrastructure planning
-   - Important for Dr. Jackson to plan research budgets, justify resource allocations in grant proposals, and coordinate with computing center administrators on long-term infrastructure needs
+3. **Equipment Failure Resilience**
+   - Develop a fault tolerance system that minimizes recalculation after hardware failures by combining intelligent checkpointing with partial result preservation
+   - This feature is crucial for Dr. Jackson as extended simulations running across hundreds of nodes have a high probability of experiencing hardware failures during their lifecycle
+   - Must include configurable checkpointing strategies optimized for different simulation types and failure scenarios
 
-5. **Scenario Priority Management Based on Preliminary Results**
-   - Implement an adaptive priority system that adjusts resource allocation to simulation scenarios showing the most scientific promise based on preliminary results
-   - Crucial for maximizing scientific output by directing computational resources to the most promising research directions, allowing dynamic adjustment of priorities as preliminary results emerge
+4. **Resource Usage Forecasting**
+   - Implement a predictive resource modeling system that generates accurate forecasts of simulation resource requirements for grant reporting and capacity planning
+   - This feature is vital for Dr. Jackson to manage research budgets effectively and provide accurate information to funding agencies about computational resource utilization
+   - Must track historical usage patterns and project future needs based on planned research activities
+
+5. **Scenario Priority Management**
+   - Create an adaptive prioritization system that adjusts resource allocation among different simulation scenarios based on preliminary result promise and research potential
+   - This feature is important for Dr. Jackson to maximize scientific output by identifying and prioritizing the most productive simulation variants while deprioritizing less promising approaches
+   - Must include evaluation mechanisms for assessing preliminary results and adjusting priorities dynamically
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Long-running job components must be testable with accelerated time simulations
-  - Dependency tracking must be verifiable with complex multi-stage pipelines
-  - Fault tolerance must be testable through controlled failure injection
-  - Resource forecasting must be validatable against historical usage patterns
-  - Priority management must be testable with simulated preliminary results
 
-- **Performance Expectations**
-  - Checkpoint operations must complete within 5 minutes even for large memory states
-  - Stage transitions must be validated and executed within 10 minutes
-  - System must recover from node failures within 15 minutes with less than 1 hour of lost computation
-  - Resource forecasting must predict usage with 90% accuracy for 6-month horizons
-  - Priority adjustments must be calculated within 30 minutes of new result availability
+### Testability Requirements
+- All components must be independently testable with well-defined interfaces
+- System must support simulation of long-duration jobs without requiring actual months-long execution
+- Test coverage should exceed 90% for all checkpoint and recovery functionality
+- Tests must validate behavior under various failure scenarios and resource conditions
 
-- **Integration Points**
-  - Scientific computing frameworks (NumPy, SciPy, etc.) for simulation libraries
-  - MPI and parallel computing libraries for cross-node communication
-  - Job scheduling systems (SLURM, PBS, etc.) for resource allocation
-  - Storage systems for checkpointing and result persistence
-  - Visualization tools for monitoring and result analysis
+### Performance Expectations
+- Support for at least 100 concurrent long-running simulations across hundreds of nodes
+- Checkpoint operations should not impact simulation performance by more than 2%
+- Recovery from node failures should complete in under 5 minutes with less than 1 hour of lost computation
+- Resource forecasting should achieve prediction accuracy within 15% for 6-month projections
 
-- **Key Constraints**
-  - Must operate within high-performance computing center policies
-  - Must coexist with other research workloads on shared infrastructure
-  - Must maintain backwards compatibility with existing climate models
-  - Must respect resource allocation grants and quotas
-  - Implementation must be portable across different HPC environments
+### Integration Points
+- Integration with common scientific computing frameworks (MPI, OpenMP)
+- Support for high-performance file systems and archival storage
+- Interfaces for supercomputing job schedulers (Slurm, PBS, LSF)
+- Compatibility with scientific data formats and visualization tools
+
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- The system must maintain data integrity through all failure scenarios
+- All checkpointing operations must be storage-efficient due to the scale of data
+- Must operate effectively in multi-institution shared computing environments
+- System must accommodate both planned maintenance and unexpected outages
 
 ## Core Functionality
-The system must provide a framework for defining, executing, and managing long-running scientific simulations as complex multi-stage workflows. It should implement intelligent scheduling algorithms that optimize for both scientific output and resource efficiency, with special attention to fault tolerance and checkpoint management.
 
-Key components include:
-1. A simulation definition system using Python decorators/functions for declaring multi-stage workflows
-2. A long-running job manager that protects critical simulations from preemption
-3. A dependency tracker that manages transitions between simulation stages
-4. A fault tolerance system with distributed checkpointing and intelligent recovery
-5. A resource forecasting engine that predicts future computation needs
-6. An adaptive priority manager that adjusts allocations based on preliminary results
+The Long-Running Simulation Orchestrator must provide:
+
+1. **Simulation Definition and Management**
+   - A comprehensive API for defining complex multi-stage simulation workflows
+   - Support for resource requirements specification and duration estimation
+   - Mechanisms for monitoring and controlling long-running processes
+
+2. **Checkpoint and Recovery**
+   - Efficient state preservation with configurable frequency and scope
+   - Intelligent recovery from various failure scenarios
+   - Storage management for checkpoint data with retention policies
+
+3. **Resource Allocation and Scheduling**
+   - Long-term reservation of computational resources for extended simulations
+   - Fair-sharing among competing research projects with priority adjustments
+   - Accommodation of system maintenance with minimal disruption
+
+4. **Performance Monitoring and Optimization**
+   - Collection of detailed resource utilization metrics across simulation components
+   - Analysis of performance patterns to identify optimization opportunities
+   - Prediction of resource needs based on current and planned activities
+
+5. **Scenario Management**
+   - Comparison of preliminary results across simulation variants
+   - Dynamic priority adjustment based on scientific promise
+   - Resource reallocation from less promising to more promising scenarios
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Long-running job protection successfully shields simulations from unnecessary preemption
-  - Dependency tracking correctly manages transitions between simulation stages
-  - Fault tolerance effectively recovers from node failures with minimal recalculation
-  - Resource forecasting accurately predicts computational needs
-  - Priority management appropriately adjusts allocations based on scientific promise
 
-- **Critical User Scenarios**
-  - Managing a portfolio of climate scenarios running continuously for 6+ months
-  - Handling the transition between initialization, spin-up, and main climate simulation
-  - Recovering from hardware failures during critical simulation phases
-  - Planning resource needs for upcoming grant-funded research projects
-  - Dynamically adjusting priorities across multiple concurrent climate models
+### Key Functionalities to Verify
+- Long-running job protection correctly shields simulations from preemption
+- Dependency tracking properly manages transitions between simulation stages
+- Failure resilience effectively minimizes recalculation after hardware failures
+- Resource forecasting generates accurate predictions for future usage
+- Scenario priority management appropriately adjusts based on preliminary results
 
-- **Performance Benchmarks**
-  - 99% reduction in simulation time lost to preemption vs. standard scheduling
-  - Stage transition overhead less than 0.1% of total simulation time
-  - Node failure recovery with less than 1% of computation time lost
-  - Resource forecasting accuracy within 10% of actual usage
-  - Simulation throughput increased by 30% through optimal priority management
+### Critical Scenarios to Test
+- Recovery from various hardware failure patterns affecting different nodes
+- Management of competing high-priority simulations with limited resources
+- Handling of system maintenance periods with minimal disruption
+- Correct behavior during storage subsystem performance degradation
+- Adaptation to unexpected resource contention from other users
 
-- **Edge Cases and Error Conditions**
-  - Recovery from catastrophic multi-node failure
-  - Handling of corrupted checkpoint data
-  - Management of resource shortages during critical simulation phases
-  - Adaptation to unexpected simulation convergence issues
-  - Graceful handling of storage system failures
+### Performance Benchmarks
+- Checkpointing overhead should not exceed 2% of total simulation time
+- Recovery operations should restore operation within 5 minutes of failure detection
+- Resource usage forecasts should be accurate within 15% for 6-month projections
+- System should achieve at least 95% average node utilization across the cluster
 
-- **Required Test Coverage Metrics**
-  - >90% line coverage for all scheduler components
-  - 100% coverage of checkpoint and recovery logic
-  - 100% coverage of stage transition validation
-  - >95% branch coverage for priority adjustment algorithms
-  - Integration tests must verify end-to-end simulation workflows
+### Edge Cases and Error Conditions
+- Handling of corrupted checkpoint data or partial failures
+- Recovery from simultaneous failures across multiple nodes
+- Correct behavior when storage capacity for checkpoints is constrained
+- Proper management of simulation deadlocks or infinite loops
+- Graceful degradation when resource demands exceed system capacity
+
+### Required Test Coverage
+- Minimum 90% line coverage for all checkpoint and recovery components
+- Comprehensive integration tests for multi-stage simulation workflows
+- Performance tests for resource utilization and checkpointing overhead
+- Failure scenario tests covering various hardware and software errors
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Climate simulation productivity increases by at least 40% with same resources
-- Computation time lost to system failures reduces by 95%
-- Resource utilization efficiency improves by at least 30%
-- High-priority scenarios receive appropriate resource allocation 99% of the time
-- Dr. Jackson's team can manage 3x more concurrent simulation scenarios
-- Grant reporting and planning accuracy improves significantly
+
+The implementation will be considered successful if:
+
+1. Long-running job management successfully protects extended simulations from interruption
+2. Simulation dependency tracking correctly manages transitions between stages
+3. Equipment failure resilience limits recalculation to less than 1 hour of simulation time
+4. Resource usage forecasting predictions are accurate within 15% for 6-month periods
+5. Scenario priority management improves overall research output by at least 20%
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using UV:
+   ```
+   uv venv
+   source .venv/bin/activate
+   ```
+
+2. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+3. CRITICAL: Run tests with pytest-json-report to generate pytest_results.json:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

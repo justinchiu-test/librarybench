@@ -1,130 +1,172 @@
-# NetScope for Network Automation Verification
+# Network Automation Analysis Framework
 
 ## Overview
-A specialized network protocol analyzer designed for network automation engineers, focusing on validating automated configuration changes, verifying intended network behavior, and ensuring that automation systems produce the expected traffic patterns in complex network infrastructures.
+A specialized network protocol analysis library designed for network automation engineers to verify the behavior of automated network configuration changes, providing before/after comparisons, configuration validation, intent verification, failure scenario simulation, and API-driven integration with automation pipelines.
 
 ## Persona Description
 Priya develops automation systems for large network infrastructures. She needs to understand and verify the behavior of automated network configuration changes and ensure they produce the expected traffic patterns.
 
 ## Key Requirements
-1. **Before/after comparison visualizing network behavior changes following automated updates**
-   - Implement differential analysis of network traffic patterns before and after configuration changes
-   - Develop visualization highlighting changes in flow patterns, protocol behavior, and performance metrics
-   - Create normalized comparison that accounts for normal traffic variation versus automation impact
-   - Include regression detection to identify unintended consequences of changes
-   - Support for scheduled captures to automatically collect before/after data around automation events
 
-2. **Configuration change validation correlating network device changes with traffic patterns**
-   - Implement correlation between configuration modifications and resulting traffic changes
-   - Develop mapping between specific configuration elements and their expected traffic impact
-   - Create verification of whether observed changes match predicted traffic patterns
-   - Include alerting on unexpected traffic behavior following configuration changes
-   - Support for various network device types and configuration formats
+1. **Before/After Comparison System**  
+   Create a module that visualizes and analyzes network behavior changes following automated updates. This is critical for Priya because it allows her to verify that automation changes produce the expected traffic patterns and network behaviors, providing clear evidence that automated configuration changes achieved their intended network state without unintended consequences.
 
-3. **Intent verification confirming automation achieves desired network behavior**
-   - Implement a framework for defining network intent in measurable, observable terms
-   - Develop automated testing of network behavior against defined intent
-   - Create comprehensive reporting on intent compliance and deviations
-   - Include trend analysis showing intent fulfillment over time and across changes
-   - Support for complex, multi-dimensional intent definitions spanning different network aspects
+2. **Configuration Change Validation**  
+   Implement functionality to correlate specific device configuration changes with resulting traffic pattern alterations. This feature is essential for Priya to establish clear causality between automation-driven configuration changes and their network effects, helping debug automation scripts, identify configuration parameters with the most impact, and verify that changes propagate correctly.
 
-4. **Failure scenario simulation predicting traffic impact of potential automation errors**
-   - Implement simulation capabilities for common automation failure modes
-   - Develop impact prediction based on configuration and topology understanding
-   - Create visualization of failure propagation through network dependencies
-   - Include risk assessment for planned automation operations
-   - Support for custom failure scenario definition based on environment-specific concerns
+3. **Intent Verification System**  
+   Develop capabilities to confirm that automation achieves desired network behavior based on predefined intent specifications. This is crucial for Priya because intent-based networking requires verification that high-level business intent correctly translates into proper network behavior, allowing her to validate that automation correctly implements complex policy requirements.
 
-5. **API-driven analysis integration with network automation pipelines for continuous monitoring**
-   - Implement comprehensive APIs for integrating analysis into automation workflows
-   - Develop event-based triggers for analysis based on automation pipeline stages
-   - Create standardized result formats suitable for automated decision making
-   - Include feedback mechanisms to adapt automation based on analysis results
-   - Support for various automation frameworks and orchestration systems
+4. **Failure Scenario Simulation**  
+   Build a system to predict the traffic impact of potential automation errors without affecting production networks. This allows Priya to safely test automation failure modes, understand the potential blast radius of failed changes, and develop more robust fallback mechanisms and validation checks that can prevent outages from automation errors.
+
+5. **API-driven Analysis Integration**  
+   Create functionality to integrate network analysis directly into automation pipelines for continuous monitoring. This feature is vital for Priya to build self-healing and self-validating automation systems that can verify their own effectiveness, rollback unsuccessful changes, and provide continuous validation that the network maintains its desired state across multiple change cycles.
 
 ## Technical Requirements
+
 ### Testability Requirements
-- Before/after comparison must be testable with controlled traffic pattern changes
-- Configuration correlation must be verifiable against known device configurations
-- Intent verification must be validated against defined network behaviors
-- Failure simulations must be testable against known network topologies
-- API integration must be verified with various automation pipeline configurations
+- All components must be testable with before/after network traffic datasets
+- Configuration validation must be verifiable against known device changes
+- Intent verification must be testable against formal intent specifications
+- Failure simulations must produce deterministic and reproducible results
+- API integrations must be testable with mocked automation pipelines
 
 ### Performance Expectations
-- Analysis tools must process enterprise-scale network captures efficiently
-- Before/after comparison should complete analysis of 1GB traffic samples in under 5 minutes
-- Configuration change validation should process complex device configurations in under 30 seconds
-- Intent verification should provide results for up to 100 intent statements within 1 minute
-- API operations should respond within 500ms for typical integration scenarios
+- Complete before/after analysis of major network changes in under 5 minutes
+- Process configuration validation across 100+ network devices in parallel
+- Verify intent compliance within 60 seconds of configuration changes
+- Simulate failure impacts for complex networks (1000+ devices) in under 10 minutes
+- Support continuous analysis at least every 5 minutes for large networks
 
 ### Integration Points
-- Import capabilities for network configuration files from major vendors
-- Integration with common network automation platforms (Ansible, Terraform, etc.)
-- Export formats compatible with CI/CD systems and testing frameworks
-- APIs for bidirectional integration with custom automation pipelines
-- Support for webhook-based event triggers from external systems
+- Import traffic from standard PCAP/PCAPNG files, NetFlow, and IPFIX
+- Support for reading configuration from common network device formats
+- Integration with automation systems via REST APIs
+- Import intent models from YANG, TOSCA, or custom intent formats
+- Webhook support for event-driven analysis triggers
 
 ### Key Constraints
-- Must function without requiring privileged access to network devices
-- Should operate effectively with partial traffic visibility
-- Must handle diverse network environments with mixed vendor equipment
-- Should accommodate different levels of automation maturity
-- Must support both on-demand analysis and continuous monitoring scenarios
+- Must operate safely alongside production automation systems
+- Should minimize performance impact on automation pipelines
+- Must handle multi-vendor network environments
+- Should support both imperative and declarative automation approaches
+- Must operate with least-privilege access to network devices
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The Network Automation Verification version of NetScope must provide specialized analysis capabilities focused on validating network automation outcomes. The system should enable automation engineers to compare traffic patterns before and after changes, correlate configurations with observed behavior, verify intended network functionality, simulate failure scenarios, and integrate with automation pipelines.
 
-Key functional components include:
-- Differential traffic analysis framework
-- Configuration-to-behavior correlation system
-- Intent-based network verification
-- Failure scenario simulation and impact prediction
-- API-driven analysis pipeline integration
+The Network Automation Analysis Framework should provide the following core functionality:
 
-The system should provide both detailed technical analysis for automation engineers and summary reports suitable for communicating with network operations and management. All components should be designed to operate effectively in automated workflows while providing the insights needed for troubleshooting and validation.
+1. **Network Change Impact Analysis**
+   - Compare traffic patterns before and after configuration changes
+   - Measure and highlight statistically significant changes
+   - Track convergence times and stability after changes
+   - Identify unexpected behavior changes across protocols
+
+2. **Configuration to Behavior Correlation**
+   - Link specific configuration parameters to observable network effects
+   - Analyze the propagation of changes through the network
+   - Track configuration state across device reloads
+   - Measure configuration compliance with templates
+
+3. **Intent-based Verification**
+   - Validate that network behavior matches defined intent
+   - Translate high-level policy to expected traffic patterns
+   - Detect policy violations in observed traffic
+   - Measure the degree of intent fulfillment
+
+4. **Failure Analysis and Prediction**
+   - Simulate traffic paths during partial failures
+   - Model impact of misconfiguration scenarios
+   - Analyze redundancy effectiveness
+   - Recommend failure detection improvements
+
+5. **Automation Integration Services**
+   - Provide programmable interfaces for continuous validation
+   - Support event-driven analysis workflows
+   - Generate machine-readable verification results
+   - Enable closed-loop validation and remediation
 
 ## Testing Requirements
+
 ### Key Functionalities to Verify
-- Accurate comparison of network behavior before and after automated changes
-- Reliable correlation between configuration elements and traffic patterns
-- Comprehensive verification of network intent across various dimensions
-- Realistic simulation of failure scenarios and their traffic impact
-- Seamless integration with automation pipelines through APIs
+- Accuracy of before/after traffic pattern comparison
+- Correctness of configuration change correlation
+- Effectiveness of intent verification
+- Reliability of failure scenario predictions
+- Robustness of API integration
 
 ### Critical User Scenarios
-- Validating that an automated BGP configuration change produces expected routing behavior
-- Correlating firewall rule automation with observed traffic filtering
-- Verifying that QoS automation achieves intended traffic prioritization
-- Simulating failure scenarios before implementing automated data center failover
-- Integrating traffic analysis into a network CI/CD pipeline
+- Validating traffic flows after an automated BGP policy change
+- Correlating ACL modifications with traffic filtering behavior
+- Verifying that QoS implementations match service level intents
+- Predicting the impact of automation errors in a route reflector configuration
+- Integrating analysis into a CI/CD pipeline for network changes
 
 ### Performance Benchmarks
-- Compare before/after traffic patterns from 1GB PCAP files in under 5 minutes
-- Correlate configuration changes with observed traffic patterns in near real-time
-- Verify at least 100 distinct intent statements against traffic data in under 1 minute
-- Simulate failure impact for networks with up to 1000 devices in under 10 minutes
-- Handle at least 10 concurrent API integration requests with sub-second response times
+- Complete before/after analysis of routing table changes in under 2 minutes
+- Correlate configuration changes to traffic impacts with at least 90% accuracy
+- Verify intent compliance across 50 policy rules in under 30 seconds
+- Simulate failure scenarios with 95% accuracy compared to actual failures
+- Handle at least 10 concurrent API-driven analysis requests
 
 ### Edge Cases and Error Conditions
-- Appropriate handling of partial or incomplete traffic captures
-- Correct analysis despite configuration syntax variations across vendors
-- Graceful management of conflicting or ambiguous intent definitions
-- Proper handling of cascading failure scenarios with complex dependencies
-- Resilience against malformed API requests and integration errors
-- Accurate analysis despite network address translation and traffic manipulation
+- Handling partial or incomplete configuration changes
+- Processing network changes during transitional states
+- Analyzing unexpected protocol interactions after changes
+- Dealing with vendor-specific behavior variations
+- Supporting brownfield environments with undocumented configurations
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for all analysis components
-- Complete coverage of configuration correlation algorithms
-- Comprehensive tests for intent verification with various intent types
-- Full suite of tests for failure simulation with different network topologies
-- Complete validation of API functionality with various integration patterns
+- Minimum 90% code coverage for core functionality
+- 95% coverage for before/after comparison
+- 95% coverage for configuration change validation
+- 90% coverage for intent verification
+- 95% coverage for API integration components
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Before/after comparison correctly identifies at least 95% of behavior changes in test scenarios
-- Configuration correlation correctly maps at least 90% of configuration elements to traffic patterns
-- Intent verification achieves at least 98% accuracy compared to manual verification
-- Failure simulation predictions match actual failure outcomes in at least 85% of test cases
-- API integration functions correctly with at least 99.9% reliability under load
-- Analysis tools integrate successfully with common automation frameworks
-- Network automation engineers report at least 50% reduction in validation effort
+
+The Network Automation Analysis Framework implementation will be considered successful when:
+
+1. It accurately identifies and visualizes network behavior changes after automated configuration updates
+2. It successfully correlates specific configuration parameters with their network behavior impacts
+3. It correctly verifies that network behavior matches defined intent specifications
+4. It predicts failure impacts with at least 90% accuracy compared to actual failure tests
+5. It integrates smoothly with automation pipelines through well-defined APIs
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Project Setup and Environment
+
+To set up the project environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project in development mode with `uv pip install -e .`
+4. Install development dependencies including pytest-json-report
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file serves as verification that all functionality works as required and all tests pass successfully. This file must be generated and included with your submission.

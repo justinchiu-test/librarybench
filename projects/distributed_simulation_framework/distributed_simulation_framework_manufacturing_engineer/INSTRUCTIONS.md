@@ -1,183 +1,185 @@
-# Factory Process Simulation Framework
+# Manufacturing Process Simulation Framework
 
 ## Overview
-A specialized distributed simulation framework designed for manufacturing process engineers to optimize industrial assembly lines and production systems. This framework enables the creation of detailed digital twins of factory environments, supports process variation modeling, simulates equipment failures, provides component-level physics-based interactions, and identifies optimal layouts and scheduling improvements.
+A distributed simulation framework specialized for manufacturing engineers to model and optimize complex assembly lines with robotic components. The framework enables identification of production bottlenecks, testing of layout changes, and optimization of manufacturing processes in a virtual environment before implementing costly physical modifications.
 
 ## Persona Description
 Fatima optimizes industrial manufacturing processes by simulating complex assembly lines with robotic components. Her primary goal is to identify bottlenecks and test layout changes in virtual environments before implementing costly physical modifications to the factory floor.
 
 ## Key Requirements
 
-1. **Digital Twin Synchronization with Real-Time Factory Data**
-   - Create and maintain virtual representations of physical manufacturing systems
-   - Support bidirectional data flow between simulation and real factory sensors
-   - Implement delta synchronization to efficiently update simulation state
-   - Enable simulation calibration based on real-world performance metrics
-   - Critical for Fatima because validating simulations against real factory data ensures accuracy and allows for identifying discrepancies between modeled and actual behavior, enabling continuous improvement of both the simulation and the physical factory
+1. **Digital Twin Synchronization with Real-Time Factory Data**  
+   Implement a system for creating and maintaining digital twins of manufacturing processes that can be synchronized with real-time data from factory sensors and control systems. This capability is critical for Fatima because accurate simulations require up-to-date representation of the actual manufacturing environment, and real-time synchronization allows her to validate simulation models against current factory performance and identify discrepancies.
 
-2. **Process Variation Modeling with Statistical Distribution**
-   - Model variability in manufacturing processes using appropriate statistical distributions
-   - Implement Monte Carlo methods to simulate natural variations in component specifications
-   - Support correlation between related variation sources
-   - Analyze the propagation of variations through the manufacturing process
-   - Critical for Fatima because real manufacturing environments exhibit natural variations in timing, quality, and performance, and understanding how these variations affect overall production is essential for creating robust processes that maintain quality standards
+2. **Process Variation Modeling with Statistical Distribution**  
+   Develop comprehensive modeling of process variations based on statistical distributions derived from historical performance data. This feature is vital because real manufacturing processes exhibit natural variations in cycle times, defect rates, and other parameters, and accurately modeling these variations allows Fatima to design robust processes that perform well under realistic conditions rather than just idealized scenarios.
 
-3. **Equipment Failure Simulation with Maintenance Scheduling**
-   - Model equipment failure modes with configurable probability distributions
-   - Simulate the impact of failures on production flow and quality
-   - Test preventive maintenance strategies and their effects on uptime
-   - Optimize maintenance scheduling to minimize production impact
-   - Critical for Fatima because equipment downtime significantly impacts manufacturing productivity, and optimizing maintenance schedules to balance preventive work against production needs is a key challenge in maintaining efficient operations
+3. **Equipment Failure Simulation with Maintenance Scheduling**  
+   Create simulation capabilities for modeling equipment failures based on reliability models and evaluating maintenance scheduling strategies to minimize production impact. This functionality is essential because equipment downtime significantly affects manufacturing performance, and optimizing maintenance schedules allows Fatima to balance preventive maintenance costs against the risk and impact of unexpected failures.
 
-4. **Component-Level Simulation with Physics-Based Interactions**
-   - Detailed modeling of individual manufacturing components with physical properties
-   - Simulate mechanical interactions between components and materials
-   - Support for energy consumption and thermal effects modeling
-   - Enable detection of physical constraints and collisions
-   - Critical for Fatima because understanding the physical interactions between components helps identify potential issues like collisions, clearance problems, or excessive wear before implementing changes to the physical factory, preventing costly mistakes
+4. **Component-Level Simulation with Physics-Based Interactions**  
+   Build a detailed simulation system that models individual machine components with physics-based interactions, including kinematics, dynamics, and collision detection. This capability is crucial because many manufacturing bottlenecks and issues occur at the component interaction level, and detailed simulation allows Fatima to identify and resolve interference issues, timing problems, and other physical constraints before implementing changes.
 
-5. **Optimization Algorithms for Layout and Scheduling Improvements**
-   - Automated testing of multiple layout configurations
-   - Production scheduling optimization with constraint satisfaction
-   - Multi-objective optimization balancing throughput, quality, and resource utilization
-   - Sensitivity analysis to identify high-impact improvement opportunities
-   - Critical for Fatima because finding optimal configurations manually is impossible given the vast number of possible layouts and schedules, requiring computational optimization to identify non-obvious improvements that can significantly increase efficiency
+5. **Optimization Algorithms for Layout and Scheduling Improvements**  
+   Implement advanced optimization algorithms that can automatically evaluate multiple layout configurations and scheduling policies to identify optimal solutions. This feature is important because the number of possible manufacturing configurations is too large to evaluate manually, and algorithmic optimization allows Fatima to discover non-obvious improvements that significantly enhance productivity and efficiency.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Each component must have comprehensive unit tests with at least 90% code coverage
-- Integration tests verifying correct interactions between simulated factory components
-- Validation tests comparing simulation results against real factory performance data
-- Performance tests ensuring simulation speed meets or exceeds requirements
-- Reproducibility tests confirming identical results with the same random seeds
+- All simulation models must be validatable against real factory performance data
+- Process variation models must be calibratable to historical distribution patterns
+- Equipment failure models must match observed mean time between failures
+- Physics-based interactions must be verifiable against known physical constraints
+- Optimization algorithm results must be reproducible with fixed random seeds
 
 ### Performance Expectations
-- Support for simulating factory systems with 1000+ components
-- Simulation speed of at least 10x real-time for complete factory models
-- Response time for digital twin synchronization under 100ms
-- Ability to process and analyze telemetry data from 1000+ sensors
-- Compute optimization results for complex layouts within 1 hour
+- Must simulate manufacturing processes at least 100x faster than real-time
+- Should handle production lines with at least 100 interconnected machines and components
+- Must support at least 1,000 parallel simulation instances for optimization
+- Should process a minimum of 10,000 simulation steps per second
+- Result analysis should complete within minutes for standard optimization problems
 
 ### Integration Points
-- APIs for connecting to factory automation systems and PLCs
-- Interfaces for sensor data ingestion and telemetry
-- Export capabilities for CAD systems and visualization tools
-- Integration with manufacturing execution systems (MES)
-- Data exchange with maintenance management systems
+- Data interfaces for importing factory layout and equipment specifications
+- API for reading real-time sensor data from production systems
+- Extension points for custom equipment models and behaviors
+- Connectors for production scheduling and ERP systems
+- Export capabilities for simulation results and optimized configurations
 
 ### Key Constraints
-- All components must be implementable in pure Python
-- Distribution mechanisms must use standard library capabilities
-- The system must work across heterogeneous computing environments
-- Communication with external systems must use standard protocols
-- All randomization must support seeding for reproducible results
+- Implementation must be in Python with no UI components
+- All simulation components must be deterministic when using fixed random seeds
+- Memory usage must be optimized for parallel simulation scenarios
+- System must operate efficiently on standard engineering workstations
+- Data exchange formats must be compatible with industry-standard CAD and MES systems
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation should provide a Python library with the following core components:
+The Manufacturing Process Simulation Framework needs to implement these core capabilities:
 
-1. **Factory Model System**
-   - Component-level representation of manufacturing elements
-   - Layout and connection management
-   - Material flow simulation
-   - Energy and resource consumption modeling
-   - Production logic and control systems
+1. **Digital Twin Modeling System**
+   - Factory layout and equipment representation
+   - Real-time data integration and synchronization
+   - Model discrepancy detection and correction
+   - Version management for digital twin evolution
+   - Validation against physical system performance
 
-2. **Digital Twin Framework**
-   - Real-time data synchronization mechanisms
-   - Telemetry processing and filtering
-   - State reconciliation between virtual and physical systems
-   - Calibration and validation utilities
-   - Real-time visualization capabilities
-
-3. **Statistical Process Control**
-   - Variation modeling with different distribution types
+2. **Process Variation Framework**
+   - Statistical distribution modeling for process parameters
    - Monte Carlo simulation capabilities
-   - Statistical analysis of production outcomes
-   - Quality prediction and control
-   - Correlation handling between variation sources
+   - Correlation preservation between related variables
+   - Anomaly detection and handling
+   - Sensitivity analysis for process robustness
 
-4. **Reliability and Maintenance System**
-   - Equipment failure modeling
-   - Maintenance strategy simulation
-   - Downtime impact analysis
-   - Predictive maintenance algorithms
-   - Maintenance schedule optimization
+3. **Equipment Reliability Modeling**
+   - Failure mode definition and implementation
+   - Wear and degradation progression
+   - Maintenance activity modeling
+   - Scheduled vs. reactive maintenance comparison
+   - Resource allocation for maintenance activities
 
-5. **Optimization Engine**
+4. **Physics-Based Component Simulation**
+   - Kinematic modeling of moving parts
+   - Collision detection and resolution
+   - Material flow simulation
+   - Energy consumption modeling
+   - Timing and synchronization analysis
+
+5. **Manufacturing Optimization System**
    - Layout optimization algorithms
-   - Production scheduling with constraints
-   - Multi-objective optimization capabilities
-   - Sensitivity analysis tools
-   - Result visualization and comparison
+   - Production scheduling optimization
+   - Multi-objective evaluation methods
+   - Constraint handling for practical limitations
+   - Solution comparison and recommendation
+
+6. **Performance Analysis Framework**
+   - Throughput calculation and bottleneck identification
+   - Utilization and efficiency metrics
+   - Cycle time and work-in-process analysis
+   - Quality and defect rate prediction
+   - Cost modeling and economic evaluation
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-1. **Digital Twin Synchronization**
-   - Accuracy of state updates from real-time data
-   - Proper handling of delayed or missing sensor data
-   - Correct reconciliation of simulation state with reality
-   - Performance under high data throughput conditions
-
-2. **Process Variation**
-   - Correct implementation of statistical distributions
-   - Proper correlation between related variation sources
-   - Accurate propagation of variations through the process
-   - Statistical validity of Monte Carlo simulations
-
-3. **Failure Modeling**
-   - Realistic simulation of equipment failures and their impacts
-   - Proper implementation of failure distributions
-   - Correct calculation of availability and reliability metrics
-   - Accuracy of maintenance schedule optimization
-
-4. **Component Interactions**
-   - Correct physical constraint handling
-   - Accurate collision detection
-   - Proper material flow between components
-   - Energy consumption modeling accuracy
-
-5. **Optimization Performance**
-   - Quality of optimization results for known test cases
-   - Ability to handle complex constraint sets
-   - Performance scaling with problem size
-   - Reproducibility of optimization outcomes
+- Accuracy of digital twin synchronization with reference data
+- Statistical fidelity of process variation models
+- Correctness of equipment failure and maintenance simulations
+- Physical validity of component interactions
+- Effectiveness of optimization algorithms against known solutions
+- Accuracy of performance metrics compared to real-world benchmarks
 
 ### Critical User Scenarios
-1. Optimizing a complex assembly line layout to maximize throughput
-2. Evaluating the impact of equipment failures on production schedules
-3. Testing new preventive maintenance strategies to improve uptime
-4. Validating a digital twin against real factory performance data
-5. Identifying bottlenecks in a production process and testing solutions
+- Synchronizing a digital twin with live factory data to validate the model
+- Simulating process variations to identify robust operating parameters
+- Evaluating alternative maintenance schedules to minimize production impact
+- Detecting physical interference issues in proposed layout changes
+- Optimizing factory layout to improve throughput and reduce cycle time
+- Analyzing bottlenecks in complex production lines with interconnected processes
 
 ### Performance Benchmarks
-1. Simulate a 1000-component factory at 10x real-time speed
-2. Complete optimization of layout alternatives within 1 hour
-3. Process digital twin updates from 1000+ sensors with less than 100ms latency
-4. Run 1000 Monte Carlo simulations for variation analysis in under 10 minutes
-5. Scale to utilize at least 16 distributed processes efficiently
+- Simulation speed: minimum 100x real-time for full factory simulation
+- Scaling efficiency: minimum 80% parallel efficiency when scaling from 10 to 100 cores
+- Model synchronization: maximum 5-second delay for digital twin updates
+- Optimization convergence: evaluating at least 1,000 configurations per hour
+- Memory usage: maximum 4GB per simulation instance
 
 ### Edge Cases and Error Conditions
-1. Handling sensor data anomalies and outliers in digital twin synchronization
-2. Managing extreme process variations beyond normal operating parameters
-3. Simulating cascading failures across dependent equipment
-4. Recovering from failed optimization attempts due to constraint violations
-5. Dealing with incomplete or inconsistent factory telemetry data
+- Handling of cascading equipment failures
+- Management of deadlock situations in production workflows
+- Detection of physically impossible configurations
+- Identification of unstable process conditions
+- Recovery from data gaps in real-time synchronization
 
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for core simulation logic
-- 100% coverage of critical synchronization code
-- All variation distribution implementations fully tested
-- Performance tests must cover varying factory sizes and complexities
-- All physical interaction algorithms comprehensively tested
+### Test Coverage Requirements
+- Unit test coverage of at least 90% for all simulation models
+- Integration tests for system component interactions
+- Validation against real-world manufacturing data where available
+- Performance tests for parallel simulation scaling
+- Verification of optimization results against known optimal solutions
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Successfully simulate a complex manufacturing line with 1000+ components
-2. Demonstrate digital twin synchronization with real-time data processing
-3. Accurately model process variations and their impact on production
-4. Generate optimized maintenance schedules that improve simulated uptime by at least 10%
-5. Identify layout improvements that increase throughput by at least 15% in test scenarios
-6. Complete simulations at least 10x faster than real-time operations
-7. Validate simulation results against real factory data with ≤5% deviation
+
+The implementation of the Manufacturing Process Simulation Framework will be considered successful when:
+
+1. Digital twins accurately reflect the behavior of physical manufacturing systems with real-time synchronization
+2. Process variations are modeled with statistical distributions that match historical performance data
+3. Equipment failure and maintenance simulations correctly predict reliability impacts on production
+4. Component-level simulations with physics-based interactions identify valid interference and timing issues
+5. Optimization algorithms discover provably improved layout and scheduling configurations
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+
+To set up the development environment:
+
+1. Create a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```
+
+The pytest_results.json file must be included as proof that all tests pass and is a critical requirement for project completion.

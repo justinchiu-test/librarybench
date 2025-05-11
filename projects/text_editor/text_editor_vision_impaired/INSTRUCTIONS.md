@@ -1,130 +1,181 @@
-# Accessible Text Editing Library
+# Accessible Text Editor for Vision-Impaired Developers
+
+A specialized text editor library designed for vision-impaired developers with robust accessibility features and screen reader optimization.
 
 ## Overview
-A highly accessible text editor library designed specifically for vision-impaired developers, focusing on screen reader optimization, audio feedback, semantic document navigation, and keyboard-only workflows. This implementation prioritizes accessibility without compromising on powerful editing capabilities.
+
+This project implements a text editor library specifically designed for vision-impaired developers who need excellent accessibility features. It provides screen reader optimization, audio feedback for operations, semantic document navigation, customizable high-contrast themes, and a fully keyboard-driven workflow.
 
 ## Persona Description
+
 Dr. Chen has limited vision and uses screen readers and other assistive technologies. She needs a text editor with excellent accessibility that works well with screen readers while still providing powerful editing capabilities.
 
 ## Key Requirements
-1. **Screen Reader Optimization**: Implement a context-aware announcement system that provides meaningful information about document structure, code elements, and editing operations. This is critical for Dr. Chen to understand the structure and content of code without visual cues, enabling efficient navigation and comprehension through audio feedback.
 
-2. **Audio Feedback System**: Create a comprehensive audio cue system that provides non-visual indicators for operations, states, and events within the editor. This helps Dr. Chen confirm actions, understand operation outcomes, and recognize state changes without requiring visual confirmation.
+1. **Screen Reader Optimization**: Implement context-aware announcements that clearly convey document structure and content. This is critical for Dr. Chen to understand the hierarchical organization of code (functions, classes, loops, conditionals) and navigate efficiently through complex programming documents without relying on visual cues.
 
-3. **Semantic Document Navigation**: Develop a navigation framework that allows movement through documents based on semantic structure (functions, classes, blocks) rather than visual layout. This addresses Dr. Chen's need to navigate efficiently through code by logical structure rather than by lines or visual positioning.
+2. **Audio Feedback for Operations**: Develop distinct audio indicators for different editing actions and events. This provides Dr. Chen with immediate non-visual confirmation of operations such as saving, deleting, searching, and syntax errors, reducing dependency on screen reader announcements for operational feedback.
 
-4. **Customizable Accessibility Theming**: Implement a system for defining high-contrast themes with customizable font characteristics and rendering options. This allows Dr. Chen to tailor the visual presentation to her specific vision needs, maximizing the usability of any residual vision.
+3. **Semantic Document Navigation**: Create a navigation system based on code structure and semantic elements rather than visual layout. This allows Dr. Chen to move efficiently between logical components of code (functions, classes, blocks) instead of navigating line-by-line, significantly improving her programming efficiency.
 
-5. **Keyboard-Only Workflow**: Build a comprehensive keyboard command system that eliminates any requirements for precise mouse positioning. This ensures Dr. Chen can perform all editing operations efficiently through keyboard shortcuts, maintaining her productivity without relying on visual targeting.
+4. **Customizable High-Contrast Themes**: Implement theming capabilities with adjustable font characteristics and high-contrast color schemes. This accommodates Dr. Chen's limited vision by allowing her to customize the presentation of text to best suit her specific visual needs when she occasionally references the visual layout.
+
+5. **Keyboard-Only Workflow**: Design a comprehensive system of keyboard shortcuts and commands that eliminate any need for mouse interaction. This ensures Dr. Chen can perform all editing operations efficiently without requiring precise mouse positioning, which is challenging with limited vision.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - Screen reader announcements must be capturable and verifiable in tests
-  - Audio feedback must be testable without requiring actual sound output
-  - Navigation operations must be testable for expected document positioning
-  - Theme customization must be verifiable for contrast ratios and accessibility standards
-  - Keyboard workflow completeness must be testable for feature coverage
 
-- **Performance Expectations**:
-  - Screen reader announcements must be generated within 50ms of context changes
-  - Audio feedback must be synchronized with corresponding operations
-  - Navigation operations should complete within 100ms even for large documents
-  - Theme changes should apply immediately without processing delays
-  - Keyboard commands should be responsive with no perceptible latency
+### Testability Requirements
+- Screen reader integration must be testable through programmatic verification of announcements
+- Audio feedback must be testable through event emission rather than actual sound production
+- Semantic navigation structures must be verifiable through tree representation
+- Theme customization must be testable through programmatic theme application
+- Keyboard command coverage must be verifiable through operation mapping
 
-- **Integration Points**:
-  - Compatibility with standard screen reader technologies (JAWS, NVDA, VoiceOver)
-  - Support for standard accessibility APIs (e.g., Windows UI Automation, macOS Accessibility)
-  - Integration with text-to-speech engines for custom announcements
-  - Support for standard keyboard input libraries for consistent command handling
-  - Compliance with WCAG 2.1 Level AAA guidelines where applicable
+### Performance Expectations
+- Screen reader announcements must be generated within 20ms of state changes
+- Audio feedback events must be dispatched within 5ms of operations
+- Semantic navigation must generate document structure analysis in under 200ms for files up to 10MB
+- Theme application should not impact editing performance
+- Keyboard commands must be processed with less than 10ms latency
 
-- **Key Constraints**:
-  - Must function effectively without requiring visual feedback
-  - Must provide equivalent functionality accessible through non-visual means
-  - Must never rely on color alone to convey information
-  - Must support variable text scaling without layout breakdown
-  - Must minimize cognitive load through consistent interaction patterns
+### Integration Points
+- Screen reader API compatibility (NVDA, JAWS, VoiceOver)
+- Audio feedback event emission for assistive technology integration
+- Semantic analysis of code structure
+- Theme customization system
+- Keyboard command mapping framework
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- All features must be fully accessible without visual feedback
+- Navigation must work without requiring knowledge of visual layout
+- All operations must be possible through keyboard alone
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Accessible Text Buffer**: A text storage and manipulation system that maintains semantic information about content structure.
+The library should implement a text editor core with the following functionality:
 
-2. **Screen Reader Integration**: Components for generating appropriate announcements based on context and operations.
+1. A screen reader integration system that:
+   - Generates rich, context-aware announcements of document structure
+   - Provides relevant information about the current editing context
+   - Announces changes and updates as they occur
+   - Allows customization of announcement verbosity and content
 
-3. **Audio Feedback Framework**: A system for generating consistent audio cues for different operations and states.
+2. An audio feedback system that:
+   - Emits distinct events for different editing operations
+   - Provides immediate non-visual confirmation of actions
+   - Indicates errors, warnings, and state changes
+   - Allows customization of event types and significance
 
-4. **Semantic Document Model**: A representation of document structure that enables navigation by meaning rather than position.
+3. A semantic navigation system that:
+   - Analyzes document structure based on code semantics
+   - Provides efficient movement between logical document elements
+   - Supports hierarchical navigation of nested structures
+   - Maintains context awareness during navigation
 
-5. **Accessibility Theme Engine**: Tools for defining and applying high-contrast visual representations.
+4. A theming system that:
+   - Supports high-contrast color schemes
+   - Allows customization of font characteristics
+   - Provides preset accessibility-focused themes
+   - Enables fine-grained adjustment of visual presentation
 
-6. **Keyboard Command System**: A comprehensive framework for keyboard-driven operation without mouse dependencies.
-
-7. **Document Analysis**: Tools for extracting and representing semantic structure from various file types.
-
-The library should use semantic data structures that preserve meaning alongside content. It should prioritize non-visual information representation and provide multiple redundant ways to access functionality. The implementation should follow universal design principles while specifically optimizing for screen reader users.
+5. A keyboard command system that:
+   - Provides comprehensive keyboard access to all features
+   - Supports customizable key bindings
+   - Implements efficient command sequences for common operations
+   - Eliminates dependency on mouse interaction
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy and usefulness of screen reader announcements
-  - Consistency and informativeness of audio feedback
-  - Correctness of semantic navigation operations
-  - Compliance of themes with accessibility standards
-  - Completeness of keyboard command coverage
 
-- **Critical User Scenarios**:
-  - Navigating and editing code files without visual feedback
-  - Understanding document structure through screen reader announcements
-  - Performing complex editing operations using keyboard shortcuts
-  - Customizing the environment for specific visual needs
-  - Receiving appropriate feedback for operations and state changes
+### Key Functionalities to Verify
+- Screen reader announcements correctly represent document structure and changes
+- Audio feedback events are properly emitted for all operations
+- Semantic navigation accurately identifies and navigates document structure
+- Theme customization properly applies accessibility-focused visual adjustments
+- Keyboard commands successfully execute all editor operations
 
-- **Performance Benchmarks**:
-  - Screen reader announcements should be generated within 50ms
-  - Command response time should be under 100ms for all operations
-  - Document analysis should process at least 1000 lines per second
-  - Theme switching should complete in under 200ms
-  - Memory usage should remain under 150MB even for large documents
+### Critical User Scenarios
+- Navigating through a complex code file using semantic structure
+- Editing code with continuous screen reader feedback
+- Receiving audio confirmation for operations like save, delete, and search
+- Customizing theme settings for specific visual needs
+- Performing complex editing operations using only keyboard commands
 
-- **Edge Cases and Error Conditions**:
-  - Handling documents with complex or unusual structures
-  - Providing useful feedback for unexpected errors
-  - Maintaining accessibility during performance-intensive operations
-  - Supporting extremely large font sizes without layout issues
-  - Handling malformed documents while providing useful feedback
+### Performance Benchmarks
+- Screen reader announcement generation must process at least 1000 lines per second
+- Audio event emission must handle at least 50 events per second
+- Semantic structure analysis must complete within 100ms for 1000-line documents
+- Theme application must not add more than 5ms overhead to rendering operations
+- Keyboard command processing must support at least 10 commands per second
 
-- **Required Test Coverage**:
-  - 95% line coverage for screen reader announcement logic
-  - 90% coverage for audio feedback systems
-  - 95% coverage for navigation and document structure analysis
-  - 90% coverage for theme management
-  - 100% coverage for keyboard command handling
+### Edge Cases and Error Conditions
+- Handling malformed or syntactically incorrect code documents
+- Managing extremely large files without overwhelming the screen reader
+- Dealing with complex nested structures in semantic navigation
+- Supporting users with varying degrees of visual impairment
+- Recovering from keyboard command conflicts or errors
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 95% code coverage across all accessibility-related modules
+- 100% coverage of screen reader announcement generation
+- Complete coverage of all public API methods
+- All keyboard commands must have verification tests
+- All semantic navigation operations must have test coverage
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. Vision-impaired users can effectively navigate and edit documents using screen readers without requiring visual feedback.
+1. Screen reader integration provides clear, context-aware announcements of document structure and content
+2. Audio feedback system delivers distinct, immediate confirmation of editing operations
+3. Semantic navigation enables efficient movement through code based on logical structure
+4. Theme customization supports effective visual adjustments for users with limited vision
+5. Keyboard command system provides complete access to all editing functionality without requiring mouse interaction
 
-2. Audio cues provide clear, consistent feedback for all editor operations and state changes.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Semantic navigation allows efficient movement through documents based on structure rather than visual layout.
+## Environment Setup
 
-4. Customizable themes meet WCAG 2.1 Level AAA standards for contrast and readability.
+To set up the development environment:
 
-5. All functionality is accessible through keyboard commands without requiring mouse interaction.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. Performance remains responsive even with accessibility features fully enabled.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the effectiveness and reliability of the implementation for vision-impaired users.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

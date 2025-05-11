@@ -1,127 +1,159 @@
-# Multi-Product Documentation Coordination System
+# Documentation Suite Consistency Management System
+
+A specialized documentation management platform that ensures consistency across complex multi-product software documentation while identifying gaps, redundancies, and enforcing terminology standards.
 
 ## Overview
-A comprehensive documentation management system designed for technical documentation managers overseeing complex software suites, providing cross-reference visualization, coverage analysis, style enforcement, workload allocation, and approval workflow tracking to ensure consistent, complete documentation across multiple integrated products.
+
+The Documentation Suite Consistency Management System provides documentation managers with tools to visualize relationships between product components, analyze coverage gaps, enforce consistent style and terminology, allocate writing tasks efficiently, and manage the review and approval process across large documentation sets.
 
 ## Persona Description
+
 Carlos oversees documentation for a complex software suite with multiple integrated products. He needs to ensure consistency across documentation created by different teams while identifying gaps and redundancies.
 
 ## Key Requirements
-1. **Cross-Reference Visualization** - Implement a system that analyzes documentation content to identify and visualize connections between components, products, and documentation sections across the entire suite. This is critical for Carlos because it helps him understand dependencies between products, ensures integration points are properly documented, and prevents conflicting information that confuses users navigating across the product suite.
 
-2. **Documentation Coverage Analysis** - Develop functionality to automatically detect and report on undocumented features, APIs, or product capabilities by comparing code/product artifacts with existing documentation. This is essential because it enables Carlos to systematically identify documentation gaps, prioritize documentation work objectively, and ensure users have complete information for all product features.
+1. **Cross-Reference Visualization** - The system must generate interactive visualization maps showing connections between components and documentation sections. This is critical for Carlos because in a complex multi-product suite, understanding how components relate to each other helps identify documentation interdependencies, ensuring changes in one area don't create inconsistencies in others.
 
-3. **Style and Terminology Enforcement** - Create a rules-based system that checks documentation against style guidelines and terminology standards, flagging inconsistencies and suggesting corrections. This feature is vital for Carlos because it helps maintain a unified voice across documentation created by different teams, reducing user confusion and strengthening brand identity across the product suite.
+2. **Documentation Coverage Analysis** - The tool must automatically identify undocumented features, APIs, or configuration options by comparing codebase artifacts with documentation content. This is essential for Carlos to ensure comprehensive documentation coverage across the product suite, preventing support escalations caused by missing documentation.
 
-4. **Workload Allocation Tools** - Implement analytical capabilities to assess documentation needs and contributor skills to recommend optimal task assignments and workload distribution. This is important for Carlos because it helps him efficiently allocate limited documentation resources across multiple products, balance workloads fairly, and match technical writers with content matching their expertise.
+3. **Style and Terminology Enforcement** - The system must scan documentation for inconsistent terminology, violating style guidelines, or deprecated terms, providing specific recommendations for corrections. As a documentation manager, Carlos must maintain consistent language across all products, ensuring users aren't confused by different terms being used for the same concepts across the suite.
 
-5. **Stakeholder Approval Workflows** - Design a systematic approach to track review status, capture feedback, and manage sign-offs for documentation from various stakeholders (product managers, engineering, legal, etc.). This capability is crucial because it formalizes the review process, creates accountability, ensures all necessary approvals are obtained before publication, and provides an audit trail for compliance purposes.
+4. **Workload Allocation Tools** - The tool must provide mechanisms to distribute documentation tasks based on writer expertise, capacity, and areas of responsibility. This helps Carlos efficiently manage his documentation team resources, assigning work to those best suited for specific topics while maintaining balanced workloads.
+
+5. **Stakeholder Approval Workflows** - The system must implement customizable review and signoff processes for documentation, tracking the status of approvals from subject matter experts, legal teams, and product owners. This is vital for Carlos to ensure all documentation meets quality standards and has appropriate sign-off before publication, preventing release of incorrect or unapproved information.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All cross-reference detection and visualization algorithms must be testable with structured test documents
-  - Coverage analysis must be verifiable against test codebases with known documentation gaps
-  - Style enforcement rules must be testable with positive and negative examples
-  - Workload allocation algorithms must produce consistent, deterministic results with the same inputs
-  - Approval workflows must be testable with simulated stakeholder interactions
 
-- **Performance Expectations**
-  - Cross-reference analysis should process 10,000+ documentation pages in under 10 minutes
-  - Coverage analysis should complete for a 1 million line codebase in under 30 minutes
-  - Style checks should process documentation at a rate of at least 100 pages per minute
-  - System should handle documentation for at least 50 integrated products efficiently
-  - Workflow status updates should propagate to all views within 5 seconds
+### Testability Requirements
+- All components must have comprehensive unit tests with minimum 90% code coverage
+- Visualization accuracy must be verifiable through graph structure validation
+- Coverage analysis must be testable against synthetic codebases with known documentation gaps
+- Style enforcement must be verifiable with parameterized test cases covering different rule violations
+- Workflow state transitions must be comprehensively tested for all review scenarios
 
-- **Integration Points**
-  - Version control systems (Git, SVN) for documentation source
-  - Issue tracking systems (Jira, GitHub Issues) for task management
-  - Code repositories for coverage analysis
-  - Style guides and terminology databases
-  - Notification systems (email, Slack) for workflow updates
-  - Authentication systems for user permissions
+### Performance Expectations
+- Cross-reference visualization must generate within 30 seconds for a suite with 50+ components
+- Coverage analysis must complete in under 5 minutes for a codebase with 500,000+ lines of code
+- Style scanning must process 10,000+ pages of documentation in under 10 minutes
+- Workload allocation data must be retrievable in under 500ms
 
-- **Key Constraints**
-  - Must support documentation in multiple formats (Markdown, reStructuredText, HTML, etc.)
-  - All operations must be scriptable for automation pipelines
-  - System must work with distributed teams across multiple time zones
-  - Must maintain detailed audit logs of all approval decisions
-  - Storage requirements should not exceed 5GB for documentation of a large product suite
+### Integration Points
+- Version control systems for documentation and code repositories
+- Issue tracking and project management tools
+- HR systems for writer skills and availability
+- API and schema definition systems
+- Existing documentation content management systems
+
+### Key Constraints
+- All functionality must be implementable without UI components
+- Must handle documentation suites with at least 10,000 pages
+- Must support at least 20 concurrent writers with different permissions
+- Must track documentation for at least 100 distinct software components
+- Must support at least 5 levels of approval workflow
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide a Python library with the following core modules:
 
-1. **Content Analyzer**: Parse and analyze documentation across formats to extract structure, topics, and relationships.
+The system must provide:
 
-2. **Reference Graph**: Build and query a graph representation of documentation elements and their relationships.
+1. A documentation relationship analysis engine that maps connections between components
+2. A gap detection system that compares code artifacts with documentation content
+3. A style enforcement engine that scans for terminology inconsistencies and guideline violations
+4. A resource allocation system that matches documentation tasks with appropriate writers
+5. A workflow management system that tracks review and approval processes
+6. A reporting system that provides insights into documentation health and team productivity
+7. A notification system that alerts stakeholders about pending reviews and documentation changes
 
-3. **Coverage Detector**: Compare product artifacts (code, APIs, features) with documentation to identify gaps.
-
-4. **Style Checker**: Validate documentation against configurable style and terminology rules.
-
-5. **Resource Allocator**: Analyze documentation needs and team capabilities to recommend workload distribution.
-
-6. **Workflow Manager**: Track and manage the approval process for documentation components.
-
-7. **Reporting Engine**: Generate actionable reports on documentation status, quality, and coverage.
-
-These modules should be designed with clean interfaces, allowing them to work together as an integrated system while maintaining the ability to use individual components independently.
+These components should work together to create a cohesive system that improves consistency, completeness, and quality across a complex documentation suite while optimizing team resources.
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Accurate detection of cross-references and dependencies
-  - Correct identification of documentation coverage gaps
-  - Proper enforcement of style and terminology rules
-  - Optimal workload allocation based on defined parameters
-  - Reliable tracking of approval workflows and statuses
 
-- **Critical User Scenarios**
-  - Analysis of a multi-product documentation set for completeness
-  - Enforcement of consistent terminology across product documentation
-  - Assignment of documentation tasks based on writer expertise and capacity
-  - Management of a complex approval process with multiple stakeholders
-  - Identification of integration points lacking proper documentation
+The implementation must include tests for:
 
-- **Performance Benchmarks**
-  - Process a 5,000-page documentation set in under 5 minutes
-  - Complete cross-reference analysis for 20+ interconnected products in under 10 minutes
-  - Perform style checking on 1,000 pages in under 2 minutes
-  - Generate allocation recommendations for 100+ documentation tasks in under 1 minute
-  - Support 50+ concurrent workflow participants without performance degradation
+### Key Functionalities Verification
+- Cross-reference visualization correctly identifies connections between components
+- Coverage analysis accurately detects undocumented features and APIs
+- Style enforcement catches terminology inconsistencies and other violations
+- Workload allocation correctly matches tasks with writer expertise and capacity
+- Approval workflows correctly track review status and enforce required signoffs
 
-- **Edge Cases and Error Conditions**
-  - Documentation with circular references or dependencies
-  - Highly ambiguous terminology requiring context-aware resolution
-  - Conflicting style requirements between different products
-  - Resource allocation with severe constraints or skill gaps
-  - Deadlocked or stalled approval workflows
-  - Handling of documentation formats with poor structure
+### Critical User Scenarios
+- A new product component is added to the suite requiring cross-component documentation
+- A major API update requires changes to documentation across multiple products
+- A terminology standard changes, requiring updates throughout the documentation
+- A documentation team reorganization requires reallocation of responsibilities
+- A critical documentation section requires expedited review and approval
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% line coverage across all modules
-  - 100% coverage for approval workflow state management
-  - 95%+ coverage for cross-reference detection algorithms
-  - 95%+ coverage for style and terminology enforcement
-  - 90%+ coverage for resource allocation algorithms
+### Performance Benchmarks
+- Cross-reference visualization generates within time limits for large product suites
+- Coverage analysis completes efficiently for large codebases
+- Style scanning processes large documentation sets within performance parameters
+- Workflow state transition operations complete in near real-time
 
-IMPORTANT: 
+### Edge Cases and Error Handling
+- Handling orphaned documentation with no corresponding code
+- Managing circular references between components
+- Processing ambiguous terminology that may be valid in certain contexts
+- Dealing with conflicting stakeholder feedback during review
+- Handling documentation for deprecated but still supported features
+
+### Required Test Coverage
+- Minimum 90% test coverage for all components
+- 100% coverage for workflow state transitions and approval logic
+- Integration tests for all external system interfaces
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. It correctly identifies 95%+ of cross-references and dependencies in a test documentation set
-2. Coverage analysis accurately detects 90%+ of known documentation gaps
-3. Style checking correctly flags 95%+ of style and terminology inconsistencies
-4. Workload allocation produces balanced, skill-appropriate task assignments
-5. Approval workflows correctly track all stakeholder reviews and sign-offs
-6. The system functions without a user interface while providing APIs that could support UI development
-7. All operations can be performed programmatically through well-defined APIs
-8. All tests pass with the specified coverage metrics
+The implementation will be considered successful if:
 
-To set up a development environment for this project, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Cross-reference visualization correctly maps relationships between at least 95% of connected components
+2. Documentation coverage analysis identifies at least 90% of undocumented features in test scenarios
+3. Style enforcement catches at least 95% of terminology inconsistencies in test content
+4. Workload allocation successfully distributes tasks based on writer expertise and capacity
+5. Approval workflows correctly enforce required signoffs for all documentation types
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. From within the project directory, create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report to generate the required report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion.

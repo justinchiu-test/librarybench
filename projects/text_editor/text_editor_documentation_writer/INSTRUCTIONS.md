@@ -1,130 +1,181 @@
-# Technical Documentation Editor Library
+# Technical Documentation Text Editor
+
+A specialized text editor library designed for technical documentation writers with advanced features for code sample validation and documentation-specific checks.
 
 ## Overview
-A specialized text editor library designed for technical documentation writers, focusing on code sample validation, documentation-specific linting, multi-format preview, API reference integration, and automated screenshot generation. This implementation prioritizes maintaining technical accuracy while supporting the unique needs of documentation that combines code, commands, and explanatory text.
+
+This project implements a text editor library specifically designed for technical writers who create software documentation. It provides code sample validation, documentation-specific linting, multi-format preview, API reference integration, and screenshot automation capabilities.
 
 ## Persona Description
+
 Carlos creates software documentation combining code examples, command sequences, and explanatory text. He needs specialized features for working with mixed content while ensuring technical accuracy.
 
 ## Key Requirements
-1. **Code Sample Validation Engine**: Implement a system that automatically tests embedded code examples for correctness, syntax errors, and compatibility with referenced library versions. This is critical for Carlos to ensure that all code examples in documentation actually work as described, preventing frustration for users who rely on the documentation.
 
-2. **Documentation-Specific Linting**: Create a comprehensive linting framework that checks for clarity, completeness, terminology consistency, and documentation best practices. This helps Carlos maintain high-quality documentation that follows style guides and avoids common technical writing pitfalls.
+1. **Code Sample Validation**: Implement a system that automatically tests embedded code examples for correctness. This is critical for Carlos to ensure that code samples in documentation are syntactically valid and produce expected results, preventing readers from encountering errors when following tutorials or implementing examples.
 
-3. **Multi-Format Preview Generator**: Develop a system that shows how documentation content will appear when rendered in different documentation systems (Markdown, reStructuredText, HTML, PDF, etc.). This addresses Carlos's need to write content that will display correctly across multiple output formats used by different documentation platforms.
+2. **Documentation-Specific Linting**: Develop specialized linting capabilities that check for clarity, completeness, and terminology consistency. This helps Carlos maintain high-quality documentation standards by identifying unclear explanations, missing information, inconsistent terms, and other documentation-specific issues that general text editors don't detect.
 
-4. **API Reference Integration**: Build functionality that connects to API definitions and automatically updates examples when APIs change. This ensures that Carlos's documentation stays synchronized with the latest API signatures, preventing documentation drift as software evolves.
+3. **Multi-Format Preview**: Create functionality showing how documentation content will appear when rendered in different documentation systems. This allows Carlos to visualize how his content will be presented across various platforms (HTML, PDF, in-app help, etc.) without leaving the editor, ensuring consistent appearance and readability.
 
-5. **Command Sequence Capture**: Implement a tool that automates generating terminal captures and screenshots from written command sequences. This allows Carlos to efficiently create visual examples that accurately represent the commands described in the documentation.
+4. **API Reference Integration**: Implement automatic updating of examples when APIs change in the source code. This keeps Carlos's documentation synchronized with the actual code, automatically flagging outdated examples when APIs evolve and suggesting updates to maintain documentation accuracy.
+
+5. **Screenshot Automation**: Develop capabilities to generate terminal captures from command sequences. This enables Carlos to create accurate, consistent screenshots of command-line operations directly from documented commands, eliminating manual terminal work and ensuring screenshots match the exact commands in the documentation.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - Code sample validation must be verifiable against known working and broken examples
-  - Linting rules must provide consistent results for identical inputs
-  - Format preview generation must be testable for rendering accuracy
-  - API reference synchronization must be testable with versioned API definitions
-  - Command sequence capture must produce consistent outputs for identical inputs
 
-- **Performance Expectations**:
-  - Code validation should complete within 3 seconds for typical examples
-  - Linting should process documentation at a rate of at least 1MB per minute
-  - Format preview generation should complete within 5 seconds per format
-  - API reference checking should complete within 10 seconds for documentation referencing 100+ APIs
-  - Command sequence capture should process instructions within timeframes appropriate to the commands
+### Testability Requirements
+- Code validation must be testable with sample code snippets
+- Documentation linting must be verifiable with example content containing known issues
+- Format preview generation must be testable through predictable output comparison
+- API reference tracking must be testable with simulated API changes
+- Screenshot generation must be testable with predefined command sequences
 
-- **Integration Points**:
-  - Support for multiple programming language interpreters and compilers
-  - Integration with documentation style guides and linting rules
-  - Compatibility with common documentation rendering engines
-  - Connectivity with API definition formats (OpenAPI, GraphQL, etc.)
-  - Integration with terminal emulation for command capture
+### Performance Expectations
+- Code validation should complete in under 2 seconds for most language examples
+- Linting should process at least 10,000 words per second
+- Format previews should generate in under 1 second for standard-length documents
+- API reference checks should run in background with minimal performance impact
+- Screenshot generation should complete within 5 seconds per command sequence
 
-- **Key Constraints**:
-  - Must validate code in multiple programming languages
-  - Must handle mixed content (text, code, commands, images) seamlessly
-  - Must support documentation formats used by major documentation systems
-  - Must operate without requiring access to production systems for API validation
-  - Must isolate command execution for safety and reproducibility
+### Integration Points
+- Code execution environments for multiple programming languages
+- Documentation style guides and terminology databases
+- Documentation format renderers (Markdown, reStructuredText, etc.)
+- API documentation extraction from source code
+- Terminal emulation for screenshot capture
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- Code validation must run in a secure, sandboxed environment
+- Must support documentation for multiple programming languages
+- Must maintain separation between content and presentation
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Mixed Content Document Model**: A representation system for documents containing text, code blocks, command sequences, and embedded media.
+The library should implement a text editor core with the following functionality:
 
-2. **Code Execution Environment**: A secure sandbox for testing code samples in various programming languages.
+1. A code validation system that:
+   - Extracts code samples from documentation
+   - Validates syntax for multiple programming languages
+   - Executes code in a secure environment
+   - Verifies output against documented expectations
 
-3. **Documentation Style Checking**: A comprehensive framework for validating documentation against style guides and best practices.
+2. A documentation linting system that:
+   - Checks for clarity, completeness, and readability
+   - Enforces consistent terminology usage
+   - Identifies potentially confusing explanations
+   - Validates against style guides and best practices
 
-4. **Format Conversion Engine**: Tools for generating previews in different documentation formats.
+3. A format preview system that:
+   - Renders content in multiple documentation formats
+   - Shows how content will appear in different contexts
+   - Identifies format-specific issues
+   - Provides side-by-side comparison of formats
 
-5. **API Definition Parser**: Components for reading and understanding API specifications from various formats.
+4. An API reference system that:
+   - Links documentation to source code definitions
+   - Detects when APIs change in the codebase
+   - Flags outdated examples and references
+   - Suggests updates based on current API signatures
 
-6. **Command Execution Capture**: A secure environment for running and capturing output from command sequences.
-
-7. **Documentation Analytics**: Tools for measuring documentation completeness, accuracy, and quality.
-
-The library should use specialized parsing strategies optimized for mixed-content documents. It should provide programmatic interfaces for all functions without requiring a graphical interface, allowing it to be integrated with various documentation workflows and continuous integration systems.
+5. A screenshot automation system that:
+   - Generates terminal captures from command sequences
+   - Ensures consistency between text and visuals
+   - Supports different terminal styles and environments
+   - Automatically updates screenshots when commands change
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of code sample validation across different languages
-  - Correctness of linting against documentation standards
-  - Fidelity of format previews compared to actual rendered output
-  - Accuracy of API reference synchronization with changing definitions
-  - Quality of command sequence captures for documentation
 
-- **Critical User Scenarios**:
-  - Writing multilingual API documentation with code examples
-  - Checking documentation against organizational style guides
-  - Preparing documentation for publication in multiple formats
-  - Updating documentation when underlying APIs change
-  - Creating visual tutorials with command sequences and screenshots
+### Key Functionalities to Verify
+- Code validation correctly identifies valid and invalid code examples
+- Documentation linting accurately detects clarity and terminology issues
+- Format preview properly renders content in different documentation formats
+- API reference integration successfully tracks changes in source code APIs
+- Screenshot automation correctly generates terminal captures from commands
 
-- **Performance Benchmarks**:
-  - Code validation should support at least 10 different programming languages
-  - Linting should check at least 50 documentation best practices
-  - Format preview should support at least 5 common documentation formats
-  - API synchronization should handle definitions with 1000+ endpoints
-  - Command capture should support sequences of at least 20 consecutive commands
+### Critical User Scenarios
+- Validating Python code examples in a tutorial document
+- Checking documentation against company terminology guidelines
+- Previewing how content will render in HTML, PDF, and in-app help
+- Updating examples when a documented API changes
+- Generating a series of terminal screenshots for a command-line tutorial
 
-- **Edge Cases and Error Conditions**:
-  - Handling code samples that require complex dependencies
-  - Providing useful feedback for subtle documentation issues
-  - Managing inconsistencies between different output formats
-  - Dealing with API changes that break backward compatibility
-  - Safely handling potentially destructive command sequences
+### Performance Benchmarks
+- Code validation should handle at least 50 code samples per minute
+- Linting should complete in under 5 seconds for 10,000-word documents
+- Format preview generation should support at least 5 different target formats
+- API reference checking should process at least 100 API references per second
+- Screenshot automation should generate at least 10 screenshots per minute
 
-- **Required Test Coverage**:
-  - 90% line coverage for code validation functionality
-  - 95% coverage for documentation linting rules
-  - 85% coverage for format conversion engines
-  - 90% coverage for API reference handling
-  - 95% coverage for command execution and capture
+### Edge Cases and Error Conditions
+- Handling code samples that require specific environments or dependencies
+- Managing conflicting terminology requirements across different audiences
+- Dealing with custom or non-standard documentation formats
+- Tracking API changes that involve complex signature modifications
+- Handling terminal commands that produce dynamic or timing-dependent output
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 90% code coverage across all core modules
+- 100% coverage of code validation logic
+- Complete coverage of all public API methods
+- All supported documentation formats must have rendering tests
+- All screenshot generation paths must have verification tests
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. Code samples in documentation can be automatically validated for correctness across multiple programming languages.
+1. Code sample validation correctly verifies syntax and execution of embedded examples
+2. Documentation-specific linting accurately identifies clarity and terminology issues
+3. Multi-format preview properly renders content in different documentation systems
+4. API reference integration successfully flags outdated examples when APIs change
+5. Screenshot automation correctly generates terminal captures from command sequences
 
-2. Documentation consistently meets style guidelines and best practices through automated linting.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Content appears correctly when rendered in different documentation systems and formats.
+## Environment Setup
 
-4. Examples and references stay synchronized with changing API definitions.
+To set up the development environment:
 
-5. Terminal captures and screenshots can be automatically generated from written command sequences.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. Documentation quality and accuracy can be measured and tracked over time.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the reliability and effectiveness of the implementation for technical documentation workflows.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

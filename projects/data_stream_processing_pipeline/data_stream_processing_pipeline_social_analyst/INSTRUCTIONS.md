@@ -1,151 +1,150 @@
-# Social Media Sentiment Analysis Engine
+# Social Media Analytics Stream Processing Framework
 
 ## Overview
-A real-time stream processing framework designed to monitor, analyze, and extract insights from social media content across multiple platforms. This system processes unstructured text data at scale, identifies trending topics, and detects sentiment shifts in real-time to support brand management and reputation monitoring.
+A specialized data stream processing framework designed to monitor, analyze, and extract insights from social media content across multiple platforms in real-time. The system processes unstructured text data at scale, identifies emerging trends, and tracks sentiment shifts to support brand management and reputation monitoring.
 
 ## Persona Description
 Jamal develops systems to monitor social media engagement and sentiment across various platforms for brand management. His primary goal is to process unstructured text data at scale while identifying trending topics and sentiment shifts in real-time.
 
 ## Key Requirements
+1. **Natural language processing pipeline for sentiment extraction**: Implement a modular text processing pipeline that can accurately classify sentiment in social media posts across multiple languages, slang usage, and content types (text, captions, comments). This capability is essential for measuring brand perception and detecting emerging reputation issues that require immediate response.
 
-1. **Natural language processing pipeline for sentiment extraction**
-   - Comprehensive text processing framework that accurately determines sentiment in social media content
-   - Critical for Jamal to understand how customers feel about brands across various platforms and contexts
-   - Must support multiple languages, slang, emoticons, and platform-specific content formats
+2. **Trend detection algorithms with configurable significance thresholds**: Create algorithms that identify emerging topics and conversations across social platforms, with configurable thresholds for determining what constitutes a significant trend based on velocity, volume, and reach metrics. This trending topic analysis helps brands identify viral content and conversations that present opportunities or risks.
 
-2. **Trend detection algorithms with configurable significance thresholds**
-   - Advanced trend identification system that distinguishes meaningful signals from random fluctuations
-   - Essential for identifying emerging topics before they become widely discussed
-   - Should include configurable significance parameters for different detection sensitivity needs
+3. **Platform-specific data enrichment with API rate limiting**: Develop a framework for enriching social media data through platform-specific APIs (e.g., retrieving additional user metadata, engagement metrics, or conversation threads) while intelligently managing API rate limits and quotas. This enrichment adds crucial context to social analysis while respecting platform constraints.
 
-3. **Platform-specific data enrichment with API rate limiting**
-   - Specialized data collection and enhancement for different social media platforms
-   - Necessary for maintaining comprehensive monitoring while respecting platform API limitations
-   - Must include smart rate limiting, quota management, and request optimization strategies
+4. **Entity recognition and relationship mapping across posts**: Build advanced entity extraction capabilities that identify and correlate mentions of brands, products, people, and places across separate posts and platforms, constructing a relationship graph of entities and conversations. This network analysis reveals influential connection points and conversation patterns not visible in isolated post analysis.
 
-4. **Entity recognition and relationship mapping across posts**
-   - Sophisticated entity extraction and connection analysis across social media content
-   - Vital for understanding relationships between brands, people, and topics being discussed
-   - Should include relationship strength scoring and temporal evolution tracking
-
-5. **Engagement spike detection with automated alert thresholds**
-   - Real-time monitoring system for unusual engagement patterns requiring immediate attention
-   - Crucial for identifying potential viral content or emerging reputation issues
-   - Must include self-calibrating thresholds based on historical patterns and context
+5. **Engagement spike detection with automated alert thresholds**: Implement a system that baseline normal engagement patterns for monitored topics and automatically detects significant deviations that warrant attention, with self-calibrating thresholds based on historical patterns. This early warning system ensures timely awareness of viral content or emerging crises.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Must support testing with synthetic social media post datasets
+  - Needs validation of sentiment analysis accuracy against human-labeled data
+  - Requires reproducible testing of trend detection algorithms
+  - Must support simulation of engagement pattern changes
+  - Needs automated validation of entity extraction precision and recall
 
-### Testability Requirements
-- Test data generation mimicking realistic social media content and patterns
-- Sentiment analysis accuracy validation against human-labeled datasets
-- Trend detection verification with historical data replays
-- Reproducible scenario testing for engagement spike conditions
-- Performance testing under viral event conditions
+- **Performance Expectations**:
+  - Ability to process at least 50,000 social media posts per minute
+  - Sentiment analysis latency under 200ms per post
+  - Support for at least 500 concurrent monitoring topics
+  - Trend detection refreshed at least every 5 minutes
+  - Entity relationship graph updates within 1 minute of new data
 
-### Performance Expectations
-- Support for processing 100,000+ social media posts per minute
-- Sentiment analysis results available within 5 seconds of content ingestion
-- Trend detection processing with no more than 1-minute delay
-- Entity relationship graph updates within 10 seconds of new information
-- Alert generation within 30 seconds of threshold breach detection
+- **Integration Points**:
+  - Social media platform APIs (Twitter/X, Instagram, Facebook, TikTok, Reddit, etc.)
+  - Media monitoring and PR systems
+  - Customer relationship management platforms
+  - Crisis management workflow systems
+  - Content management and publishing tools
 
-### Integration Points
-- Social media platform APIs (Twitter, Facebook, Instagram, TikTok, etc.)
-- Brand management and reputation monitoring systems
-- Alert and notification infrastructure
-- Reporting and visualization dashboards
-- Historical data warehousing for long-term analysis
+- **Key Constraints**:
+  - Must comply with social platform API terms of service
+  - Implementation must respect rate limits and quotas
+  - System must handle unstructured and multilingual content
+  - Processing must adapt to platform API changes
+  - Analysis must be resilient to spam and bot activity
 
-### Key Constraints
-- Must respect API rate limits for each social media platform
-- Sentiment analysis must achieve at least 85% agreement with human evaluation
-- Must support at least 5 major languages with comparable accuracy
-- Processing latency must not exceed specified thresholds during viral events
-- Privacy and data handling must comply with relevant regulations
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The system must provide a framework for social media analytics that:
 
-The framework must provide:
+1. Ingests social media content from multiple platforms via APIs and data streams
+2. Processes unstructured text with natural language processing:
+   - Language detection and normalization
+   - Tokenization and part-of-speech tagging
+   - Entity extraction and classification
+   - Sentiment analysis and classification
+3. Identifies emerging trends through algorithmic analysis:
+   - Volume and velocity measurement
+   - Acceleration detection
+   - Reach and amplification tracking
+4. Enriches data with additional context from platform APIs
+5. Constructs entity relationship networks from mentions and interactions
+6. Detects unusual engagement patterns compared to baselines
+7. Generates alerts for significant sentiment shifts or trend emergence
+8. Manages API rate limits and quotas across platforms
+9. Provides extensible interfaces for custom analytical components
 
-1. **NLP and Sentiment Analysis System**
-   - Text preprocessing and normalization
-   - Sentiment analysis with context awareness
-   - Emotion classification beyond positive/negative/neutral
-   - Multi-language support with consistent accuracy
-   - Emoji and slang interpretation
-
-2. **Trend Detection Framework**
-   - Real-time topic extraction and clustering
-   - Significance scoring based on configurable parameters
-   - Baseline establishment and deviation detection
-   - Trend lifecycle tracking and evolution
-   - Cross-platform trend correlation
-
-3. **Platform Integration Engine**
-   - API integration for major social platforms
-   - Intelligent rate limit management
-   - Request optimization and batching
-   - Quota distribution and priority management
-   - Adaptive scheduling during API disruptions
-
-4. **Entity Analysis System**
-   - Named entity recognition optimized for social content
-   - Relationship extraction and graph construction
-   - Entity disambiguation and resolution
-   - Influence and connection strength scoring
-   - Temporal relationship evolution tracking
-
-5. **Engagement Monitoring Framework**
-   - Real-time engagement metrics collection
-   - Baseline modeling with seasonal adjustments
-   - Anomaly detection for unusual activity patterns
-   - Alert threshold management and notification
-   - Engagement context analysis and categorization
+The implementation should emphasize accuracy of text analysis, scalability for high-volume social media streams, and adaptability to evolving social platforms and content types.
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Accuracy of sentiment analysis across content types
+  - Effectiveness of trend detection algorithms
+  - Proper handling of platform API rate limits
+  - Precision of entity recognition and relationship mapping
+  - Reliability of engagement spike detection
 
-### Key Functionalities to Verify
-- Sentiment analysis accuracy across different content types
-- Trend detection sensitivity and specificity
-- API rate limit compliance and request optimization
-- Entity recognition and relationship mapping correctness
-- Engagement spike detection accuracy and alert timeliness
+- **Critical User Scenarios**:
+  - Detection of emerging negative sentiment around a brand
+  - Identification of rapidly growing conversations relevant to monitored topics
+  - Mapping of entity relationships in complex, multi-platform discussions
+  - Recognition of unusual engagement patterns indicating viral content
+  - Enrichment of posts with additional context while respecting API limits
 
-### Critical User Scenarios
-- Brand reputation monitoring during product launch
-- Crisis management during negative viral events
-- Competitive intelligence gathering across platforms
-- Campaign performance tracking and optimization
-- Influencer identification and relationship mapping
+- **Performance Benchmarks**:
+  - Processing throughput of 50,000+ posts per minute
+  - Sentiment analysis accuracy of at least 80% against human-labeled test data
+  - Trend detection sensitivity capturing 90% of human-identified trends
+  - Entity recognition precision and recall above 85%
+  - Alert generation within 5 minutes of significant pattern changes
 
-### Performance Benchmarks
-- Sentiment analysis accuracy of 85%+ compared to human evaluation
-- True positive rate of 90%+ for significant trend detection
-- False positive rate below 5% for engagement spike alerts
-- Processing throughput of 100,000+ posts per minute
-- API quota utilization efficiency of 95%+ across platforms
+- **Edge Cases and Error Conditions**:
+  - Handling of platform API outages or rate limit rejections
+  - Processing of mixed-language and code-switched content
+  - Analysis of sarcasm, irony, and ambiguous sentiment
+  - Behavior during sudden viral events with 100x normal volume
+  - Response to platform-specific format and API changes
 
-### Edge Cases and Error Conditions
-- Handling of API rate limit exhaustion
-- Processing during viral event traffic spikes
-- Recovery from platform API outages
-- Adaptation to social platform algorithm changes
-- Response to novel content types or emerging slang
+- **Required Test Coverage Metrics**:
+  - 100% coverage of NLP pipeline components
+  - >90% line coverage for all production code
+  - 100% coverage of API integration error handling
+  - Comprehensive tests with multi-language content
+  - Performance tests at anticipated peak loads
 
-### Test Coverage Metrics
-- 100% coverage of text processing components
-- Comprehensive testing across all supported languages
-- Performance testing across projected peak volumes
-- Accuracy testing against diverse content samples
-- Extended stability testing under variable load conditions
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. The NLP pipeline accurately extracts sentiment from social media content across multiple languages and platforms
-2. Trend detection algorithms identify meaningful emerging topics with minimal false positives
-3. Platform integration efficiently collects data while respecting API rate limits and optimizing quota usage
-4. Entity recognition and relationship mapping correctly identify and connect relevant entities across posts
-5. Engagement spike detection promptly alerts to unusual activity patterns requiring attention
-6. The system scales to handle viral events without exceeding latency thresholds
-7. Analysis results provide actionable insights for brand management and crisis response
+A successful implementation will demonstrate:
 
-_Note: To set up the development environment, use `uv venv` to create a virtual environment within the project directory. Activate it using `source .venv/bin/activate`._
+1. Accurate extraction of sentiment from diverse social media content
+2. Effective identification of emerging trends and conversations
+3. Intelligent enrichment of data while respecting platform API constraints
+4. Precise recognition of entities and their relationships across posts
+5. Reliable detection of unusual engagement patterns and spikes
+6. Scalability to handle high-volume social media monitoring
+7. Comprehensive test coverage with all tests passing
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+To setup the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

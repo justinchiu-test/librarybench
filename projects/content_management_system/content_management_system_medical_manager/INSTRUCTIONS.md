@@ -1,150 +1,173 @@
-# Healthcare Content Management System
+# Healthcare Practice Content Management System
 
 ## Overview
-A specialized content management system for medical practices that enables provider directory management, HIPAA-compliant form processing, accessibility compliance, multilingual content support, and structured health information publishing. This system focuses on maintaining accurate medical information while ensuring regulatory compliance and accessibility.
+A specialized content management system designed for medical practices to communicate services, provider information, and health resources to patients. This system enables practice managers to maintain accurate provider information and office policies while ensuring all content meets healthcare compliance standards and accessibility requirements.
 
 ## Persona Description
 David manages a family medical practice website that needs to communicate services, provider information, and health resources to patients. His primary goal is to maintain accurate provider information and office policies while ensuring all content meets healthcare compliance standards and accessibility requirements.
 
 ## Key Requirements
 
-1. **Provider Directory with Credential Verification Display**
-   - Implement a medical personnel directory with credential management and verification status
-   - Critical for David because it builds patient trust by transparently displaying verified professional qualifications of each provider while simplifying the process of keeping this information accurate and up-to-date
+1. **Provider directory with credential verification display**
+   - Critical for David to maintain up-to-date information about doctors, nurse practitioners, and other providers
+   - Must showcase credentials, specializations, and board certifications with verification dates
+   - Should support scheduling information and provider availability updates
 
-2. **Secure Forms for Patient Information with HIPAA Compliance**
-   - Create a secure form management system with healthcare regulatory compliance
-   - Essential for collecting necessary patient information through the website while ensuring all data handling meets strict healthcare privacy regulations and security requirements
+2. **Secure forms for patient information requests with HIPAA compliance**
+   - Essential for allowing patients to communicate with the practice while maintaining privacy
+   - Must implement security measures compliant with healthcare regulations
+   - Should include consent tracking and secure data handling throughout the process
 
-3. **Accessibility Checker Ensuring WCAG Standards**
-   - Develop an accessibility verification system for web content
-   - Important for ensuring all published content is accessible to patients with disabilities, meeting legal requirements while providing equal access to healthcare information for all potential patients
+3. **Accessibility checker ensuring content meets WCAG standards**
+   - Important for ensuring all patients, including those with disabilities, can access information
+   - Must validate content against Web Content Accessibility Guidelines (WCAG) standards
+   - Should provide remediation suggestions for identified accessibility issues
 
-4. **Multilingual Content Management for Diverse Patients**
-   - Implement a translation and localization management system
-   - Necessary for serving the practice's diverse patient population, ensuring critical healthcare information is available in multiple languages to reduce barriers to care
+4. **Multilingual content management for diverse patient populations**
+   - Necessary for serving diverse community with varying language needs
+   - Must maintain consistency between language versions while allowing for cultural adaptations
+   - Should include workflow for professional translation and verification
 
-5. **Structured Health Information Templates with Citation Support**
-   - Create specialized content structures for medical information with reference management
-   - Crucial for publishing accurate, evidence-based health information that patients can trust, with proper attribution to medical authorities and research
+5. **Structured health information templates with medical citation support**
+   - Valuable for providing evidence-based health resources to patients
+   - Must organize health topics according to medical taxonomies
+   - Should support proper citation of medical literature and authoritative sources
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Provider information management must be testable with credential verification scenarios
-- Form security must be verifiable against HIPAA compliance requirements
-- Accessibility checking must validate against WCAG success criteria
-- Multilingual content must be testable for consistency across translations
-- Health information templates must verify proper citation formatting
+- All components must have unit tests with at least 95% code coverage
+- Integration tests must verify HIPAA compliance features function correctly
+- Security tests must validate protection of sensitive information
+- Automated accessibility validation must be thoroughly tested
 
 ### Performance Expectations
-- Provider directory searches should return results in < 200ms
-- Form submissions should be securely processed within 3 seconds
-- Accessibility checks should complete within 10 seconds for complex content
-- Translation management should support at least 5 languages without performance degradation
-- Health information retrieval should be optimized for mobile devices (low bandwidth)
+- Provider directory searches must complete within 300ms
+- Form submissions must be processed within 5 seconds including encryption
+- Accessibility checks must complete within 10 seconds per page
+- Content must be delivered in the correct language within 200ms of language selection
 
 ### Integration Points
-- Credential verification services for provider information
-- Secure storage for protected health information
-- Accessibility validation tools and standards
-- Translation services or management systems
-- Medical citation and reference databases
+- Electronic Health Record (EHR) system for provider information
+- Secure messaging gateway for form submissions
+- Professional translation services
+- Medical terminology and citation databases
 
 ### Key Constraints
-- No UI components, only API endpoints and business logic
-- Strict adherence to healthcare privacy regulations
-- Comprehensive accessibility compliance
-- Support for multiple languages in all content types
-- Evidence-based approach to health information
+- All patient data must be handled according to HIPAA requirements
+- Content must meet WCAG 2.1 AA accessibility standards
+- Medical information must be verified for accuracy and include appropriate disclaimers
+- System must maintain audit logs for compliance verification
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Healthcare CMS includes:
+The system must provide a Python library with the following core components:
 
-1. **Medical Provider Management**
-   - Provider profile creation and maintenance
-   - Credential verification and display
-   - Specialization and service association
-   - Scheduling information and availability
+1. **Provider Management**
+   - Provider profile data model with credentials and specialties
+   - Verification and expiration date tracking
+   - Availability and scheduling information
+   - Specialty and service categorization
 
-2. **Secure Form Processing**
-   - HIPAA-compliant form definition
-   - Secure data handling and storage
+2. **Secure Communication**
+   - Form definition and processing
+   - Data encryption and secure storage
    - Consent management and tracking
-   - Encrypted submission processing
+   - Audit logging and compliance reporting
 
-3. **Accessibility Management**
-   - Content structure for accessibility
-   - Automated WCAG compliance checking
-   - Alternative format generation (text-to-speech, high contrast)
-   - Accessibility report generation
+3. **Accessibility Validation**
+   - WCAG rule implementation and checking
+   - Content structure analysis
+   - Remediation suggestion engine
+   - Accessibility compliance reporting
 
-4. **Language and Localization**
+4. **Multilingual Support**
    - Content translation workflow
-   - Language-specific formatting and standards
-   - Translation consistency verification
-   - Language preference management
+   - Language variant management
+   - Cultural adaptation tracking
+   - Language detection and selection
 
-5. **Medical Content Management**
-   - Structured health information templates
-   - Medical citation and reference management
-   - Health content versioning and review
+5. **Health Information Management**
+   - Medical content templates and schemas
+   - Citation and reference management
+   - Medical terminology validation
    - Patient education resource organization
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Provider directory management and credential display
-- Secure form creation, submission, and processing
-- Content accessibility checking against WCAG standards
-- Multilingual content management across supported languages
-- Health information creation with proper citation structure
+- Provider information is accurately stored and displayed with credential verification
+- Patient forms securely collect and transmit information in compliance with HIPAA
+- Content is properly validated against accessibility guidelines
+- Multilingual content is correctly managed and served
+- Health information includes proper citations and follows structured templates
 
 ### Critical User Scenarios
-- Adding a new provider with complete credentials and verification
-- Creating a secure patient intake form with HIPAA compliance
-- Checking and remedying accessibility issues in content
-- Publishing content in multiple languages with consistency
-- Creating evidence-based health information with proper citations
+- Updating provider credentials and specialties
+- Processing a secure patient information request
+- Validating content for accessibility compliance
+- Managing multilingual versions of critical health information
+- Creating structured health resources with proper citations
 
 ### Performance Benchmarks
-- Directory search response time with filtering options
-- Form processing time with encryption overhead
-- Accessibility check throughput for site-wide content
-- Translation management performance across language count
-- Health information retrieval optimization for mobile devices
+- System must support a practice with at least 50 providers
+- Form system must handle at least 500 submissions per day
+- Accessibility validation must process the entire site content within 1 hour
+- Multilingual system must support at least 5 language variants
 
 ### Edge Cases and Error Conditions
-- Handling incomplete or pending credential verification
-- Managing form submission failures with PHI security
-- Addressing complex accessibility challenges in specialized content
-- Handling untranslatable medical terminology
-- Managing citation conflicts or retractions in health information
+- Handling provider credential expirations and renewals
+- Managing incomplete form submissions
+- Addressing critical accessibility failures
+- Dealing with missing translations for time-sensitive content
+- Handling conflicting medical information sources
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of PHI handling code paths
-- All accessibility checking rules must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for HIPAA compliance vulnerabilities
+- Minimum 95% code coverage across all modules
+- 100% coverage of HIPAA compliance features
+- 100% coverage of accessibility validation rules
+- 100% coverage of multilingual content management
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Provider information can be managed with credential verification display
-2. Patient forms can be created and processed with HIPAA compliance
-3. Content can be validated against WCAG accessibility standards
-4. Website information can be managed in multiple languages consistently
-5. Health information can be published with proper citations and evidence
-6. All operations can be performed via API without any UI components
-7. The system meets all healthcare regulatory requirements
-8. Accessibility compliance is achieved for all content types
-9. All tests pass, demonstrating the functionality works as expected
+1. The provider directory correctly manages and displays healthcare provider information
+2. The secure forms system safely handles patient information requests
+3. The accessibility validation effectively identifies WCAG compliance issues
+4. The multilingual system correctly manages content in multiple languages
+5. The health information system properly structures and cites medical content
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

@@ -1,138 +1,163 @@
-# LegalMind: Knowledge Management System for Legal Professionals
+# LegalMind - A Knowledge Management System for Legal Professionals
 
 ## Overview
-LegalMind is a specialized personal knowledge management system designed for legal professionals who need to track case information, legal precedents, and regulatory changes while creating structured connections between legal arguments, evidence, and previous rulings.
+LegalMind is a specialized knowledge management system designed for attorneys and legal professionals who need to organize case information, track precedents, and monitor regulatory changes. The system enables users to connect specific legal arguments to supporting evidence and previous rulings while tracking evolving legislation, ensuring comprehensive legal knowledge management within a secure environment.
 
 ## Persona Description
 Robert is an attorney specializing in environmental law, managing case information, precedents, and regulatory changes. He needs to connect specific legal arguments to supporting evidence and previous rulings while tracking evolving legislation.
 
 ## Key Requirements
-1. **Case law citation linking**: Create bidirectional connections between legal arguments and specific precedents from court decisions, enabling direct navigation between legal reasoning and supporting case law. This feature is essential for building well-supported legal arguments, ensuring all claims are properly grounded in precedent, and quickly retrieving relevant prior rulings when preparing briefs or court presentations.
+1. **Case law citation linking** - Develop a sophisticated system for connecting legal arguments to specific precedents and authorities. This capability is essential for Robert to build solid legal arguments grounded in existing case law, track how specific precedents have been applied across his practice, and quickly identify relevant authorities for new legal challenges. The system must maintain proper citation formatting while enabling contextual understanding of how precedents apply to specific arguments.
 
-2. **Matter organization**: Establish a system that separates client matters for confidentiality while enabling cross-matter knowledge and pattern recognition. This capability is crucial for maintaining ethical information barriers between clients while still leveraging insights and approaches from previous similar cases, improving legal service efficiency without compromising confidentiality.
+2. **Matter organization** - Create a framework for separating information by client or matter while enabling cross-matter knowledge sharing. This feature is critical for Robert to maintain client confidentiality and ethical compliance while leveraging insights gained from similar cases, identify patterns across his environmental law practice, and efficiently organize the substantial documentation associated with each legal matter.
 
-3. **Statutory tracking**: Monitor legislation with complete amendment history and effective dates, ensuring legal advice reflects current law. This feature is particularly critical in environmental law where regulations change frequently, allowing Robert to provide advice based on the correct version of a statute applicable to specific situations or time periods.
+3. **Statutory tracking** - Implement capabilities for monitoring legislation with amendment history and effective dates. This functionality allows Robert to stay current with evolving environmental regulations, understand how specific statutes have changed over time, ensure compliance advice reflects current law, and anticipate the impact of pending legislative changes on client matters. The system must maintain temporal awareness of when specific provisions were in effect.
 
-4. **Legal argument templating**: Create reusable frameworks based on successful previous approaches in similar cases or regulatory contexts. This helps maintain consistency in legal reasoning across similar matters, reduces duplication of effort, and ensures that effective argument structures can be systematically applied to new situations.
+4. **Legal argument templating** - Develop a system for creating, storing, and applying argument templates based on successful previous approaches. This tool helps Robert improve efficiency by adapting proven argument structures to new cases, maintain consistency in legal reasoning across similar matters, and leverage institutional knowledge when constructing new arguments. Templates must be adaptable to different fact patterns while maintaining logical structure.
 
-5. **Client-safe export**: Generate knowledge exports that omit confidential information, enabling sharing of insights without breaching client confidentiality. This feature allows Robert to share legal approaches and analysis with colleagues, publications, or other clients while automatically filtering out privileged or confidential details that cannot be disclosed.
+5. **Client-safe export** - Create mechanisms for generating knowledge shares without confidential information. This capability enables Robert to share relevant legal knowledge with clients, colleagues, or the public while protecting privileged information, create educational materials derived from actual case experience, and repurpose comprehensive legal research for appropriate external use. The system must reliably identify and filter confidential content during export.
 
 ## Technical Requirements
-- **Testability requirements**:
-  - All citation linking functions must be independently testable
-  - Matter separation must be verifiable through data isolation tests
-  - Statutory version tracking must be testable with historical changes
-  - Argument template application must be validated for different case types
-  - Export filtering must be provably complete for confidentiality protection
+- **Testability Requirements**:
+  - All functionality must be implemented in discrete, testable modules
+  - Citation linking must be verified against standard legal citation formats
+  - Matter isolation must be testable for information segregation compliance
+  - Statutory tracking must be verifiable against official amendment histories
+  - Confidentiality filtering must be exhaustively tested with various content types
 
-- **Performance expectations**:
-  - System must efficiently handle 10,000+ legal citations and precedents
-  - Full-text search across all legal materials should return results in under 3 seconds
-  - Citation validation should process at least 100 references per minute
-  - Matter isolation must maintain performance even with extensive cross-referencing
-  - Statutory update checks should complete in under 5 seconds for relevant code sections
+- **Performance Expectations**:
+  - System must efficiently handle practice databases with 50,000+ documents
+  - Citation operations must complete in under 500ms for typical legal briefs
+  - Full-text search must return results in under 1 second across the knowledge base
+  - Statutory comparison operations must process complex legislation in under 3 seconds
+  - Matter isolation must not impact performance regardless of knowledge base size
 
-- **Integration points**:
-  - Legal citation format standards (Bluebook, etc.)
-  - Plain text and Markdown file support
-  - Structured data export for brief preparation
-  - Version tracking for evolving documents
-  - Confidentiality filtering system
+- **Integration Points**:
+  - Support for standard legal citation formats (Bluebook, etc.)
+  - Import capabilities for common legal document formats (PDF, DOCX, etc.)
+  - Compatibility with legal research services data formats
+  - Export functionality for briefs, memoranda, and client communications
+  - Integration with statutory databases for amendment tracking
 
-- **Key constraints**:
-  - All data must be stored locally in accessible, plain-text formats
-  - No dependency on external web services for core functionality
-  - Must maintain strict isolation between client matters when required
-  - Must prevent confidential information leakage in exports
-  - Must support offline operation for court appearances
+- **Key Constraints**:
+  - All data must be stored locally to maintain client confidentiality
+  - System must enforce strict matter isolation for ethical compliance
+  - No user interface components - all functionality exposed through APIs
+  - Implementation must support robust audit trails for ethical compliance
+  - System must accommodate jurisdiction-specific legal formatting requirements
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must implement a comprehensive knowledge management foundation with specialized features for legal practice:
+LegalMind needs to implement these core capabilities:
 
-1. **Legal Citation Management**:
-   - Parse and validate legal citations according to standard formats
-   - Link legal arguments to specific supporting precedents and statutes
-   - Track the strength and relevance of cited precedents
-   - Monitor when cited precedents are distinguished, questioned, or overruled
+1. **Legal Citation System**: A comprehensive framework for managing legal authorities with:
+   - Support for multiple citation formats (Bluebook, APA, etc.)
+   - Context-aware linking between arguments and supporting authorities
+   - Precedent relationship mapping (following, distinguishing, overruling)
+   - Citation validation and formatting standardization
+   - Historical treatment tracking for cited authorities
 
-2. **Client Matter Organization**:
-   - Create strict information boundaries between client matters
-   - Enable controlled cross-matter knowledge sharing with appropriate filters
-   - Organize legal knowledge by practice area, jurisdiction, and legal issues
-   - Provide matter-specific workspaces with appropriate access controls
+2. **Matter Management Framework**: A secure system for organizing legal information:
+   - Matter isolation with configurable information boundaries
+   - Cross-matter knowledge sharing with confidentiality controls
+   - Document classification by matter, type, and purpose
+   - Client and matter metadata management
+   - Ethical wall enforcement for conflict situations
 
-3. **Regulatory and Statutory Tracking**:
-   - Monitor legislative changes affecting relevant legal domains
-   - Maintain version history of statutes with effective dates
-   - Link legal analysis to specific statutory versions
-   - Flag when legal reasoning relies on superseded legislation
+3. **Legislative Tracking Engine**: A system for managing statutory information:
+   - Version control for legislative provisions over time
+   - Amendment history tracking with effective dates
+   - Comparison tools for identifying changes between amendments
+   - Jurisdiction-specific statutory organization
+   - Alert mechanisms for relevant legislative changes
 
-4. **Legal Argument Development**:
-   - Create structured templates for recurring legal arguments
-   - Link argument elements to supporting evidence and precedents
-   - Evaluate argument strength based on precedent authority
-   - Adapt successful argument approaches to new cases
+4. **Argument Construction System**: A framework for building legal arguments:
+   - Template definition with customizable components
+   - Precedent linking within argument structures
+   - Adaptation tools for applying templates to new fact patterns
+   - Success rating and outcome tracking for argument approaches
+   - Logical structure validation for argument coherence
 
-5. **Confidentiality-Aware Knowledge Sharing**:
-   - Define confidentiality levels for different knowledge elements
-   - Generate filtered exports based on confidentiality requirements
-   - Sanitize client-specific details while preserving legal insights
-   - Maintain audit trails of knowledge sharing
+5. **Confidentiality Management**: A robust system for information protection:
+   - Content classification by confidentiality level
+   - Automated identification of potentially confidential information
+   - Redaction and anonymization capabilities
+   - Export filtering based on recipient clearance
+   - Audit logging for confidential information handling
 
 ## Testing Requirements
-The implementation must be thoroughly testable with comprehensive pytest coverage:
+The implementation must include comprehensive tests that verify all aspects of the system:
 
-- **Key functionalities that must be verified**:
-  - Citation linking correctly connects arguments to appropriate precedents
-  - Matter boundaries properly contain confidential information
-  - Statutory tracking accurately represents legal changes over time
-  - Argument templates correctly apply to new case scenarios
-  - Export filtering completely removes confidential information
+- **Key Functionalities to Verify**:
+  - Case law citation linking correctly formats and manages legal authorities
+  - Matter organization properly isolates client information while enabling appropriate knowledge sharing
+  - Statutory tracking accurately records amendment histories and effective dates
+  - Legal argument templating successfully adapts previous approaches to new cases
+  - Client-safe export reliably filters confidential information
 
-- **Critical user scenarios that should be tested**:
-  - Building a legal brief with proper citation support
-  - Managing multiple matters with selective information sharing
-  - Tracking regulatory changes and their impact on ongoing matters
-  - Applying successful argument patterns to new cases
-  - Sharing sanitized legal knowledge with colleagues
+- **Critical User Scenarios**:
+  - Creating a legal brief with citations to relevant authorities
+  - Managing information across multiple related environmental law matters
+  - Tracking regulatory changes affecting client compliance obligations
+  - Adapting a successful argument template to a new case with different facts
+  - Generating client-ready educational materials from comprehensive legal research
 
-- **Performance benchmarks that must be met**:
-  - Sub-second response time for most knowledge retrieval operations
-  - Efficient handling of 10,000+ legal citations and precedents
-  - Responsive search across multiple matters with appropriate filtering
-  - Memory-efficient operation suitable for standard laptop environments
+- **Performance Benchmarks**:
+  - Citation linking must process documents with 100+ citations in under 3 seconds
+  - Matter switching must occur in under 1 second regardless of knowledge base size
+  - Statutory comparison must handle complex legislation (100+ pages) in under 5 seconds
+  - Template application must complete in under 2 seconds for typical arguments
+  - Export filtering must process documents at a rate of at least 1MB per second
 
-- **Edge cases and error conditions that must be handled properly**:
-  - Conflicting precedents in different jurisdictions
-  - Incomplete or ambiguous citation information
-  - Complex legislative histories with multiple amendments
-  - Confidentiality conflicts in cross-matter knowledge sharing
-  - Statutory retroactivity and grandfathering provisions
+- **Edge Cases and Error Conditions**:
+  - Handling ambiguous or non-standard citations
+  - Managing matters with complex confidentiality requirements
+  - Tracking legislation with retroactive amendments
+  - Adapting templates to unusual fact patterns
+  - Identifying confidential information in unstructured text
 
-- **Required test coverage metrics**:
-  - Minimum 90% code coverage across all core modules
-  - 100% coverage of confidentiality filtering functionality
-  - All public APIs must have comprehensive integration tests
-  - All error handling paths must be explicitly tested
+- **Required Test Coverage Metrics**:
+  - Minimum 90% line coverage for all core modules
+  - 100% coverage for confidentiality filtering functionality
+  - 100% coverage for citation formatting
+  - 95% branch coverage for statutory tracking functions
+  - 95% coverage for matter isolation boundaries
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when it demonstrably:
+The implementation will be considered successful if it meets the following criteria:
 
-1. Enables precise linking between legal arguments and supporting precedents with proper citation formatting
-2. Maintains strict confidentiality boundaries between matters while facilitating appropriate knowledge reuse
-3. Accurately tracks legislative changes with proper version history and effective dates
-4. Provides reusable argument templates that can be effectively applied to new legal situations
-5. Generates knowledge exports with complete and reliable filtering of confidential information
-6. Performs efficiently with large collections containing thousands of legal documents and citations
-7. Preserves all data in accessible formats that ensure long-term availability
-8. Passes all specified tests with the required code coverage metrics
+1. Legal professionals can link arguments to supporting authorities with proper citation formatting
+2. Client matters can be properly isolated while enabling appropriate cross-matter knowledge sharing
+3. Legislation can be tracked with complete amendment history and effective dates
+4. Successful legal arguments can be templated and adapted to new cases
+5. Knowledge can be exported with reliable filtering of confidential information
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
 To set up the development environment:
-```bash
-# Create and activate a virtual environment
-uv venv
-source .venv/bin/activate
+1. Use `uv venv` to create a virtual environment
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
 
-# Install required dependencies
-uv pip install -e .
+CRITICAL REMINDER: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

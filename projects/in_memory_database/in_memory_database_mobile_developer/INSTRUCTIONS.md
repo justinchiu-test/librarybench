@@ -1,159 +1,186 @@
-# SyncDB: In-Memory Database for Mobile App Synchronization
+# SyncDB: In-Memory Database with Mobile Synchronization
 
 ## Overview
-A specialized in-memory database designed for efficient client-server synchronization in mobile applications with intermittent connectivity, focusing on minimizing data transfer size while ensuring data consistency between server and client-side storage.
+A specialized in-memory database designed for mobile application backends that efficiently manages data synchronization between server and client applications with intermittent connectivity. The system optimizes for minimal data transfer, handles conflict resolution, and supports evolving application requirements through schema migration.
 
 ## Persona Description
 Miguel builds backend services for mobile applications with intermittent connectivity. He needs a database solution that can efficiently synchronize data between server and client-side storage while minimizing transfer size.
 
 ## Key Requirements
 
-1. **Differential sync protocol sending only changed records**
-   - Essential for mobile applications where bandwidth and data usage are constrained
-   - Must track changes since the last synchronization point for each client
-   - Should support bidirectional synchronization with the client sending local changes to the server
-   - Must handle various network conditions and partial sync failures gracefully
-   - Change tracking must have minimal performance impact on normal database operations
+1. **Differential Sync Protocol**
+   - Implementation of an efficient sync protocol that identifies and transfers only changed records since last synchronization
+   - Support for record-level change tracking with timestamps or version vectors
+   - Batched sync operations to minimize connection overhead
+   - This feature is critical for Miguel's applications as mobile devices often have limited bandwidth and intermittent connectivity, making full data transfers impractical and expensive
 
-2. **Conflict resolution strategies for concurrent modifications**
-   - Critical when multiple clients modify the same data while offline
-   - Must implement configurable strategies (last-write-wins, custom merge functions, etc.)
-   - Should preserve all conflicting versions for potential manual resolution when needed
-   - Must provide detailed metadata about conflicts (timestamps, originating devices, etc.)
-   - Should include built-in strategies for common data types (lists, counters, text)
+2. **Conflict Resolution Strategies**
+   - Customizable conflict resolution mechanisms for handling concurrent client-side modifications
+   - Support for multiple resolution strategies (last-write-wins, custom merge functions, etc.)
+   - Detailed conflict metadata tracking for auditability and debugging
+   - Mobile applications often operate offline with local data changes that must be reconciled with server state when connectivity is restored, making conflict resolution essential for data integrity
 
-3. **Payload compression specialized for different data types**
-   - Vital for reducing data transfer sizes in mobile environments
-   - Must apply optimal compression algorithms based on content type (text, numeric, binary)
-   - Should support incremental/delta compression for large text or documents
-   - Must include compression ratio metrics and automatic algorithm selection
-   - Compression/decompression must be efficient to minimize battery impact on mobile devices
+3. **Type-Aware Payload Compression**
+   - Customized compression algorithms for different data types (text, numeric, binary)
+   - Configurable compression settings balancing CPU usage versus transfer size
+   - Format-preserving compression that maintains data queryability
+   - Minimizing data transfer sizes directly impacts application responsiveness, data usage costs, and battery life for Miguel's mobile application users
 
-4. **Automatic schema migration support**
-   - Mobile apps frequently update their data models with each app version
-   - Must support versioned schema definitions with backward compatibility
-   - Should automatically apply migrations during synchronization as needed
-   - Must handle clients on different schema versions simultaneously
-   - Should include utilities for defining and testing migrations
+4. **Automatic Schema Migration**
+   - Support for versioned schema changes that can be seamlessly propagated to clients
+   - Backward compatibility mechanisms for supporting older client versions
+   - Migration scripts that preserve existing data while adapting to new schemas
+   - Mobile applications evolve over time with feature updates, requiring the database to handle schema changes without disrupting existing users or requiring reinstallation
 
-5. **Battery-aware operation modes**
-   - Mobile devices prioritize battery life over performance in many scenarios
-   - Must implement configurable operation modes with different power/performance tradeoffs
-   - Should detect device power status and adjust behavior accordingly
-   - Must batch operations to minimize radio activation on mobile devices
-   - Should include metrics for power impact of different operation modes
+5. **Battery-Aware Operation Modes**
+   - Configurable performance profiles that adapt based on device power status
+   - Deferred operations when operating on battery power
+   - Batch processing options to minimize CPU and network wake cycles
+   - Efficient resource usage is critical for mobile applications as excessive battery drain leads to poor user experience and app uninstallation
 
 ## Technical Requirements
 
 ### Testability Requirements
-- All components must be thoroughly testable with pytest without requiring actual mobile devices
-- Tests must verify sync behavior under various network conditions (poor connectivity, intermittent failures)
-- Conflict resolution tests must validate correct behavior with complex concurrent modifications
-- Schema migration tests must confirm backward and forward compatibility
-- Performance and battery impact tests should validate efficiency claims with metrics
+- Tests must validate correct synchronization under various network conditions
+- Conflict resolution tests must cover all supported resolution strategies
+- Schema migration tests must verify data integrity during version transitions
+- Performance tests must measure data transfer sizes and compression efficiency
 
 ### Performance Expectations
-- Sync operations must complete in under 1 second for typical data changes (<=100 records)
-- Compression should achieve at least 50% size reduction for text data
-- Schema migrations must complete in under 500ms for typical schema changes
-- Conflict detection and resolution must add no more than 10% overhead to normal operations
-- Battery-saving mode should reduce power requirements by at least 30% compared to standard mode
+- Sync operations should transfer less than 10% of full dataset size for typical incremental changes
+- Compression should reduce payload size by at least 50% compared to JSON for typical mobile data
+- Schema migrations should complete in under 5 seconds for databases up to 100MB
+- Operations in battery-saving mode should use no more than 50% of the resources of standard mode
 
 ### Integration Points
-- Must provide a Python client library for mobile app developers to integrate with
-- Should support common SQLite operations for easy integration with mobile platforms
-- Must offer webhooks or notification mechanisms for push-based synchronization
-- Should provide adapters for common API frameworks (Flask, FastAPI) for server-side integration
-- Must include serialization formats compatible with major mobile platforms
+- Clean API for mobile developers to integrate with iOS, Android, and cross-platform frameworks
+- Support for standard data interchange formats (JSON, Protocol Buffers, etc.)
+- Hooks for custom serialization and deserialization of complex objects
+- Integration with standard authentication mechanisms for secure synchronization
 
 ### Key Constraints
-- No UI components - purely APIs and libraries for integration
-- Must function without external database dependencies - self-contained Python library
-- All operations must be designed for minimal battery impact on mobile devices
-- Must support operation in offline mode with full functionality
+- The implementation must use only Python standard library with no external dependencies
+- All functionality must be testable without requiring actual mobile devices
+- The solution must operate in memory with optional persistence for server-side storage
+- The system must be resilient to unreliable network connections
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The implementation must provide:
+The system must provide the following core functionality:
 
-1. **Data Storage Layer**
-   - Efficient in-memory relational storage with schema validation
-   - Change tracking mechanism recording modifications since last sync
-   - Transaction support ensuring data consistency during sync operations
-   - Versioned storage for schema migrations and conflict resolution
+1. **In-Memory Database Engine**
+   - Implementation of an efficient in-memory data store with table definitions
+   - Support for standard CRUD operations with transactional integrity
+   - Query capabilities for flexible data access patterns
 
-2. **Synchronization Engine**
-   - Differential sync protocol identifying and transmitting only changed records
-   - Bidirectional sync supporting both pull and push operations
-   - Conflict detection comparing server and client modification timestamps
-   - Resumable sync operations that can continue after network interruptions
+2. **Change Tracking System**
+   - Mechanism to track and version individual record changes
+   - Efficient storage of change history for synchronization
+   - Pruning strategies to limit change history size
 
-3. **Compression System**
-   - Type-specific compression algorithms optimized for different data types
-   - Compression ratio monitoring and algorithm selection
-   - Delta compression for efficiently synchronizing large text changes
-   - Configurable compression levels based on network conditions and battery status
+3. **Sync Protocol Implementation**
+   - Algorithms to calculate and transmit data differences
+   - Mechanisms for handling partial and interrupted syncs
+   - State reconciliation logic between server and clients
 
-4. **Schema Management**
-   - Versioned schema definitions supporting evolution over time
-   - Migration path definitions for transforming data between schema versions
-   - Compatibility checking between client and server schema versions
-   - Runtime schema application ensuring clients can always sync regardless of version
+4. **Conflict Management Framework**
+   - Detection of conflicting changes between clients
+   - Implementation of various resolution strategies
+   - Audit trail for conflict resolution decisions
 
-5. **Operational Modes**
-   - Standard mode optimized for performance and consistency
-   - Battery-saving mode reducing power requirements at cost of performance
-   - Offline mode for local operations without connectivity
-   - Emergency mode prioritizing critical operations during extreme resource constraints
+5. **Schema Version Management**
+   - Schema versioning and compatibility checking
+   - Data migration utilities for schema evolution
+   - Backward compatibility layers for supporting multiple client versions
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Correct synchronization of changes between client and server instances
-- Proper conflict detection and resolution according to configured strategies
-- Effectiveness of compression for different data types and content
-- Successful schema migration across multiple versions
-- Appropriate behavior adaptation based on battery status
+- Correct synchronization of data changes between server and simulated clients
+- Proper resolution of conflicts based on configured strategies
+- Efficient compression of different data types
+- Successful schema migration with data preservation
+- Correct operation in different power-saving modes
 
 ### Critical User Scenarios
-- First-time sync of a new client with complete data download
-- Incremental sync after small local and remote changes
-- Recovery from interrupted sync operations
-- Conflict resolution when multiple clients modify the same data
-- App upgrade with schema changes requiring migration
+- Initial sync of a large dataset to a new client
+- Incremental sync after small changes on both server and client
+- Handling of concurrent modifications causing conflicts
+- Sync after client has been offline for extended periods
+- Schema evolution with active clients on multiple versions
 
 ### Performance Benchmarks
-- Measure data transfer size reduction compared to full synchronization
-- Time to complete sync operations under various network conditions
-- Compression ratios achieved for different data types
-- Schema migration performance for typical version upgrades
-- CPU and memory usage in different operational modes
+- Sync payload size must be at least 90% smaller than full data transfer for typical incremental changes
+- Compression must achieve at least 50% size reduction for common mobile data types
+- Complete sync operation must finish in under 3 seconds for datasets up to 10MB
+- Battery-saving mode must reduce CPU usage by at least 50% compared to standard mode
+- Schema migrations must preserve 100% of compatible data
 
 ### Edge Cases and Error Conditions
-- Network disconnection during synchronization
-- Extreme conflicts with many clients modifying the same data
-- Invalid data that doesn't conform to schema requirements
-- Backwards compatibility with very old client versions
-- Recovery from corrupted client-side database state
+- Behavior during interrupted synchronization
+- Handling of incompatible schema changes
+- Recovery from corrupted client or server data
+- Performance with extremely large change sets
+- Operation when storage limits are reached
 
-### Required Test Coverage
-- Minimum 90% code coverage for all components
-- 100% coverage of conflict resolution and schema migration logic
-- Comprehensive sync tests with simulated network conditions
-- Explicit tests for all error handling and recovery mechanisms
-- Performance tests validating all efficiency claims
+### Required Test Coverage Metrics
+- Minimum 90% code coverage across all modules
+- 100% coverage of sync protocol and conflict resolution code
+- All error recovery paths must be tested
+- Performance tests must cover all sync scenarios
+- Battery efficiency must be measurable in automated tests
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
-The implementation will be considered successful if it:
+The implementation will be considered successful if:
 
-1. Reduces data transfer size by at least 80% compared to full synchronization in typical usage scenarios
-2. Successfully synchronizes data between server and multiple clients with different connectivity patterns
-3. Correctly resolves conflicts according to configured strategies with no data loss
-4. Handles schema migrations automatically as part of the sync process
-5. Adapts operation to different battery conditions with measurable power savings
-6. Completes sync operations within performance targets under various network conditions
-7. Effectively compresses different data types with significant size reduction
-8. Maintains data consistency even with concurrent modifications from multiple clients
-9. Gracefully handles and recovers from network interruptions during sync
-10. Passes all test scenarios including edge cases and error conditions
+1. Data synchronization occurs with minimal transfer size compared to full data sync
+2. Conflicts are correctly identified and resolved according to configured strategies
+3. Schema migrations preserve data integrity while enabling application evolution
+4. Battery-aware modes demonstrably reduce resource usage
+5. All functionality works correctly under simulated poor network conditions
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Clone the repository and navigate to the project directory
+2. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+3. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+4. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+5. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

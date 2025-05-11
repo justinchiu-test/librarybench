@@ -1,130 +1,181 @@
-# Legacy System Code Editor Library
+# Legacy System Maintenance Text Editor
+
+A specialized text editor library designed for maintaining decades-old codebases on mainframe systems with support for obsolete languages and file formats.
 
 ## Overview
-A specialized text editor library designed for maintaining decades-old codebases on legacy systems, with particular focus on fixed-width formats, mainframe conventions, EBCDIC encoding support, batch editing capabilities, and vintage terminal emulation. This implementation addresses the unique challenges of working with obsolete languages and file formats.
+
+This project implements a text editor library specifically designed for developers working with legacy codebases on mainframe systems. It provides fixed-width format awareness, card deck simulation, EBCDIC encoding support, batch edit scripting, and vintage terminal emulation capabilities.
 
 ## Persona Description
+
 Eleanor works with decades-old codebases on mainframe systems. She needs specialized editing capabilities for obsolete languages and file formats while handling the constraints of terminal-based mainframe access.
 
 ## Key Requirements
-1. **Fixed-Width Format Handler**: Implement a specialized text management system that enforces column-oriented formatting rules for languages like COBOL, FORTRAN, and Assembly. This is critical for Eleanor to maintain proper code structure in languages where precise column positioning determines syntax validity, preventing errors that would be introduced by modern free-form editing.
 
-2. **Card Deck Simulation**: Create a visualization and editing paradigm that shows traditional 80-column boundaries and supports card-oriented operations. This helps Eleanor understand and maintain legacy code originally designed for punch card systems, preserving the mental model and constraints under which the original code was written.
+1. **Fixed-Width Format Awareness**: Implement support for column-oriented languages like COBOL where code positioning is significant. This is critical for Eleanor to maintain proper code alignment and prevent syntax errors in legacy languages where horizontal positioning affects program behavior.
 
-3. **EBCDIC Encoding Support**: Develop comprehensive handling for EBCDIC character encoding used in mainframe environments, including conversion, display, and editing capabilities. This allows Eleanor to work directly with mainframe files without corruption or character set mismatches that would introduce subtle and dangerous bugs.
+2. **Card Deck Simulation**: Create a visual reference system showing traditional 80-column boundaries that mirrors punch card constraints. This helps Eleanor understand and maintain the historical formatting limitations that shaped legacy codebases, ensuring compatibility with systems that still enforce these boundaries.
 
-4. **Batch Edit Scripting System**: Build a powerful scripting system for applying consistent changes across large legacy codebases with pattern matching and transformation rules. This addresses Eleanor's need to make systematic changes across thousands of files while respecting the rigid formatting requirements of legacy languages.
+3. **EBCDIC Encoding Support**: Develop conversion and display capabilities for Extended Binary Coded Decimal Interchange Code used in mainframe file formats. This allows Eleanor to work with authentic mainframe encodings, preventing character corruption when files are transferred between modern systems and legacy mainframes.
 
-5. **Vintage Terminal Emulation**: Implement support for historical terminal limitations and escape sequences, accurately representing how code appears on legacy systems. This ensures that Eleanor can preview code exactly as it will display on the target systems, preventing formatting surprises when code is deployed to mainframe environments.
+4. **Batch Edit Scripting**: Implement a system for defining and applying consistent changes across large legacy codebases. This enables Eleanor to safely make systematic modifications to widespread patterns in ancient code without introducing inconsistencies or errors during manual editing.
+
+5. **Vintage Terminal Emulation**: Create support for historical display limitations and escape sequences used by legacy terminals. This helps Eleanor test how code will actually appear on original mainframe terminals, ensuring compatibility with older display technologies still in use for legacy system maintenance.
 
 ## Technical Requirements
-- **Testability Requirements**:
-  - Column positioning rules must be verifiable against language specifications
-  - Card deck visualization must conform to historical standards
-  - EBCDIC conversion must be validated against reference implementations
-  - Batch edit scripts must produce consistent results for identical inputs
-  - Terminal emulation must accurately reproduce vintage display characteristics
 
-- **Performance Expectations**:
-  - Fixed-width formatting rules should apply with negligible overhead
-  - EBCDIC/ASCII conversion should process at least 10MB per second
-  - Batch edit operations should scale linearly with file size
-  - The system should efficiently handle very large codebases (millions of lines)
-  - Operations should complete with response times acceptable on vintage systems
+### Testability Requirements
+- Fixed-width formatting must be programmatically verifiable
+- Card deck boundaries must be testable through column position detection
+- EBCDIC conversion must be verifiable with known encoding test cases
+- Batch edit operations must be testable with before/after comparison
+- Terminal emulation must be validateable through escape sequence processing
 
-- **Integration Points**:
-  - Support for mainframe file transfer protocols (FTP, IND$FILE)
-  - Compatibility with version control systems for tracking changes
-  - Integration with legacy language compilers and tools
-  - Support for common mainframe dataset formats
-  - Connectivity with emulated or real mainframe environments
+### Performance Expectations
+- Fixed-width format validation should process at least 5,000 lines per second
+- Card deck visualization data should generate in under 10ms per line
+- EBCDIC conversion should process at least 1MB per second
+- Batch edit operations should handle at least 10,000 files in a single run
+- Terminal emulation should process escape sequences with less than 5ms latency
 
-- **Key Constraints**:
-  - Must strictly preserve column-oriented formatting
-  - Must handle line lengths and file sizes dictated by legacy system limitations
-  - Must preserve end-of-line conventions specific to target systems
-  - Must not introduce modern characters unsupported in legacy environments
-  - Must provide transparent conversion between modern and legacy encodings
+### Integration Points
+- Mainframe file transfer protocols
+- EBCDIC conversion libraries
+- Legacy language parsers (COBOL, FORTRAN, etc.)
+- Batch processing systems
+- Terminal emulation protocols
+
+### Key Constraints
+- No UI/UX components; all functionality should be implemented as library code
+- Must handle files with line lengths up to 132 columns (wide format)
+- Must preserve exact spacing and positioning in column-sensitive code
+- Must prevent corruption of special EBCDIC characters
+- Compatible with Python 3.8+ ecosystem
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The text editor library should implement:
 
-1. **Column-Aware Text Buffer**: A specialized text storage system that enforces fixed-width formatting rules.
+The library should implement a text editor core with the following functionality:
 
-2. **Card-Based Visualization**: Components for representing text in 80-column card formats and managing card-oriented operations.
+1. A fixed-width formatting system that:
+   - Maintains precise column positioning
+   - Enforces language-specific column rules
+   - Highlights position-dependent syntax elements
+   - Prevents formatting errors in column-oriented code
 
-3. **Character Encoding Engine**: Comprehensive tools for handling EBCDIC and other legacy encodings.
+2. A card deck visualization system that:
+   - Shows 80-column boundaries
+   - Provides card-oriented navigation
+   - Simulates historical card deck organization
+   - Enforces punch card constraints when needed
 
-4. **Batch Transformation System**: A framework for defining and applying systematic changes across codebases.
+3. An encoding system that:
+   - Converts between ASCII/Unicode and EBCDIC
+   - Preserves special EBCDIC characters and control codes
+   - Handles different EBCDIC code pages and variants
+   - Prevents encoding corruption during file operations
 
-5. **Terminal Rendering Engine**: Tools for simulating how text will appear on vintage terminal systems.
+4. A batch editing system that:
+   - Defines reusable edit operations
+   - Applies consistent changes across multiple files
+   - Provides preview and validation of changes
+   - Supports rollback of batch operations
 
-6. **Legacy Language Support**: Specific handlers for COBOL, FORTRAN, Assembly, and other legacy languages.
-
-7. **Mainframe Connectivity**: Utilities for transferring files between modern systems and mainframes.
-
-The library should use specialized data structures optimized for fixed-width text with column significance. It should provide programmatic interfaces for all functions without requiring a graphical interface, allowing it to be integrated with modern development environments while preserving compatibility with legacy systems.
+5. A terminal emulation system that:
+   - Processes legacy terminal escape sequences
+   - Simulates display limitations of vintage terminals
+   - Handles historical control codes
+   - Shows how text will appear on legacy displays
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Accuracy of fixed-width formatting for various legacy languages
-  - Correct visualization of card boundaries and column positions
-  - Fidelity of EBCDIC encoding conversion
-  - Reliability of batch editing across diverse file types
-  - Accuracy of terminal emulation for different vintage systems
 
-- **Critical User Scenarios**:
-  - Editing COBOL programs with strict column requirements
-  - Converting between mainframe and modern file formats
-  - Applying systematic changes to large legacy codebases
-  - Working with mixed-encoding files from different systems
-  - Preparing code that will display correctly on vintage terminals
+### Key Functionalities to Verify
+- Fixed-width formatting correctly maintains column positioning
+- Card deck visualization properly shows 80-column boundaries
+- EBCDIC conversion accurately handles encoding transformations
+- Batch edit scripting successfully applies consistent changes across files
+- Vintage terminal emulation correctly processes historical escape sequences
 
-- **Performance Benchmarks**:
-  - Column validation should add no more than 10% overhead to editing operations
-  - EBCDIC conversion should process files at a rate of at least 20MB per minute
-  - Batch edit operations should process at least 1000 files per hour
-  - The system should handle codebases with up to 1 million lines efficiently
-  - Operations should complete within timeframes appropriate for mainframe interaction
+### Critical User Scenarios
+- Editing a COBOL program with column-significant syntax
+- Working with code that must respect card deck boundaries
+- Converting files between ASCII and EBCDIC encodings
+- Applying a consistent change pattern across a legacy codebase
+- Testing how code will appear on a vintage terminal display
 
-- **Edge Cases and Error Conditions**:
-  - Handling files with mixed encodings or corrupted bytes
-  - Managing line lengths that exceed traditional card limits
-  - Dealing with legacy control characters and escape sequences
-  - Recovering from interrupted batch operations
-  - Handling incompatible language constructs across different mainframe systems
+### Performance Benchmarks
+- Fixed-width validation should process at least 10,000 lines of code per minute
+- Card deck visualization should handle files up to 100,000 lines
+- EBCDIC conversion should support files up to 50MB
+- Batch editing should process at least 1,000 files per minute
+- Terminal emulation should handle at least 1,000 escape sequences per second
 
-- **Required Test Coverage**:
-  - 95% line coverage for column positioning and formatting rules
-  - 100% coverage for EBCDIC conversion functionality
-  - 90% coverage for batch editing operations
-  - 90% coverage for terminal emulation features
-  - Comprehensive tests for all supported legacy language formats
+### Edge Cases and Error Conditions
+- Handling lines that exceed traditional column limits
+- Managing files with mixed encoding or corrupted characters
+- Dealing with unsupported terminal control sequences
+- Recovering from errors during batch edit operations
+- Supporting very old versions of legacy languages
 
-IMPORTANT: 
+### Required Test Coverage Metrics
+- Minimum 90% code coverage across all core modules
+- 100% coverage of encoding conversion code
+- Complete coverage of all public API methods
+- All supported legacy formats must have verification tests
+- All batch edit operations must have test coverage
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+
 The implementation will be considered successful if:
 
-1. It correctly enforces fixed-width formatting rules for legacy languages like COBOL and FORTRAN.
+1. Fixed-width format awareness correctly handles column-oriented languages
+2. Card deck simulation properly represents 80-column boundaries
+3. EBCDIC encoding support accurately converts between encodings
+4. Batch edit scripting successfully applies consistent changes across files
+5. Vintage terminal emulation correctly represents historical display limitations
 
-2. The card deck visualization accurately represents 80-column boundaries and card-oriented operations.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. EBCDIC encoding support provides flawless conversion between mainframe and modern character sets.
+## Environment Setup
 
-4. Batch edit scripting enables efficient, systematic changes across large legacy codebases.
+To set up the development environment:
 
-5. Terminal emulation accurately shows how code will appear on vintage display systems.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-6. The system can effectively handle files from various mainframe environments without corruption.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-7. All tests pass, demonstrating the reliability and accuracy of the implementation for legacy system maintenance.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-To set up the virtual environment, use `uv venv` from within the project directory. The environment can be activated with `source .venv/bin/activate`.
+4. CRITICAL: For running tests and generating the required json report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

@@ -1,142 +1,161 @@
-# IoT Device Orchestration Language Framework
-
-A domain-specific language toolkit for defining automated responses to environmental conditions across diverse sensor networks and control systems.
+# IoT Device Orchestration Language Toolkit
 
 ## Overview
-
-This project provides a comprehensive framework for developing domain-specific languages focused on IoT device orchestration. It enables building managers to define automated responses to environmental conditions without understanding the underlying sensor communication protocols. The system emphasizes device capability discovery, temporal logic, energy optimization, failsafe validation, and physical world modeling.
+A specialized Domain Specific Language toolkit for defining, controlling, and automating interactions between IoT devices in smart environments. This toolkit enables building managers and system integrators to create sophisticated device orchestration rules and automated responses to environmental conditions without requiring knowledge of underlying sensor protocols or programming expertise.
 
 ## Persona Description
-
 Carlos designs Internet of Things solutions for smart buildings with diverse sensor networks and control systems. His primary goal is to create a device orchestration language that allows building managers to define automated responses to environmental conditions without understanding the underlying sensor communication protocols.
 
 ## Key Requirements
+1. **Device capability discovery and automatic syntax generation**: Automatic detection and cataloging of available devices, their capabilities, and control interfaces with dynamic generation of device-specific DSL syntax. This is critical because it eliminates the need to manually define interfaces for each new device, accommodates the diverse and evolving IoT ecosystem, and reduces the technical knowledge required to incorporate new devices into automation rules.
 
-1. **Device capability discovery and automatic syntax generation**
-   - Implement a system that can dynamically discover the capabilities of connected IoT devices and generate appropriate language constructs for controlling them
-   - This feature is critical for Carlos because it allows the language to adapt to heterogeneous device ecosystems without requiring manual configuration. It enables building managers to work with devices based on their functionalities rather than technical specifications, dramatically simplifying the creation of building automation rules.
+2. **Temporal logic for sequence-dependent operations**: Support for time-based conditions, sequences, delays, and coordinated multi-device operations with precise timing constraints. This is essential because many building automation scenarios require specific ordering and timing (such as sequential startup procedures, staged responses to events, or synchronized operations across multiple systems) to function correctly and efficiently.
 
-2. **Temporal logic for sequence-dependent operations**
-   - Develop a temporal logic framework for defining complex time-based and sequence-dependent operations across multiple devices
-   - IoT automation frequently requires precise timing and sequencing of operations. This capability enables Carlos to create sophisticated automation scenarios that respond to events in specific orders or with defined timing relationships, which is essential for applications like staged lighting, sequential HVAC activation, or coordinated security responses.
+3. **Energy optimization through pattern recognition**: Pattern analysis capabilities that identify energy usage patterns and optimize device operations to reduce consumption while maintaining service levels. This is vital because energy efficiency is a primary concern for building operators, representing both environmental responsibility and significant cost savings, especially when automated optimization can discover non-obvious efficiency improvements.
 
-3. **Energy optimization through pattern recognition**
-   - Create an analysis system that can identify energy usage patterns and suggest optimizations within device orchestration rules
-   - Energy efficiency is a primary concern in building management. This feature allows Carlos to develop intelligent building systems that automatically recognize usage patterns and optimize energy consumption while maintaining occupant comfort, directly addressing a key business requirement for reducing operational costs.
+4. **Failsafe validation ensuring critical systems remain operational**: Verification mechanisms that analyze automation rules to ensure they cannot inadvertently compromise critical building systems like security, life safety, or essential services. This is necessary because automation failures in building systems can have serious consequences for occupant safety, security, and comfort, and preventative validation is more reliable than reactive error handling.
 
-4. **Failsafe validation ensuring critical systems remain operational**
-   - Build a validation framework that ensures automation rules cannot compromise the operation of safety-critical systems or create dangerous conditions
-   - Safety is non-negotiable in building automation, especially for systems like fire suppression, emergency lighting, or access control. This validation capability enables Carlos to guarantee that automated rules cannot override critical safety functions, providing essential safeguards for building occupants.
-
-5. **Physical world modeling with spatial relationship definition**
-   - Implement a physical world modeling system that represents spatial relationships between devices, areas, and occupants
-   - Understanding the physical layout and relationships within a building is essential for meaningful automation. This feature enables Carlos to create context-aware automation that considers physical proximity, room adjacency, or occupant locations, making the system's responses more relevant and effective.
+5. **Physical world modeling with spatial relationship definition**: The ability to define spatial relationships between devices, zones, and building areas to enable location-aware automation rules. This is crucial because the physical layout and proximity relationships in buildings directly impact appropriate automation responses, and spatial context is fundamental to creating intuitive and effective building control systems.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Each automation rule must be automatically verifiable against device capabilities
+  - Temporal logic must be testable with simulated time progression
+  - Energy optimization algorithms must demonstrate measurable improvements
+  - Failsafe validation must identify all potential critical system compromises
+  - All components must achieve at least 90% test coverage
 
-### Testability Requirements
-- All device orchestration rules must be testable with simulated device networks
-- Temporal logic operations must be verifiable with accelerated time simulations
-- Energy optimization suggestions must be testable against historical consumption data
-- Failsafe validations must be verifiable against comprehensive safety scenarios
-- Spatial relationship models must be testable with different building configurations
+- **Performance Expectations**:
+  - Rule compilation must complete in under 2 seconds for buildings with 500+ devices
+  - Device discovery must process and categorize 1000+ endpoints in under 60 seconds
+  - Energy optimization analysis must complete for a full building in under 5 minutes
+  - System must handle 10,000+ simultaneous sensor readings without degradation
 
-### Performance Expectations
-- Rule compilation must complete within 2 seconds for buildings with up to 1000 devices
-- Device capability discovery must complete within 30 seconds for networks with up to 500 devices
-- Rule evaluation must occur in near real-time (< 100ms) for event-triggered automation
-- Energy pattern analysis must process 1 month of usage data within 5 minutes
-- The system must support concurrent execution of up to 200 automation rules
+- **Integration Points**:
+  - Multiple IoT protocols (MQTT, CoAP, BACnet, Modbus, Zigbee, Z-Wave, etc.)
+  - Building Management Systems (BMS)
+  - Energy monitoring and management platforms
+  - Physical security systems
+  - Weather and external data sources
+  - Digital twins and building information models
 
-### Integration Points
-- IoT device protocols (MQTT, CoAP, BACnet, Modbus, etc.) via abstraction layers
-- Building information modeling (BIM) systems for spatial data
-- Energy management systems for consumption data
-- Building management systems (BMS) for coordinated control
-- Weather data services for environmental context
+- **Key Constraints**:
+  - Implementation must be in Python with no UI components
+  - All automation logic must be expressible through the DSL without requiring custom code
+  - Rule definitions must be storable as human-readable text files
+  - System must operate within network bandwidth constraints of typical building infrastructure
+  - Critical failsafes must function even when central control systems are offline
 
-### Key Constraints
-- No UI components; all functionality must be exposed through APIs
-- All rule execution must be deterministic and reproducible
-- The system must operate with minimal latency for real-time responsiveness
-- Rule definitions must be serializable for storage and version control
-- The system must support fallback operation when network connectivity is degraded
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The IoT Orchestration DSL Toolkit must provide:
 
-The system must provide a framework for:
+1. A domain-specific language parser and interpreter specialized for device orchestration
+2. Device discovery and capability detection across multiple protocols
+3. Temporal logic processing for sequence and timing control
+4. Energy usage pattern recognition and optimization algorithms
+5. Failsafe validation for critical systems protection
+6. Spatial modeling of physical device relationships and zones
+7. Rule deployment and execution across distributed IoT systems
+8. Monitoring and logging of automation rule execution
+9. Documentation generators for building management teams
+10. Test and simulation utilities for verifying rule behavior
 
-1. **Device Orchestration Language**: A grammar and parser for defining automation rules that control IoT devices based on environmental conditions and events.
-
-2. **Capability Discovery**: Mechanisms for detecting the features and functions of connected devices and representing them as language constructs.
-
-3. **Temporal Logic**: Tools for defining time-based relationships between events and actions, including sequences, schedules, and conditional timing.
-
-4. **Energy Analysis**: Algorithms for analyzing device usage patterns and identifying energy optimization opportunities within automation rules.
-
-5. **Failsafe Validation**: Rules and checks that ensure automation logic cannot compromise critical systems or create unsafe conditions.
-
-6. **Spatial Modeling**: Data structures for representing physical relationships between devices, areas, and occupants within a building.
-
-7. **Rule Compilation**: Translation of high-level orchestration rules into executable control commands for diverse IoT devices.
-
-8. **Simulation Engine**: An environment for testing automation rules against virtual device networks and accelerated time scenarios.
+The system should enable building managers to define elements such as:
+- Environmental condition responses (temperature, occupancy, air quality)
+- Scheduled operations with calendar and time-based triggers
+- Cross-system coordination (HVAC, lighting, security, access)
+- Energy management and demand response actions
+- Exception handling for device failures and anomalies
+- Maintenance alerts and predictive maintenance triggers
+- Occupant comfort optimization based on preferences
+- Security and safety protocol automation
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct parsing of DSL syntax into executable device commands
+  - Accurate discovery and categorization of device capabilities
+  - Proper execution of temporal sequences with correct timing
+  - Effective energy optimization with measurable improvements
+  - Comprehensive failsafe validation protecting critical systems
 
-### Key Functionalities to Verify
-- Accurate parsing of orchestration rules from domain-specific syntax
-- Correct discovery and representation of device capabilities
-- Proper execution of temporal logic in automation sequences
-- Effective identification of energy optimization opportunities
-- Reliable detection of safety violations in automation rules
+- **Critical User Scenarios**:
+  - Building manager creates comfort optimization rules for office zones
+  - Facility team implements energy-saving night setback procedures
+  - Security personnel define automated responses to access control events
+  - Sustainability manager creates demand-response automation for peak energy periods
+  - Maintenance staff sets up predictive maintenance alerts based on sensor trends
 
-### Critical User Scenarios
-- Building manager defines a new automation rule using the DSL
-- System discovers and integrates a new type of IoT device
-- Automation rule responds to a complex sequence of environmental conditions
-- Energy optimization suggestions are generated for existing rules
-- System prevents execution of a rule that would create an unsafe condition
+- **Performance Benchmarks**:
+  - Process and compile 100 complex automation rules in under 10 seconds
+  - Complete device discovery for a 25-floor building in under 2 minutes
+  - Analyze a month of sensor data for energy optimization in under 10 minutes
+  - Execute 500 simultaneous device commands with proper sequencing in under 3 seconds
 
-### Performance Benchmarks
-- Rule compilation completed in under 2 seconds for buildings with 1000+ devices
-- Device capability discovery completed in under 30 seconds for large networks
-- Rule execution latency under 100ms for event-triggered automation
-- Energy pattern analysis processing 1 month of data in under 5 minutes
-- System maintains performance with 200+ concurrent automation rules
+- **Edge Cases and Error Conditions**:
+  - Handling of partial device failures and degraded operation modes
+  - Recovery from communication interruptions with edge devices
+  - Management of conflicting automation rules with resolution strategies
+  - Behavior during power outages or limited-power scenarios
+  - Adaptation to unexpected seasonal or environmental changes
 
-### Edge Cases and Error Conditions
-- Handling of device failures or communication interruptions
-- Proper response to conflicting automation rules
-- Graceful degradation when operating with limited connectivity
-- Recovery from partial rule compilation failures
-- Handling of unexpected environmental conditions outside normal parameters
+- **Required Test Coverage Metrics**:
+  - Minimum 90% code coverage across all modules
+  - 100% coverage of DSL parser and interpreter
+  - 100% coverage of failsafe validation mechanisms
+  - 95% coverage of device discovery components
 
-### Required Test Coverage Metrics
-- Minimum 90% line coverage for core rule parsing and compilation logic
-- 100% coverage of failsafe validation checks
-- 95% coverage of temporal logic implementation
-- 90% coverage for device capability discovery
-- 100% test coverage for safety-critical rule validation
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-
 The implementation will be considered successful when:
 
-1. Building managers without technical expertise can define complex automation rules using the domain-specific language.
+1. All five key requirements are fully implemented and operational
+2. Each requirement passes its associated test scenarios
+3. The system demonstrates the ability to discover and categorize diverse IoT devices
+4. Temporal logic correctly executes sequence-dependent operations
+5. Energy optimization produces measurable efficiency improvements
+6. Failsafe validation successfully identifies potential critical system risks
+7. Physical world modeling correctly represents spatial relationships
+8. Building managers without programming expertise can create functional automation rules
 
-2. The system automatically adapts to new devices and capabilities without requiring manual configuration.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-3. Automation rules properly execute complex temporal sequences across diverse device types.
+## Setup Instructions
+To set up the development environment:
 
-4. Energy consumption is measurably reduced through pattern-based optimization suggestions.
+1. Create a virtual environment:
+   ```
+   uv venv
+   ```
 
-5. The system reliably prevents unsafe automation conditions through comprehensive validation.
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
 
-6. Physical world modeling enables context-aware automation that responds appropriately to spatial relationships.
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
 
-7. All test requirements are met with specified coverage metrics and performance benchmarks.
-
-8. The time required to implement building automation solutions is reduced by at least 60%.
-
-To set up the development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

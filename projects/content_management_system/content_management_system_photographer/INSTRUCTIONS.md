@@ -1,150 +1,173 @@
-# Photography Portfolio Management System
+# Photography Portfolio Content Management System
 
 ## Overview
-A specialized content management system for professional photographers that enables portfolio showcase management, client proofing, image protection, metadata organization, and optimization. This system focuses on visually striking presentation and efficient organization of large image collections while maintaining separate client-specific private galleries.
+A specialized content management system designed for professional photographers to showcase their work and manage client interactions. This system enables photographers to display their portfolio in visually striking galleries while efficiently organizing thousands of images and maintaining separate client-specific private collections.
 
 ## Persona Description
 Mei showcases her photography portfolio to attract clients for weddings, events, and portraits. Her primary goal is to display her work in visually striking galleries while efficiently organizing thousands of images and maintaining separate client-specific private collections.
 
 ## Key Requirements
 
-1. **Portfolio Showcase with Customizable Viewing Experiences**
-   - Implement a portfolio management system with category-specific display options
-   - Critical for Mei because it allows her to present different types of photography (weddings, portraits, events) with customized layouts that best showcase each style while maintaining her brand identity
+1. **Portfolio showcase with customizable viewing experiences by category**
+   - Critical for Mei to showcase different photography styles and specializations (weddings, portraits, events)
+   - Must support different layout options optimized for various image orientations and aspect ratios
+   - Should allow creation of curated collections with specific visual narratives or themes
 
-2. **Client Proofing Portal with Selection and Commenting Tools**
-   - Create a client-specific gallery system with image selection and feedback capabilities
-   - Essential for Mei's client workflow, enabling her to share private collections with clients who can then select favorites and provide comments for editing or printing
+2. **Client proofing portal with selection and commenting tools**
+   - Essential for sharing private galleries with clients to review and select images after photoshoots
+   - Must track client selections, approvals, and requests for editing
+   - Should support threaded comments on specific images for detailed feedback
 
-3. **Watermarking and Image Protection Controls**
-   - Develop comprehensive image protection features including watermarking and download prevention
-   - Important for protecting Mei's intellectual property and ensuring that preview images shared with clients or displayed publicly cannot be used without permission or payment
+3. **Watermarking and image protection controls**
+   - Important for preventing unauthorized use of preview images while allowing clients to view them
+   - Must apply configurable watermarks based on image usage context (portfolio vs. client proofing)
+   - Should include download prevention features and usage tracking
 
-4. **Photography-specific Metadata Management and Search**
-   - Implement advanced metadata handling for photographic attributes and search capabilities
-   - Necessary for Mei to efficiently organize and retrieve images from her extensive collection based on technical details, subjects, locations, events, and other photography-specific criteria
+4. **Photography-specific metadata management and search**
+   - Necessary for organizing and finding images within a library of thousands of photographs
+   - Must preserve and utilize EXIF/IPTC metadata (camera settings, location, dates)
+   - Should support custom taxonomies for professional organizing (style, shoot, client, usage rights)
 
-5. **Automated Image Optimization for Web Performance**
-   - Create an image processing pipeline that automatically optimizes images for web delivery
-   - Crucial for ensuring Mei's image-heavy site loads quickly and efficiently across devices while preserving the visual quality that showcases her professional work
+5. **Automated image optimization for web performance**
+   - Valuable for maintaining fast site performance despite large image libraries
+   - Must generate appropriate sizes and formats for different viewing contexts
+   - Should balance quality and file size based on display requirements
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Portfolio configurations must be testable with various layout scenarios
-- Client proofing workflows must support simulated selection and feedback
-- Image protection features must be verifiable through programmatic checks
-- Metadata handling must be testable with sample EXIF and IPTC data
-- Image optimization pipeline must be measurable for performance and quality
+- All components must have unit tests with at least 90% code coverage
+- Integration tests must verify image processing and delivery pipelines
+- Performance tests must ensure gallery loading times meet standards with large image sets
+- Mock external storage systems for testing image management
 
 ### Performance Expectations
-- Gallery generation should support collections of 1000+ images with pagination
-- System should handle at least 50GB of total image assets efficiently
-- Image retrieval based on metadata should return results in < 300ms
-- Optimization processing should handle at least 10 images per minute per thread
-- Client galleries should support concurrent access by 20+ viewers
+- Gallery pages must load within 2 seconds with optimal image loading strategies
+- Image processing for web optimization must handle at least 100 images in under 5 minutes
+- Metadata operations must complete within 500ms regardless of library size
+- Search queries must return results within 1 second across libraries of 10,000+ images
 
 ### Integration Points
-- Raw image conversion tools for various camera formats
-- EXIF/IPTC metadata extraction and writing
-- Storage backend with versioning for image assets
-- Secure sharing mechanism for client galleries
-- Image processing pipeline for optimization and watermarking
+- Image storage systems (local or cloud-based)
+- RAW processing integration for professional workflows
+- Email notifications for client activity
+- Export capabilities for print ordering services
 
 ### Key Constraints
-- No UI components, only API endpoints and image processing logic
-- Strong copyright protection for all managed images
-- Support for very large individual files (50MB+ raw images)
-- Preservation of color accuracy in processing pipeline
-- Scalable storage architecture for growing collections
+- Image storage must be efficient and scalable for professional volumes
+- Watermarking must not degrade original image quality
+- All client data must be securely isolated between clients
+- System must preserve full image quality for original files
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
 
-The core functionality of the Photography Portfolio Management System includes:
+The system must provide a Python library with the following core components:
 
-1. **Portfolio Organization**
-   - Category and collection management
-   - Custom display template configuration
-   - Featured image selection and arrangement
-   - Portfolio analytics and visibility controls
+1. **Portfolio Management**
+   - Gallery and collection data models
+   - Image categorization and organization
+   - Showcase configuration and layout management
+   - Featured content and highlight selection
 
-2. **Client Gallery Management**
-   - Client-specific private collection creation
-   - Access control with expiration and permissions
-   - Selection tracking and approval workflow
-   - Client feedback collection and management
+2. **Client Interaction System**
+   - Client account and access management
+   - Private gallery creation and sharing
+   - Selection tracking and approval workflows
+   - Client communication and notification system
 
 3. **Image Protection**
-   - Watermark generation and application
-   - Download prevention techniques
-   - Usage tracking and authorization
-   - Copyright metadata enforcement
+   - Watermarking engine with configurable options
+   - Access control and permission management
+   - Download prevention mechanisms
+   - Usage tracking and monitoring
 
 4. **Metadata Management**
-   - EXIF/IPTC metadata extraction and storage
-   - Custom tag and category assignment
-   - Advanced search functionality
-   - Bulk metadata operations
+   - EXIF/IPTC metadata extraction and indexing
+   - Custom taxonomy and tagging system
+   - Advanced search capabilities
+   - Batch metadata operations
 
 5. **Image Processing Pipeline**
-   - Resolution and format optimization
-   - Responsive image generation
-   - Color profile management
-   - Batch processing capabilities
+   - Automatic size variant generation
+   - Format optimization and conversion
+   - Quality-size balancing algorithms
+   - Responsive image preparation
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Portfolio gallery generation with various configurations
-- Client proofing system with selection and comment functionality
-- Image protection with watermarking and access controls
-- Metadata extraction, storage, and search capabilities
-- Image optimization for web delivery with quality preservation
+- Galleries correctly display images with appropriate layouts for different categories
+- Client proofing system accurately tracks selections and comments
+- Watermarking applies correctly under different access contexts
+- Metadata search returns accurate results based on various criteria
+- Image optimization generates appropriate assets for web delivery
 
 ### Critical User Scenarios
-- Creating a new portfolio category with custom display parameters
-- Setting up a private client gallery with proofing capabilities
-- Applying and customizing watermarks for protected images
-- Searching large collections by specific photographic metadata
-- Processing large batches of images for web optimization
+- Creating a new portfolio collection with curated images and specific layout
+- Setting up a client proofing gallery with access controls
+- Processing a batch of new images with metadata extraction and categorization
+- Handling client selections and export for final delivery
+- Performing complex searches across a large image library
 
 ### Performance Benchmarks
-- Gallery generation time for collections of various sizes
-- Search response time with complex metadata queries
-- Image processing throughput for various optimization operations
-- Storage and retrieval efficiency with growing collection size
-- Concurrent client access handling for shared galleries
+- System must handle libraries of at least 50,000 images
+- Portfolio galleries must load first meaningful content within 1.5 seconds
+- Image optimization pipeline must process at least 1 image per second
+- Metadata operations must scale linearly with library size
 
 ### Edge Cases and Error Conditions
 - Handling corrupt or incomplete image files
-- Managing unusual or non-standard metadata
-- Processing extremely large or small images
-- Recovering from interrupted batch operations
-- Handling client access edge cases (expired links, unauthorized sharing)
+- Managing duplicate images with different metadata
+- Recovering from interrupted batch processing
+- Resolving conflicting client selections
+- Dealing with extremely large original files
 
 ### Required Test Coverage Metrics
-- Minimum 90% line coverage for core functionality
-- 100% coverage of image protection features
-- All error handling paths must be tested
-- Performance tests must verify all benchmark requirements
-- Security tests for access control and image protection
+- Minimum 90% code coverage across all modules
+- 100% coverage of watermarking and protection features
+- 100% coverage of client selection tracking
+- 100% coverage of image optimization pipeline
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
 
 The implementation will be considered successful when:
 
-1. Portfolio galleries can be created with category-specific display configurations
-2. Client proofing galleries function with selection and commenting capabilities
-3. Images are protected with effective watermarking and download controls
-4. Photography metadata can be efficiently searched and managed
-5. Images are automatically optimized for web performance without quality loss
-6. All operations can be performed via API without any UI components
-7. The system handles the expected performance requirements under load
-8. Image protection features work reliably in all scenarios
-9. All tests pass, demonstrating the functionality works as expected
+1. The portfolio system effectively organizes and presents images by category with appropriate layouts
+2. The client proofing system accurately manages private galleries with selection tracking
+3. The protection features correctly apply watermarks and prevent unauthorized downloads
+4. The metadata system effectively organizes and allows searching across large image libraries
+5. The optimization pipeline generates appropriate web-ready assets for all images
 
-Setup your development environment using:
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY:
 ```
-uv venv
-source .venv/bin/activate
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
 ```

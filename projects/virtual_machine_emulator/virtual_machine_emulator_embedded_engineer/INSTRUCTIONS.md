@@ -1,117 +1,181 @@
-# Embedded Systems Virtual Machine Emulator
+# Resource-Constrained Embedded Systems Emulator
 
 ## Overview
-A specialized virtual machine designed to simulate resource-constrained embedded environments, featuring configurable hardware limitations, interrupt handling, real-time operation modeling, power consumption estimation, and peripheral device simulation.
+A specialized virtual machine emulator focused on accurately simulating resource-constrained embedded environments, allowing firmware developers to test algorithms, timing constraints, interrupt handling, and power consumption patterns before deploying to actual hardware.
 
 ## Persona Description
 Priya develops firmware for resource-constrained devices and uses a virtual machine to test algorithms before deploying to actual hardware. She needs an emulator that accurately represents the limitations of embedded environments.
 
 ## Key Requirements
-1. **Resource constraint simulation with configurable memory and processing limitations**: Essential for Priya to test algorithms under realistic embedded system constraints, allowing her to validate that her code will function correctly within the tight memory and processing budgets of target hardware before physical deployment.
+1. **Resource Constraint Simulation**: Implement precise simulation of configurable memory limitations, processing power constraints, and peripheral availability. This feature is critical for Priya to understand how her algorithms will behave in the highly constrained environments of embedded systems, allowing her to identify memory leaks, stack overflows, and performance bottlenecks before deployment.
 
-2. **Interrupt handling framework modeling hardware-triggered events**: Critical for developing and testing interrupt service routines that respond to external signals, sensors, or timers, enabling Priya to verify that her firmware correctly prioritizes and handles asynchronous events without the need for physical hardware.
+2. **Interrupt Handling Framework**: Create a comprehensive interrupt management system modeling hardware-triggered events, prioritization, and real-time responses. This capability is essential for developing reliable embedded firmware, as interrupts are fundamental to how embedded systems respond to external stimuli and timing events in real-world deployments.
 
-3. **Real-time operation modeling with strict timing requirements**: Vital for ensuring that time-sensitive operations meet their deadlines in embedded applications, helping Priya validate that critical tasks complete within required timeframes and that the system responds to events with predictable latency.
+3. **Real-time Operation Modeling**: Develop a timing simulation with strict requirements, deadlines, and periodicity guarantees common in embedded systems. This feature enables Priya to verify that her code meets critical timing constraints and can respond to events within specified deadlines—a fundamental requirement for many embedded applications like control systems and safety-critical devices.
 
-4. **Power consumption estimation based on instruction execution patterns**: Important for optimizing battery life in portable devices, providing Priya with insights into how different algorithms and execution patterns affect energy usage so she can maximize efficiency before deploying to power-constrained hardware.
+4. **Power Consumption Estimation**: Implement a detailed power modeling system that estimates energy usage based on instruction patterns, sleep states, and peripheral activity. This capability allows Priya to optimize her firmware for battery-powered devices, identify power-hungry operations, and estimate battery life under various usage scenarios.
 
-5. **Peripheral device simulation for sensors, actuators, and communication interfaces**: Necessary for testing complete embedded systems that interact with the physical world, allowing Priya to develop and validate device drivers and communication protocols for various peripherals without requiring actual hardware components.
+5. **Peripheral Device Simulation**: Create accurate simulations of common embedded peripherals including sensors, actuators, and communication interfaces with realistic timing and behavior characteristics. This feature enables comprehensive testing of device interaction code, protocol implementations, and error handling without requiring physical hardware for each development iteration.
 
 ## Technical Requirements
 - **Testability Requirements**:
-  - All simulated hardware constraints must be configurable and verifiable through tests
-  - Interrupt handling must be deterministically testable with precise timing control
-  - Real-time deadline enforcement must be measurable and verifiable
-  - Power consumption estimates must be repeatable and comparable across implementations
-  - Peripheral device behavior must be precisely controllable for testing scenarios
-
+  - All simulated constraints must be configurable with precise values
+  - Interrupt behavior must be deterministic and reproducible
+  - Timing simulations must be accurate within microsecond resolution
+  - Power estimations must be consistent and comparable across runs
+  - Peripheral interactions must be recordable and replayable
+  
 - **Performance Expectations**:
-  - Simulation should run at least 10x faster than real-time when timing constraints are relaxed
-  - Must support real-time execution mode with microsecond-level timing accuracy
-  - Should handle at least 100 interrupt events per second
-  - Power consumption calculations should add minimal overhead (less than 5%)
-  - Should support at least 20 different peripheral device types simultaneously
+  - Must be able to simulate execution faster than real-time when needed (up to 100x speedup)
+  - Must support cycle-accurate execution for precise timing verification
+  - Interrupt latency must be measurable with sub-microsecond precision
+  - Power modeling overhead should not exceed 10% of execution time
+  - Must handle at least 50 concurrent peripheral simulations without significant slowdown
 
 - **Integration Points**:
-  - Hardware configuration definition interface
-  - Peripheral device simulation API
-  - Interrupt injection framework
-  - Power profiling data export
-  - Integration with standard embedded protocols (I2C, SPI, UART, etc.)
+  - Standard interface for loading compiled firmware binary images
+  - API for custom peripheral device implementation
+  - Export formats for timing traces, power profiles, and execution logs
+  - Integration with standard embedded debugging protocols (SWD, JTAG simulation)
+  - Support for common embedded C/C++ compilation toolchains
 
 - **Key Constraints**:
-  - Must accurately represent timing constraints of embedded systems
-  - Should reflect realistic power consumption patterns of different operations
-  - Must provide deterministic execution for debugging purposes
-  - Should model common embedded architectures accurately enough for valid testing
+  - Implementation must be in pure Python for portability and educational value
+  - No dependencies beyond standard library to ensure easy deployment
+  - All constraints must be configurable to match various target devices
+  - Simulations must be deterministic to ensure reproducible testing
+  - System must be able to run on standard development machines without special hardware
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-1. **Resource-Constrained Execution Environment**: Implement a virtual machine with configurable constraints on memory size, CPU speed, and other resources that accurately reflects limitations of embedded devices.
+The core functionality of this resource-constrained embedded systems emulator includes:
 
-2. **Interrupt System**: Create a comprehensive interrupt handling framework supporting prioritization, nesting, and timing of hardware-triggered events with configurable interrupt controllers.
+1. A virtual CPU with configurable characteristics (clock speed, word size, pipeline stages)
 
-3. **Real-Time Scheduler**: Implement a real-time scheduling system with deadline tracking, execution time measurement, and validation of timing requirements for critical tasks.
+2. Precise memory models simulating different types (Flash, RAM, EEPROM) with appropriate constraints
 
-4. **Power Profiling**: Develop an instruction-level power consumption model that estimates energy usage based on execution patterns, peripheral activity, and processor states.
+3. A comprehensive interrupt controller with prioritization and nested handling
 
-5. **Peripheral Simulation**: Create a framework for simulating common embedded peripherals including sensors, communication interfaces, timers, and input/output devices with realistic behavior.
+4. Real-time clock and timer peripherals with microsecond resolution
 
-6. **Memory Hierarchy**: Implement a configurable memory system modeling different types of memory (flash, RAM, EEPROM) with appropriate access timing and limitations.
+5. Power state management with deep sleep, idle, and active operating modes
 
-7. **Communication Protocol Support**: Provide implementations of standard embedded communication protocols (I2C, SPI, UART, CAN) with accurate timing and electrical characteristics.
+6. Common communication interface simulations (UART, SPI, I2C, CAN)
+
+7. Sensor input simulation with configurable noise, drift, and failure modes
+
+8. Actuator output simulation with appropriate timing and physical constraints
+
+9. Data collection systems for execution timing, power consumption, and peripheral activity
+
+10. Resource utilization monitoring for stack, heap, and program memory
+
+11. Simulation speed controls (real-time, accelerated, or cycle-accurate modes)
+
+12. Event logging and tracing facilities for debugging and analysis
 
 ## Testing Requirements
-- **Key Functionalities to Verify**:
-  - Correct operation under various memory and processing constraints
-  - Proper handling of interrupts with different priorities and timing
-  - Accurate enforcement of real-time execution requirements
-  - Reasonable power consumption estimates for different operations
-  - Realistic behavior of simulated peripheral devices
+- **Key Functionalities that Must be Verified**:
+  - Accurate enforcement of all resource constraints
+  - Correct interrupt handling with proper prioritization
+  - Precise timing of real-time operations
+  - Reasonable power consumption estimation
+  - Realistic peripheral device behavior
+  - Proper operation under various memory constraints
 
 - **Critical User Scenarios**:
-  - Testing firmware with multiple concurrent interrupt sources
-  - Validating algorithms under severe memory constraints
-  - Measuring and optimizing code for power efficiency
-  - Developing and testing device drivers for various peripherals
-  - Verifying real-time response requirements for critical applications
+  - Testing algorithms under extreme memory constraints
+  - Verifying interrupt-driven code with multiple interrupt sources
+  - Validating real-time code meeting strict deadlines
+  - Optimizing firmware for power consumption
+  - Debugging complex peripheral interactions
+  - Simulating failure conditions and error handling
 
 - **Performance Benchmarks**:
-  - Execute standard embedded benchmarks at least 10x faster than real-time
-  - Support configurations with as little as 2KB of RAM and 16KB of program memory
-  - Handle interrupt frequencies up to 10KHz with proper prioritization
-  - Provide power consumption estimates with less than 10% error compared to reference values
-  - Simulate at least 10 peripheral devices simultaneously with realistic timing
+  - Simulation of 8-bit MCU at minimum 10MHz effective clock rate on average hardware
+  - Interrupt latency measurement accurate to within 1 microsecond
+  - Power estimation within 10% of actual hardware measurements for reference implementations
+  - Support for programs using up to 1MB of program memory
+  - Simulation of at least 10 concurrent active peripherals at real-time speed
 
 - **Edge Cases and Error Conditions**:
-  - Handle stack overflows in constrained memory environments
-  - Properly manage interrupt priority inversions and nested interrupts
-  - Detect and report missed real-time deadlines with diagnostic information
-  - Handle peripheral device failures and communication errors
-  - Report resource exhaustion conditions with clear diagnostics
+  - Handling of stack overflows and memory corruption
+  - Proper behavior during peripheral failure simulation
+  - Accurate reporting of timing violations
+  - Correct operation with extreme interrupt loads
+  - Appropriate behavior at resource exhaustion boundaries
 
 - **Required Test Coverage Metrics**:
-  - 95% code coverage for the core VM implementation
-  - 100% coverage for the interrupt handling system
-  - 90% coverage for the real-time scheduling components
-  - 90% coverage for power consumption estimation logic
-  - 95% coverage for peripheral device simulation
+  - Minimum 90% line coverage for core simulation components
+  - 100% coverage for interrupt handling logic
+  - At least 95% branch coverage for power state transitions
+  - Complete coverage of peripheral interface implementations
+  - At least 85% coverage for timing-critical code paths
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. Firmware developed and tested in the virtual machine functions correctly when deployed to actual hardware
-2. Interrupt-driven code behaves identically in the simulation and on real devices
-3. Real-time constraints verified in the simulation are met on the physical hardware
-4. Power consumption optimizations identified in the simulator result in measurable battery life improvements
-5. Device drivers developed against simulated peripherals work with actual hardware components
-6. Development time is significantly reduced by enabling testing without physical hardware
-7. Edge cases and error conditions can be reliably tested that would be difficult to reproduce on real hardware
+The implementation will be considered successful if it:
 
-To set up your environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. Accurately enforces configurable resource constraints matching real embedded systems
+
+2. Provides a complete interrupt handling framework with proper prioritization and timing
+
+3. Successfully models real-time operations with verifiable timing guarantees
+
+4. Generates reasonable power consumption estimates that help optimize firmware
+
+5. Includes realistic simulations of common embedded peripherals
+
+6. Allows detection of common embedded development issues (stack overflow, timing violations)
+
+7. Provides useful data for optimizing algorithms before hardware deployment
+
+8. Enables faster development cycles by reducing hardware testing requirements
+
+9. Supports reproduction of complex timing-dependent scenarios
+
+10. Successfully passes all test cases demonstrating the required functionality
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Environment Setup
+To set up the development environment:
+
+1. Create a virtual environment using:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. CRITICAL: For test execution and reporting:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion. This file must be included as proof that all tests pass successfully.

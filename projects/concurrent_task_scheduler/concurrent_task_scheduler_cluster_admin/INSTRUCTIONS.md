@@ -1,112 +1,174 @@
-# Academic Computing Resource Allocation System
+# Academic Computing Resource Manager
 
 ## Overview
-A specialized concurrent task scheduler designed to fairly distribute shared computing resources across multiple academic departments with diverse computational needs. This system balances research priorities, teaching requirements, and specialized hardware access while enforcing departmental quotas and maximizing overall cluster utilization.
+A specialized concurrent task scheduler designed for managing shared computing clusters in academic environments. This system fairly allocates resources across multiple university departments while supporting priority overrides for urgent research and teaching needs, with particular focus on quota management, course scheduling integration, and research deadline awareness.
 
 ## Persona Description
 Marcus manages a shared computing cluster used by multiple academic departments with diverse computational needs. His primary goal is to fairly allocate computing resources while allowing priority overrides for urgent research and teaching needs.
 
 ## Key Requirements
-1. **Department Quota Management with Resource Reallocation**
-   - Implement a quota system that allocates guaranteed computing resources to departments based on funding contributions, with automatic reallocation of unused resources to departments with active demand
-   - Critical for Marcus to ensure fair resource distribution across departments while maximizing overall cluster utilization, preventing resources from sitting idle when some departments have low usage while others have excess demand
 
-2. **Course Schedule Integration for Teaching Resources**
-   - Create a scheduling system that automatically reserves computing capacity based on academic course schedules, ensuring resources are available for labs and classroom activities
-   - Essential for Marcus to guarantee that teaching activities receive priority during scheduled class times, preventing research jobs from consuming resources needed for time-sensitive educational activities
+1. **Department Quota Management System**
+   - Implement a sophisticated resource allocation system that enforces department quotas while dynamically reallocating unused resources to maximize cluster utilization
+   - This feature is critical for Marcus as it ensures fair distribution of computing resources based on departmental funding contributions while preventing waste when allocated resources go unused
+   - The system must maintain detailed usage accounting and support configurable policies for redistribution
 
-3. **Research Deadline Awareness with Capacity Allocation**
-   - Develop deadline-based priority adjustments that allocate additional resources to research projects approaching important deadlines (grant submissions, conference papers, etc.)
-   - Vital for supporting researchers facing critical deadlines, allowing Marcus to temporarily boost resources for time-sensitive research without permanently reallocating departmental quotas
+2. **Course Schedule Integration**
+   - Create a reservation system that integrates with academic course schedules to automatically reserve computing resources for teaching activities
+   - This feature is essential for Marcus to ensure that computational labs and classroom exercises have guaranteed resources during scheduled class times
+   - Must support recurring reservations based on semester schedules with flexibility for special events and changes
 
-4. **Fairness Monitoring with Resource Hogging Intervention**
-   - Build automated detection of resource monopolization with intervention policies that prevent individual users or projects from dominating shared resources
-   - Crucial for Marcus to maintain equitable access across the diverse user base, identifying and addressing situations where a single user or group is consuming excessive resources to the detriment of others
+3. **Research Deadline Awareness**
+   - Develop a priority adjustment mechanism that recognizes approaching research deadlines and allocates additional capacity to time-sensitive projects
+   - This feature is crucial for Marcus to support researchers facing conference submissions, grant deadlines, or thesis defenses without requiring manual intervention
+   - Must include verification processes to prevent abuse while enabling legitimate urgent research needs
 
-5. **Specialized Hardware Time-Sharing Optimization**
-   - Implement intelligent scheduling for limited specialized resources (GPUs, high-memory nodes, etc.) with optimized time-sharing and job batching
-   - Important for maximizing the utility of expensive specialized hardware that is in high demand across multiple departments, ensuring that these limited resources provide maximum benefit to the academic community
+4. **Fairness Monitoring and Enforcement**
+   - Implement a monitoring system that detects and automatically intervenes when users or groups monopolize resources beyond their fair allocation
+   - This feature is vital for Marcus to maintain equitable access to the cluster, especially for smaller departments or junior researchers who might otherwise be overshadowed
+   - Must include configurable policies for defining "fair share" and appropriate interventions
+
+5. **Specialized Hardware Management**
+   - Create an intelligent scheduling system for specialized hardware (GPUs, FPGAs) that optimizes time-sharing and allocation based on workload characteristics
+   - This feature is important for Marcus because specialized computing hardware is expensive and limited, requiring careful allocation to maximize research output
+   - Must include support for reservations, fractional allocations, and priority adjustments
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All quota management components must be testable with simulated department usage patterns
-  - Scheduling algorithms must be verifiable against sample course timetables
-  - Deadline prioritization must be testable with various deadline scenarios
-  - Fairness monitoring must be validatable with simulated usage patterns
-  - Hardware allocation must be verifiable with different hardware configurations
 
-- **Performance Expectations**
-  - Quota calculations and adjustments must complete within 10 seconds
-  - Course schedule reservations must be processed at least 24 hours in advance
-  - Deadline-based priority adjustments must be calculated within 1 minute of job submission
-  - Fairness monitoring must detect resource hogging within 5 minutes of occurrence
-  - Specialized hardware allocation must achieve at least 90% utilization
+### Testability Requirements
+- All components must be independently testable with well-defined interfaces
+- System must support simulation of departmental usage patterns without requiring actual workloads
+- Test coverage should exceed 85% for all resource allocation and scheduling components
+- Tests must validate fair allocation under various demand scenarios
 
-- **Integration Points**
-  - Job scheduling systems (SLURM, PBS, etc.) for task execution
-  - University course registration systems for schedule data
-  - Research project management systems for deadline information
-  - User authentication and authorization systems
-  - Hardware monitoring and management systems
+### Performance Expectations
+- Support for at least 1,000 concurrent jobs across multiple departments
+- Scheduling decisions must complete in under 500ms even with complex quota rules
+- System should achieve at least 90% resource utilization under normal conditions
+- Quota enforcement and reallocation should operate with minimal overhead
 
-- **Key Constraints**
-  - Must operate within existing HPC infrastructure
-  - Must maintain backward compatibility with current job submission workflows
-  - Must support diverse computational workloads (HPC, ML, data analysis, simulations)
-  - Must accommodate both interactive and batch processing modes
-  - Implementation must be vendor-neutral across different cluster configurations
+### Integration Points
+- Integration with common job schedulers (Slurm, PBS, HTCondor)
+- Support for course management and calendar systems
+- Interfaces for departmental reporting and chargeback systems
+- Compatibility with cluster monitoring and management tools
+
+### Key Constraints
+- IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
+- The system must maintain complete fairness while maximizing resource utilization
+- All allocation decisions must be fully auditable for departmental accountability
+- Must operate in heterogeneous hardware environments
+- System must be resilient to individual node failures
 
 ## Core Functionality
-The system must provide a framework for defining, submitting, and managing computational jobs across a shared academic computing cluster. It should implement intelligent scheduling algorithms that optimize for both fairness and resource utilization, with special attention to departmental quotas, teaching requirements, and research deadlines.
 
-Key components include:
-1. A job definition system using Python decorators/functions for declaring computational tasks and resource requirements
-2. A quota management system that tracks and enforces departmental resource allocations
-3. A schedule-aware reservation system for academic teaching activities
-4. A deadline-based priority system for research projects
-5. A fairness monitoring system that detects and addresses resource monopolization
-6. A specialized hardware allocation optimizer for limited resources
+The Academic Computing Resource Manager must provide:
+
+1. **Resource Quota Definition and Enforcement**
+   - Mechanism for defining departmental allocations and usage limits
+   - Enforcement of quotas during resource contention periods
+   - Dynamic reallocation of unused resources with appropriate policies
+
+2. **Scheduling and Reservation**
+   - Support for both advance reservations and immediate resource requests
+   - Integration with academic schedules for teaching resource allocation
+   - Handling of recurring reservations with exception management
+
+3. **Priority Management and Preemption**
+   - Configurable priority levels for different user types and activities
+   - Deadline-based priority adjustments for research projects
+   - Fair-share algorithms that balance historical usage against allocations
+
+4. **Usage Monitoring and Reporting**
+   - Collection of detailed usage metrics by department, research group, and user
+   - Analysis of utilization patterns to identify optimization opportunities
+   - Generation of reports for departmental chargeback and planning
+
+5. **Hardware Specialization**
+   - Intelligent allocation of specialized computing resources
+   - Time-sharing optimization for expensive hardware components
+   - Job-to-hardware matching based on workload characteristics
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Quota management correctly allocates and reallocates resources based on departmental entitlements
-  - Course schedule integration properly reserves resources for teaching activities
-  - Research deadline awareness appropriately prioritizes time-sensitive projects
-  - Fairness monitoring accurately detects and mitigates resource hogging
-  - Specialized hardware allocation optimally assigns limited resources to jobs
 
-- **Critical User Scenarios**
-  - Balancing competing demands during peak usage periods (end of semester, conference deadlines)
-  - Handling emergency resource requests for critical research
-  - Managing resource contention between teaching and research activities
-  - Addressing a situation where a single user is consuming excessive resources
-  - Optimizing GPU allocation across machine learning research and computational science
+### Key Functionalities to Verify
+- Quota enforcement correctly limits resource usage during contention
+- Unused resource reallocation maintains fairness while improving utilization
+- Course schedule integration properly reserves resources for teaching activities
+- Research deadline awareness appropriately adjusts priorities for time-sensitive projects
+- Fairness monitoring correctly identifies and addresses resource monopolization
 
-- **Performance Benchmarks**
-  - Overall cluster utilization increases to at least 85% (from typical 60%)
-  - Teaching resource availability achieves 100% compliance with course schedules
-  - Research deadline prioritization improves on-time completion by at least 25%
-  - Resource hogging incidents reduced by 90% through automated intervention
-  - Specialized hardware utilization increases by at least 40%
+### Critical Scenarios to Test
+- Handling of competing high-priority research projects near deadlines
+- Resource allocation during peak periods (end of semester, conference deadlines)
+- Management of specialized hardware requests exceeding availability
+- Proper handling of emergency teaching needs or schedule changes
+- Response to simulated hardware failures or maintenance events
 
-- **Edge Cases and Error Conditions**
-  - Recovery from partial cluster node failures
-  - Handling of conflicting priority claims between departments
-  - Management of unexpected system maintenance requirements
-  - Resolution of deadline conflicts between multiple high-priority projects
-  - Graceful degradation when demand exceeds total available resources
+### Performance Benchmarks
+- Scheduling overhead should not exceed 1% of total compute time
+- System should achieve at least 90% resource utilization under normal conditions
+- Priority adjustments should be applied within 5 minutes of deadline information updates
+- Quota enforcement should have minimal impact on job launch latency
 
-- **Required Test Coverage Metrics**
-  - >90% line coverage for all scheduler components
-  - 100% coverage of quota calculation and enforcement logic
-  - 100% coverage of priority determination algorithms
-  - >95% branch coverage for fairness monitoring logic
-  - Integration tests must verify end-to-end job scheduling across departments
+### Edge Cases and Error Conditions
+- Handling of conflicts between course reservations and deadline-driven research
+- Correct behavior when total demand far exceeds available resources
+- Recovery from scheduling database corruption or inconsistencies
+- Proper management of abandoned or orphaned jobs
+- Graceful degradation during partial cluster failures
+
+### Required Test Coverage
+- Minimum 85% line coverage for all scheduling and allocation components
+- Comprehensive integration tests for quota enforcement and reallocation
+- Performance tests simulating peak usage periods
+- Fairness validation under various departmental demand patterns
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Overall cluster utilization increases from 60% to at least 85%
-- Departmental resource allocation complaints reduced by 80%
-- Course-related computing activities achieve 100% resource availability
-- Research deadline compliance improves by at least 30%
-- User satisfaction with specialized hardware access increases significantly
-- Marcus can manage a 50% larger cluster without additional administrative overhead
+
+The implementation will be considered successful if:
+
+1. Department quota management maintains fairness while achieving at least 90% resource utilization
+2. Course schedule integration successfully reserves resources for 100% of scheduled classes
+3. Research deadline awareness appropriately prioritizes time-sensitive projects
+4. Fairness monitoring prevents any user or group from monopolizing resources
+5. Specialized hardware management achieves at least 85% utilization of GPUs and other limited resources
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+1. Setup a virtual environment using UV:
+   ```
+   uv venv
+   source .venv/bin/activate
+   ```
+
+2. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+3. CRITICAL: Run tests with pytest-json-report to generate pytest_results.json:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing pytest_results.json is a critical requirement for project completion.

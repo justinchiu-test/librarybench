@@ -1,168 +1,149 @@
-# TermTask for Product Managers
+# ProductBoard CLI - Command-Line Task Management for Product Leaders
 
 ## Overview
-A specialized command-line task management system designed for product managers who need visibility into technical development without requiring developer tools. This variant focuses on business objective alignment, simplified command interfaces, executive reporting, roadmap visualization, and stakeholder communication to bridge the gap between technical implementation and business goals.
+A specialized command-line task management system designed for product managers who oversee development across multiple technical teams. The system enables visualization of technical tasks in business terms, provides executive reporting capabilities, and offers simplified interfaces for non-technical users while maintaining the efficiency of a command-line tool.
 
 ## Persona Description
 Dana oversees product development across multiple teams and needs to track feature progress without requiring developer tools. Her primary goal is to get visibility into technical tasks and translate them into business impact tracking for stakeholders.
 
 ## Key Requirements
+1. **Technical-to-Business Translation View**: Implement a sophisticated abstraction layer that groups technical tasks by business objectives and outcomes. This feature is critical for Dana as it enables her to understand developer tasks in terms of customer value and business goals, maintain alignment between technical work and strategic initiatives, and communicate progress to non-technical stakeholders using business-oriented language.
 
-1. **Business Objective Translation View**
-   - Group technical tasks by business objectives and initiatives
-   - Map development work to strategic goals and KPIs
-   - Track progress toward business outcomes
-   - Visualize technical debt and infrastructure investment
-   - This feature is critical because it connects day-to-day development work to strategic business goals, enabling Dana to communicate how engineering efforts directly contribute to company objectives and justify resource allocation.
+2. **Simplified CLI Interface**: Create an intuitive command set with preset commands and aliases tailored for non-technical users. This capability allows Dana to leverage the efficiency of command-line tools without requiring deep technical knowledge, focus on product management workflows rather than learning complex syntax, and maintain productivity without relying on developers for information access.
 
-2. **Simplified Command Interface**
-   - Provide preset commands for common product management needs
-   - Create natural language aliases for technical operations
-   - Implement guided workflows for complex operations
-   - Support task management without requiring technical expertise
-   - This capability is essential because it makes the command-line interface accessible to product managers without technical backgrounds, allowing Dana to leverage powerful CLI functionality without a steep learning curve.
+3. **Executive Report Generation**: Develop powerful reporting functionality focusing on strategic metrics relevant to business leadership. This feature enables Dana to generate high-level summaries of project status for executive meetings, demonstrate the business impact of ongoing development work, and track progress toward strategic goals across multiple technical initiatives.
 
-3. **Executive Reporting System**
-   - Generate stakeholder-friendly progress reports
-   - Focus on strategic metrics and business outcomes
-   - Customize reporting for different audience types
-   - Schedule recurring report generation and distribution
-   - This feature is vital because it automates the creation of executive-level communications, saving Dana significant time in report preparation while ensuring consistent, accurate representation of project status to leadership.
+4. **Roadmap Visualization**: Build a system that shows task progression towards product goals with timeline and dependency tracking. This visualization helps Dana plan and communicate product evolution over time, identify potential bottlenecks or conflicts in the development schedule, and maintain a clear connection between daily development tasks and long-term product vision.
 
-4. **Product Roadmap Visualization**
-   - Display task progression toward product goals
-   - Show feature development status and timelines
-   - Visualize dependencies between features and components
-   - Support for milestone and release planning
-   - This functionality is critical because it provides a clear visual representation of product development progress, helps communicate timelines to stakeholders, and identifies potential bottlenecks or dependencies affecting delivery.
-
-5. **Stakeholder Feedback System**
-   - Allow stakeholder comments without full system adoption
-   - Capture and organize feedback by feature and priority
-   - Link stakeholder input to specific product areas
-   - Track resolution of stakeholder concerns
-   - This feature is essential because it creates a structured channel for stakeholder input, helps prioritize development based on feedback, and closes the loop on stakeholder communication without requiring everyone to use the full task management system.
+5. **Stakeholder Comment System**: Implement a mechanism for stakeholders to provide feedback on tasks without requiring full system adoption. This capability enables Dana to gather input from executives, customers, and cross-functional teams, integrate diverse perspectives into the development process, and maintain a communication channel with stakeholders who wouldn't otherwise interact with technical task management.
 
 ## Technical Requirements
 
 ### Testability Requirements
-- Mock business objectives database for testing alignment features
-- Command workflow simulation for testing simplified interface
-- Report template validation for testing executive reporting
-- Roadmap data simulation for testing visualization
-- Synthetic stakeholder feedback for testing comment system
+- Business categorization logic must be testable with predetermined task sets
+- Simplified command interface must be verifiable through command parsing tests
+- Report generation must produce consistent outputs given identical inputs
+- Roadmap visualization data must be testable with predefined project timelines
+- Stakeholder comment system must be testable without requiring actual user interaction
+- All components must be unit testable with mock data sources
 
 ### Performance Expectations
-- Support for mapping 1,000+ technical tasks to business objectives
-- Simplified command processing in under 100ms
-- Generate complex executive reports in under 5 seconds
-- Render roadmap visualizations for 50+ features in under 2 seconds
-- Process stakeholder feedback at a rate of 100+ items per minute
+- Business view generation must handle projects with 10,000+ technical tasks
+- Command parsing and execution must respond in <100ms
+- Report generation must complete in <10 seconds for portfolios with 50+ products
+- Roadmap visualization data must be generated in <5 seconds for complex product timelines
+- The system must support tracking at least 20 distinct products simultaneously
 
 ### Integration Points
-- Strategic planning systems for business objectives
-- Reporting systems for executive communication
-- Project management tools for roadmap data
-- Communication platforms for stakeholder interaction
-- Development tracking systems for technical progress
+- Data import from technical task systems (e.g., JIRA, GitHub, Azure DevOps)
+- Export mechanisms for reports (CSV, PDF, JSON)
+- Notification system for stakeholder comments
+- Business metric tracking systems
+- Timeline visualization data formatting
 
 ### Key Constraints
-- Must operate entirely in command-line environment
-- Cannot require technical knowledge for core product management functions
-- Support for non-technical stakeholder interaction
-- Must present complex technical data in business-friendly terms
-- Performance must be responsive even for large product portfolios
+- The implementation must not require technical knowledge to operate
+- All functionality must be accessible via programmatic API without UI components
+- Business categorization must be configurable without code changes
+- The system must present accurate data while abstracting technical complexity
+- Performance must scale with large product portfolios
+
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core of this implementation centers on a Python library that provides:
 
-The core functionality of the TermTask system for product managers includes:
+1. **Task Management with Business Context**: A core module handling CRUD operations for tasks with additional business metadata layers, including business objectives, customer value propositions, and strategic initiatives.
 
-1. **Product Task Management Core**
-   - Create, read, update, and delete product-related tasks
-   - Organize tasks by product, feature, and initiative
-   - Track task status, dependencies, and priorities
-   - Support for product development workflows
-   - Persistence with historical tracking
+2. **Simplified Command Processor**: An intuitive command parser and execution engine designed specifically for product management workflows, with natural language processing elements to interpret business-oriented commands.
 
-2. **Business Alignment Engine**
-   - Maintain business objective hierarchy
-   - Map technical tasks to business goals
-   - Calculate progress metrics toward objectives
-   - Analyze resource allocation across initiatives
-   - Track business impact of technical work
+3. **Business Intelligence Reporting**: A flexible reporting system capable of generating executive-focused metrics on development progress, resource allocation, and business impact.
 
-3. **Simplified Command System**
-   - Implement natural language command processing
-   - Provide command presets for common operations
-   - Create guided multi-step workflows
-   - Support command aliasing and shortcuts
-   - Implement contextual help and suggestions
+4. **Strategic Roadmap Engine**: Components for organizing tasks into product roadmaps with timeline visualization, dependency tracking, and milestone management.
 
-4. **Reporting Framework**
-   - Define report templates for different audiences
-   - Generate formatted reports with visualizations
-   - Schedule automated report creation
-   - Customize report content and metrics
-   - Support multiple export formats
+5. **Stakeholder Engagement System**: Functionality to capture, store, and integrate feedback from stakeholders on specific tasks or initiatives, with notification capabilities.
 
-5. **Roadmap Management System**
-   - Define product features and initiatives
-   - Track feature development status
-   - Manage dependencies between features
-   - Plan releases and milestones
-   - Visualize timelines and progress
+6. **Technical-Business Translation Layer**: Logic for mapping technical tasks to business outcomes, feature sets, and strategic initiatives with bidirectional traceability.
 
-6. **Stakeholder Engagement Platform**
-   - Capture stakeholder feedback and requests
-   - Categorize and prioritize stakeholder input
-   - Link feedback to product features
-   - Track response and resolution status
-   - Generate stakeholder communication updates
+The system should be designed as a collection of Python modules with clear interfaces between components, allowing them to be used independently or as an integrated solution. All functionality should be accessible through a programmatic API that could be called by a CLI tool (though implementing the CLI itself is not part of this project).
 
 ## Testing Requirements
 
 ### Key Functionalities to Verify
-- Business objectives correctly connect to technical tasks
-- Simplified commands perform expected operations
-- Executive reports contain accurate progress information
-- Roadmap visualization correctly displays feature timelines
-- Stakeholder feedback system properly captures and tracks input
+- Task creation, retrieval, updating, and deletion with business context
+- Business categorization and technical-to-business translation
+- Simplified command parsing and execution
+- Executive report generation with accurate metrics
+- Roadmap data generation with proper timelines and dependencies
+- Stakeholder comment submission and notification
 
 ### Critical User Scenarios
-- Reporting on business goal progress based on technical task completion
-- Using simplified commands to update product roadmap items
-- Generating an executive summary for a quarterly business review
-- Visualizing product development progress for a stakeholder meeting
-- Processing and responding to stakeholder feedback about a feature
+- Presenting technical progress in business terms to executives
+- Tracking development progress toward strategic initiatives
+- Planning product roadmaps across multiple technical teams
+- Gathering and integrating stakeholder feedback
+- Generating executive dashboards for board meetings
 
 ### Performance Benchmarks
-- Business alignment calculations for 1,000+ tasks in under 2 seconds
-- Simplified command execution in under 100ms
-- Report generation for quarterly business review in under 3 seconds
-- Roadmap visualization for 18-month product plan in under 2 seconds
-- Stakeholder feedback processing and routing in under 1 second
+- Business view generation must process at least 500 tasks per second
+- Command parsing and execution must complete in <100ms
+- Report generation must handle portfolios with 50+ products
+- Roadmap visualization must efficiently process products with 1000+ tasks
+- Comment system must support at least 100 concurrent stakeholders
 
 ### Edge Cases and Error Conditions
-- Handling tasks without clear business objective alignment
-- Processing ambiguous natural language commands
-- Generating reports with incomplete data
-- Visualizing roadmaps with uncertain timelines
+- Handling technical tasks with unclear business alignment
+- Properly interpreting ambiguous product management commands
+- Graceful behavior with incomplete or inconsistent roadmap data
 - Managing conflicting stakeholder feedback
-- Supporting products with very large feature sets (100+)
+- Appropriate error messages for non-technical users
+- Handling very large product portfolios with diverse technical stacks
 
 ### Required Test Coverage Metrics
-- Minimum 90% code coverage for core functionality
-- 100% coverage for executive reporting and simplified commands
-- Comprehensive integration tests for data connections
-- Performance tests for large product portfolio scenarios
-- API contract tests for all public interfaces
+- Minimum 90% line coverage for all functional components
+- 100% coverage of all public APIs
+- All error handling paths must be explicitly tested
+- Performance tests must verify all stated benchmarks
+- Usability tests must verify accessibility to non-technical users
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- The system successfully connects technical tasks to business objectives
-- Product managers can effectively use the CLI without technical expertise
-- Executive reporting accurately communicates progress toward business goals
-- Roadmap visualization clearly shows product development status
-- Stakeholder feedback is effectively captured and incorporated
-- Time spent on status reporting is reduced by at least 50%
-- Alignment between technical teams and business objectives improves measurably
-- Communication efficiency with stakeholders increases as measured by meeting time reduction
+The implementation will be considered successful when:
+
+1. All five key requirements are fully implemented and pass their respective test cases.
+2. The system effectively translates technical tasks into business-relevant groupings and metrics.
+3. Non-technical users can operate the system through the simplified command interface.
+4. Executive reports present meaningful business insights based on technical task data.
+5. Roadmap visualization accurately represents progress toward product goals.
+6. Stakeholders can provide feedback that is properly integrated into the task management process.
+7. All performance benchmarks are met under the specified load conditions.
+8. The implementation maintains an appropriate level of abstraction for the product management persona.
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+1. Use `uv venv` to setup a virtual environment. From within the project directory, activate it with `source .venv/bin/activate`.
+2. Install the project with `uv pip install -e .`
+3. CRITICAL: Before submitting, run the tests with pytest-json-report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+4. Verify that all tests pass and the pytest_results.json file has been generated.
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

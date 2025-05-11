@@ -1,171 +1,162 @@
 # Small Business and Personal Finance Management System
 
 ## Overview
-A specialized financial management system designed for small business owners who need to maintain clear separation between business and personal finances while having visibility across both domains. This solution provides tools for tracking business entities, monitoring owner's draw and contributions, generating simplified financial statements, managing sales tax, and properly categorizing business expenses.
+A specialized financial management system designed for small business owners who need to maintain clear separation between business and personal finances while having a unified view of their complete financial picture. The system provides tools for tracking business entities, monitoring owner transactions, generating simplified accounting reports, managing sales tax, and appropriately categorizing business expenses.
 
 ## Persona Description
 Elena runs a small retail business and needs to manage both personal finances and simple business accounting without mixing the two. She requires clear separation of business and personal expenses while maintaining an overview of her complete financial picture.
 
 ## Key Requirements
-1. **Business entity tracking maintaining separate books for different business activities**
-   - Support for multiple business entities with distinct financial tracking
-   - Separation of accounts, transactions, and reporting by entity
-   - Cross-entity financial overview capabilities
-   - Entity-specific tax and financial rule configuration
-   - Critical for maintaining proper legal and financial separation between different business ventures and personal finances
+1. **Business entity tracking maintaining separate books for different business activities**  
+   Elena operates a primary retail business but has occasional side projects and consulting work. She needs a system that maintains separate accounting records for each business entity or revenue stream while allowing unified reporting and analysis across all her business activities. Each entity needs its own chart of accounts, transaction records, and performance metrics.
 
-2. **Owner's draw and contribution monitoring showing personal/business money flows**
-   - Tracking of all financial movements between personal and business accounts
-   - Categorization of owner's equity transactions (capital contributions, draws)
-   - Historical analysis of business/personal financial boundaries
-   - Impact analysis of owner's transactions on business financial health
-   - Essential for maintaining proper accounting records and understanding the true profitability of the business apart from personal finances
+2. **Owner's draw and contribution monitoring showing personal/business money flows**  
+   As a business owner, Elena regularly moves funds between personal and business accounts through owner's draws, capital contributions, and expense reimbursements. The system must track these transfers with proper accounting treatment, maintain accurate capital account balances, and provide clear visibility into the flow of funds between her personal and business finances.
 
-3. **Simplified profit and loss statements generated from categorized transactions**
-   - Automatic generation of basic financial statements
-   - Customizable income and expense categories
-   - Period comparison capabilities (month-to-month, year-to-year)
-   - Profitability metrics and trend analysis
-   - Necessary for making data-driven business decisions without the complexity of full-featured accounting software
+3. **Simplified profit and loss statements generated from categorized transactions**  
+   Elena needs straightforward financial reporting without the complexity of full-fledged accounting software. The system should generate basic profit and loss statements from categorized transactions, showing revenue streams, expense categories, and bottom-line profitability for each business entity and time period, with month-to-month and year-to-year comparisons.
 
-4. **Sales tax collection and remittance tracking with payment deadline alerts**
-   - Calculation of sales tax liabilities based on transaction location and type
-   - Tracking of collected sales tax separate from revenue
-   - Scheduling of sales tax filing and payment deadlines
-   - Historical record of sales tax remittances and filings
-   - Vital for ensuring compliance with sales tax obligations and avoiding penalties
+4. **Sales tax collection and remittance tracking with payment deadline alerts**  
+   Elena's retail business requires collecting and remitting sales tax to multiple jurisdictions. The system needs to track collected tax by jurisdiction, calculate tax liabilities, monitor payment deadlines, and maintain records of filed returns and payments to ensure compliance and prevent penalties for missed deadlines.
 
-5. **Business expense categorization aligned with tax schedule C categories**
-   - Predefined expense categories matching tax reporting requirements
-   - Transaction tagging for tax deduction eligibility
-   - Receipt and documentation management for business expenses
-   - Year-end tax preparation support with category summaries
-   - Important for maximizing legitimate business deductions while maintaining proper documentation for potential audits
+5. **Business expense categorization aligned with tax schedule C categories**  
+   To simplify tax preparation, Elena needs business expenses to be automatically categorized according to IRS Schedule C categories. The system should apply intelligent categorization rules, maintain proper documentation for deductions, flag potentially non-deductible expenses, and generate tax-ready expense summaries for her accountant.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - Financial calculations must be deterministic and unit-testable
-  - Business rule application must be testable with known outcomes
-  - Tax calculations must be verifiable against known tax scenarios
-  - Report generation must produce consistent outputs for testing
-  - Multiple entity separation must be thoroughly testable
+- **Testability Requirements:**
+  - Account separation must be verifiable through comprehensive audit trails
+  - Tax calculations must be validated against current tax rules
+  - Financial reports must reconcile with transaction data
+  - Owner's equity calculations must balance across all transfers
 
-- **Performance Expectations**
-  - Support for high-volume transaction processing across multiple entities
-  - Fast generation of financial reports for arbitrary time periods
-  - Efficient calculation of sales tax obligations across jurisdictions
-  - Quick recategorization of transactions when rules change
-  - Responsive operation even with years of transaction history
+- **Performance Expectations:**
+  - System must support at least 10,000 transactions per year across all entities
+  - Report generation must complete in under 3 seconds
+  - Transaction categorization must achieve 90%+ accuracy
+  - Tax liability calculations must process in real-time as transactions are entered
 
-- **Integration Points**
-  - Import capabilities for bank, credit card, and payment platform statements
-  - Export functionality for tax preparation and accounting software
-  - Standard formats for financial data interchange
-  - Optional point-of-sale system integration
-  - Inventory management system compatibility
+- **Integration Points:**
+  - Import functionality for bank and credit card transactions
+  - Export capabilities for tax preparation software
+  - Document storage for receipts and business records
+  - Optional integration with point-of-sale systems
 
-- **Key Constraints**
-  - Strict data separation between personal and business finances
-  - Clear audit trail for all inter-entity transactions
-  - Transparent methodology for all financial calculations
-  - Compliance with basic accounting principles
-  - Accurate tax rate and rule application
+- **Key Constraints:**
+  - Clear data boundaries between different business entities
+  - Proper accounting standards for owner's equity transactions
+  - Compliance with tax reporting requirements
+  - Audit-ready transaction records and documentation
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide these core components:
+The system must implement these core components:
 
-1. **Multi-Entity Financial Management**
-   - Entity creation and configuration
-   - Entity-specific account and category management
-   - Inter-entity transaction handling
-   - Consolidated and entity-specific reporting
+1. **Multi-Entity Management System:**
+   - Business entity definition and configuration
+   - Entity-specific chart of accounts
+   - Cross-entity reporting and analysis
+   - Entity performance comparison
+   - Consolidated financial view
 
-2. **Owner's Equity Tracking**
-   - Capital contribution and draw recording
-   - Owner's equity balance calculation
-   - Personal/business boundary monitoring
-   - Financial flow analysis between entities
+2. **Owner's Capital Tracking:**
+   - Owner's draw recording and management
+   - Capital contribution tracking
+   - Personal expense reimbursement processing
+   - Equity account maintenance
+   - Personal/business boundary enforcement
 
-3. **Basic Financial Statement Generation**
-   - Income statement (profit & loss) creation
-   - Balance sheet preparation
+3. **Financial Reporting Engine:**
+   - Simplified profit and loss statement generation
+   - Revenue and expense categorization
+   - Comparative reporting (month/quarter/year)
+   - Profitability analysis by product/service
    - Cash flow reporting
-   - Financial metric calculation and trending
 
-4. **Sales Tax Management**
-   - Tax rate configuration by jurisdiction
-   - Taxable transaction identification
-   - Tax collection and liability tracking
-   - Filing period management and remittance scheduling
+4. **Sales Tax Management:**
+   - Multi-jurisdiction tax rate configuration
+   - Tax collection tracking by transaction
+   - Tax liability calculation by jurisdiction
+   - Filing deadline monitoring and alerts
+   - Payment and filing history
 
-5. **Business Expense Categorization**
-   - Tax-aligned category definition
-   - Transaction categorization rules
-   - Receipt and documentation management
-   - Tax preparation export and reporting
-
-6. **Reporting and Analytics**
-   - Business performance metrics
-   - Profitability analysis by product/service line
-   - Cash flow and liquidity monitoring
-   - Tax liability and deduction optimization
+5. **Tax-Oriented Expense System:**
+   - Schedule C category alignment
+   - Receipt documentation management
+   - Deduction optimization
+   - Expense allocation across business entities
+   - Tax-ready reporting
 
 ## Testing Requirements
-- **Key Functionalities for Verification**
-  - Proper separation of transactions between business and personal entities
-  - Accurate tracking of owner's draw and contributions
-  - Correctness of generated financial statements
-  - Precision of sales tax calculations and tracking
-  - Proper business expense categorization and reporting
+- **Key Functionalities to Verify:**
+  - Proper separation of transactions between business entities
+  - Accurate tracking of owner's draws and contributions
+  - Correct generation of profit and loss statements
+  - Proper calculation of sales tax liabilities by jurisdiction
+  - Accurate categorization of expenses according to tax categories
 
-- **Critical User Scenarios**
-  - Setting up and managing multiple business entities alongside personal finances
-  - Recording and analyzing owner's financial interactions with the business
-  - Generating and interpreting basic financial statements
-  - Managing sales tax collection and remittance requirements
-  - Categorizing and tracking business expenses for tax purposes
+- **Critical User Scenarios:**
+  - Creating and configuring a new business entity
+  - Recording an owner's draw from the business to personal accounts
+  - Generating month-end financial reports for business performance
+  - Calculating quarterly sales tax obligations across multiple jurisdictions
+  - Categorizing and documenting business expenses for tax purposes
 
-- **Performance Benchmarks**
-  - Support for at least 10,000 transactions per entity with fast retrieval
-  - Generation of financial reports covering 5+ years in under 5 seconds
-  - Sales tax calculations across multiple jurisdictions in real-time
-  - Recategorization of 1,000+ transactions in under 10 seconds
-  - Export of tax-ready reports in under 5 seconds
+- **Performance Benchmarks:**
+  - System must maintain performance with 3+ years of transaction history
+  - Financial reports must generate in under 5 seconds for all entities combined
+  - Sales tax calculations must process in under 2 seconds for multi-jurisdiction businesses
+  - Expense categorization must achieve at least 90% accuracy with typical business expenses
 
-- **Edge Cases and Error Conditions**
-  - Handling of complex inter-entity transactions
-  - Management of retroactive categorization changes
-  - Adaptation to changing tax rates and jurisdictions
-  - Recovery from incorrectly categorized transactions
-  - Proper handling of partial payments and split transactions
-  - Graceful management of transactions spanning multiple reporting periods
+- **Edge Cases and Error Conditions:**
+  - Handling negative owner's equity situations
+  - Managing mid-year tax rate changes
+  - Processing split transactions that span multiple entities
+  - Detecting and preventing categorization of personal expenses as business
+  - Maintaining data integrity during entity restructuring
 
-- **Required Test Coverage Metrics**
-  - Minimum 90% code coverage across all modules
-  - 100% coverage for entity separation and financial calculation functions
-  - Comprehensive test suite for sales tax calculation logic
-  - Thorough validation of financial statement generation
-  - Complete testing of expense categorization rules
+- **Required Test Coverage Metrics:**
+  - Entity separation functions: minimum 95% coverage
+  - Owner's equity calculations: minimum 90% coverage
+  - Financial reporting functions: minimum 90% coverage
+  - Tax calculation algorithms: minimum 95% coverage
 
-IMPORTANT: 
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-- Business and personal finances remain properly separated
-- Owner's draws and contributions are accurately tracked and categorized
-- Financial statements match expected results and balance properly
-- Sales tax calculations are accurate for all applicable jurisdictions
-- Business expenses align correctly with tax reporting categories
-- All financial calculations match expected results with precision to 2 decimal places
-- Entity-specific reporting maintains proper data isolation
-- Tax-relevant data is organized for straightforward preparation
-- Performance meets or exceeds all benchmark requirements
-- Test coverage meets or exceeds specified metrics
+- The system properly separates and tracks different business entities
+- Owner's draws and contributions are accurately recorded with proper accounting treatment
+- Profit and loss statements correctly reflect business performance
+- Sales tax liabilities are accurately calculated with appropriate deadline tracking
+- Business expenses are properly categorized according to tax requirements
+- All operations maintain clear boundaries between personal and business finances
+- System performance meets or exceeds the specified benchmarks
+- All tests pass without manual intervention
 
-To set up your development environment, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Environment Setup
+1. Set up a virtual environment using `uv venv`
+2. Activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+4. Run tests with:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a critical requirement for project completion.

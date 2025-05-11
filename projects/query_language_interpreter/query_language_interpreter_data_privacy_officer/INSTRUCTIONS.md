@@ -1,181 +1,162 @@
-# Privacy-Focused Data Query Engine
-
-A query language interpreter specialized for data privacy compliance without centralizing sensitive information.
+# Privacy-Focused Query Language Interpreter
 
 ## Overview
-
-The Privacy-Focused Data Query Engine provides a specialized query system for identifying, analyzing, and protecting personal information across company systems. This project variant focuses on enabling compliance with data protection regulations without centralizing sensitive data, featuring advanced PII detection, data minimization, and policy-based query restrictions.
+This specialized Query Language Interpreter enables data privacy officers to identify and manage personal information across company systems without centralizing sensitive data. The interpreter includes built-in PII detection capabilities, data minimization filtering, comprehensive access logging, policy-based query restrictions, and automatic anonymization functions, allowing for effective compliance reviews while maintaining strict data protection standards.
 
 ## Persona Description
-
 Raj ensures compliance with data protection regulations across company systems. He needs to query data repositories to identify personal information without centralizing sensitive data in additional systems.
 
 ## Key Requirements
+1. **PII (Personally Identifiable Information) detection using pattern matching and validation**: Automatically identifies potential PII (names, addresses, phone numbers, SSNs, financial information, etc.) across diverse data sources using pre-configured and customizable pattern matching, validation rules, and contextual analysis, enabling comprehensive compliance scanning without prior knowledge of where sensitive data might reside.
 
-1. **PII (Personally Identifiable Information) detection using pattern matching and validation**
-   - Implement comprehensive pattern recognition for various PII types (names, addresses, government IDs, financial information)
-   - Support validation rules to reduce false positives in PII detection
-   - Enable configurable sensitivity levels for different types of identification
-   - Add regional variants for PII formats across different countries and regulations
-   - Critical for Raj to systematically identify all locations where personal data exists across disparate systems
+2. **Data minimization filtering showing only essential fields for compliance reviews**: Implements configurable field filtering that automatically limits query results to only the specific data fields necessary for privacy compliance tasks, enforcing the data minimization principle required by regulations like GDPR and preventing unnecessary exposure of sensitive information during compliance activities.
 
-2. **Data minimization filtering showing only essential fields for compliance reviews**
-   - Develop automated field filtering based on purpose specification
-   - Support role-based minimization profiles with different access levels
-   - Implement field-level redaction and masking based on query purpose
-   - Enable audit trails documenting minimization decisions
-   - Essential for demonstrating compliance with data minimization principles and limiting exposure of sensitive information
+3. **Access logging creating immutable records of all queries against sensitive data**: Maintains detailed, tamper-resistant logs of all query activities, including the user, timestamp, query parameters, data sources accessed, and the specific fields viewed, providing a complete audit trail for regulatory compliance and security reviews of privacy-related activities.
 
-3. **Access logging creating immutable records of all queries against sensitive data**
-   - Create tamper-evident logs of all access to sensitive data
-   - Record query details, user identity, purpose, timestamp, and accessed fields
-   - Support cryptographic verification of log integrity
-   - Enable automated suspicious access pattern detection
-   - Critical for compliance with regulatory requirements for tracking and justifying all access to personal data
+4. **Policy-based query restrictions preventing unauthorized data combinations**: Enforces configurable data access policies that prevent potentially harmful data combinations or analyses, such as joining anonymized datasets with identifying information or combining data in ways that could lead to re-identification of individuals, ensuring compliance with privacy regulations even during advanced analysis.
 
-4. **Policy-based query restrictions preventing unauthorized data combinations**
-   - Implement a rules engine for enforcing data usage policies
-   - Support prohibition of certain field combinations that could lead to re-identification
-   - Enable purpose-based restrictions on query patterns
-   - Provide clear explanations when queries are rejected
-   - Vital for preventing accidental or deliberate circumvention of privacy protections
-
-5. **Anonymization functions automatically masking sensitive fields in query results**
-   - Develop techniques for various anonymization methods (masking, tokenization, generalization, perturbation)
-   - Support k-anonymity and differential privacy techniques
-   - Enable context-aware anonymization based on query purpose and data sensitivity
-   - Provide anonymization strength metrics
-   - Important for allowing useful analysis while maintaining individual privacy
+5. **Anonymization functions automatically masking sensitive fields in query results**: Provides built-in data anonymization capabilities (hashing, tokenization, redaction, generalization, etc.) that can be applied automatically to sensitive fields in query results, enabling privacy-preserving analysis while maintaining the utility of the data for legitimate business purposes.
 
 ## Technical Requirements
-
 ### Testability Requirements
-- All privacy functions must be unit-testable with pytest
-- Test PII detection accuracy against labeled datasets
-- Verify policy enforcement with comprehensive test cases
-- Test anonymization effectiveness using re-identification risk metrics
-- Validate logging integrity with cryptographic verification
+- All PII detection patterns must be individually testable with sample data
+- Data minimization rules must be verifiable with distinct test cases
+- Access logging must be tested for completeness and tamper resistance
+- Policy enforcement must be tested with both compliant and non-compliant queries
+- Anonymization functions must be tested for effectiveness and consistency
 
 ### Performance Expectations
-- Scan data sources at rates exceeding 50MB/second for PII
-- Apply policy restrictions with minimal query latency (under 100ms overhead)
-- Process anonymization functions with less than 5% performance impact
-- Support incremental scanning of large datasets (multi-TB)
-- Complete privacy impact assessments on 1GB datasets in under 10 minutes
+- PII scanning should process at least 1GB of structured data per hour
+- Query execution should maintain reasonable performance despite policy enforcement
+- Access logging should have minimal impact on query performance
+- Anonymization operations should add no more than 200ms to query execution time
+- The system should scale to handle enterprise datasets (100+ tables, billions of records)
 
 ### Integration Points
-- Connect to common data storage systems (databases, file systems, object storage)
-- Support common data formats (CSV, JSON, XML, database tables)
-- Integrate with identity and access management systems
-- Provide audit output compatible with compliance reporting tools
-- Enable policy synchronization with centralized governance systems
+- Support for common data sources (databases, CSV files, JSON data, API endpoints)
+- Configurable integration with existing enterprise identity and access management systems
+- Export capabilities for compliance reports and audit logs
+- Optional integration with data cataloging systems for metadata awareness
+- Alert mechanism for potential policy violations or unusual access patterns
 
 ### Key Constraints
-- Never create persistent copies of sensitive data during processing
-- Enforce strict memory management to prevent data leakage
-- Support air-gapped operation in high-security environments
-- Minimize false positives in PII detection while maintaining high recall
-- Ensure all operations are explainable for compliance justification
+- Processing must occur where data resides to avoid centralizing sensitive information
+- Implementation must be compliant with major privacy regulations (GDPR, CCPA, HIPAA)
+- All operations must be auditable and transparent
+- Access controls must be granular to field-level permissions
+- System must operate securely in environments with highly sensitive data
 
-### Implementation Notes
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The core functionality of this Privacy-Focused Query Language Interpreter includes:
 
-The Privacy-Focused Data Query Engine must implement the following core functionality:
+1. **Query Engine with Privacy Extensions**:
+   - SQL-like language with privacy-specific functions and constraints
+   - Execution planning that respects privacy policies and access restrictions
+   - Support for distributed query execution without data centralization
+   - Integration with existing data sources without modification
 
-1. **Data Discovery and Classification**
-   - Scan various data sources to identify PII and sensitive information
-   - Classify detected information according to sensitivity and risk
-   - Maintain data maps linking sensitive information to storage locations
-   - Update classifications incrementally as data changes
+2. **PII Detection System**:
+   - Pattern matching engine with pre-configured detectors for common PII types
+   - Validation rules to confirm potential PII matches
+   - Customizable detection rules for organization or industry-specific PII
+   - Confidence scoring for potential PII matches
 
-2. **Privacy-Enhanced Query Processing**
-   - Parse and analyze queries for privacy implications
-   - Apply policy-based restrictions to prevent privacy violations
-   - Transform queries to incorporate data minimization
-   - Implement privacy-preserving joins and aggregations
+3. **Policy Enforcement Framework**:
+   - Rule-based system for defining and enforcing data access policies
+   - Prevention of unauthorized data combinations
+   - Field-level access control integration
+   - Policy violation detection and handling
 
-3. **Anonymization Engine**
-   - Apply appropriate anonymization techniques based on context
-   - Support various methods from simple masking to differential privacy
-   - Evaluate and report re-identification risk
-   - Preserve data utility while enhancing privacy
+4. **Access Audit System**:
+   - Comprehensive logging of all query operations
+   - Tamper-evident audit trail implementation
+   - Detailed metadata capture for compliance reporting
+   - Query history and analysis tools
 
-4. **Audit and Compliance System**
-   - Record detailed logs of all sensitive data access
-   - Protect logs from tampering or unauthorized access
-   - Generate compliance reports for various regulations
-   - Detect anomalous access patterns
-
-5. **Policy Enforcement Framework**
-   - Define and manage data usage policies
-   - Evaluate queries against established policies
-   - Provide clear feedback for policy violations
-   - Support policy version control and change management
+5. **Data Protection Functions**:
+   - Multiple anonymization techniques (hashing, tokenization, masking, etc.)
+   - Pseudonymization with key management
+   - Data generalization and aggregation methods
+   - Differential privacy implementation for statistical queries
 
 ## Testing Requirements
-
 ### Key Functionalities to Verify
-- Accuracy of PII detection across different data formats
-- Correct application of data minimization based on purpose
-- Reliable enforcement of policy-based restrictions
-- Effectiveness of anonymization techniques
-- Integrity and completeness of access logging
+- Accuracy of PII detection across diverse data formats and types
+- Correct application of data minimization filters based on purpose specification
+- Complete and accurate logging of all access activities
+- Proper enforcement of data access policies and combination restrictions
+- Effectiveness of anonymization functions for different data types
 
 ### Critical User Scenarios
-- Conducting a data protection impact assessment across enterprise systems
-- Identifying all instances of specific PII types for right-to-be-forgotten requests
-- Analyzing customer data for marketing purposes while preserving privacy
-- Investigating a security incident without exposing additional sensitive data
-- Providing evidence of compliance during a regulatory audit
+- Conducting a data protection impact assessment across multiple systems
+- Responding to a data subject access request by locating all personal data
+- Performing a compliance audit for regulatory requirements
+- Investigating a potential data protection violation
+- Generating privacy compliance reports for management or regulators
 
 ### Performance Benchmarks
-- Detect PII in unstructured text at a rate of at least 50MB per second
-- Process policy evaluation for complex queries in under 100ms
-- Apply anonymization to 1 million records in under 30 seconds
-- Scale to handle enterprise datasets of 100+ TB with distributed processing
-- Support concurrent queries from at least 50 compliance team members
+- PII detection must achieve at least 95% accuracy on standard test datasets
+- Query execution with privacy controls must complete within 2x the time of equivalent queries without controls
+- Access logging must not increase query latency by more than 10%
+- Policy enforcement engine must evaluate complex policies in under 100ms
+- System must handle datasets with at least 10 million records while maintaining reasonable performance
 
 ### Edge Cases and Error Conditions
-- Handling encrypted or encoded data during PII scanning
-- Managing conflicting or ambiguous policy rules
-- Processing datasets with extremely high PII density
-- Dealing with attempts to circumvent policy restrictions
-- Recovering from interrupted scans of large datasets
+- Handling of encrypted or encoded data with potential PII
+- Correct behavior when encountering malformed or unusual personal data formats
+- Appropriate response to attempted policy violations or unauthorized queries
+- Graceful handling of conflicting privacy rules or policies
+- Proper management of edge cases in anonymization (e.g., unique values that can't be effectively anonymized)
 
 ### Required Test Coverage Metrics
-- Minimum 95% code coverage for all privacy-critical functions
-- Test all PII detection patterns against at least 1,000 positive and negative examples
-- 100% coverage of policy enforcement logic
-- Verify anonymization functions against known re-identification attacks
-- Test logging integrity with simulated tampering attempts
+- Minimum 95% code coverage across all modules
+- 100% coverage for PII detection patterns and anonymization functions
+- All policy enforcement rules must have dedicated test cases
+- Access logging must be tested for all query types and scenarios
+- All potential policy violation scenarios must be explicitly tested
+
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
+A successful implementation will:
 
-The implementation will be considered successful if it meets the following criteria:
+1. Accurately identify PII across various data sources using pattern matching and validation, verified by tests with diverse data samples containing known PII patterns
+2. Properly apply data minimization filters based on purpose specification, demonstrated by tests showing only necessary fields are returned
+3. Maintain comprehensive access logs for all queries and data access, validated through audit trail tests
+4. Correctly enforce data access policies and prevent unauthorized data combinations, verified by tests with policy-violating queries
+5. Effectively anonymize sensitive data fields while preserving analytical utility, confirmed through tests measuring both protection and utility
 
-1. **Functional Completeness**
-   - All five key requirements are fully implemented
-   - PII detection achieves >95% recall and >90% precision on test datasets
-   - Policy restrictions correctly prevent all tested privacy violations
-   - Anonymization techniques demonstrably reduce re-identification risk
-   - Access logging creates verifiably complete and tamper-evident records
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
 
-2. **Compliance Effectiveness**
-   - Supports compliance with major privacy regulations (GDPR, CCPA/CPRA, HIPAA)
-   - Enables data mapping required for regulatory reporting
-   - Provides necessary evidence for demonstrating compliance
-   - Significantly reduces manual effort in compliance processes
+## Environment Setup
 
-3. **Security and Privacy Protection**
-   - Does not introduce new privacy or security risks
-   - Successfully prevents unauthorized data combinations
-   - Applies appropriate minimization and anonymization
-   - Maintains secure handling of sensitive data throughout processing
+To set up your development environment:
 
-4. **Operational Feasibility**
-   - Functions without creating additional copies of sensitive data
-   - Performs efficiently enough for regular enterprise use
-   - Scales appropriately with data volume
-   - Integrates with existing data infrastructure
+```bash
+# From within the project directory
+uv venv
+source .venv/bin/activate
+uv pip install -e .
+```
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```bash
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

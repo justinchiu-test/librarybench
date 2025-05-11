@@ -1,146 +1,147 @@
-# Industrial IoT Data Processing Framework
+# Industrial IoT Data Stream Processing Pipeline
 
 ## Overview
-A horizontally scalable data processing framework designed to ingest, process, and analyze data streams from millions of connected industrial sensors. This system optimizes cloud resource utilization while efficiently handling the diverse data velocity, volume, and format requirements typical of large-scale industrial IoT deployments.
+A scalable data processing framework designed to ingest, process, and analyze data streams from millions of industrial IoT sensors. The system provides efficient resource utilization, adaptive processing based on data patterns, and specialized handling for diverse industrial sensor protocols.
 
 ## Persona Description
 Carlos designs systems that ingest data from millions of connected industrial sensors for a manufacturing analytics platform. His primary goal is to scale the data processing horizontally while ensuring efficient resource utilization across his cloud infrastructure.
 
 ## Key Requirements
+1. **Dynamic worker allocation based on sensor activation patterns**: Implement a system that automatically scales processing resources up and down based on temporal patterns of sensor activity across different manufacturing zones. This is critical for efficient resource utilization in facilities that operate with predictable shift patterns but unpredictable sensor activity density.
 
-1. **Dynamic worker allocation based on sensor activation patterns**
-   - Intelligent resource allocation system that scales processing workers up and down based on real-time sensor activity
-   - Critical for Carlos to optimize cloud infrastructure costs while maintaining processing capacity for unpredictable sensor activation patterns
-   - Must include forecasting capability to pre-allocate resources before anticipated activation spikes
+2. **Time-series compression for efficient storage of periodic signals**: Create specialized encoding and compression algorithms tailored to industrial time-series data, particularly for sensors that report at fixed intervals with predictable value ranges. This capability dramatically reduces storage costs and network bandwidth while preserving analytical accuracy for terabytes of daily sensor data.
 
-2. **Time-series compression for efficient storage of periodic signals**
-   - Adaptive compression algorithms optimized for industrial time-series data
-   - Essential for handling the massive volume of repetitive sensor data while preserving critical signal features
-   - Should include configurable precision/compression ratios for different sensor types and use cases
+3. **Device-specific protocol adapters with plug-in architecture**: Design a flexible adapter framework that supports the diverse communication protocols used by industrial sensors (Modbus, OPC-UA, MQTT, proprietary protocols) through a consistent interface. This extensibility is essential for integrating the wide variety of equipment found in modern factories without custom code for each device type.
 
-3. **Device-specific protocol adapters with plug-in architecture**
-   - Extensible adapter framework supporting diverse industrial communication protocols
-   - Necessary for integrating the wide variety of sensor types and manufacturers in industrial environments
-   - Must be easily extensible to support new protocols and device types without pipeline modifications
+4. **Batch/stream hybrid processing for different data velocity requirements**: Develop a unified processing architecture that intelligently routes data to either real-time stream processing (for critical operational metrics) or batch aggregation (for long-term trend analysis) based on data characteristics and business value. This dual-mode capability addresses the diverse analytical needs across operational monitoring and strategic planning.
 
-4. **Batch/stream hybrid processing for different data velocity requirements**
-   - Unified processing framework supporting both real-time and batch processing paradigms
-   - Crucial for efficiently handling both high-frequency operational data and periodic aggregated analytics
-   - Should include intelligent routing to determine optimal processing path for each data source
-
-5. **Sensor health monitoring with anomalous transmission detection**
-   - Automated monitoring of sensor transmission patterns to detect malfunctions
-   - Vital for maintaining data quality and identifying failing sensors before they impact production
-   - Must include configurable alerting and self-healing mechanisms for common failure modes
+5. **Sensor health monitoring with anomalous transmission detection**: Implement capabilities that automatically detect irregular sensor behavior including intermittent connections, calibration drift, and unusual reporting patterns that might indicate equipment failure. This proactive diagnosis prevents data quality issues that could impact manufacturing decisions and minimizes maintenance costs through early detection.
 
 ## Technical Requirements
+- **Testability Requirements**:
+  - Must support simulation of thousands of virtual sensors with configurable behaviors
+  - Needs reproducible testing with controlled sensor transmission patterns
+  - Requires validation against historical device behavior profiles
+  - Must support fault injection testing for communications and sensor failures
+  - Needs verification of functional behavior under varying load levels
 
-### Testability Requirements
-- Comprehensive testing framework with sensor simulation capabilities
-- Scale testing infrastructure to validate performance with millions of simulated devices
-- Protocol conformance testing for each supported device type
-- Fault injection framework for validating resilience features
-- Long-running stability tests under variable load conditions
+- **Performance Expectations**:
+  - Ability to process at least 500,000 sensor readings per second
+  - Support for at least 1 million concurrently connected devices
+  - Horizontal scaling to handle 2x capacity increase within 5 minutes
+  - Maximum latency of 5 seconds for real-time alerts
+  - Storage efficiency achieving at least 10:1 compression ratio for time-series data
 
-### Performance Expectations
-- Support for 10+ million connected sensors with sub-second ingestion latency
-- Ability to scale to handle 500,000+ messages per second
-- Storage efficiency achieving at least 10:1 compression for typical sensor data
-- CPU and memory utilization remaining under 70% during normal operation
-- Batch processing throughput of at least 1TB/hour for historical analysis
+- **Integration Points**:
+  - Industrial protocol gateways and edge devices
+  - Time-series databases for historical data storage
+  - Alerting and notification systems
+  - Equipment management and asset tracking systems
+  - Analytics and reporting platforms
 
-### Integration Points
-- Industrial protocol adapters (Modbus, OPC-UA, MQTT, etc.)
-- Cloud infrastructure management APIs for resource provisioning
-- Time-series database integration for compressed storage
-- Alerting and monitoring systems
-- Analytics and dashboard platforms
+- **Key Constraints**:
+  - Must operate within a containerized cloud infrastructure
+  - Processing latency must not exceed 5 seconds for critical alerts
+  - Implementation must be resilient to network interruptions
+  - System must handle sensor clock synchronization issues
+  - Storage solution must be cost-optimized for massive data volumes
 
-### Key Constraints
-- Must operate efficiently in containerized cloud environments
-- Resource usage must scale linearly with workload
-- Protocol adapters must be isolatable to prevent cross-contamination
-- Must support both edge pre-processing and cloud processing models
-- All components must be independently scalable and replaceable
+IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
+The system must provide a framework for IoT data stream processing that:
 
-The framework must provide:
+1. Ingests data from diverse industrial sensors with protocol-specific adapters
+2. Normalizes varied data formats into consistent internal representations
+3. Implements configurable processing pipelines that support:
+   - Dynamic resource allocation based on incoming data patterns
+   - Intelligent routing to real-time or batch processing paths
+   - Efficient compression for time-series data storage
+   - Anomaly detection for sensor health monitoring
+   - Aggregation and statistical analysis of sensor trends
+4. Manages cloud resource allocation to optimize costs
+5. Provides monitoring and alerting for system health and sensor status
+6. Offers a plugin architecture for custom protocol and processing components
+7. Maintains metadata about sensor types, locations, and expected behaviors
 
-1. **Sensor Data Ingestion System**
-   - Multi-protocol support for industrial sensors
-   - Plug-in architecture for protocol adapters
-   - High-throughput message reception and initial processing
-   - Automatic detection and handling of protocol-specific quirks
-
-2. **Dynamic Resource Management**
-   - Predictive scaling based on historical activation patterns
-   - Real-time monitoring of processing latency and throughput
-   - Automatic worker provisioning and deprovisioning
-   - Load balancing across available computing resources
-
-3. **Time-Series Processing Engine**
-   - Specialized compression algorithms for different sensor types
-   - Configurable precision settings for different use cases
-   - Stream aggregation for high-frequency data
-   - Pattern detection in time-series data
-
-4. **Hybrid Processing Framework**
-   - Stream processing for real-time analytics
-   - Batch processing for historical analysis
-   - Coordinated execution across processing modes
-   - Optimization for different data velocities
-
-5. **Sensor Health Monitoring**
-   - Baseline establishment for normal transmission patterns
-   - Anomaly detection for irregular reporting
-   - Diagnostic tools for sensor troubleshooting
-   - Self-healing mechanisms for common issues
+The implementation should emphasize horizontal scalability, resource efficiency, and the ability to handle highly heterogeneous data sources through a consistent processing framework.
 
 ## Testing Requirements
+- **Key Functionalities to Verify**:
+  - Correct handling of multiple industrial protocols and data formats
+  - Proper implementation of dynamic resource allocation algorithms
+  - Effectiveness of time-series compression algorithms
+  - Accuracy of sensor health anomaly detection
+  - Performance under various load scenarios
+  - Proper functioning of the batch/stream hybrid processing system
 
-### Key Functionalities to Verify
-- Ingestion performance across supported protocols
-- Scaling behavior under variable load
-- Compression ratios and accuracy for different data types
-- Worker allocation efficiency with changing sensor activity
-- Anomaly detection accuracy for sensor health monitoring
+- **Critical User Scenarios**:
+  - System behavior during manufacturing shift transitions with sudden sensor activity spikes
+  - Performance during facility-wide process changes affecting thousands of sensors
+  - Handling of communications interruptions and delayed data arrival
+  - Response to sensor firmware updates across a device fleet
+  - Behavior under simulated sensor failure conditions
 
-### Critical User Scenarios
-- Factory startup with thousands of sensors coming online simultaneously
-- Steady-state operation with normal sensor reporting patterns
-- Production shift changes causing predictable activity spikes
-- Partial communication outages affecting sensor subsets
-- Long-term data collection with seasonal activity variations
+- **Performance Benchmarks**:
+  - Ingestion rate of 500,000+ sensor readings per second
+  - Support for 1 million+ connected devices
+  - Compression ratio of at least 10:1 for typical industrial sensor data
+  - Resource utilization scaling proportional to workload within 10% margin
+  - Alert delivery for critical conditions within 5 seconds
 
-### Performance Benchmarks
-- Ingestion latency under 100ms for 99% of messages
-- Support for 10+ million concurrently connected devices
-- Linear scaling of throughput with added workers
-- Resource utilization proportional to active sensor count
-- Compression achieving 10:1 ratio while preserving key signal features
+- **Edge Cases and Error Conditions**:
+  - Handling of corrupted sensor data transmissions
+  - Recovery from network partitions and connectivity loss
+  - Behavior with severely clock-skewed device timestamps
+  - Processing of backlogged data after system recovery
+  - Response to malformed or non-compliant protocol messages
 
-### Edge Cases and Error Conditions
-- Recovery from cloud infrastructure failures
-- Handling of corrupted sensor messages
-- Response to network partitioning scenarios
-- Behavior during resource exhaustion
-- Processing of backdated or out-of-sequence data
+- **Required Test Coverage Metrics**:
+  - 100% coverage of protocol adapter interfaces
+  - >90% line coverage for all production code
+  - 100% coverage of error handling paths
+  - Integration tests for all supported sensor protocols
+  - Load tests verifying performance at 2x expected production scale
 
-### Test Coverage Metrics
-- 100% protocol compliance test coverage
-- Performance testing across projected scale limits
-- Fault tolerance testing for all identified failure modes
-- Resource efficiency testing across scaling range
-- Long-term stability testing (7+ days continuous operation)
+IMPORTANT:
+- ALL functionality must be testable via pytest without any manual intervention
+- Tests should verify behavior against requirements, not implementation details
+- Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
+- Tests should be comprehensive enough to verify all aspects of the requirements
+- Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-1. The system dynamically allocates and deallocates processing resources, maintaining optimal resource utilization while handling variable sensor activation patterns
-2. Time-series compression achieves at least 10:1 data reduction while preserving essential signal characteristics
-3. Protocol adapters successfully handle the diverse communication requirements of industrial sensors without requiring core pipeline modifications
-4. The hybrid processing model efficiently processes both real-time streams and historical batch data through appropriate routes
-5. Sensor health monitoring correctly identifies at least 95% of anomalous transmission patterns with minimal false positives
-6. The system scales linearly to support millions of sensors while maintaining sub-second processing latency
-7. Resource utilization correlates directly with active sensor count, optimizing infrastructure costs
+A successful implementation will demonstrate:
 
-_Note: To set up the development environment, use `uv venv` to create a virtual environment within the project directory. Activate it using `source .venv/bin/activate`._
+1. Efficient processing of data from millions of industrial sensors with optimized resource utilization
+2. Intelligent allocation of computing resources based on sensor activity patterns
+3. Effective compression of time-series data with minimal information loss
+4. Flexible support for diverse industrial communication protocols
+5. Reliable detection of sensor health issues and anomalous behavior
+6. Appropriate handling of both real-time and batch processing needs
+7. Comprehensive test coverage with all tests passing
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Setup Instructions
+
+To setup the development environment:
+
+1. Use `uv venv` to create a virtual environment
+2. From within the project directory, activate the environment with `source .venv/bin/activate`
+3. Install the project with `uv pip install -e .`
+
+CRITICAL: Running tests with pytest-json-report and providing the pytest_results.json file is MANDATORY for project completion:
+```
+pip install pytest-json-report
+pytest --json-report --json-report-file=pytest_results.json
+```

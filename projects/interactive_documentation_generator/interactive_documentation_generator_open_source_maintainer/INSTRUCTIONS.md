@@ -1,121 +1,154 @@
-# Open Source Library Documentation Generator
+# Open Source Documentation Generator
+
+A specialized documentation generation tool designed for open source project maintainers to reduce documentation burden while supporting diverse user needs.
 
 ## Overview
-An advanced documentation generation system tailored for open source projects that automatically identifies API changes, highlights contribution metrics, supports multi-platform examples, integrates with CI/CD pipelines, and provides health scores to guide documentation improvement efforts as the codebase evolves.
+
+The Open Source Documentation Generator provides automated tools to create, maintain, and evolve documentation for rapidly changing open source projects. It focuses on highlighting API changes, tracking community contributions to documentation, and ensuring consistent quality across multiple platforms and environments.
 
 ## Persona Description
+
 Mei is the lead maintainer of a popular open source library with a global contributor base. She needs to make the documentation both approachable for newcomers and comprehensive for experienced users while reducing the maintenance burden as the project evolves rapidly.
 
 ## Key Requirements
-1. **Automated API Change Detection** - The system must analyze code repositories to automatically detect and highlight API changes between versions, with special emphasis on breaking changes. This is critical for Mei because it allows contributors and users to quickly understand how updates impact their code, reducing support requests and migration issues.
 
-2. **Contribution Metrics Dashboard** - Implement a metrics system that tracks documentation coverage by community members, showing which parts of the codebase are well-documented and by whom. This feature is essential because it gamifies documentation contributions, incentivizes community involvement, and helps Mei identify active documentation contributors for recognition.
+1. **Automated API Change Detection and Highlighting** - The system must automatically detect and highlight breaking changes between versions of the codebase. This is critical for Mei as it helps contributors and users understand compatibility issues without manual comparison, reducing migration pain points and support requests.
 
-3. **Multi-Platform Example Generation** - Create a framework that automatically generates and validates code examples across different environments and runtime versions. This is vital for Mei because her library is used across diverse platforms, and ensuring examples work correctly in all supported environments prevents frustration for users with different setups.
+2. **Documentation Contribution Metrics** - The tool must track and display metrics on documentation coverage by community members. This allows Mei to acknowledge contributors' documentation efforts, identify documentation champions within the community, and focus attention on under-documented areas of the codebase.
 
-4. **CI/CD Integration Hooks** - Develop integration capabilities with common CI/CD systems (particularly GitHub Actions and GitLab CI) for automatic documentation deployment. This requirement is crucial as it ensures documentation stays synchronized with code changes, eliminating the common problem of outdated documentation that frustrates users and increases support burden.
+3. **Multi-Platform Example Generation** - The system must generate and validate code examples across different environments and runtime versions. As an open source maintainer, Mei must ensure documentation works for users across diverse setups, from different Python versions to various operating systems and deployment contexts.
 
-5. **Documentation Health Scoring** - Implement an analytical system that evaluates documentation quality and identifies areas needing attention based on multiple factors (coverage, clarity, examples, etc.). This is important for Mei because it helps prioritize documentation efforts efficiently, focusing limited contributor resources on the most critical documentation gaps.
+4. **Continuous Documentation Integration** - The tool must provide integration hooks for CI/CD systems (specifically GitHub Actions and GitLab CI) to automatically build, validate, and deploy documentation. This ensures documentation is always up-to-date with the latest code changes without requiring manual intervention from Mei or other maintainers.
+
+5. **Documentation Health Scoring** - The system must calculate and display a health score for each documentation section based on completeness, accuracy, and freshness. This helps Mei quickly identify areas needing community attention and allows potential contributors to find meaningful documentation tasks to tackle.
 
 ## Technical Requirements
-- **Testability Requirements**
-  - All components must be unit-testable with at least 85% code coverage
-  - Integration tests must verify the accuracy of API change detection with sample codebases
-  - Mock repositories must be used to test version control integration
-  - Example generation must be testable across defined target environments
-  - Health scoring algorithms must produce consistent, verifiable results
 
-- **Performance Expectations**
-  - Documentation generation must complete in under 5 minutes for repositories up to 100MB
-  - API change detection must handle repositories with up to 10,000 commits efficiently
-  - System should support parallel processing of multiple components for large codebases
-  - CI/CD operations should add no more than 3 minutes to build pipelines
+### Testability Requirements
+- All components must be testable in isolation using pytest fixtures and mocks
+- API change detection accuracy must be verifiable using version-diffing test cases
+- Multi-platform testing must support parametrized tests for different Python versions
+- Integration hooks must be testable with mock CI environments
 
-- **Integration Points**
-  - Git-based version control systems (primarily GitHub, GitLab)
-  - CI/CD platforms (GitHub Actions, GitLab CI, Jenkins, Travis CI)
-  - Package registries for version comparison
-  - Multiple language runtimes for example validation
-  - Markdown, reStructuredText, and HTML output formats
+### Performance Expectations
+- Documentation generation for projects up to 100,000 lines of code must complete in under 5 minutes
+- API change detection between major versions must complete in under 30 seconds
+- Health score calculations for the entire documentation set must complete in under 10 seconds
 
-- **Key Constraints**
-  - Must function without database dependencies (file-based storage only)
-  - All operations must be possible via command line for CI integration
-  - No reliance on proprietary services that limit open source usage
-  - Cross-platform compatibility (Linux, macOS, Windows)
-  - Low memory footprint to work within CI environment limitations
+### Integration Points
+- Git repository integration for version comparison and contribution tracking
+- GitHub/GitLab API integration for contributor information and issue linking
+- CI system webhook integration for automated documentation deployment
+- Python ecosystem tools (different interpreters, package managers) for cross-platform validation
+
+### Key Constraints
+- All functionality must be implementable without UI components
+- Must work offline for local documentation generation and validation
+- Must support projects with at least 50 contributors and 10,000 stars on GitHub
+- Must handle documentation for projects with at least 10 major versions
 
 IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest. Focus on creating well-defined APIs and interfaces rather than user interfaces.
 
 ## Core Functionality
-The system must provide a Python library with the following core modules:
 
-1. **Repository Analyzer**: Parse source code repositories to extract API definitions, documentation content, and version history.
+The system must provide:
 
-2. **Change Detector**: Compare code across versions to automatically detect API changes, categorizing them as additions, modifications, deprecations, or breaking changes.
+1. A code analysis engine that examines source files across versions to detect API changes, with classification of changes as breaking, non-breaking, or deprecation
+2. A documentation extraction system that parses docstrings, comments, and dedicated documentation files
+3. A contributor tracking system that attributes documentation sections to specific contributors
+4. A multi-platform validation engine that verifies code examples work across different environments
+5. A documentation health scoring algorithm that evaluates completeness, accuracy, and freshness
+6. CI integration components that hook into GitHub Actions and GitLab CI for automated documentation workflows
+7. A reporting system that generates contribution metrics and identifies documentation gaps
 
-3. **Example Manager**: Extract, validate, and generate executable code examples for different platforms and runtime environments.
-
-4. **Metrics Collector**: Track and analyze documentation coverage, contributor activity, and documentation quality metrics.
-
-5. **Health Scorer**: Evaluate documentation quality using configurable criteria and generate actionable improvement recommendations.
-
-6. **CI Integrator**: Provide hooks and configuration templates for common CI/CD platforms to automate documentation deployment.
-
-These modules should work together through a command-line interface, allowing for flexible automation while maintaining the ability to use individual components as needed.
+These components should work together to create a documentation system that evolves with the project and distributes maintenance across the community while maintaining high quality standards.
 
 ## Testing Requirements
-- **Key Functionalities to Verify**
-  - Accurate detection of API changes between versions
-  - Correct classification of breaking vs. non-breaking changes
-  - Successful generation and validation of examples across platforms
-  - Accurate contribution metrics collection
-  - Consistent health scoring with actionable recommendations
-  - Proper integration with CI/CD workflows
 
-- **Critical User Scenarios**
-  - New version release with API changes
-  - First-time contributor adding documentation
-  - Identification and remediation of documentation gaps
-  - Documentation deployment through CI pipeline
-  - Multi-platform example validation
+The implementation must include tests for:
 
-- **Performance Benchmarks**
-  - Process a 50MB repository in under 2 minutes
-  - Handle repositories with 5,000+ commits without performance degradation
-  - Successfully process and validate 100+ code examples in under 3 minutes
-  - Generate complete documentation set in under 5 minutes
+### Key Functionalities Verification
+- API change detection correctly identifies breaking vs. non-breaking changes
+- Contribution tracking accurately attributes documentation to authors
+- Examples run correctly on multiple Python versions (3.8, 3.9, 3.10, 3.11)
+- Health scoring identifies undocumented and outdated sections
+- CI integration hooks successfully trigger documentation rebuilds
 
-- **Edge Cases and Error Conditions**
-  - Repositories with unusual structures or missing components
-  - Invalid or syntactically incorrect code examples
-  - Handling of merge conflicts in documentation files
-  - Recovery from interrupted CI/CD processes
-  - Graceful failure when environment lacks required dependencies
+### Critical User Scenarios
+- A new contributor adds documentation for an undocumented function
+- A core maintainer changes an API interface that requires documentation updates
+- A release manager prepares documentation for a new major version
+- A user needs to understand breaking changes between versions
+- A project lead wants to recognize top documentation contributors
 
-- **Required Test Coverage Metrics**
-  - Minimum 85% line coverage for all modules
-  - 100% coverage for API change detection algorithms
-  - 100% coverage for health score calculations
-  - 90%+ coverage for example generation and validation
+### Performance Benchmarks
+- Documentation generation completes within time limits for repositories of varying sizes
+- Health score calculation performance scales linearly with codebase size
+- API change detection performs efficiently even for large version differences
 
-IMPORTANT: 
+### Edge Cases and Error Handling
+- Handling malformed docstrings and comments
+- Dealing with Git history rewrites or force pushes
+- Managing conflicts between documentation sources
+- Correctly processing documentation with advanced formatting (code blocks, tables, etc.)
+- Handling projects with unusual directory structures
+
+### Required Test Coverage
+- Minimum 90% test coverage for core functionality
+- 100% coverage for the API change detection and health scoring algorithms
+- Integration tests for all CI system hooks
+
+IMPORTANT:
 - ALL functionality must be testable via pytest without any manual intervention
 - Tests should verify behavior against requirements, not implementation details
 - Tests should be designed to validate the WHAT (requirements) not the HOW (implementation)
 - Tests should be comprehensive enough to verify all aspects of the requirements
 - Tests should not assume or dictate specific implementation approaches
+- REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
+  ```
+  pip install pytest-json-report
+  pytest --json-report --json-report-file=pytest_results.json
+  ```
+- The pytest_results.json file must be included as proof that all tests pass
 
 ## Success Criteria
-The implementation will be considered successful when:
 
-1. It correctly identifies 95%+ of API changes between versions, with 99%+ accuracy for breaking changes
-2. Code examples successfully validate across all specified target platforms
-3. Documentation health scores correlate with user-reported documentation quality (measured through contributor feedback)
-4. CI/CD integration successfully deploys updated documentation within 5 minutes of code changes
-5. The system can be operated entirely through command line and configuration files
-6. Contribution metrics accurately reflect the actual documentation work done by contributors
-7. All tests pass with the specified coverage metrics
-8. The system functions correctly on the three major operating systems (Windows, macOS, Linux)
+The implementation will be considered successful if:
 
-To set up a development environment for this project, use `uv venv` to create a virtual environment. From within the project directory, the environment can be activated with `source .venv/bin/activate`.
+1. The API change detection system correctly identifies at least 95% of breaking changes in test scenarios
+2. Documentation contribution metrics accurately track and display author information
+3. Code examples successfully run on at least 4 different Python versions
+4. CI integration hooks successfully trigger documentation rebuilds on code changes
+5. Documentation health scoring accurately identifies areas needing improvement
+
+REQUIRED FOR SUCCESS:
+- All tests must pass when run with pytest
+- A valid pytest_results.json file must be generated showing all tests passing
+- The implementation must satisfy all key requirements specified for this persona
+
+## Development Setup
+
+To set up the development environment:
+
+1. From within the project directory, create a virtual environment:
+   ```
+   uv venv
+   ```
+
+2. Activate the virtual environment:
+   ```
+   source .venv/bin/activate
+   ```
+
+3. Install the project in development mode:
+   ```
+   uv pip install -e .
+   ```
+
+4. Run tests with pytest-json-report to generate the required report:
+   ```
+   pip install pytest-json-report
+   pytest --json-report --json-report-file=pytest_results.json
+   ```
+
+REMINDER: Generating and providing the pytest_results.json file is a CRITICAL requirement for project completion.

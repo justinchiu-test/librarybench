@@ -1,0 +1,172 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 0 items / 16 errors
+
+==================================== ERRORS ====================================
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_context_and_extensions.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_context_and_extensions.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_data_engineer_context_and_extensions.py:2: in <module>
+    from data_engineer.etl.pipeline import ETLPipeline
+E   ModuleNotFoundError: No module named 'data_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_pipeline.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_pipeline.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_data_engineer_pipeline.py:3: in <module>
+    from data_engineer.etl.pipeline import ETLPipeline
+E   ModuleNotFoundError: No module named 'data_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_serializer_workflow.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_data_engineer_serializer_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_data_engineer_serializer_workflow.py:2: in <module>
+    from data_engineer.etl.pipeline import ETLPipeline
+E   ModuleNotFoundError: No module named 'data_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_distributed_architect_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_distributed_architect_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_distributed_architect_event_bus.py:4: in <module>
+    from distributed_architect.event_bus import EventBus, BufferError
+E   ModuleNotFoundError: No module named 'distributed_architect'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_game_dev_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_game_dev_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_game_dev_event_bus.py:2: in <module>
+    from game_dev.event_bus import (
+E   ModuleNotFoundError: No module named 'game_dev'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_healthcare_architect_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_healthcare_architect_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_healthcare_architect_event_bus.py:2: in <module>
+    from healthcare_architect.event_bus import EventBus, Event
+E   ModuleNotFoundError: No module named 'healthcare_architect'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_healthcare_engineer_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_healthcare_engineer_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_healthcare_engineer_event_bus.py:4: in <module>
+    from healthcare_engineer.event_bus import EventBus
+E   ModuleNotFoundError: No module named 'healthcare_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_iot_engineer_eventbus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_iot_engineer_eventbus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_iot_engineer_eventbus.py:2: in <module>
+    from iot_engineer.eventbus import IoTEventBus
+E   ModuleNotFoundError: No module named 'iot_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_iot_operator_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_iot_operator_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_iot_operator_event_bus.py:6: in <module>
+    from iot_operator.iot_event_bus import EventBus, JsonSerializer, Serializer
+E   ModuleNotFoundError: No module named 'iot_operator'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_microservice_owner_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_microservice_owner_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_microservice_owner_event_bus.py:3: in <module>
+    from microservice_owner.event_bus import EventBus
+E   ModuleNotFoundError: No module named 'microservice_owner'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_mobile_dev_eventbus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_mobile_dev_eventbus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_mobile_dev_eventbus.py:3: in <module>
+    from mobile_dev.sdk.eventbus import EventBusSDK, AuthenticationError, BackpressureError
+E   ModuleNotFoundError: No module named 'mobile_dev'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_quant_trader_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_quant_trader_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_quant_trader_event_bus.py:2: in <module>
+    from quant_trader.event_bus import EventBus, SimpleJSONSerializer
+E   ModuleNotFoundError: No module named 'quant_trader'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_security_architect_secure_event_system.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_security_architect_secure_event_system.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_security_architect_secure_event_system.py:5: in <module>
+    from security_architect.secure_event_system import SecureEventSystem
+E   ModuleNotFoundError: No module named 'security_architect'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_sre_engineer_observability_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_sre_engineer_observability_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_sre_engineer_observability_bus.py:3: in <module>
+    from sre_engineer.observability_bus import ObservabilityEventBus, IdentityCrypto
+E   ModuleNotFoundError: No module named 'sre_engineer'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_sre_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_sre_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_sre_event_bus.py:4: in <module>
+    from sre.event_bus import EventBus
+E   ModuleNotFoundError: No module named 'sre'
+_ ERROR collecting eventbus_o4-mini_0_refactor/unified/tests/test_trading_analyst_event_bus.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/eventbus_o4-mini_0_refactor/unified/tests/test_trading_analyst_event_bus.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_trading_analyst_event_bus.py:3: in <module>
+    from trading_analyst.event_bus import EventBus
+E   ModuleNotFoundError: No module named 'trading_analyst'
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+ERROR unified/tests/test_data_engineer_context_and_extensions.py
+ERROR unified/tests/test_data_engineer_pipeline.py
+ERROR unified/tests/test_data_engineer_serializer_workflow.py
+ERROR unified/tests/test_distributed_architect_event_bus.py
+ERROR unified/tests/test_game_dev_event_bus.py
+ERROR unified/tests/test_healthcare_architect_event_bus.py
+ERROR unified/tests/test_healthcare_engineer_event_bus.py
+ERROR unified/tests/test_iot_engineer_eventbus.py
+ERROR unified/tests/test_iot_operator_event_bus.py
+ERROR unified/tests/test_microservice_owner_event_bus.py
+ERROR unified/tests/test_mobile_dev_eventbus.py
+ERROR unified/tests/test_quant_trader_event_bus.py
+ERROR unified/tests/test_security_architect_secure_event_system.py
+ERROR unified/tests/test_sre_engineer_observability_bus.py
+ERROR unified/tests/test_sre_event_bus.py
+ERROR unified/tests/test_trading_analyst_event_bus.py
+============================== 16 errors in 0.31s ==============================

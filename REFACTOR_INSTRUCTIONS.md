@@ -18,6 +18,7 @@ Your task is to refactor multiple related implementations into a single, unified
   - Component breakdown with clear responsibilities
   - File structure and implementation strategy in `unified/src/`
   - Dependency management strategy
+  - IMPORTANT: Emphasize that the new implementation must be entirely re-written and exist entirely in `unified/`-- no referencing any code in the existing implementations.
 
 ### 3. Implementation Rules
 - **Source Code Location**: ALL source code MUST be placed in the `unified/src/` directory - no exceptions

@@ -36,10 +36,11 @@ time claude --dangerously-skip-permissions \
 echo "Running codex impl"
 # Codex implement
 CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
-  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md. Do exactly as the plan says, creating and modifying files only in unified/ and nowhere else."
+  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan in unified/PLAN.md. IMPORTANT: Place ALL implementation code in the unified/src/ directory. Create and modify files ONLY in unified/ and nowhere else. ALL source code MUST be in unified/src/. Implement ALL code and update ALL test file imports until the whole unified/ folder is a functional standalone repository. Do not stop to ask for confirmation; keep going until the final implementation passes all unified/tests."
+# TODO why is codex still sometimes asking for confirmation to keep going?
 # TODO how to automatically exit codex when it's done?
 
-pytest unified/tests/*  --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1
+pytest unified/tests/  --json-report --json-report-file=report.json --continue-on-collection-errors > test_output.txt 2>&1
 
 # Return to original directory
 popd >/dev/null

@@ -20,7 +20,8 @@ Your task is to refactor multiple related implementations into a single, unified
   - Dependency management strategy
 
 ### 3. Implementation Rules
-- **Directory Structure**: Place all new code in `unified/src/`
+- **Directory Structure**: Place ALL implementation code in `unified/src/` - this is MANDATORY
+- **Source Code Location**: ALL source code MUST be placed in the `unified/src/` directory - no exceptions
 - **Import Updates**: Modify import paths in test files to reference your new unified implementation
 - **Test Compatibility**: Ensure all tests in `unified/tests/` pass with the new implementation
 - **NO modifications** to any code outside the `unified/` directory

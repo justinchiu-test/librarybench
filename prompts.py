@@ -63,7 +63,7 @@ I am a <...> I want to be able to <...> This code repository <...>
 Be creative! Write the task description in the style of the proposed persona. Be as exhaustive as possible in including the listed features in the task description's requirements.
 """
 
-implementation_prompt_template = """I need you to implement a solution and COMPREHENSIVE suite of tests based on the following task files.
+implementation_prompt_template = """I need you to implement a Python solution and COMPREHENSIVE suite of tests based on the following task files.
 Your code must pass the tests provided.
 
 {task_content}

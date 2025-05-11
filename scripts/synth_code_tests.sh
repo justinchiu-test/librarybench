@@ -78,7 +78,7 @@ process_instruction() {
     The project is: $project_name
     The persona is: $persona
     
-    Implement the solution and tests according to the instructions.
+    Implement the solution and tests according to the instructions. Please ensure all tests pass.
     
     Make sure to work in the current directory: $(pwd). The virtual environment has been activated and will be deactivated for you."
 

@@ -1,0 +1,756 @@
+from datetime import datetime
+from typing import Dict, List, Optional, Set, Union, Any
+from uuid import UUID, uuid4
+
+from .models import (
+    Experiment,
+    ExperimentRun,
+    ExperimentStatus,
+    ExperimentComparison,
+    Parameter,
+    ParameterType,
+    Metric,
+    MetricType
+)
+from .storage import ExperimentStorageInterface
+
+
+class ExperimentService:
+    """Service for tracking experiments and their results."""
+    
+    def __init__(self, storage: ExperimentStorageInterface):
+        """
+        Initialize the experiment service.
+        
+        Args:
+            storage: The storage implementation to use
+        """
+        self._storage = storage
+    
+    # Experiment operations
+    
+    def create_experiment(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        task_id: Optional[UUID] = None,
+        dataset_id: Optional[UUID] = None,
+        environment_id: Optional[UUID] = None,
+        tags: Optional[List[str]] = None,
+    ) -> Experiment:
+        """
+        Create a new experiment.
+        
+        Args:
+            name: Experiment name
+            description: Experiment description
+            task_id: Associated research task ID
+            dataset_id: Associated dataset ID
+            environment_id: Associated environment snapshot ID
+            tags: Tags for categorization
+            
+        Returns:
+            Experiment: The created experiment
+        """
+        # Create experiment
+        experiment = Experiment(
+            name=name,
+            description=description,
+            task_id=task_id,
+            dataset_id=dataset_id,
+            environment_id=environment_id,
+            tags=tags or [],
+        )
+        
+        # Save experiment
+        self._storage.create_experiment(experiment)
+        
+        return experiment
+    
+    def get_experiment(self, experiment_id: UUID) -> Optional[Experiment]:
+        """
+        Retrieve an experiment by ID.
+        
+        Args:
+            experiment_id: The ID of the experiment to retrieve
+            
+        Returns:
+            Optional[Experiment]: The experiment if found, None otherwise
+        """
+        return self._storage.get_experiment(experiment_id)
+    
+    def update_experiment(
+        self,
+        experiment_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        task_id: Optional[UUID] = None,
+        dataset_id: Optional[UUID] = None,
+        environment_id: Optional[UUID] = None,
+    ) -> bool:
+        """
+        Update an existing experiment.
+        
+        Args:
+            experiment_id: The ID of the experiment to update
+            name: New experiment name
+            description: New experiment description
+            task_id: New associated research task ID
+            dataset_id: New associated dataset ID
+            environment_id: New associated environment snapshot ID
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        if name is not None:
+            experiment.name = name
+        if description is not None:
+            experiment.description = description
+        if task_id is not None:
+            experiment.task_id = task_id
+        if dataset_id is not None:
+            experiment.dataset_id = dataset_id
+        if environment_id is not None:
+            experiment.environment_id = environment_id
+        
+        experiment.updated_at = datetime.now()
+        
+        return self._storage.update_experiment(experiment)
+    
+    def delete_experiment(self, experiment_id: UUID) -> bool:
+        """
+        Delete an experiment and all its runs.
+        
+        Args:
+            experiment_id: The ID of the experiment to delete
+            
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        return self._storage.delete_experiment(experiment_id)
+    
+    def list_experiments(
+        self, task_id: Optional[UUID] = None, tags: Optional[List[str]] = None
+    ) -> List[Experiment]:
+        """
+        List experiments with optional filtering.
+        
+        Args:
+            task_id: Filter by associated task ID
+            tags: Filter by tags (experiments must have all specified tags)
+            
+        Returns:
+            List[Experiment]: List of experiments matching the criteria
+        """
+        return self._storage.list_experiments(task_id, tags)
+    
+    def add_tag(self, experiment_id: UUID, tag: str) -> bool:
+        """
+        Add a tag to an experiment.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            tag: The tag to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        if tag not in experiment.tags:
+            experiment.tags.append(tag)
+            experiment.updated_at = datetime.now()
+            return self._storage.update_experiment(experiment)
+        
+        return True
+    
+    def remove_tag(self, experiment_id: UUID, tag: str) -> bool:
+        """
+        Remove a tag from an experiment.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            tag: The tag to remove
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        if tag in experiment.tags:
+            experiment.tags.remove(tag)
+            experiment.updated_at = datetime.now()
+            return self._storage.update_experiment(experiment)
+        
+        return True
+    
+    # Parameter operations
+    
+    def create_parameter(
+        self,
+        name: str,
+        type: Union[ParameterType, str],
+        value: Any,
+        description: Optional[str] = None,
+    ) -> Parameter:
+        """
+        Create a parameter for experiments.
+        
+        Args:
+            name: Parameter name
+            type: Parameter type
+            value: Parameter value
+            description: Parameter description
+            
+        Returns:
+            Parameter: The created parameter
+        """
+        # Convert string enum to enum value if needed
+        if isinstance(type, str):
+            type = ParameterType(type)
+        
+        # Validate parameter value against type
+        self._validate_parameter(type, value)
+        
+        # Create parameter
+        parameter = Parameter(
+            name=name,
+            type=type,
+            value=value,
+            description=description,
+        )
+        
+        return parameter
+    
+    def _validate_parameter(self, type: ParameterType, value: Any) -> None:
+        """
+        Validate a parameter value against its type.
+        
+        Args:
+            type: Parameter type
+            value: Parameter value
+            
+        Raises:
+            ValueError: If the value doesn't match the type
+        """
+        if type == ParameterType.STRING and not isinstance(value, str):
+            raise ValueError(f"Expected string value, got {type(value).__name__}")
+        elif type == ParameterType.INTEGER and not isinstance(value, int):
+            raise ValueError(f"Expected integer value, got {type(value).__name__}")
+        elif type == ParameterType.FLOAT and not isinstance(value, (int, float)):
+            raise ValueError(f"Expected float value, got {type(value).__name__}")
+        elif type == ParameterType.BOOLEAN and not isinstance(value, bool):
+            raise ValueError(f"Expected boolean value, got {type(value).__name__}")
+        elif type == ParameterType.CATEGORICAL and not isinstance(value, str):
+            raise ValueError(f"Expected categorical (string) value, got {type(value).__name__}")
+        elif type == ParameterType.ARRAY and not isinstance(value, list):
+            raise ValueError(f"Expected array (list) value, got {type(value).__name__}")
+        elif type == ParameterType.OBJECT and not isinstance(value, dict):
+            raise ValueError(f"Expected object (dict) value, got {type(value).__name__}")
+    
+    # Run operations
+    
+    def create_experiment_run(
+        self, experiment_id: UUID, parameters: List[Parameter]
+    ) -> ExperimentRun:
+        """
+        Create a new run for an experiment.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            parameters: List of parameters for this run
+            
+        Returns:
+            ExperimentRun: The created run
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        # Determine run number
+        run_number = len(experiment.runs) + 1
+        
+        # Create run
+        run = ExperimentRun(
+            experiment_id=experiment_id,
+            run_number=run_number,
+            parameters=parameters,
+        )
+        
+        # Save run
+        self._storage.create_run(run)
+        
+        return run
+    
+    def get_run(self, run_id: UUID) -> Optional[ExperimentRun]:
+        """
+        Retrieve an experiment run by ID.
+        
+        Args:
+            run_id: The ID of the run to retrieve
+            
+        Returns:
+            Optional[ExperimentRun]: The run if found, None otherwise
+        """
+        return self._storage.get_run(run_id)
+    
+    def start_run(self, run_id: UUID) -> bool:
+        """
+        Mark an experiment run as started.
+        
+        Args:
+            run_id: The ID of the run to start
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        run.status = ExperimentStatus.RUNNING
+        run.start_time = datetime.now()
+        
+        return self._storage.update_run(run)
+    
+    def complete_run(self, run_id: UUID) -> bool:
+        """
+        Mark an experiment run as completed.
+        
+        Args:
+            run_id: The ID of the run to complete
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        run.status = ExperimentStatus.COMPLETED
+        run.end_time = datetime.now()
+        
+        return self._storage.update_run(run)
+    
+    def fail_run(self, run_id: UUID, notes: Optional[str] = None) -> bool:
+        """
+        Mark an experiment run as failed.
+        
+        Args:
+            run_id: The ID of the run to fail
+            notes: Notes about the failure
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        run.status = ExperimentStatus.FAILED
+        run.end_time = datetime.now()
+        if notes:
+            run.notes = notes
+        
+        return self._storage.update_run(run)
+    
+    def abort_run(self, run_id: UUID, notes: Optional[str] = None) -> bool:
+        """
+        Mark an experiment run as aborted.
+        
+        Args:
+            run_id: The ID of the run to abort
+            notes: Notes about the abortion
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        run.status = ExperimentStatus.ABORTED
+        run.end_time = datetime.now()
+        if notes:
+            run.notes = notes
+        
+        return self._storage.update_run(run)
+    
+    def add_run_metric(
+        self,
+        run_id: UUID,
+        name: str,
+        type: Union[MetricType, str],
+        value: float,
+        description: Optional[str] = None,
+    ) -> bool:
+        """
+        Add a metric to an experiment run.
+        
+        Args:
+            run_id: The ID of the run
+            name: Metric name
+            type: Metric type
+            value: Metric value
+            description: Metric description
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        # Convert string enum to enum value if needed
+        if isinstance(type, str):
+            type = MetricType(type)
+        
+        # Create metric
+        metric = Metric(
+            name=name,
+            type=type,
+            value=value,
+            description=description,
+        )
+        
+        # Add metric to run
+        run.metrics[name] = metric
+        
+        return self._storage.update_run(run)
+    
+    def add_run_artifact(self, run_id: UUID, name: str, path: str) -> bool:
+        """
+        Add an artifact to an experiment run.
+        
+        Args:
+            run_id: The ID of the run
+            name: Artifact name
+            path: Path to the artifact
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        # Add artifact to run
+        run.artifacts[name] = path
+        
+        return self._storage.update_run(run)
+    
+    def add_run_note(self, run_id: UUID, note: str) -> bool:
+        """
+        Add a note to an experiment run.
+        
+        Args:
+            run_id: The ID of the run
+            note: The note to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If run doesn't exist
+        """
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+        
+        # Add note to run
+        if run.notes:
+            run.notes += f"\n{note}"
+        else:
+            run.notes = note
+        
+        return self._storage.update_run(run)
+    
+    def list_runs(
+        self, experiment_id: UUID, status: Optional[ExperimentStatus] = None
+    ) -> List[ExperimentRun]:
+        """
+        List runs of an experiment.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            status: Filter by run status
+            
+        Returns:
+            List[ExperimentRun]: List of experiment runs
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        return self._storage.list_runs(experiment_id, status)
+    
+    def get_best_run(
+        self, experiment_id: UUID, metric_name: str, higher_is_better: bool = True
+    ) -> Optional[ExperimentRun]:
+        """
+        Get the best run from an experiment based on a metric.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            metric_name: The name of the metric to optimize
+            higher_is_better: Whether higher values are better
+            
+        Returns:
+            Optional[ExperimentRun]: The best run, None if no runs
+            
+        Raises:
+            ValueError: If experiment doesn't exist
+        """
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        return experiment.get_best_run(metric_name, higher_is_better)
+    
+    # Comparison operations
+    
+    def create_comparison(
+        self,
+        name: str,
+        description: Optional[str] = None,
+        experiment_ids: Optional[List[UUID]] = None,
+        run_ids: Optional[List[UUID]] = None,
+        metrics: Optional[List[str]] = None,
+    ) -> ExperimentComparison:
+        """
+        Create a new experiment comparison.
+        
+        Args:
+            name: Comparison name
+            description: Comparison description
+            experiment_ids: IDs of experiments to compare
+            run_ids: IDs of specific runs to compare
+            metrics: Names of metrics to compare
+            
+        Returns:
+            ExperimentComparison: The created comparison
+        """
+        # Create comparison
+        comparison = ExperimentComparison(
+            name=name,
+            description=description,
+            experiment_ids=experiment_ids or [],
+            run_ids=run_ids or [],
+            metrics=metrics or [],
+        )
+        
+        # Save comparison
+        self._storage.create_comparison(comparison)
+        
+        return comparison
+    
+    def get_comparison(self, comparison_id: UUID) -> Optional[ExperimentComparison]:
+        """
+        Retrieve an experiment comparison by ID.
+        
+        Args:
+            comparison_id: The ID of the comparison to retrieve
+            
+        Returns:
+            Optional[ExperimentComparison]: The comparison if found, None otherwise
+        """
+        return self._storage.get_comparison(comparison_id)
+    
+    def add_experiment_to_comparison(
+        self, comparison_id: UUID, experiment_id: UUID
+    ) -> bool:
+        """
+        Add an experiment to a comparison.
+        
+        Args:
+            comparison_id: The ID of the comparison
+            experiment_id: The ID of the experiment to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If comparison or experiment doesn't exist
+        """
+        comparison = self._storage.get_comparison(comparison_id)
+        if not comparison:
+            raise ValueError(f"Comparison with ID {comparison_id} does not exist")
+        
+        experiment = self._storage.get_experiment(experiment_id)
+        if not experiment:
+            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+        
+        comparison.add_experiment(experiment_id)
+        
+        return self._storage.update_comparison(comparison)
+    
+    def add_run_to_comparison(self, comparison_id: UUID, run_id: UUID) -> bool:
+        """
+        Add a specific run to a comparison.
+        
+        Args:
+            comparison_id: The ID of the comparison
+            run_id: The ID of the run to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If comparison or run doesn't exist
+        """
+        comparison = self._storage.get_comparison(comparison_id)
+        if not comparison:
+            raise ValueError(f"Comparison with ID {comparison_id} does not exist")
+        
+        run = self._storage.get_run(run_id)
+        if not run:
+            raise ValueError(f"Run with ID {run_id} does not exist")
+        
+        comparison.add_run(run_id)
+        
+        return self._storage.update_comparison(comparison)
+    
+    def add_metric_to_comparison(self, comparison_id: UUID, metric_name: str) -> bool:
+        """
+        Add a metric to compare across runs.
+        
+        Args:
+            comparison_id: The ID of the comparison
+            metric_name: The name of the metric to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If comparison doesn't exist
+        """
+        comparison = self._storage.get_comparison(comparison_id)
+        if not comparison:
+            raise ValueError(f"Comparison with ID {comparison_id} does not exist")
+        
+        comparison.add_metric(metric_name)
+        
+        return self._storage.update_comparison(comparison)
+    
+    def get_comparison_data(self, comparison_id: UUID) -> Dict[str, Any]:
+        """
+        Get data for an experiment comparison.
+        
+        Args:
+            comparison_id: The ID of the comparison
+            
+        Returns:
+            Dict[str, Any]: Comparison data
+            
+        Raises:
+            ValueError: If comparison doesn't exist
+        """
+        comparison = self._storage.get_comparison(comparison_id)
+        if not comparison:
+            raise ValueError(f"Comparison with ID {comparison_id} does not exist")
+        
+        data = {
+            "comparison": {
+                "id": str(comparison.id),
+                "name": comparison.name,
+                "description": comparison.description,
+                "created_at": comparison.created_at.isoformat(),
+            },
+            "runs": [],
+            "metrics": comparison.metrics,
+        }
+        
+        # Get runs for comparison
+        all_runs = []
+        
+        # Add runs from specific run IDs
+        for run_id in comparison.run_ids:
+            run = self._storage.get_run(run_id)
+            if run:
+                all_runs.append(run)
+        
+        # Add runs from experiments
+        for experiment_id in comparison.experiment_ids:
+            experiment = self._storage.get_experiment(experiment_id)
+            if experiment:
+                for run in experiment.runs:
+                    # Only include completed runs
+                    if run.status == ExperimentStatus.COMPLETED:
+                        # Check if run already added
+                        if run.id not in comparison.run_ids:
+                            all_runs.append(run)
+        
+        # Format run data
+        for run in all_runs:
+            experiment = self._storage.get_experiment(run.experiment_id)
+            
+            run_data = {
+                "id": str(run.id),
+                "experiment_id": str(run.experiment_id),
+                "experiment_name": experiment.name if experiment else "Unknown",
+                "run_number": run.run_number,
+                "parameters": [
+                    {
+                        "name": param.name,
+                        "type": param.type.value,
+                        "value": param.value,
+                        "description": param.description,
+                    }
+                    for param in run.parameters
+                ],
+                "metrics": {
+                    name: {
+                        "value": metric.value,
+                        "type": metric.type.value,
+                        "description": metric.description,
+                    }
+                    for name, metric in run.metrics.items()
+                    if name in comparison.metrics or not comparison.metrics
+                },
+                "duration": run.duration() or 0.0,
+            }
+            
+            data["runs"].append(run_data)
+        
+        return data

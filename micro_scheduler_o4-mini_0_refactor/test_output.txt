@@ -1,0 +1,313 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 107 items / 1 error
+
+unified/tests/test_data_engineer_scheduler.py .s.......                  [  8%]
+unified/tests/test_data_scientist_scheduler.py FFFFFFFFFF.F              [ 19%]
+unified/tests/test_devops_admin_scheduler.py ...........                 [ 29%]
+unified/tests/test_devops_admin_utils.py .                               [ 30%]
+unified/tests/test_devops_engineer_persistence.py .....                  [ 35%]
+unified/tests/test_devops_engineer_scheduler.py ..........               [ 44%]
+unified/tests/test_finance_analyst_scheduler.py ...........              [ 55%]
+unified/tests/test_iot_coordinator_scheduler.py ..........               [ 64%]
+unified/tests/test_iot_developer_scheduler.py .........                  [ 72%]
+unified/tests/test_qa_engineer_scheduler.py ...........                  [ 83%]
+unified/tests/test_saas_platform_admin_scheduler.py ........             [ 90%]
+unified/tests/test_web_scraper_scheduler.py .......s..                   [100%]
+
+==================================== ERRORS ====================================
+_ ERROR collecting micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+unified/tests/test_ecommerce_manager_scheduler.py:6: in <module>
+    import ecommerce_manager.pytz as pytz
+E   ModuleNotFoundError: No module named 'ecommerce_manager.pytz'
+=================================== FAILURES ===================================
+_____________________ test_set_persistence_backend_sqlite ______________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-122/test_set_persistence_backend_s0')
+
+    def test_set_persistence_backend_sqlite(tmp_path):
+        sched = Scheduler()
+        db_path = str(tmp_path / "test.db")
+>       sched.set_persistence_backend('sqlite', {'path': db_path})
+
+unified/tests/test_data_scientist_scheduler.py:9: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1052e6ba0>
+args = ('sqlite', {'path': '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-122/test_set_persistence_backend_s0/test.db'})
+kwargs = {}
+
+    def set_persistence_backend(self, *args, **kwargs):
+        """Set custom persistence backend (not yet implemented)."""
+>       raise NotImplementedError
+E       NotImplementedError
+
+unified/src/scheduler/scheduler.py:185: NotImplementedError
+______________________ test_set_persistence_backend_redis ______________________
+
+    def test_set_persistence_backend_redis():
+        sched = Scheduler()
+>       sched.set_persistence_backend('redis', {})
+
+unified/tests/test_data_scientist_scheduler.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1052cafd0>
+args = ('redis', {}), kwargs = {}
+
+    def set_persistence_backend(self, *args, **kwargs):
+        """Set custom persistence backend (not yet implemented)."""
+>       raise NotImplementedError
+E       NotImplementedError
+
+unified/src/scheduler/scheduler.py:185: NotImplementedError
+________________________ test_schedule_and_trigger_job _________________________
+
+    def test_schedule_and_trigger_job():
+        sched = Scheduler()
+        def fn(): return 42
+>       jid = sched.schedule_job(fn, job_id='j3')
+
+unified/tests/test_data_scientist_scheduler.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1052cb610>
+func = <function test_schedule_and_trigger_job.<locals>.fn at 0x1053fa660>
+kwargs = {'job_id': 'j3'}, jid = 'j3'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+___________________________ test_define_dependencies ___________________________
+
+    def test_define_dependencies():
+        sched = Scheduler()
+        order = []
+        def a(): order.append('a'); return 'A'
+        def b(): order.append('b'); return 'B'
+>       ja = sched.schedule_job(a, job_id='ja')
+
+unified/tests/test_data_scientist_scheduler.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1050975c0>
+func = <function test_define_dependencies.<locals>.a at 0x1053d5760>
+kwargs = {'job_id': 'ja'}, jid = 'ja'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+_________________________ test_retry_job_with_backoff __________________________
+
+    def test_retry_job_with_backoff():
+        sched = Scheduler()
+        state = {'cnt': 0}
+        def flaky():
+            state['cnt'] += 1
+            if state['cnt'] < 3:
+                raise ValueError("fail")
+            return "ok"
+>       jid = sched.schedule_job(flaky, job_id='jf')
+
+unified/tests/test_data_scientist_scheduler.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1050963f0>
+func = <function test_retry_job_with_backoff.<locals>.flaky at 0x105262ac0>
+kwargs = {'job_id': 'jf'}, jid = 'jf'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+___________________________ test_retry_job_exhausted ___________________________
+
+    def test_retry_job_exhausted():
+        sched = Scheduler()
+        def always_fail():
+            raise RuntimeError("nope")
+>       jid = sched.schedule_job(always_fail, job_id='jf2')
+
+unified/tests/test_data_scientist_scheduler.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x105386b10>
+func = <function test_retry_job_exhausted.<locals>.always_fail at 0x1051fdda0>
+kwargs = {'job_id': 'jf2'}, jid = 'jf2'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+__________________ test_exponential_backoff_decorator_success __________________
+
+    def test_exponential_backoff_decorator_success():
+        sched = Scheduler()
+        state = {'cnt': 0}
+>       @sched.exponential_backoff
+E       AttributeError: 'Scheduler' object has no attribute 'exponential_backoff'
+
+unified/tests/test_data_scientist_scheduler.py:84: AttributeError
+__________________ test_exponential_backoff_decorator_failure __________________
+
+    def test_exponential_backoff_decorator_failure():
+        sched = Scheduler()
+>       @sched.exponential_backoff
+E       AttributeError: 'Scheduler' object has no attribute 'exponential_backoff'
+
+unified/tests/test_data_scientist_scheduler.py:95: AttributeError
+_____________________________ test_limit_resources _____________________________
+
+    def test_limit_resources():
+        sched = Scheduler()
+>       sched.limit_resources(cpu=3, gpu=1)
+
+unified/tests/test_data_scientist_scheduler.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1054d16a0>, args = ()
+kwargs = {'cpu': 3, 'gpu': 1}
+
+    def limit_resources(self, *args, **kwargs):
+        """Resource limiting not implemented."""
+>       raise NotImplementedError
+E       NotImplementedError
+
+unified/src/scheduler/scheduler.py:191: NotImplementedError
+______________________________ test_health_check _______________________________
+
+    def test_health_check():
+        sched = Scheduler()
+        def x(): return 0
+>       jid1 = sched.schedule_job(x, job_id='h1')
+
+unified/tests/test_data_scientist_scheduler.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1054d1260>
+func = <function test_health_check.<locals>.x at 0x1053fa340>
+kwargs = {'job_id': 'h1'}, jid = 'h1'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+_____________________________ test_timezone_aware ______________________________
+
+    def test_timezone_aware():
+        sched = Scheduler()
+        def tzfn(): return "tz"
+>       jid = sched.schedule_job(tzfn, job_id='tz1', timezone='UTC+2')
+
+unified/tests/test_data_scientist_scheduler.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <scheduler.scheduler.Scheduler object at 0x1054d08d0>
+func = <function test_timezone_aware.<locals>.tzfn at 0x1053fa7a0>
+kwargs = {'job_id': 'tz1', 'timezone': 'UTC+2'}, jid = 'tz1'
+
+    def schedule_job(self, func, **kwargs):
+        # simple immediate run
+        jid = kwargs.get('job_id') or uuid.uuid4().hex
+>       job = Job(jid, func, **kwargs)
+E       TypeError: Job.__init__() got multiple values for argument 'job_id'
+
+unified/src/scheduler/scheduler.py:112: TypeError
+=============================== warnings summary ===============================
+unified/tests/test_data_engineer_scheduler.py:24
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_data_engineer_scheduler.py:24: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+unified/tests/test_web_scraper_scheduler.py:106
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py:106: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_data_engineer_scheduler.py::test_async_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py::test_run_async_job
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:148: PytestUnhandledCoroutineWarning: async def functions are not natively supported and have been skipped.
+  You need to install a suitable plugin for your async framework, for example:
+    - anyio
+    - pytest-asyncio
+    - pytest-tornasync
+    - pytest-trio
+    - pytest-twisted
+    warnings.warn(PytestUnhandledCoroutineWarning(msg.format(nodeid)))
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_schedule_and_list_jobs
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_persist_and_load_jobs
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_graceful_shutdown_waits_and_persists
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:42: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    next_run = datetime.utcnow() + timedelta(seconds=interval)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_schedule_and_list_jobs
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (nr - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_persist_and_load_jobs
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:30: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    next_run = datetime.utcfromtimestamp(nr) if nr is not None else None
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:94: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job['next_run'] = datetime.utcnow() + timedelta(seconds=interval)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py:55: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (job["next_run"] - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:135: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job['next_run'] = datetime.utcnow() + timedelta(seconds=job.get('interval', 0))
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py::test_coordinate_leader_election
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py:137: DeprecationWarning: There is no current event loop
+    acquired = asyncio.get_event_loop().run_until_complete(scheduler.coordinate_leader_election('lock', 5))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED unified/tests/test_data_scientist_scheduler.py::test_set_persistence_backend_sqlite
+FAILED unified/tests/test_data_scientist_scheduler.py::test_set_persistence_backend_redis
+FAILED unified/tests/test_data_scientist_scheduler.py::test_schedule_and_trigger_job
+FAILED unified/tests/test_data_scientist_scheduler.py::test_define_dependencies
+FAILED unified/tests/test_data_scientist_scheduler.py::test_retry_job_with_backoff
+FAILED unified/tests/test_data_scientist_scheduler.py::test_retry_job_exhausted
+FAILED unified/tests/test_data_scientist_scheduler.py::test_exponential_backoff_decorator_success
+FAILED unified/tests/test_data_scientist_scheduler.py::test_exponential_backoff_decorator_failure
+FAILED unified/tests/test_data_scientist_scheduler.py::test_limit_resources
+FAILED unified/tests/test_data_scientist_scheduler.py::test_health_check - Ty...
+FAILED unified/tests/test_data_scientist_scheduler.py::test_timezone_aware - ...
+ERROR unified/tests/test_ecommerce_manager_scheduler.py
+======= 11 failed, 94 passed, 2 skipped, 19 warnings, 1 error in 12.93s ========

@@ -1,0 +1,24 @@
+========================================================== test session starts ==========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 17 items
+
+test_env_loader.py .                                                                                                              [  5%]
+test_toml_loader.py .                                                                                                             [ 11%]
+test_nested_merge.py ...                                                                                                          [ 29%]
+test_default_fallback.py ..                                                                                                       [ 41%]
+test_hot_reload.py .                                                                                                              [ 47%]
+test_custom_coercers.py ....                                                                                                      [ 70%]
+test_argv_loader.py .                                                                                                             [ 76%]
+test_conflict_reporting.py ..                                                                                                     [ 88%]
+test_config_watcher.py .                                                                                                          [ 94%]
+test_cli_config_generator.py .                                                                                                    [100%]
+
+-------------------------------------------------------------- JSON report --------------------------------------------------------------
+report saved to: report.json
+========================================================== 17 passed in 0.13s ===========================================================

@@ -8,6 +8,7 @@ if [ $# -ne 1 ]; then
 fi
 
 directory="$1"
+MODEL="o4-mini"
 
 if [ ! -d "$directory" ]; then
     echo "Error: Directory '$directory' does not exist"
@@ -17,9 +18,19 @@ fi
 # remember where we started
 base_dir="$PWD"
 
+
 # make a copy to refactor
 new_directory="${directory}_refactor" 
 cp -r $directory $new_directory
+
+# Run scoring script on initial repository
+echo "Running scoring script on initial repository..."
+python score.py --directory "$directory"
+
+python llm_repo_refactor.py \
+  --model "$MODEL" \
+  --task setup_for_refactor \
+  --starter-repo-path "$new_directory"
 
 echo "Starting refactoring for $directory in $new_directory..."
 
@@ -32,7 +43,7 @@ echo "Following the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md..."
 echo "Running claude planner"
 # Claude plan
 time claude --dangerously-skip-permissions \
-  -p "Follow the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Only write PLAN.md. Give the file structure. Do not implement any code. Do not give example usage code."
+  -p "Follow the instructions in ../../REFACTOR_INSTRUCTIONS.md. Only write PLAN.md. Give the file structure. Do not implement any code. Do not give example usage code."
 
 # Setup testing environment
 uv venv
@@ -42,7 +53,7 @@ uv pip install -e .
 echo "Running codex impl"
 # Codex implement
 CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
-  "Read the instructions in $base_dir/REFACTOR_INSTRUCTIONS.md. Follow the implementation plan and file structure proposed in PLAN.md. IMPORTANT: Create, modify, and reference files ONLY in this unified/ subdirectory and nowhere else. Do NOT import from any other subdirectories in $new_directory except for what is in unified/. Implement ALL code and update ALL test file imports until this whole unified/ folder is a functional standalone repository. Do not stop to ask for confirmation; keep going until the final implementation passes all unified/tests using pytest tests/."
+  "Read the instructions in ../../REFACTOR_INSTRUCTIONS.md. Follow the implementation plan and file structure proposed in PLAN.md. IMPORTANT: Create, modify, and reference files ONLY in this unified/ subdirectory and nowhere else. Do NOT import from any other subdirectories in $new_directory except for what is in unified/. Implement ALL code and update ALL test file imports until this whole unified/ folder is a functional standalone repository. Do not stop to ask for confirmation; keep going until the final implementation passes all unified/tests using pytest tests/."
 # TODO why is codex still sometimes asking for confirmation to keep going?
 # TODO how to automatically exit codex when it's done?
 
@@ -74,7 +85,7 @@ popd >/dev/null
 popd >/dev/null
 
 # Run scoring script
-echo "Running scoring script..."
+echo "Running scoring script on refactored repository..."
 python score.py --directory "$new_directory/unified"
 
 echo "Done!"

@@ -1,0 +1,149 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 170 items / 3 errors
+
+tests/test_backend_dev_config_parser.py ...                              [  1%]
+tests/test_backend_dev_config_schema.py .                                [  2%]
+tests/test_backend_dev_config_validator.py ....                          [  4%]
+tests/test_backend_dev_dev_commands.py .                                 [  5%]
+tests/test_backend_dev_di.py .                                           [  5%]
+tests/test_backend_dev_env.py ...                                        [  7%]
+tests/test_backend_dev_help_formatter.py ...                             [  9%]
+tests/test_backend_dev_i18n.py ..                                        [ 10%]
+tests/test_backend_dev_publish.py ...                                    [ 12%]
+tests/test_backend_dev_scffold.py ..                                     [ 13%]
+tests/test_backend_dev_secrets.py ..                                     [ 14%]
+tests/test_backend_dev_signals.py .                                      [ 15%]
+tests/test_backend_dev_version.py ...                                    [ 17%]
+tests/test_cloud_infra_engineer_cli_scaffold.py .....F...............    [ 29%]
+tests/test_data_scientist_commands.py ...                                [ 31%]
+tests/test_data_scientist_config_parser.py ...                           [ 32%]
+tests/test_data_scientist_config_schema.py .                             [ 33%]
+tests/test_data_scientist_config_validator.py ...                        [ 35%]
+tests/test_data_scientist_di.py .                                        [ 35%]
+tests/test_data_scientist_help_formatter.py ...                          [ 37%]
+tests/test_data_scientist_i18n.py ...                                    [ 39%]
+tests/test_data_scientist_publish.py .                                   [ 40%]
+tests/test_data_scientist_scaffold.py .                                  [ 40%]
+tests/test_data_scientist_secrets.py ..                                  [ 41%]
+tests/test_data_scientist_signals.py .                                   [ 42%]
+tests/test_data_scientist_version.py ...                                 [ 44%]
+tests/test_devops_engineer_bump.py .                                     [ 44%]
+tests/test_devops_engineer_compute_default_and_retry_and_validate.py ... [ 46%]
+.                                                                        [ 47%]
+tests/test_devops_engineer_config_loader.py .                            [ 47%]
+tests/test_devops_engineer_docs.py .                                     [ 48%]
+tests/test_devops_engineer_env_override.py .                             [ 48%]
+tests/test_devops_engineer_hooks.py .                                    [ 49%]
+tests/test_devops_engineer_init_package.py ..                            [ 50%]
+tests/test_devops_engineer_publish.py ..                                 [ 51%]
+tests/test_devops_engineer_secrets.py ..                                 [ 52%]
+tests/test_devops_engineer_signal_handler.py .                           [ 53%]
+tests/test_opensource_maintainer_config.py .                             [ 54%]
+tests/test_opensource_maintainer_docs.py .                               [ 54%]
+tests/test_opensource_maintainer_hooks.py ..                             [ 55%]
+tests/test_opensource_maintainer_init.py .                               [ 56%]
+tests/test_opensource_maintainer_publish.py .                            [ 57%]
+tests/test_opensource_maintainer_retry.py ..                             [ 58%]
+tests/test_opensource_maintainer_secrets.py ..                           [ 59%]
+tests/test_opensource_maintainer_signals.py .                            [ 60%]
+tests/test_opensource_maintainer_utils.py .                              [ 60%]
+tests/test_opensource_maintainer_validators.py .                         [ 61%]
+tests/test_opensource_maintainer_version.py .                            [ 61%]
+tests/test_ops_engineer_commands.py .                                    [ 62%]
+tests/test_ops_engineer_config_parser.py ..ss.                           [ 65%]
+tests/test_ops_engineer_config_schema.py .                               [ 65%]
+tests/test_ops_engineer_config_validator.py ...                          [ 67%]
+tests/test_ops_engineer_di.py ..                                         [ 68%]
+tests/test_ops_engineer_env_override.py ..                               [ 70%]
+tests/test_ops_engineer_i18n.py ..                                       [ 71%]
+tests/test_ops_engineer_publisher.py ..                                  [ 72%]
+tests/test_ops_engineer_scaffold.py ..                                   [ 73%]
+tests/test_ops_engineer_secrets.py ..                                    [ 74%]
+tests/test_ops_engineer_signals.py .                                     [ 75%]
+tests/test_ops_engineer_version.py ...                                   [ 77%]
+tests/test_security_analyst_config.py ....                               [ 79%]
+tests/test_security_analyst_defaults.py ..                               [ 80%]
+tests/test_security_analyst_docs.py .                                    [ 81%]
+tests/test_security_analyst_env.py .                                     [ 81%]
+tests/test_security_analyst_hooks.py .                                   [ 82%]
+tests/test_security_analyst_package.py ...                               [ 84%]
+tests/test_security_analyst_retry.py ..                                  [ 85%]
+tests/test_security_analyst_secrets.py ....                              [ 87%]
+tests/test_security_analyst_signals.py .                                 [ 88%]
+tests/test_security_analyst_validation.py ...                            [ 90%]
+tests/test_security_analyst_version.py ..                                [ 91%]
+tests/test_translator_cache.py ..                                        [ 92%]
+tests/test_translator_di.py ..                                           [ 93%]
+tests/test_translator_logging_setup.py ..                                [ 94%]
+tests/test_translator_profile.py .                                       [ 95%]
+tests/test_translator_prompt_style.py .                                  [ 95%]
+tests/test_translator_retry.py ..                                        [ 97%]
+tests/test_translator_run_test.py .                                      [ 97%]
+tests/test_translator_secrets.py .                                       [ 98%]
+tests/test_translator_translator_i18n.py .                               [ 98%]
+tests/test_translator_validator.py ..                                    [100%]
+
+==================================== ERRORS ====================================
+_ ERROR collecting clitools_o4-mini_0_refactor/unified/tests/test_localization_manager_features.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/clitools_o4-mini_0_refactor/unified/tests/test_localization_manager_features.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_localization_manager_features.py:6: in <module>
+    from localization_manager.localcli import __version__
+E   ModuleNotFoundError: No module named 'localization_manager'
+_ ERROR collecting clitools_o4-mini_0_refactor/unified/tests/test_plugin_developer_plugin.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/clitools_o4-mini_0_refactor/unified/tests/test_plugin_developer_plugin.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_plugin_developer_plugin.py:4: in <module>
+    from plugin_developer.plugin import (
+E   ModuleNotFoundError: No module named 'plugin_developer'
+_ ERROR collecting clitools_o4-mini_0_refactor/unified/tests/test_qa_automation_cli_tool.py _
+ImportError while importing test module '/Users/celine/Research/librarybench/clitools_o4-mini_0_refactor/unified/tests/test_qa_automation_cli_tool.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/test_qa_automation_cli_tool.py:7: in <module>
+    from qa_automation.cli_tool import (
+E   ModuleNotFoundError: No module named 'qa_automation'
+=================================== FAILURES ===================================
+_____________________________ test_handle_signals ______________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x104559d50>
+capsys = <_pytest.capture.CaptureFixture object at 0x1043cfe00>
+
+    def test_handle_signals(monkeypatch, capsys):
+        @handle_signals
+        def f():
+            os.kill(os.getpid(), signal.SIGINT)
+>       with pytest.raises(SystemExit) as e:
+E       Failed: DID NOT RAISE <class 'SystemExit'>
+
+tests/test_cloud_infra_engineer_cli_scaffold.py:72: Failed
+=============================== warnings summary ===============================
+clitools_o4-mini_0_refactor/unified/tests/test_cloud_infra_engineer_cli_scaffold.py::test_compute_default_timestamp
+  /Users/celine/Research/librarybench/clitools_o4-mini_0_refactor/unified/src/cloud_infra_engineer/cli_scaffold.py:112: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+
+clitools_o4-mini_0_refactor/unified/tests/test_devops_engineer_compute_default_and_retry_and_validate.py::test_compute_default
+  /Users/celine/Research/librarybench/clitools_o4-mini_0_refactor/unified/src/core/utils.py:14: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return datetime.datetime.utcnow().strftime('%Y%m%d%H%M%SZ')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED tests/test_cloud_infra_engineer_cli_scaffold.py::test_handle_signals
+ERROR tests/test_localization_manager_features.py
+ERROR tests/test_plugin_developer_plugin.py
+ERROR tests/test_qa_automation_cli_tool.py
+======== 1 failed, 167 passed, 2 skipped, 2 warnings, 3 errors in 0.68s ========

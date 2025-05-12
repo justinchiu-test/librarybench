@@ -1,40 +1,42 @@
-# TODO:
-# fix parallelization
-# do not write to shared metrics file!!
-
-import asyncio
-import re
-
 import os
+import ast
+import math
+import sys
 import argparse
-from radon.complexity import cc_visit
-from radon.raw import analyze
 
 import json
-import os
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 from pathlib import Path
-from tenacity import retry, stop_after_attempt, wait_exponential
+
+from radon.complexity import cc_visit
+from radon.raw import analyze
+import tiktoken
+
+# TODO calls to LLM are slow and can be parallelized
+# from tqdm.asyncio import tqdm
+# from tenacity import retry, stop_after_attempt, wait_exponential
 
 # ---- Logprobs ----
 
-from together import AsyncTogether
-client = AsyncTogether(api_key=os.getenv("TOGETHER_API_KEY"))
-semaphore = asyncio.Semaphore(16)
+# from together import AsyncTogether
+# client = AsyncTogether(api_key=os.getenv("TOGETHER_API_KEY"))
+# semaphore = asyncio.Semaphore(16)
+from together import Together
+client = Together(api_key=os.getenv("TOGETHER_API_KEY"))
 
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=10))
-async def compute_logprob_together(text, model):
-    async with semaphore:
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": text}],
-            max_tokens=1,
-            echo=True,
-            logprobs=1,
-        )
-        logprobs = response.prompt[0].logprobs.token_logprobs[1:]
-        tokens = response.prompt[0].logprobs.tokens[1:]
-        return logprobs, tokens
+# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=1, min=4, max=10))
+def compute_logprob_together(text, model, enable_logprobs):
+    if not enable_logprobs: return [], []
+    response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": text}],
+        max_tokens=1,
+        echo=True,
+        logprobs=1,
+    )
+    logprobs = response.prompt[0].logprobs.token_logprobs[1:]
+    tokens = response.prompt[0].logprobs.tokens[1:]
+    return logprobs, tokens
 
     
 # ---- Code Metrics ----
@@ -65,117 +67,146 @@ def compute_code_metrics(code: str):
         }
 
 # ---- Repo Metrics ----
+# parses the inputs given input file in repo and modules that should not be counted
+def parse_imports(file_path):
 
-async def compute_metrics(directory, model, codebank_file=None):
+    excluded_modules = set(sys.stdlib_module_names) | set(sys.builtin_module_names)
+    with open(file_path, 'r') as file:
+        content = file.read()
+    tree = ast.parse(content)
+    imports = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            if node.module and not any(node.module.startswith(excluded) for excluded in excluded_modules):
+                for alias in node.names:
+                    imports.append(f"{node.module}::{alias.name}")
+        elif isinstance(node, ast.Import):
+            for import_alias in node.names:
+                if import_alias.name not in excluded_modules:
+                    imports.append(import_alias.name)
+    if imports:
+        print('=== FROM ===')
+        print(content)
+        print('==>')
+        print(imports)
+    return imports
+
+def get_imported_code(file_path, directory):
+    try:
+        imports = parse_imports(file_path)
+    except Exception as e:
+        print(f"[ERROR] Failed to parse {file_path}: {e}")
+        return ""
+
+    imported_code_segments = []
+    for imported_fn_ref in imports:
+        module_name, fn_name = (imported_fn_ref.split("::") + [None])[:2]
+        candidate = file_path.parent / Path(module_name.replace(".", "/") + ".py")
+        if candidate.exists():
+            files = [candidate]
+        else:
+            # fallback: look for any file matching the module's basename
+            basename = module_name.split(".")[-1] + ".py"
+            files = list(directory.rglob(basename))
+
+        if not files:
+            print(f"[WARN] Cannot find module file for '{module_name}'")
+            continue
+        # try to find the file matching module_name. make sure to think carefully about if the actually referenced impl is in a deeper subdir or something
+        
+        src_file = files[0]
+        content = src_file.read_text()
+        if fn_name:
+            try:
+                tree = ast.parse(content)
+                matches = []
+                for node in ast.walk(tree):
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) \
+                       and node.name == fn_name:
+                        src = ast.get_source_segment(content, node)
+                        if src:
+                            matches.append(src)
+                if matches:
+                    imported_code_segments.append(matches[-1])
+                else:
+                    print(f"[WARN] No definition '{fn_name}' in {src_file}")
+            except Exception as e:
+                print(f"[ERROR] Failed to parse {src_file}: {e}")
+        else:
+            # imported the whole module
+            imported_code_segments.append(content)
+
+    return imported_code_segments
+
+def compute_metrics(directory, model, enable_logprobs=False):
     directory = Path(directory)
+    
+    program_names = []
+    codes = {}
+    for file in directory.rglob("*.py"):
+        if os.path.basename(file).startswith("test_"): continue
+        # relative path from repo root
+        program_name = str(file.relative_to(directory.parent))
+        program_names.append(program_name)
+
+        imported_code_segments = get_imported_code(file, directory)
+        codes[program_name] = (imported_code_segments, open(file).read())
 
     total_logprob = 0.0
     total_tokens = 0
-    failed_files = []
     logprobs_dict = {}
     metrics_dict = {}
 
-    tasks = []
-    program_names = []
-    codes = {}
-    codebank_logprobs, codebank_tokens = 0., []
-    if codebank_file:
+    for program_name in program_names:
+        imported_code_segments, code = codes[program_name]
+        if len(code.strip()) == 0: continue
+        # stitch together: imported code (context) + main file
+        codebank = ""
+        if imported_code_segments:
+            codebank = f"""# === IMPORTED LIBRARY CODE START ===
+{'\n\n'.join(imported_code_segments)}
+
+# === IMPORTED LIBRARY CODE END ===
+
+"""
+            code = f"""# === MAIN SOURCE CODE START ===
+{code}
+# === MAIN SOURCE CODE END ===
+"""
+        full_text = codebank + code
+        # get logprobs & tokens for the entire text
+        logprobs, tokens = compute_logprob_together(full_text, model, enable_logprobs)
+
+        # count how many tokens came from the codebank
         try:
-            with open(os.path.join(directory, codebank_file), "r") as f:
-                codebank = f.read()
-                codes[codebank_file] = codebank
-            # Create task for codebank logprobs to be awaited later
-            codebank_task = compute_logprob_together(codebank, model)
-        except Exception as e:
-            print(f"[ERROR] Failed to process {codebank_file}: {e}")
-            failed_files.append(codebank_file)
-    
+            enc = tiktoken.encoding_for_model(model)
+            cb_tokens = enc.encode(codebank) if codebank else []
+            num_codebank_tokens = len(cb_tokens)
+        except Exception:
+            num_codebank_tokens = 0
 
-    # If we have a codebank file, await its task first to get logprobs and tokens
-    if codebank_file and 'codebank_task' in locals():
-        try:
-            codebank_logprobs, codebank_tokens = await codebank_task
-            print(f"Processed codebank {codebank_file}: logprob={sum(codebank_logprobs):.2f}, tokens={len(codebank_tokens)}")
-        except Exception as e:
-            print(f"[ERROR] Failed to process codebank {codebank_file}: {e}")
-            failed_files.append(codebank_file)
-            codebank_logprobs, codebank_tokens = [], []
+        # sum only the logprobs for the “new” code
+        sum_lp     = sum(logprobs[num_codebank_tokens:])
+        new_tokens = len(tokens[num_codebank_tokens:])
 
-    # Store codebank results separately
-    codebank_result = None
-    
-    for file in directory.glob("**/*.py"):
-        if os.path.basename(file).startswith("test"): continue
-        program_name = os.path.join(*file.parts[1:])
-        program_names.append(program_name)
-        if program_name == codebank_file:
-            # Store codebank result separately instead of adding to tasks
-            codebank_result = (codebank_logprobs, codebank_tokens)
-            continue
-        try:
-            with open(file, "r") as f:
-                code = f.read()
-                codes[program_name] = code
-            if codebank_file: 
-                full_code = codes[codebank_file].rstrip() + "\n\n" + code
-            else:
-                full_code = code
-            tasks.append(compute_logprob_together(full_code, model))
-        except Exception as e:
-            print(f"[ERROR] Failed to process {file.name}: {e}")
-            failed_files.append(file.name)
+        logprobs_dict[program_name] = sum_lp
+        total_logprob += sum_lp
+        total_tokens  += new_tokens
+        print(f"Processed {program_name}: logprob={sum_lp:.2f}, tokens={new_tokens}")
 
-    # Gather all non-codebank tasks
-    other_results = await tqdm.gather(*tasks) if tasks else []
-    
-    # Combine results, inserting codebank result at the right position
-    results = []
-    task_index = 0
-    for name in program_names:
-        if name == codebank_file:
-            results.append(codebank_result)
-        else:
-            if task_index < len(other_results):
-                results.append(other_results[task_index])
-                task_index += 1
-
-    for program_name, result in zip(program_names, results):
-        logprobs, tokens = result
-        if logprobs is None or len(logprobs) == 0:
-            failed_files.append(f"{program_name}.py")
-            continue
-        
-        if program_name != codebank_file and codebank_file and len(codebank_tokens) > 0:
-            # If we're processing a file that's conditioned on the codebank,
-            # only count the logprobs after the codebank tokens
-            sum_logprob = sum(logprobs[len(codebank_tokens)+1:]) if len(logprobs) > len(codebank_tokens)+1 else 0
-            num_tokens = len(tokens[len(codebank_tokens)+1:]) if len(tokens) > len(codebank_tokens)+1 else 0
-        else:
-            sum_logprob = sum(logprobs)
-            num_tokens = len(tokens)
-
-        logprobs_dict[program_name] = sum_logprob
-        metrics_dict[program_name] = compute_code_metrics(codes[program_name])
-
-        total_logprob += sum_logprob
-        total_tokens += num_tokens
-
-        print(f"Processed {program_name}: logprob={sum_logprob:.2f}, tokens={num_tokens}")
+        metrics_dict[program_name] = compute_code_metrics(code)
 
     print("\n=== Summary ===")
     print(f"Full Repo Log Probability: {total_logprob:.2f}")
     print(f"Total Tokens: {total_tokens}")
-    total_lloc = sum(m["lloc"] for m in metrics_dict.values())
-    total_sloc = sum(m["sloc"] for m in metrics_dict.values())
-    total_cyclomatic = sum(m["cyclomatic"] for m in metrics_dict.values())
+    total_lloc = sum(m["lloc"] for m in metrics_dict.values() if not math.isnan(m["lloc"]) )
+    total_sloc = sum(m["sloc"] for m in metrics_dict.values() if not math.isnan(m["sloc"]) )
+    total_cyclomatic = sum(m["cyclomatic"] for m in metrics_dict.values() if not math.isnan(m["cyclomatic"]))
 
     print(f"Total Logical LOC (LLOC): {total_lloc}")
     print(f"Total Source LOC (SLOC): {total_sloc}")
     print(f"Total Cyclomatic Complexity: {total_cyclomatic}")
     
-    if failed_files:
-        print(f"Failed files: {failed_files}")
-
     return logprobs_dict, total_logprob, metrics_dict, total_tokens
 
 def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
@@ -197,13 +228,13 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
             "logprobs": lp,
             "metrics": program_metrics,
         }
-        total_loc += program_metrics["loc"]
-        total_sloc += program_metrics["sloc"]
-        total_lloc += program_metrics["lloc"]
-        total_comments += program_metrics["comments"]
-        total_multi += program_metrics["multi"]
-        total_blank += program_metrics["blank"]
-        total_cyclomatic += program_metrics["cyclomatic"]
+        total_loc += program_metrics["loc"] if not math.isnan(program_metrics["loc"]) else 0
+        total_sloc += program_metrics["sloc"] if not math.isnan(program_metrics["sloc"]) else 0
+        total_lloc += program_metrics["lloc"] if not math.isnan(program_metrics["lloc"]) else 0
+        total_comments += program_metrics["comments"] if not math.isnan(program_metrics["comments"]) else 0
+        total_multi += program_metrics["multi"] if not math.isnan(program_metrics["multi"]) else 0
+        total_blank += program_metrics["blank"] if not math.isnan(program_metrics["blank"]) else 0
+        total_cyclomatic += program_metrics["cyclomatic"] if not math.isnan(program_metrics["cyclomatic"]) else 0
     
     result["total_loc"] = total_loc
     result["total_sloc"] = total_sloc
@@ -215,32 +246,26 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
 
     return result
 
-async def main(args):
-    
-    logprobs_dict, total_logprob, metrics_dict, total_tokens = await compute_metrics(args.directory, args.model, args.codebank_file)
+def main(args):
     output_file = os.path.join(args.directory, "LIBRARYBENCH_metrics.json")
-    results = {}
     if os.path.exists(output_file):
-        results = json.load(open(output_file))
+        if input("metrics file already exists... skip? [y/]").strip() == "y": 
+            return
+    logprobs_dict, total_logprob, metrics_dict, total_tokens = compute_metrics(args.directory, args.model, enable_logprobs=args.enable_logprobs)
 
     metrics = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
-    
-    if args.codebank_file:
-        results["metrics_after"] = metrics
-    else:
-        results["metrics_before"] = metrics
     with open(output_file, 'w') as wf:
-        json.dump(results, wf, indent=4)
+        json.dump(metrics, wf, indent=4)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
     parser.add_argument("--directory", type=str, help="Paths to .py files")
     parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
-    parser.add_argument("--codebank_file", type=str, default=None, help="Codebank file to condition on")
+    parser.add_argument("--enable_logprobs", action="store_true", default=False, help="turn on logprob computing")
     args = parser.parse_args()
     
-    asyncio.run(main(args))
+    main(args)
 
 # ---- Example usage ----
-# python score.py --directory workflow_orchestration/unified --model deepseek-ai/DeepSeek-V3
+# python score.py --directory workflow_orchestration/unified --model deepseek-ai/DeepSeek-V3 --enable_logprobs

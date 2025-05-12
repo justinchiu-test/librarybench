@@ -1,0 +1,51 @@
+=========================================================================== test session starts ============================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 12 items
+
+test_http_adapter.py ..                                                                                                                                              [ 16%]
+test_cli_manager.py .                                                                                                                                                [ 25%]
+test_metrics.py .                                                                                                                                                    [ 33%]
+test_error_handling.py .                                                                                                                                             [ 41%]
+test_streaming.py .                                                                                                                                                  [ 50%]
+test_serializer.py .                                                                                                                                                 [ 58%]
+test_schema.py ..                                                                                                                                                    [ 75%]
+test_metrics_exporter.py .                                                                                                                                           [ 83%]
+test_windowed.py .                                                                                                                                                   [ 91%]
+test_batch.py .                                                                                                                                                      [100%]
+
+============================================================================= warnings summary =============================================================================
+datapipe_o4-mini_0/devops_engineer/test_streaming.py::test_streaming_runner
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/threadexception.py:82: PytestUnhandledThreadExceptionWarning: Exception in thread Thread-6 (_run)
+  
+  Traceback (most recent call last):
+    File "/Users/celine/miniconda3/envs/library/lib/python3.13/threading.py", line 1041, in _bootstrap_inner
+      self.run()
+      ~~~~~~~~^^
+    File "/Users/celine/miniconda3/envs/library/lib/python3.13/threading.py", line 992, in run
+      self._target(*self._args, **self._kwargs)
+      ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    File "/Users/celine/Research/librarybench/datapipe_o4-mini_0/devops_engineer/pipeline/streaming.py", line 12, in _run
+      self.process()
+      ~~~~~~~~~~~~^^
+    File "/Users/celine/Research/librarybench/datapipe_o4-mini_0/devops_engineer/test_streaming.py", line 10, in process
+      runner.stop()
+      ~~~~~~~~~~~^^
+    File "/Users/celine/Research/librarybench/datapipe_o4-mini_0/devops_engineer/pipeline/streaming.py", line 24, in stop
+      self.thread.join()
+      ~~~~~~~~~~~~~~~~^^
+    File "/Users/celine/miniconda3/envs/library/lib/python3.13/threading.py", line 1085, in join
+      raise RuntimeError("cannot join current thread")
+  RuntimeError: cannot join current thread
+  
+    warnings.warn(pytest.PytestUnhandledThreadExceptionWarning(msg))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------------------------------------------------------------------------- JSON report --------------------------------------------------------------------------------
+report saved to: report.json
+====================================================================== 12 passed, 1 warning in 2.02s =======================================================================

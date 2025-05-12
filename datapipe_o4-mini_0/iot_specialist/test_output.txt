@@ -1,0 +1,34 @@
+=========================================================================== test session starts ============================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 24 items
+
+test_http_adapter.py ....                                                                                                                                            [ 16%]
+test_metrics.py .                                                                                                                                                    [ 20%]
+test_errors.py ...                                                                                                                                                   [ 33%]
+test_counters.py ..                                                                                                                                                  [ 41%]
+test_streaming.py .                                                                                                                                                  [ 45%]
+test_serializer.py ..                                                                                                                                                [ 54%]
+test_schema.py .....                                                                                                                                                 [ 75%]
+test_window.py ..                                                                                                                                                    [ 83%]
+test_cli.py ...                                                                                                                                                      [ 95%]
+test_batch.py .                                                                                                                                                      [100%]
+
+============================================================================= warnings summary =============================================================================
+datapipe_o4-mini_0/iot_specialist/test_batch.py::test_run_batch
+  /Users/celine/Research/librarybench/datapipe_o4-mini_0/iot_specialist/test_batch.py:5: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+datapipe_o4-mini_0/iot_specialist/test_batch.py::test_run_batch
+  /Users/celine/Research/librarybench/datapipe_o4-mini_0/iot_specialist/telemetry/batch.py:11: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+------------------------------------------------------------------------------- JSON report --------------------------------------------------------------------------------
+report saved to: report.json
+====================================================================== 24 passed, 2 warnings in 0.07s ======================================================================

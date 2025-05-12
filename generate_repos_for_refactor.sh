@@ -60,12 +60,6 @@ for repo in "${new_repos[@]}"; do
     --task implement \
     --starter-repo-path "$repo"
 
-  # c) setup_for_refactor on the implemented output
-  new_repo="${repo}_${MODEL}_0"
-  python llm_repo_refactor.py \
-    --model "$MODEL" \
-    --task setup_for_refactor \
-    --starter-repo-path "$new_repo"
 done
 
 echo

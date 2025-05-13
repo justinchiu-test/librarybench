@@ -1,0 +1,30 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 21 items
+
+test_ratelimiter.py .....................                                                                                    [100%]
+
+========================================================= warnings summary =========================================================
+ratelimiter_o4-mini_0/api_backend_developer/test_ratelimiter.py::test_log_event_structure
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/api_backend_developer/ratelimiter/ratelimiter.py:7: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'timestamp': datetime.datetime.utcnow().isoformat(),
+
+ratelimiter_o4-mini_0/api_backend_developer/test_ratelimiter.py::test_get_runtime_metrics_custom
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/api_backend_developer/test_ratelimiter.py:58: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    nr = datetime.datetime.utcnow()
+
+ratelimiter_o4-mini_0/api_backend_developer/test_ratelimiter.py::test_persist_bucket_state_new_db
+ratelimiter_o4-mini_0/api_backend_developer/test_ratelimiter.py::test_persist_bucket_state_existing_db
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/api_backend_developer/ratelimiter/ratelimiter.py:78: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    entry['timestamp'] = datetime.datetime.utcnow().isoformat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 21 passed, 4 warnings in 0.05s ==================================================

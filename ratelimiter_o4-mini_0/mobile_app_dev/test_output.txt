@@ -1,0 +1,21 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 14 items
+
+test_ratelimiter.py ..............                                                                                           [100%]
+
+========================================================= warnings summary =========================================================
+ratelimiter.py:145
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/mobile_app_dev/ratelimiter.py:145: PytestCollectionWarning: cannot collect test class 'TestRateLimiterFixture' because it has a __init__ constructor (from: ratelimiter_o4-mini_0/mobile_app_dev/test_ratelimiter.py)
+    class TestRateLimiterFixture:
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 14 passed, 1 warning in 0.03s ===================================================

@@ -1,0 +1,24 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 14 items
+
+test_task.py ..                                                                                                              [ 14%]
+test_shutdown.py ..                                                                                                          [ 28%]
+test_metrics.py .                                                                                                            [ 35%]
+test_dashboard.py .                                                                                                          [ 42%]
+test_scheduler.py ..                                                                                                         [ 57%]
+test_backup.py .                                                                                                             [ 64%]
+test_audit.py .                                                                                                              [ 71%]
+test_dead_letter.py .                                                                                                        [ 78%]
+test_cli.py ..                                                                                                               [ 92%]
+test_encryption.py .                                                                                                         [100%]
+
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+======================================================== 14 passed in 0.20s ========================================================

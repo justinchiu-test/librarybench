@@ -1,0 +1,32 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 12 items
+
+test_async_rate_limiter.py .                                                                                                 [  8%]
+test_fake_rate_limiter.py .                                                                                                  [ 16%]
+test_burst_override.py .                                                                                                     [ 25%]
+test_threadsafe_limiter.py .                                                                                                 [ 33%]
+test_default_limits.py .                                                                                                     [ 41%]
+test_rate_limit_logger.py .                                                                                                  [ 50%]
+test_token_bucket.py .                                                                                                       [ 58%]
+test_rate_limiter_fixture.py .                                                                                               [ 66%]
+test_priority_bucket.py .                                                                                                    [ 75%]
+test_whitelist_client.py .                                                                                                   [ 83%]
+test_clock.py .                                                                                                              [ 91%]
+test_inspect_limiter.py .                                                                                                    [100%]
+
+========================================================= warnings summary =========================================================
+ratelimiter_o4-mini_0/platform_ops_olivia/test_async_rate_limiter.py::test_async_rate_limiter_allows_and_blocks
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/platform_ops_olivia/conftest.py:37: DeprecationWarning: There is no current event loop
+    loop = asyncio.get_event_loop()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 12 passed, 1 warning in 0.05s ===================================================

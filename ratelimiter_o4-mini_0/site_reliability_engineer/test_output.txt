@@ -1,0 +1,38 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 20 items
+
+test_burst.py ..                                                                                                             [ 10%]
+test_async_limiter.py ..                                                                                                     [ 20%]
+test_metrics.py .                                                                                                            [ 25%]
+test_priority.py .                                                                                                           [ 30%]
+test_persistence.py .                                                                                                        [ 35%]
+test_log_event.py ..                                                                                                         [ 45%]
+test_algos.py ..                                                                                                             [ 55%]
+test_policies.py ....                                                                                                        [ 75%]
+test_config.py ...                                                                                                           [ 90%]
+test_fault_tolerant.py ..                                                                                                    [100%]
+
+========================================================= warnings summary =========================================================
+test_async_limiter.py:6
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/site_reliability_engineer/test_async_limiter.py:6: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+test_async_limiter.py:21
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/site_reliability_engineer/test_async_limiter.py:21: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+ratelimiter_o4-mini_0/site_reliability_engineer/test_async_limiter.py::test_async_rate_limiter_decorator_allows_and_limits
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/site_reliability_engineer/conftest.py:14: DeprecationWarning: There is no current event loop
+    loop = asyncio.get_event_loop()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 20 passed, 3 warnings in 4.44s ==================================================

@@ -1,0 +1,29 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 9 items
+
+test_orchestrator.py .........                                                                                               [100%]
+
+========================================================= warnings summary =========================================================
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_multi_tenancy_and_audit
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_multi_tenancy_and_audit
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_task_chaining
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_task_chaining
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_audit_logging
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_scheduler_and_delayed
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_payload_and_encryption
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_cli_launch_status_cancel_logs
+taskqueue_o4-mini_0/ml_engineer/test_orchestrator.py::test_cli_launch_status_cancel_logs
+  /Users/celine/Research/librarybench/taskqueue_o4-mini_0/ml_engineer/orchestrator.py:77: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    e['timestamp'] = datetime.utcnow().isoformat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 9 passed, 9 warnings in 1.16s ===================================================

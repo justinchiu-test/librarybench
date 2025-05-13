@@ -1,0 +1,28 @@
+====================================================================== test session starts ======================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 16 items
+
+test_trim_whitespace.py .                                                                                                                                 [  6%]
+test_locale_trans.py ..                                                                                                                                   [ 18%]
+test_output_mode.py ..                                                                                                                                    [ 31%]
+test_auto_reload.py .                                                                                                                                     [ 37%]
+test_macro_precompile.py ..                                                                                                                               [ 50%]
+test_rendering.py ....                                                                                                                                    [ 75%]
+test_url_query.py ..                                                                                                                                      [ 87%]
+test_json_yaml.py ..                                                                                                                                      [100%]
+
+======================================================================= warnings summary ========================================================================
+test_rendering.py:26
+  /Users/celine/Research/librarybench/templator_o4-mini_0/static_site_author/test_rendering.py:26: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------------- JSON report --------------------------------------------------------------------------
+report saved to: report.json
+================================================================= 16 passed, 1 warning in 0.06s =================================================================

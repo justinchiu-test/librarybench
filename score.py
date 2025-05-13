@@ -84,11 +84,11 @@ def parse_imports(file_path):
             for import_alias in node.names:
                 if import_alias.name not in excluded_modules:
                     imports.append(import_alias.name)
-    if imports:
-        print('=== FROM ===')
-        print(content)
-        print('==>')
-        print(imports)
+    # if imports:
+    #     print('=== FROM ===')
+    #     print(content)
+    #     print('==>')
+    #     print(imports)
     return imports
 
 def get_imported_code(file_path, directory):
@@ -194,7 +194,7 @@ def compute_metrics(directory, model, enable_logprobs=False):
         total_tokens  += new_tokens
         print(f"Processed {program_name}: logprob={sum_lp:.2f}, tokens={new_tokens}")
 
-        metrics_dict[program_name] = compute_code_metrics(code)
+        metrics_dict[program_name] = compute_code_metrics(code) | {"internal_imports": len(imported_code_segments)}
 
     print("\n=== Summary ===")
     print(f"Full Repo Log Probability: {total_logprob:.2f}")
@@ -202,10 +202,12 @@ def compute_metrics(directory, model, enable_logprobs=False):
     total_lloc = sum(m["lloc"] for m in metrics_dict.values() if not math.isnan(m["lloc"]) )
     total_sloc = sum(m["sloc"] for m in metrics_dict.values() if not math.isnan(m["sloc"]) )
     total_cyclomatic = sum(m["cyclomatic"] for m in metrics_dict.values() if not math.isnan(m["cyclomatic"]))
+    total_internal_imports = sum(m["internal_imports"] for m in metrics_dict.values() if not math.isnan(m["internal_imports"]))
 
     print(f"Total Logical LOC (LLOC): {total_lloc}")
     print(f"Total Source LOC (SLOC): {total_sloc}")
     print(f"Total Cyclomatic Complexity: {total_cyclomatic}")
+    print(f"Total Internal Imports: {total_internal_imports}")
     
     return logprobs_dict, total_logprob, metrics_dict, total_tokens
 
@@ -220,6 +222,7 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     total_multi = 0
     total_blank = 0
     total_cyclomatic = 0
+    total_internal_imports = 0
 
     for program in all_programs:
         lp = logprobs.get(program, float('nan'))
@@ -235,6 +238,7 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
         total_multi += program_metrics["multi"] if not math.isnan(program_metrics["multi"]) else 0
         total_blank += program_metrics["blank"] if not math.isnan(program_metrics["blank"]) else 0
         total_cyclomatic += program_metrics["cyclomatic"] if not math.isnan(program_metrics["cyclomatic"]) else 0
+        total_internal_imports += program_metrics["internal_imports"] if not math.isnan(program_metrics["internal_imports"]) else 0
     
     result["total_loc"] = total_loc
     result["total_sloc"] = total_sloc
@@ -243,6 +247,7 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     result["total_multi"] = total_multi
     result["total_blank"] = total_blank
     result["total_cyclomatic"] = total_cyclomatic
+    result["total_internal_imports"] = total_internal_imports
 
     return result
 
@@ -256,6 +261,8 @@ def main(args):
     metrics = package_all_metrics(logprobs_dict, total_logprob, metrics_dict, total_tokens)
     with open(output_file, 'w') as wf:
         json.dump(metrics, wf, indent=4)
+    
+    print(f"Written metrics to {output_file}")
 
 
 if __name__ == "__main__":

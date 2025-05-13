@@ -1,0 +1,49 @@
+====================================================================== test session starts ======================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 14 items
+
+test_templater.py ...F..........                                                                                                                          [100%]
+
+=========================================================================== FAILURES ============================================================================
+________________________________________________________________________ test_json_yaml _________________________________________________________________________
+
+engine = <templater.TemplateEngine object at 0x107373360>
+
+    def test_json_yaml(engine):
+        data = {"key": "value"}
+        jsonstr = '{"key":"value"}'
+        ydata = {"foo": 123}
+        ymlstr = "foo: 123\n"
+>       out = engine.render("json_yaml.txt", {"data": data, "jsonstr": jsonstr, "ydata": ydata, "ymlstr": ymlstr})
+
+test_templater.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+templater.py:214: in render
+    tmpl = self.env.get_template(template_name)
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/jinja2/environment.py:1016: in get_template
+    return self._load_template(name, globals)
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/jinja2/environment.py:975: in _load_template
+    template = self.loader.load(self, name, self.make_globals(globals))
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/jinja2/loaders.py:138: in load
+    code = environment.compile(source, name, filename)
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/jinja2/environment.py:771: in compile
+    self.handle_exception(source=source_hint)
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/jinja2/environment.py:942: in handle_exception
+    raise rewrite_traceback_stack(source=source)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+>   ???
+E   jinja2.exceptions.TemplateAssertionError: No filter named 'from_json.key'.
+
+<unknown>:1: TemplateAssertionError
+-------------------------------------------------------------------------- JSON report --------------------------------------------------------------------------
+report saved to: report.json
+==================================================================== short test summary info ====================================================================
+FAILED test_templater.py::test_json_yaml - jinja2.exceptions.TemplateAssertionError: No filter named 'from_json.key'.
+================================================================= 1 failed, 13 passed in 0.13s ==================================================================

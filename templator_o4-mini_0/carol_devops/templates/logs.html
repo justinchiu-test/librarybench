@@ -1,0 +1,3 @@
+{% for line in lines %}
+{% if loop.index0 is even %}EVEN: {% else %}ODD: {% endif %}{{ line }}
+{% endfor %}

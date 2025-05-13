@@ -1,0 +1,96 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 182 items
+
+unified/tests/test_backend_dev_config_parser.py ...                      [  1%]
+unified/tests/test_backend_dev_config_schema.py .                        [  2%]
+unified/tests/test_backend_dev_config_validator.py ....                  [  4%]
+unified/tests/test_backend_dev_dev_commands.py .                         [  4%]
+unified/tests/test_backend_dev_env.py ...                                [  6%]
+unified/tests/test_backend_dev_help_formatter.py ...                     [  8%]
+unified/tests/test_backend_dev_i18n.py ..                                [  9%]
+unified/tests/test_backend_dev_publish.py ...                            [ 10%]
+unified/tests/test_backend_dev_scffold.py ..                             [ 12%]
+unified/tests/test_backend_dev_signals.py .                              [ 12%]
+unified/tests/test_backend_dev_version.py ...                            [ 14%]
+unified/tests/test_cloud_infra_engineer_cli_scaffold.py ................ [ 23%]
+.....                                                                    [ 25%]
+unified/tests/test_devops_engineer_bump.py .                             [ 26%]
+unified/tests/test_devops_engineer_compute_default_and_retry_and_validate.py . [ 26%]
+...                                                                      [ 28%]
+unified/tests/test_devops_engineer_config_loader.py .                    [ 29%]
+unified/tests/test_devops_engineer_docs.py .                             [ 29%]
+unified/tests/test_devops_engineer_env_override.py .                     [ 30%]
+unified/tests/test_devops_engineer_hooks.py .                            [ 30%]
+unified/tests/test_devops_engineer_init_package.py ..                    [ 31%]
+unified/tests/test_devops_engineer_publish.py ..                         [ 32%]
+unified/tests/test_devops_engineer_secrets.py ..                         [ 34%]
+unified/tests/test_devops_engineer_signal_handler.py .                   [ 34%]
+unified/tests/test_localization_manager_features.py ..............       [ 42%]
+unified/tests/test_opensource_maintainer_config.py .                     [ 42%]
+unified/tests/test_opensource_maintainer_docs.py .                       [ 43%]
+unified/tests/test_opensource_maintainer_hooks.py ..                     [ 44%]
+unified/tests/test_opensource_maintainer_init.py .                       [ 45%]
+unified/tests/test_opensource_maintainer_publish.py .                    [ 45%]
+unified/tests/test_opensource_maintainer_retry.py ..                     [ 46%]
+unified/tests/test_opensource_maintainer_secrets.py ..                   [ 47%]
+unified/tests/test_opensource_maintainer_signals.py .                    [ 48%]
+unified/tests/test_opensource_maintainer_utils.py .                      [ 48%]
+unified/tests/test_opensource_maintainer_validators.py .                 [ 49%]
+unified/tests/test_opensource_maintainer_version.py .                    [ 50%]
+unified/tests/test_ops_engineer_commands.py .                            [ 50%]
+unified/tests/test_ops_engineer_config_parser.py ..ss.                   [ 53%]
+unified/tests/test_ops_engineer_config_schema.py .                       [ 53%]
+unified/tests/test_ops_engineer_config_validator.py ...                  [ 55%]
+unified/tests/test_ops_engineer_di.py ..                                 [ 56%]
+unified/tests/test_ops_engineer_env_override.py ..                       [ 57%]
+unified/tests/test_ops_engineer_i18n.py ..                               [ 58%]
+unified/tests/test_ops_engineer_publisher.py ..                          [ 59%]
+unified/tests/test_ops_engineer_scaffold.py ..                           [ 60%]
+unified/tests/test_ops_engineer_secrets.py ..                            [ 62%]
+unified/tests/test_ops_engineer_signals.py .                             [ 62%]
+unified/tests/test_ops_engineer_version.py ...                           [ 64%]
+unified/tests/test_plugin_developer_plugin.py ...........                [ 70%]
+unified/tests/test_qa_automation_cli_tool.py ...............             [ 78%]
+unified/tests/test_security_analyst_config.py ....                       [ 80%]
+unified/tests/test_security_analyst_defaults.py ..                       [ 81%]
+unified/tests/test_security_analyst_docs.py .                            [ 82%]
+unified/tests/test_security_analyst_env.py .                             [ 82%]
+unified/tests/test_security_analyst_hooks.py .                           [ 83%]
+unified/tests/test_security_analyst_package.py ...                       [ 85%]
+unified/tests/test_security_analyst_retry.py ..                          [ 86%]
+unified/tests/test_security_analyst_secrets.py ....                      [ 88%]
+unified/tests/test_security_analyst_signals.py .                         [ 89%]
+unified/tests/test_security_analyst_validation.py ...                    [ 90%]
+unified/tests/test_security_analyst_version.py ..                        [ 91%]
+unified/tests/test_translator_cache.py ..                                [ 92%]
+unified/tests/test_translator_di.py ..                                   [ 93%]
+unified/tests/test_translator_logging_setup.py ..                        [ 95%]
+unified/tests/test_translator_profile.py .                               [ 95%]
+unified/tests/test_translator_prompt_style.py .                          [ 96%]
+unified/tests/test_translator_retry.py ..                                [ 97%]
+unified/tests/test_translator_run_test.py .                              [ 97%]
+unified/tests/test_translator_secrets.py .                               [ 98%]
+unified/tests/test_translator_translator_i18n.py .                       [ 98%]
+unified/tests/test_translator_validator.py ..                            [100%]
+
+=============================== warnings summary ===============================
+clitools_o4-mini_0_refactor_2/unified/unified/tests/test_cloud_infra_engineer_cli_scaffold.py::test_compute_default_timestamp
+  /Users/celine/Research/librarybench/clitools_o4-mini_0_refactor_2/unified/unified/src/adapters/cloud_infra_engineer/cli_scaffold.py:123: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ts = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+
+clitools_o4-mini_0_refactor_2/unified/unified/tests/test_devops_engineer_compute_default_and_retry_and_validate.py::test_compute_default
+  /Users/celine/Research/librarybench/clitools_o4-mini_0_refactor_2/unified/unified/src/adapters/devops_engineer/devops_cli/utils.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+clitools_o4-mini_0_refactor_2/unified/unified/tests/test_opensource_maintainer_utils.py::test_compute_defaults
+  /Users/celine/Research/librarybench/clitools_o4-mini_0_refactor_2/unified/unified/src/adapters/opensource_maintainer/osscli/utils.py:12: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return 'docs_' + datetime.datetime.utcnow().strftime('%Y%m%d')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+================== 180 passed, 2 skipped, 3 warnings in 0.55s ==================

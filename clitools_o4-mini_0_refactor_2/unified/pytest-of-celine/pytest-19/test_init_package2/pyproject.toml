@@ -1,0 +1,4 @@
+[tool.poetry]
+name = "myproj"
+[tool.poetry.dependencies]
+requests = "2.25.1"

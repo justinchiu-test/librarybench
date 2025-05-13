@@ -5,6 +5,25 @@ MODEL="o4-mini"
 LIBRARY_GEN_COUNT=3
 PERSONA_GEN_COUNT=10
 
+repos_to_init=("ratelimiter" "schedualpy" "taskqueue" "templatex" "templator" "timeseriesdb")
+for repo in "${repos_to_init[@]}"; do
+  echo "➡️  Processing starter‐repo: $repo"
+
+  # a) make_personas
+  python llm_repo_refactor.py \
+    --model "$MODEL" \
+    --task make_personas \
+    --num_new_generations "$PERSONA_GEN_COUNT" \
+    --starter-repo-path "$repo"
+
+  # b) implement
+  python llm_repo_refactor.py \
+    --model "$MODEL" \
+    --task implement \
+    --starter-repo-path "$repo"
+done
+    
+
 # 1. Snapshot existing top-level dirs
 pre_dirs=()
 for d in */; do

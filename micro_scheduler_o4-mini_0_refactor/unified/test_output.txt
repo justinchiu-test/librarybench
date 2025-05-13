@@ -1,0 +1,124 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 114 items
+
+tests/test_data_engineer_scheduler.py .s.......                          [  7%]
+tests/test_data_scientist_scheduler.py ............                      [ 18%]
+tests/test_devops_admin_scheduler.py ...........                         [ 28%]
+tests/test_devops_admin_utils.py .                                       [ 28%]
+tests/test_devops_engineer_persistence.py .....                          [ 33%]
+tests/test_devops_engineer_scheduler.py ..........                       [ 42%]
+tests/test_ecommerce_manager_scheduler.py ...F...                        [ 48%]
+tests/test_finance_analyst_scheduler.py ...........                      [ 57%]
+tests/test_iot_coordinator_scheduler.py ..........                       [ 66%]
+tests/test_iot_developer_scheduler.py .........                          [ 74%]
+tests/test_qa_engineer_scheduler.py ...........                          [ 84%]
+tests/test_saas_platform_admin_scheduler.py ........                     [ 91%]
+tests/test_web_scraper_scheduler.py .......s..                           [100%]
+
+=================================== FAILURES ===================================
+_________________________ test_timezone_cron_schedule __________________________
+
+    def test_timezone_cron_schedule():
+        scheduler = JobScheduler()
+        def f(): pass
+        tz = 'Asia/Tokyo'
+        now_utc = datetime.now(pytz.utc)
+        tokyo = pytz.timezone(tz)
+>       local_now = now_utc.astimezone(tokyo)
+E       TypeError: tzinfo argument must be None or of a tzinfo subclass, not type 'TzWrapper'
+
+tests/test_ecommerce_manager_scheduler.py:60: TypeError
+=============================== warnings summary ===============================
+tests/test_data_engineer_scheduler.py:24
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_data_engineer_scheduler.py:24: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+tests/test_web_scraper_scheduler.py:106
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py:106: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_data_engineer_scheduler.py::test_async_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py::test_run_async_job
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:148: PytestUnhandledCoroutineWarning: async def functions are not natively supported and have been skipped.
+  You need to install a suitable plugin for your async framework, for example:
+    - anyio
+    - pytest-asyncio
+    - pytest-tornasync
+    - pytest-trio
+    - pytest-twisted
+    warnings.warn(PytestUnhandledCoroutineWarning(msg.format(nodeid)))
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_schedule_and_list_jobs
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_persist_and_load_jobs
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_graceful_shutdown_waits_and_persists
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:42: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    next_run = datetime.utcnow() + timedelta(seconds=interval)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_schedule_and_list_jobs
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (nr - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_persist_and_load_jobs
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:30: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+    next_run = datetime.utcfromtimestamp(nr) if nr is not None else None
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:94: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job['next_run'] = datetime.utcnow() + timedelta(seconds=interval)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py:55: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (job["next_run"] - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_devops_admin_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/devops_admin/scheduler/scheduler.py:135: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job['next_run'] = datetime.utcnow() + timedelta(seconds=job.get('interval', 0))
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_manual_trigger_and_dependency
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_persistence_and_load
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_recurring_job_next_run
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/ecommerce_manager/scheduler/scheduler.py:34: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.next_run = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(seconds=interval_seconds)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_manual_trigger_and_dependency
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py:17: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id2 = scheduler.schedule_job('job2', job2, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_manual_trigger_and_dependency
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_manual_trigger_and_dependency
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_recurring_job_next_run
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/src/ecommerce_manager/scheduler/scheduler.py:93: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job.last_run = datetime.utcnow().replace(tzinfo=timezone.utc)
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_priority_sorting
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py:76: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id1 = scheduler.schedule_job('a', f, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_priority_sorting
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py:77: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id2 = scheduler.schedule_job('b', f, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py::test_namespace_and_tags_and_query
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_ecommerce_manager_scheduler.py:104: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id1 = scheduler.schedule_job('job', f, run_at=datetime.utcnow(), tags=tags, tenant='store_north')
+
+micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py::test_coordinate_leader_election
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0_refactor/unified/tests/test_web_scraper_scheduler.py:137: DeprecationWarning: There is no current event loop
+    acquired = asyncio.get_event_loop().run_until_complete(scheduler.coordinate_leader_election('lock', 5))
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED tests/test_ecommerce_manager_scheduler.py::test_timezone_cron_schedule
+============ 1 failed, 111 passed, 2 skipped, 29 warnings in 17.70s ============

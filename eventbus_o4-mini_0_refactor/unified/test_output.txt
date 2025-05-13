@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 164 items
+
+tests/test_data_engineer_context_and_extensions.py ..                    [  1%]
+tests/test_data_engineer_pipeline.py ...........                         [  7%]
+tests/test_data_engineer_serializer_workflow.py ..                       [  9%]
+tests/test_distributed_architect_event_bus.py ...............            [ 18%]
+tests/test_game_dev_event_bus.py ..........                              [ 24%]
+tests/test_healthcare_architect_event_bus.py .............               [ 32%]
+tests/test_healthcare_engineer_event_bus.py ...........                  [ 39%]
+tests/test_iot_engineer_eventbus.py ..........                           [ 45%]
+tests/test_iot_operator_event_bus.py .............                       [ 53%]
+tests/test_microservice_owner_event_bus.py ...........                   [ 59%]
+tests/test_mobile_dev_eventbus.py ...........                            [ 66%]
+tests/test_quant_trader_event_bus.py .............                       [ 74%]
+tests/test_security_architect_secure_event_system.py ..........          [ 80%]
+tests/test_sre_engineer_observability_bus.py ............                [ 87%]
+tests/test_sre_event_bus.py ..........                                   [ 93%]
+tests/test_trading_analyst_event_bus.py ..........                       [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+============================= 164 passed in 0.77s ==============================

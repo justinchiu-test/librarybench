@@ -1,0 +1,3 @@
+"""
+Translator CLI adapter package.
+"""

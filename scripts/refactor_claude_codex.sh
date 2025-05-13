@@ -52,7 +52,7 @@ uv pip install -e .
 
 echo "Running codex impl"
 # Codex implement
-CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
+codex --approval-mode full-auto -q \
   "Read the instructions in ../../REFACTOR_INSTRUCTIONS.md. Follow the implementation plan and file structure proposed in PLAN.md. IMPORTANT: Create, modify, and reference files ONLY in this current working subdirectory ($new_directory/unified) and nowhere else. Do NOT import from any other subdirectories in $new_directory except for what is here in unified/. Implement ALL code and update ALL test file imports until this whole subfolder is a functional standalone repository. Do not stop to ask for confirmation; keep going until the final implementation passes all tests using pytest tests/."
 # TODO why is codex still sometimes asking for confirmation to keep going?
 # TODO how to automatically exit codex when it's done?
@@ -75,7 +75,7 @@ pytest tests/ --json-report --json-report-file=report.json --continue-on-collect
 
 echo "Running final-check codex impl"
 # Codex implement
-CODEX_QUIET_MODE=1 time codex --approval-mode full-auto \
+codex --approval-mode full-auto -q \
   "Read the pytest results in test_output.txt. If they indicate pytest failures, fix them. Stick to the implementation plan and file structure proposed in PLAN.md. IMPORTANT: Create and modify files ONLY in this current working subdirectory ($new_directory/unified) and nowhere else. Implement ALL code and update ALL test file imports until this whole subfolder is a functional standalone repository. Do not stop to ask for confirmation; keep going until the final implementation passes all tests using pytest tests/. If there are no errors, exit."
 
 deactivate

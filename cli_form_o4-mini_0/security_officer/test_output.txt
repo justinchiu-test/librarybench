@@ -1,0 +1,31 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 27 items
+
+test_renderer.py ..                                                                                                                            [  7%]
+test_wizard.py ..                                                                                                                              [ 14%]
+test_validation.py ......                                                                                                                      [ 37%]
+test_plugins.py ..                                                                                                                             [ 44%]
+test_errors.py ..                                                                                                                              [ 51%]
+test_datetime.py ...                                                                                                                           [ 62%]
+test_audit.py .                                                                                                                                [ 66%]
+test_fields.py ....                                                                                                                            [ 81%]
+test_export.py ....                                                                                                                            [ 96%]
+test_accessibility.py .                                                                                                                        [100%]
+
+================================================================== warnings summary ==================================================================
+cli_form_o4-mini_0/security_officer/test_audit.py::test_audit_log_records
+cli_form_o4-mini_0/security_officer/test_audit.py::test_audit_log_records
+  /Users/celine/Research/librarybench/cli_form_o4-mini_0/security_officer/incident_form/audit.py:8: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    timestamp = datetime.utcnow().isoformat() + "Z"
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+=========================================================== 27 passed, 2 warnings in 0.06s ===========================================================

@@ -1,0 +1,91 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 10 items
+
+test_filter_rules.py .                                                                                                                         [ 10%]
+test_utils.py ...                                                                                                                              [ 40%]
+test_webhook_integration.py .                                                                                                                  [ 50%]
+test_watch.py .                                                                                                                                [ 60%]
+test_async_api.py .                                                                                                                            [ 70%]
+test_logging_support.py .                                                                                                                      [ 80%]
+test_cli.py F                                                                                                                                  [ 90%]
+test_event_detection.py .                                                                                                                      [100%]
+
+====================================================================== FAILURES ======================================================================
+_________________________________________________________________ test_parse_and_run _________________________________________________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-282/test_parse_and_run0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10200eb10>
+
+    @pytest.mark.asyncio
+    async def test_parse_and_run(tmp_path, monkeypatch):
+        d = tmp_path / "d"
+        d.mkdir()
+        f = d / "x.txt"
+        f.write_text("v")
+        # monkeypatch print to capture output
+        printed = []
+        monkeypatch.setattr("builtins.print", lambda x: printed.append(x))
+        result = await CLIInterface([str(d), "--include", "*.txt"]).run()
+        assert isinstance(result, list)
+        assert result
+        # test main entry
+>       res2 = main([str(d)])
+
+test_cli.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+filewatcher/cli.py:35: in main
+    return asyncio.run(cli.run())
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+main = <coroutine object CLIInterface.run at 0x1025ed9c0>
+
+    def run(main, *, debug=None, loop_factory=None):
+        """Execute the coroutine and return the result.
+    
+        This function runs the passed coroutine, taking care of
+        managing the asyncio event loop, finalizing asynchronous
+        generators and closing the default executor.
+    
+        This function cannot be called when another asyncio event loop is
+        running in the same thread.
+    
+        If debug is True, the event loop will be run in debug mode.
+        If loop_factory is passed, it is used for new event loop creation.
+    
+        This function always creates a new event loop and closes it at the end.
+        It should be used as a main entry point for asyncio programs, and should
+        ideally only be called once.
+    
+        The executor is given a timeout duration of 5 minutes to shutdown.
+        If the executor hasn't finished within that duration, a warning is
+        emitted and the executor is closed.
+    
+        Example:
+    
+            async def main():
+                await asyncio.sleep(1)
+                print('hello')
+    
+            asyncio.run(main())
+        """
+        if events._get_running_loop() is not None:
+            # fail fast with short traceback
+>           raise RuntimeError(
+                "asyncio.run() cannot be called from a running event loop")
+E           RuntimeError: asyncio.run() cannot be called from a running event loop
+
+../../../../miniconda3/envs/library/lib/python3.13/asyncio/runners.py:191: RuntimeError
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================== short test summary info ===============================================================
+FAILED test_cli.py::test_parse_and_run - RuntimeError: asyncio.run() cannot be called from a running event loop
+============================================================ 1 failed, 9 passed in 0.10s =============================================================
+<sys>:0: RuntimeWarning: coroutine 'CLIInterface.run' was never awaited
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback

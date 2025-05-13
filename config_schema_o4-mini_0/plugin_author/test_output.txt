@@ -1,0 +1,21 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 24 items
+
+test_plugin_registration_and_defaults.py .                                                                                                     [  4%]
+test_env_and_error_reporting.py ...                                                                                                            [ 16%]
+test_cross_field_complex.py .                                                                                                                  [ 20%]
+test_merge_edge_cases.py ....                                                                                                                  [ 37%]
+test_core.py ..........                                                                                                                        [ 79%]
+test_http_loader.py ..                                                                                                                         [ 87%]
+test_validator_contexts_and_types.py ...                                                                                                       [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 24 passed in 1.15s =================================================================

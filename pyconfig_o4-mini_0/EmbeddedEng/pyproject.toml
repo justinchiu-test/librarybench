@@ -1,0 +1,5 @@
+[tool.pytest.ini_options]
+# Search from the project root so pytest will pick up all test_*.py or *_test.py files
+testpaths = ["."]
+# You can still add other pytest options here if you like:
+# addopts = "-q --disable-warnings --maxfail=1"

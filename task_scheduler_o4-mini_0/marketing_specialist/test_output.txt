@@ -1,0 +1,25 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 10 items
+
+test_marketing_engine.py ..........                                                                                                            [100%]
+
+================================================================== warnings summary ==================================================================
+task_scheduler_o4-mini_0/marketing_specialist/test_marketing_engine.py::test_schedule_and_get_next_run
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_specialist/marketing_engine.py:115: DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    c.execute('UPDATE campaigns SET next_run = ? WHERE campaign_id = ?', (run_time, campaign_id))
+
+task_scheduler_o4-mini_0/marketing_specialist/test_marketing_engine.py::test_schedule_and_get_next_run
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_specialist/marketing_engine.py:121: DeprecationWarning: The default timestamp converter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    row = c.fetchone()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+=========================================================== 10 passed, 2 warnings in 0.04s ===========================================================

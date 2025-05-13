@@ -1,0 +1,24 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 28 items
+
+test_retry.py ..                                                                                                                               [  7%]
+test_utils.py .                                                                                                                                [ 10%]
+test_validation.py .......                                                                                                                     [ 35%]
+test_config_loader.py .....                                                                                                                    [ 53%]
+test_dry_run.py ..                                                                                                                             [ 60%]
+test_branch_flow.py ...                                                                                                                        [ 71%]
+test_prompts.py ..                                                                                                                             [ 78%]
+test_hooks.py .                                                                                                                                [ 82%]
+test_context.py ..                                                                                                                             [ 89%]
+test_export_docs.py ...                                                                                                                        [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 28 passed in 0.10s =================================================================

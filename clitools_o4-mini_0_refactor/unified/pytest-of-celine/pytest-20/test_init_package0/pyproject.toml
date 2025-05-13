@@ -1,1 +1,0 @@
-{"project": {"name": "testpkg", "version": "1.0.0", "dependencies": ["a==1.0", "b>=2.0"]}}

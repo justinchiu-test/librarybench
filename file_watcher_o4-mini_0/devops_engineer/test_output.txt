@@ -1,0 +1,27 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 9 items
+
+test_retry.py .                                                                                                                                [ 11%]
+test_webhook.py ..                                                                                                                             [ 33%]
+test_logging.py .                                                                                                                              [ 44%]
+test_move.py .                                                                                                                                 [ 55%]
+test_cli.py .                                                                                                                                  [ 66%]
+test_watcher.py ..                                                                                                                             [ 88%]
+test_recursive.py .                                                                                                                            [100%]
+
+================================================================== warnings summary ==================================================================
+file_watcher_o4-mini_0/devops_engineer/test_retry.py::test_retry_logic
+  /Users/celine/Research/librarybench/file_watcher_o4-mini_0/devops_engineer/conftest.py:35: DeprecationWarning: There is no current event loop
+    loop = funcargs.get("loop", asyncio.get_event_loop())
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================ 9 passed, 1 warning in 2.06s ============================================================

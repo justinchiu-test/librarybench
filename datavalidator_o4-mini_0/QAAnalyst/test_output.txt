@@ -1,0 +1,23 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 18 items
+
+test_schema_inheritance.py ..                                                                                                                  [ 11%]
+test_performance_metrics.py .                                                                                                                  [ 16%]
+test_versioned_schemas.py ..                                                                                                                   [ 27%]
+test_batch_validation.py .                                                                                                                     [ 33%]
+test_default_values.py .                                                                                                                       [ 38%]
+test_constraints.py ...                                                                                                                        [ 55%]
+test_error_codes.py ..                                                                                                                         [ 66%]
+test_single_validation.py .....                                                                                                                [ 94%]
+test_conditional_validation.py .                                                                                                               [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 18 passed in 0.10s =================================================================

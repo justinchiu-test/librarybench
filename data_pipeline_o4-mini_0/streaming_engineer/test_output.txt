@@ -1,0 +1,21 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 11 items
+
+test_monitoring_metrics.py .                                                                                                                   [  9%]
+test_error_handling.py ...                                                                                                                     [ 36%]
+test_dynamic_reconfiguration.py .                                                                                                              [ 45%]
+test_memory_usage_control.py .                                                                                                                 [ 54%]
+test_real_time_logging.py .                                                                                                                    [ 63%]
+test_backpressure_control.py .                                                                                                                 [ 72%]
+test_pipeline.py ...                                                                                                                           [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 11 passed in 0.07s =================================================================

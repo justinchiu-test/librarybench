@@ -243,8 +243,8 @@ class TestAuditLogger:
     
     def test_logger_with_crypto_provider(self):
         """Test logger with cryptographic signing."""
-        # Skip this test as it requires cryptographic implementation
-        pytest.skip("Skipping crypto verification test")
+        # Skip this test as the crypto implementation needs further work
+        pytest.skip("Cryptographic verification needs further implementation work")
     
     def test_saving_and_loading_log(self, tmp_path):
         """Test saving and loading audit logs."""

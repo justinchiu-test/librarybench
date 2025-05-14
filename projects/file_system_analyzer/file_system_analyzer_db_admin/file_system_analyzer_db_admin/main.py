@@ -217,6 +217,76 @@ def main():
                     
                     if len(critical_recs) > 5:
                         print(f"  ... and {len(critical_recs) - 5} more critical recommendations")
+                        
+        # Specific log analysis if requested
+        if args.analysis_type == "logs":
+            logger.info(f"Analyzing transaction logs in {path}")
+            
+            # First find log files
+            file_result = api.analyze_database_files(
+                root_path=path,
+                recursive=args.recursive,
+                max_depth=args.max_depth,
+                follow_symlinks=args.follow_symlinks,
+            )
+            
+            log_files = [f for f in file_result.get("detected_files", []) 
+                      if f.get("category") == "log"]
+            
+            if not log_files:
+                logger.warning("No log files found in the specified path")
+                return 0
+                
+            log_result = api.analyze_transaction_logs(
+                log_files=log_files,
+                export_format=export_format,
+                export_filename=f"log_analysis_{export_filename}" if export_filename else None,
+                notify_on_critical=notify,
+                notification_email=args.email,
+            )
+            
+            # Print summary
+            if args.verbose:
+                print("\nLog Analysis Summary:")
+                print(f"  Total log files: {len(log_files)}")
+                print(f"  Total log size: {log_result.get('total_log_size_bytes', 0) / (1024*1024):.2f} MB")
+                print(f"  Growth rate: {log_result.get('growth_rate_bytes_per_day', 0) / (1024*1024):.2f} MB/day")
+                print(f"  Growth pattern: {log_result.get('dominant_growth_pattern', 'unknown')}")
+                
+        # Specific backup analysis if requested
+        if args.analysis_type == "backups":
+            logger.info(f"Analyzing backup files in {path}")
+            
+            # First find backup files
+            file_result = api.analyze_database_files(
+                root_path=path,
+                recursive=args.recursive,
+                max_depth=args.max_depth,
+                follow_symlinks=args.follow_symlinks,
+            )
+            
+            backup_files = [f for f in file_result.get("detected_files", []) 
+                         if f.get("category") == "backup"]
+            
+            if not backup_files:
+                logger.warning("No backup files found in the specified path")
+                return 0
+                
+            backup_result = api.analyze_backup_compression(
+                backups=backup_files,
+                export_format=export_format,
+                export_filename=f"backup_analysis_{export_filename}" if export_filename else None,
+                notify_on_critical=notify,
+                notification_email=args.email,
+            )
+            
+            # Print summary
+            if args.verbose:
+                print("\nBackup Analysis Summary:")
+                print(f"  Total backup files: {backup_result.get('total_backups', 0)}")
+                print(f"  Total backup size: {backup_result.get('total_backup_size_bytes', 0) / (1024*1024):.2f} MB")
+                print(f"  Compression ratio: {backup_result.get('overall_compression_ratio', 0):.2f}x")
+                print(f"  Space savings: {backup_result.get('overall_space_savings_bytes', 0) / (1024*1024):.2f} MB")
         
         logger.info("Analysis completed successfully")
         return 0

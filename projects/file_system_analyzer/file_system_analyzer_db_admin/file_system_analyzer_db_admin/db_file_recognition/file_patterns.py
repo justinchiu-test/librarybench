@@ -58,8 +58,8 @@ POSTGRESQL_PATTERNS = {
     FileCategory.LOG: [
         r"postgresql-.*\.log$",
         r"pg_log/.*\.log$",
-        r"pg_wal/[0-9A-F]{24}$",  # Write-ahead logs
-        r"pg_xlog/[0-9A-F]{24}$",  # Pre-10 WAL directory
+        r"pg_wal/.*$",  # Write-ahead logs
+        r"pg_xlog/.*$",  # Pre-10 WAL directory
     ],
     FileCategory.TEMP: [
         r"pgsql_tmp/.*",  # Temporary files

@@ -36,31 +36,40 @@ def mock_narrative_tracker(sample_document):
     """Create a mock narrative tracker for testing."""
     tracker = MagicMock(spec=NarrativeTracker)
     tracker.document = sample_document
-    
+
+    # Create real Element objects instead of MagicMocks
+    from writer_text_editor.narrative import NarrativeElement, ElementOccurrence
+
     # Mock some elements
+    element1 = NarrativeElement(
+        id="character_1",
+        name="Sarah",
+        element_type=ElementType.CHARACTER,
+        occurrences=[]
+    )
+
+    element2 = NarrativeElement(
+        id="character_2",
+        name="John",
+        element_type=ElementType.CHARACTER,
+        occurrences=[]
+    )
+
+    element3 = NarrativeElement(
+        id="location_1",
+        name="The Castle",
+        element_type=ElementType.LOCATION,
+        occurrences=[]
+    )
+
     elements = {
-        "character_1": MagicMock(
-            id="character_1",
-            name="Sarah",
-            element_type=ElementType.CHARACTER,
-            occurrences=[]
-        ),
-        "character_2": MagicMock(
-            id="character_2",
-            name="John",
-            element_type=ElementType.CHARACTER,
-            occurrences=[]
-        ),
-        "location_1": MagicMock(
-            id="location_1",
-            name="The Castle",
-            element_type=ElementType.LOCATION,
-            occurrences=[]
-        )
+        "character_1": element1,
+        "character_2": element2,
+        "location_1": element3
     }
-    
+
     tracker.elements = elements
-    
+
     # Mock get_element_appearances
     def mock_get_appearances(element_id):
         return [
@@ -81,14 +90,14 @@ def mock_narrative_tracker(sample_document):
                 "mentioned_with": []
             }
         ]
-    
+
     tracker.get_element_appearances.side_effect = mock_get_appearances
-    
+
     # Mock get_element_timeline
     def mock_get_timeline(element_id):
         appearances = mock_get_appearances(element_id)
         sections = {}
-        
+
         for appearance in appearances:
             section_id = appearance["section_id"]
             if section_id not in sections:
@@ -97,7 +106,7 @@ def mock_narrative_tracker(sample_document):
                     "appearances": []
                 }
             sections[section_id]["appearances"].append(appearance)
-        
+
         return [
             {
                 "section_id": section_id,
@@ -106,9 +115,9 @@ def mock_narrative_tracker(sample_document):
             }
             for section_id, info in sections.items()
         ]
-    
+
     tracker.get_element_timeline.side_effect = mock_get_timeline
-    
+
     return tracker
 
 

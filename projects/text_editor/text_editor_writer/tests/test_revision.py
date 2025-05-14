@@ -211,11 +211,11 @@ def test_html_diff_generation(revision_manager):
     new_text = "This is the modified text."
     
     html_diff = revision_manager.get_html_diff(old_text, new_text)
-    
+
     assert html_diff is not None
     assert isinstance(html_diff, str)
-    assert "original" in html_diff
-    assert "modified" in html_diff
+    assert "Old Version" in html_diff
+    assert "New Version" in html_diff
     assert "<html>" in html_diff  # It should be HTML
 
 

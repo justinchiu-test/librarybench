@@ -37,7 +37,7 @@ def test_section():
     assert section.get_content() == "First paragraph.\nSecond paragraph with more words."
     
     # Test get_word_count
-    assert section.get_word_count() == 8  # 2 + 6
+    assert section.get_word_count() == 7  # 2 + 5
     
     # Test get_segment
     assert section.get_segment(0) == segment1

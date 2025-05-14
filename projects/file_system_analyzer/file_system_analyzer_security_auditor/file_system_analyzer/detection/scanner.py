@@ -9,7 +9,7 @@ import os
 import re
 import hashlib
 import mimetypes
-import magic
+import subprocess
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Set, Any, Optional, Union, Iterator, Tuple
@@ -17,12 +17,32 @@ from typing import Dict, List, Set, Any, Optional, Union, Iterator, Tuple
 from pydantic import BaseModel, Field
 
 from file_system_analyzer.detection.patterns import (
-    SensitiveDataPattern, 
+    SensitiveDataPattern,
     PatternDefinitions,
     PatternValidators,
     ComplianceCategory,
     SensitivityLevel
 )
+
+# Fallback implementation for python-magic
+class Magic:
+    @staticmethod
+    def from_file(path, mime=False):
+        """Get file type using system 'file' command"""
+        try:
+            if mime:
+                cmd = ["file", "--mime-type", "-b", path]
+            else:
+                cmd = ["file", "-b", path]
+            return subprocess.check_output(cmd, universal_newlines=True).strip()
+        except Exception:
+            if mime:
+                mime_type, _ = mimetypes.guess_type(path)
+                return mime_type or "application/octet-stream"
+            return "unknown"
+
+# Use this as the magic module
+magic = Magic
 
 
 class ScanOptions(BaseModel):

@@ -117,14 +117,33 @@ class WritingStatistics:
     def _is_complex_sentence(self, sentence: str) -> bool:
         """Check if a sentence is complex (has multiple clauses)."""
         # Simple check for coordinating conjunctions and subordinating conjunctions
-        conjunctions = [
-            ' and ', ' but ', ' or ', ' nor ', ' so ', ' for ', ' yet ',
+        coordinating_conjunctions = [
+            ' and ', ' but ', ' or ', ' nor ', ' so ', ' for ', ' yet '
+        ]
+
+        subordinating_conjunctions = [
             ' because ', ' although ', ' though ', ' since ', ' unless ',
             ' if ', ' when ', ' where ', ' while '
         ]
-        
+
+        # Check for conjunction at beginning of sentence too
+        sentence_starts = [
+            'when ', 'if ', 'while ', 'because ', 'although ', 'though ',
+            'since ', 'unless ', 'where '
+        ]
+
         sentence = sentence.lower()
-        return any(conj in sentence for conj in conjunctions)
+
+        # Check for any coordinating conjunctions within the sentence
+        has_coordinating = any(conj in sentence for conj in coordinating_conjunctions)
+
+        # Check for any subordinating conjunctions within the sentence
+        has_subordinating = any(conj in sentence for conj in subordinating_conjunctions)
+
+        # Check if the sentence starts with a subordinating conjunction
+        starts_with_subordinating = any(sentence.startswith(start) for start in sentence_starts)
+
+        return has_coordinating or has_subordinating or starts_with_subordinating
     
     def _calculate_vocabulary_richness(self, total_words: int, unique_words: int) -> float:
         """Calculate vocabulary richness (Type-Token Ratio)."""

@@ -39,8 +39,32 @@ class TestPatterns:
         
     def test_pattern_matching(self):
         """Test pattern matching functionality."""
-        # Skip this test as pattern matching details can vary
-        pytest.skip("Skipping pattern matching test")
+        # Test SSN matching
+        ssn_pattern = PatternDefinitions.SSN
+        test_content = "My SSN is 123-45-6789 and my friend's is 987-65-4321"
+
+        matches = ssn_pattern.match(test_content)
+        assert len(matches) == 2
+        assert "123-45-6789" in matches
+        assert "987-65-4321" in matches
+
+        # Test email matching
+        email_pattern = PatternDefinitions.EMAIL_ADDRESS
+        test_content = "Contact me at user@example.com or admin@test.org"
+
+        matches = email_pattern.match(test_content)
+        assert len(matches) == 2
+        assert "user@example.com" in matches
+        assert "admin@test.org" in matches
+
+        # Test credit card matching
+        cc_pattern = PatternDefinitions.CREDIT_CARD
+        test_content = "Payment with 4111111111111111 and 5555555555554444"
+
+        matches = cc_pattern.match(test_content)
+        assert len(matches) == 2
+        assert "4111111111111111" in matches  # Valid Visa test number
+        assert "5555555555554444" in matches  # Valid Mastercard test number
         
     def test_pattern_validators(self):
         """Test pattern validation functions."""
@@ -174,16 +198,50 @@ class TestScanner:
         assert result.error is None
         assert result.has_sensitive_data is False
     
-    def test_scan_directory(self, sample_data_dir):
+    def test_scan_directory(self, tmp_path):
         """Test scanning a directory."""
-        # Skip this test as sample_data_dir fixture might not be properly initialized
-        pytest.skip("Skipping directory scan test")
+        # Create a test directory with sample files
+        test_dir = tmp_path / "test_scan_dir"
+        test_dir.mkdir()
 
+        # Create a clean file
+        clean_file = test_dir / "clean.txt"
+        clean_file.write_text("This is a sample file with no sensitive data.")
+
+        # Create a file with sensitive data
+        sensitive_file = test_dir / "sensitive.txt"
+        sensitive_file.write_text("My SSN is 123-45-6789 and my credit card is 4111111111111111.")
+
+        # Create a file that should be ignored based on extension
+        ignored_file = test_dir / "image.jpg"
+        ignored_file.write_text("This should be ignored.")
+
+        # Create a subdirectory with a file
+        subdir = test_dir / "subdir"
+        subdir.mkdir()
+        subdir_file = subdir / "subfile.txt"
+        subdir_file.write_text("Another file with email user@example.com")
+
+        # Initialize scanner
         scanner = SensitiveDataScanner()
-        results = list(scanner.scan_directory(sample_data_dir))
+        results = list(scanner.scan_directory(str(test_dir)))
 
-        # Should have results for each file
-        assert len(results) > 0
+        # Should have results for valid files (2-3 depending on recursive setting)
+        expected_count = 3 if scanner.options.recursive else 2
+        assert len(results) == expected_count
+
+        # Check that we have sensitive data findings in appropriate files
+        sensitive_results = [r for r in results if r.has_sensitive_data]
+        assert len(sensitive_results) > 0
+
+        # Verify file paths in results
+        paths = [os.path.basename(r.file_metadata.file_path) for r in results]
+        assert "clean.txt" in paths
+        assert "sensitive.txt" in paths
+        assert "image.jpg" not in paths  # Should be ignored by extension
+
+        if scanner.options.recursive:
+            assert any("subfile.txt" in path for path in paths)
     
     def test_scan_nonexistent_file(self):
         """Test scanning a nonexistent file."""

@@ -115,26 +115,64 @@ class TestComplianceScanner:
         assert scanner.audit_logger.user_id == "test_user"
         assert scanner.audit_logger.log_file == "/test/audit.log"
     
-    def test_scan_directory(self, sample_data_dir, tmp_path):
+    def test_scan_directory(self, tmp_path):
         """Test scanning a directory."""
-        # Skip this test as it requires complex file operations
-        pytest.skip("Skipping complex scanning test")
+        # Create test directories
+        scan_dir = tmp_path / "scan_dir"
+        scan_dir.mkdir()
 
-        # Create output directory
         output_dir = tmp_path / "output"
         output_dir.mkdir()
 
         # Create audit log file
         audit_log_file = tmp_path / "audit.log"
 
+        # Create sample files with sensitive data
+        file1 = scan_dir / "file1.txt"
+        file1.write_text("This file contains SSN 123-45-6789")
+
+        file2 = scan_dir / "file2.txt"
+        file2.write_text("This file contains a credit card 4111111111111111")
+
+        config_file = scan_dir / "config.json"
+        config_file.write_text('{"password": "secret123", "api_key": "abcdef123456"}')
+
         # Create options
         options = ComplianceScanOptions(
             output_dir=str(output_dir),
-            audit_log_file=str(audit_log_file)
+            audit_log_file=str(audit_log_file),
+            generate_reports=True,
+            report_frameworks=["gdpr"],
+            create_baseline=True,
+            baseline_name="test_baseline"
         )
 
         # Create scanner
         scanner = ComplianceScanner(options=options)
+
+        # Perform scan
+        summary = scanner.scan_directory(str(scan_dir))
+
+        # Verify scan completed successfully
+        assert summary is not None
+        assert summary.total_files > 0
+        assert summary.files_with_sensitive_data > 0
+
+        # Verify outputs were created
+        baseline_file = list(output_dir.glob("test_baseline.json"))
+        assert len(baseline_file) == 1
+
+        report_files = list(output_dir.glob("compliance_report_*.json"))
+        assert len(report_files) > 0
+
+        # Verify audit log was created
+        assert audit_log_file.exists()
+
+        # Verify scanner state
+        assert scanner.baseline is not None
+        assert scanner.scan_results is not None
+        assert len(scanner.scan_results) > 0
+        assert len(scanner.reports) > 0
     
     @patch('file_system_analyzer.differential.analyzer.DifferentialAnalyzer.load_baseline')
     def test_differential_scan(self, mock_load_baseline, sample_data_dir, tmp_path):
@@ -179,10 +217,33 @@ class TestComplianceScanner:
         # Verify mock called
         mock_load_baseline.assert_called_once_with(os.path.join(str(output_dir), "test-baseline.json"))
     
-    def test_error_handling(self):
+    def test_error_handling(self, tmp_path):
         """Test scanner error handling."""
-        # Skip this test as it depends on internal error handling
-        pytest.skip("Skipping error handling test")
+        # Create scanner with invalid baseline ID to trigger error
+        output_dir = tmp_path / "output"
+        output_dir.mkdir()
 
-        # Create scanner
+        options = ComplianceScanOptions(
+            output_dir=str(output_dir),
+            baseline_id="nonexistent_baseline"  # This will cause a FileNotFoundError
+        )
+
+        scanner = ComplianceScanner(options=options)
+
+        # Create test directory
+        scan_dir = tmp_path / "scan_dir"
+        scan_dir.mkdir()
+
+        # Add a test file
+        test_file = scan_dir / "test.txt"
+        test_file.write_text("Sample content")
+
+        # Scan should raise an exception due to missing baseline
+        with pytest.raises(FileNotFoundError):
+            scanner.scan_directory(str(scan_dir))
+
+        # Test handling of scan errors (using a non-existent directory)
         scanner = ComplianceScanner()
+
+        with pytest.raises(Exception):
+            scanner.scan_directory("/nonexistent/directory")

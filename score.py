@@ -263,7 +263,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze Python files in a folder.")
     parser.add_argument("--directory", type=str, help="Paths to .py files")
-    parser.add_argument("--model", type=str, default="deepseek-ai/DeepSeek-V3", help="Name of the model hosted on vLLM")
+    parser.add_argument("--model", type=str, default="Qwen/Qwen2.5-7B-Instruct-Turbo", help="Name of the model hosted on vLLM")
     parser.add_argument("--enable_logprobs", action="store_true", default=False, help="turn on logprob computing")
     args = parser.parse_args()
     

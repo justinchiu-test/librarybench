@@ -77,18 +77,13 @@ def parse_imports(file_path):
     imports = []
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom):
-            if node.module and not any(node.module.startswith(excluded) for excluded in excluded_modules):
+            if node.module and not any(node.module.split('.')[0] == excluded for excluded in excluded_modules):
                 for alias in node.names:
                     imports.append(f"{node.module}::{alias.name}")
         elif isinstance(node, ast.Import):
             for import_alias in node.names:
                 if import_alias.name not in excluded_modules:
                     imports.append(import_alias.name)
-    # if imports:
-    #     print('=== FROM ===')
-    #     print(content)
-    #     print('==>')
-    #     print(imports)
     return imports
 
 def get_imported_code(file_path, directory):
@@ -194,7 +189,7 @@ def compute_metrics(directory, model, enable_logprobs=False):
         total_tokens  += new_tokens
         print(f"Processed {program_name}: logprob={sum_lp:.2f}, tokens={new_tokens}")
 
-        metrics_dict[program_name] = compute_code_metrics(code) | {"internal_imports": len(imported_code_segments)}
+        metrics_dict[program_name] = compute_code_metrics(code) | {"internal_imports": imported_code_segments}
 
     print("\n=== Summary ===")
     print(f"Full Repo Log Probability: {total_logprob:.2f}")
@@ -202,7 +197,7 @@ def compute_metrics(directory, model, enable_logprobs=False):
     total_lloc = sum(m["lloc"] for m in metrics_dict.values() if not math.isnan(m["lloc"]) )
     total_sloc = sum(m["sloc"] for m in metrics_dict.values() if not math.isnan(m["sloc"]) )
     total_cyclomatic = sum(m["cyclomatic"] for m in metrics_dict.values() if not math.isnan(m["cyclomatic"]))
-    total_internal_imports = sum(m["internal_imports"] for m in metrics_dict.values() if not math.isnan(m["internal_imports"]))
+    total_internal_imports = sum(len(m["internal_imports"]) for m in metrics_dict.values())
 
     print(f"Total Logical LOC (LLOC): {total_lloc}")
     print(f"Total Source LOC (SLOC): {total_sloc}")
@@ -238,7 +233,7 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
         total_multi += program_metrics["multi"] if not math.isnan(program_metrics["multi"]) else 0
         total_blank += program_metrics["blank"] if not math.isnan(program_metrics["blank"]) else 0
         total_cyclomatic += program_metrics["cyclomatic"] if not math.isnan(program_metrics["cyclomatic"]) else 0
-        total_internal_imports += program_metrics["internal_imports"] if not math.isnan(program_metrics["internal_imports"]) else 0
+        total_internal_imports += len(program_metrics["internal_imports"]) 
     
     result["total_loc"] = total_loc
     result["total_sloc"] = total_sloc
@@ -252,7 +247,7 @@ def package_all_metrics(logprobs, total_lp, metrics, total_tokens):
     return result
 
 def main(args):
-    output_file = os.path.join(args.directory, "LIBRARYBENCH_metrics.json")
+    output_file = os.path.join(args.directory, f"LIBRARYBENCH_metrics{'_nolp' if not args.enable_logprobs else ''}.json")
     if os.path.exists(output_file):
         if input("metrics file already exists... skip? [y/]").strip() == "y": 
             return

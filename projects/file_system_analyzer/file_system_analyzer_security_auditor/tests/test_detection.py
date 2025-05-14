@@ -154,7 +154,7 @@ class TestScanner:
         assert result.error is None
         assert result.file_metadata.file_path == str(test_file)
         assert result.file_metadata.file_size > 0
-        assert result.file_metadata.hash_sha256 \!= ""
+        assert result.file_metadata.hash_sha256 != ""
 
         # We're not testing specific pattern matches as they can vary
         # Just check that the scan completes successfully

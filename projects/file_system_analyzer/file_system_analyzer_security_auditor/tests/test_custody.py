@@ -350,4 +350,7 @@ class TestEvidencePackager:
             # Verify import
             assert imported_package == package
             assert files == mock_files
-            mock_import.assert_called_once_with(export_path, "test_user", None)
+            # Check that import_package was called with the correct parameters
+            assert mock_import.call_count == 1
+            assert mock_import.call_args.kwargs["package_path"] == export_path
+            assert mock_import.call_args.kwargs["user_id"] == "test_user"

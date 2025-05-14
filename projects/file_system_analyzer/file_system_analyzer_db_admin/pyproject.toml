@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "--cov=file_system_analyzer_db_admin"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+fixable = ["A", "B", "C", "D", "E", "F", "I"]
+ignore = []
+
+[tool.pyright]
+include = ["file_system_analyzer_db_admin", "tests"]
+exclude = ["**/__pycache__"]
+pythonVersion = "3.8"
+typeCheckingMode = "basic"

@@ -1,0 +1,28 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 16 items
+
+test_cron_no_duplicate.py .                                                                                                  [  6%]
+test_concurrency.py .                                                                                                        [ 12%]
+test_cron_weekly.py .                                                                                                        [ 18%]
+test_plugins.py .                                                                                                            [ 25%]
+test_cron_nonmatching.py .                                                                                                   [ 31%]
+test_scheduler.py ..                                                                                                         [ 43%]
+test_jitter_and_cron.py ..                                                                                                   [ 56%]
+test_workflow.py .                                                                                                           [ 62%]
+test_drift_correction.py .                                                                                                   [ 68%]
+test_hooks.py .                                                                                                              [ 75%]
+test_recurring.py .                                                                                                          [ 81%]
+test_distributed.py .                                                                                                        [ 87%]
+test_docker_k8s.py .                                                                                                         [ 93%]
+test_concurrency_zero_then_limit.py .                                                                                        [100%]
+
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+======================================================== 16 passed in 0.04s ========================================================

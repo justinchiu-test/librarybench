@@ -1,0 +1,1 @@
+# Import wrapper for product_manager module

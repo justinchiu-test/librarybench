@@ -1,0 +1,22 @@
+======================================================= test session starts ========================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 14 items
+
+test_imports.py .                                                                                                            [  7%]
+test_rate_limiter.py .............                                                                                           [100%]
+
+========================================================= warnings summary =========================================================
+ratelimiter_o4-mini_0/python_async_developer/test_rate_limiter.py::test_validate_config_success
+  /Users/celine/Research/librarybench/ratelimiter_o4-mini_0/python_async_developer/conftest.py:26: DeprecationWarning: There is no current event loop
+    loop = asyncio.get_event_loop()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+----------------------------------------------------------- JSON report ------------------------------------------------------------
+report saved to: report.json
+================================================== 14 passed, 1 warning in 5.59s ===================================================

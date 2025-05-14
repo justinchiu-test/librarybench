@@ -1,0 +1,26 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 13 items
+
+test_event_history_integration.py .                                                                                                            [  7%]
+test_async_integration.py .                                                                                                                    [ 15%]
+test_throttling_control.py .                                                                                                                   [ 23%]
+test_handler_registration.py .                                                                                                                 [ 30%]
+test_gitlab_ci_plugin.py .                                                                                                                     [ 38%]
+test_cli_interface.py .                                                                                                                        [ 46%]
+test_throttling.py .                                                                                                                           [ 53%]
+test_detect_snapshot.py .                                                                                                                      [ 61%]
+test_watcher.py ..                                                                                                                             [ 76%]
+test_symlink_config.py .                                                                                                                       [ 84%]
+test_history_store.py .                                                                                                                        [ 92%]
+test_resilient_error_handling.py .                                                                                                             [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 13 passed in 0.76s =================================================================

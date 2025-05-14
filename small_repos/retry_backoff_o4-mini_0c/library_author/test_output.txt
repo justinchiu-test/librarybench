@@ -1,0 +1,30 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 24 items
+
+test_circuit_breaker.py ....                                                                                                                   [ 16%]
+test_timeout.py ..                                                                                                                             [ 25%]
+test_backoff.py ....                                                                                                                           [ 41%]
+test_stop_conditions.py ..                                                                                                                     [ 50%]
+test_asyncio_integration.py ..                                                                                                                 [ 58%]
+test_cancellation.py .                                                                                                                         [ 62%]
+test_config.py ...ss                                                                                                                           [ 83%]
+test_context.py ..                                                                                                                             [ 91%]
+test_history.py .                                                                                                                              [ 95%]
+test_cli.py .                                                                                                                                  [100%]
+
+================================================================== warnings summary ==================================================================
+retry_backoff_o4-mini_0/library_author/test_asyncio_integration.py::test_async_retry_decorator
+  /Users/celine/Research/librarybench/retry_backoff_o4-mini_0/library_author/conftest.py:20: DeprecationWarning: There is no current event loop
+    loop = asyncio.get_event_loop()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+====================================================== 22 passed, 2 skipped, 1 warning in 0.19s ======================================================

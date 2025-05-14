@@ -1,0 +1,3 @@
+"""
+Localization Manager CLI init.
+"""

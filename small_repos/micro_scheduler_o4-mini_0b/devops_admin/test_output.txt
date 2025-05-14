@@ -1,0 +1,47 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 12 items
+
+test_utils.py .                                                                                             [  8%]
+test_scheduler.py ...........                                                                               [100%]
+
+================================================ warnings summary =================================================
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_schedule_and_list_jobs
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_persist_and_load_jobs
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_adjust_interval
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_graceful_shutdown_waits_and_persists
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/scheduler.py:43: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_schedule_and_list_jobs
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py:28: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (nr - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/scheduler.py:182: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job["next_run"] = datetime.utcnow() + timedelta(seconds=new_interval)
+
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_adjust_interval
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py:55: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    diff = (job["next_run"] - datetime.utcnow()).total_seconds()
+
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_register_hooks_and_run_job
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_expose_metrics
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/scheduler.py:118: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    job["next_run"] = datetime.utcnow() + timedelta(seconds=job["interval"])
+
+micro_scheduler_o4-mini_0/devops_admin/test_scheduler.py::test_expose_metrics
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/devops_admin/scheduler.py:31: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+========================================= 12 passed, 14 warnings in 0.28s =========================================

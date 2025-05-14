@@ -1,0 +1,27 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 8 items
+
+test_lab_scheduler.py ........                                                                                                                 [100%]
+
+================================================================== warnings summary ==================================================================
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_track_stats_and_logs
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_track_stats_and_logs
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_overlap_locking_and_execution
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_overlap_locking_and_execution
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_pause_and_resume_and_shutdown
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_pause_and_resume_and_shutdown
+task_scheduler_o4-mini_0/lab_coordinator/test_lab_scheduler.py::test_pause_and_resume_and_shutdown
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/lab_coordinator/lab_scheduler.py:77: DeprecationWarning: The default datetime adapter is deprecated as of Python 3.12; see the sqlite3 documentation for suggested replacement recipes
+    c.execute('INSERT INTO logs(job_id, timestamp, status, duration) VALUES(?,?,?,?)',
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+=========================================================== 8 passed, 7 warnings in 0.49s ============================================================

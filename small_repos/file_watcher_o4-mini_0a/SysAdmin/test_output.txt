@@ -1,0 +1,23 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 16 items
+
+test_symlink.py ..                                                                                                                             [ 12%]
+test_handlers.py .                                                                                                                             [ 18%]
+test_plugins.py .                                                                                                                              [ 25%]
+test_errors.py ..                                                                                                                              [ 37%]
+test_throttler.py .                                                                                                                            [ 43%]
+test_filters.py ....                                                                                                                           [ 68%]
+test_history.py .                                                                                                                              [ 75%]
+test_cli.py ..                                                                                                                                 [ 87%]
+test_watcher.py ..                                                                                                                             [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 16 passed in 1.25s =================================================================

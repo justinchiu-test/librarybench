@@ -1,0 +1,43 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 15 items
+
+test_gitignore_parser.py .                                                                                                                     [  6%]
+test_hash_utils.py F                                                                                                                           [ 13%]
+test_config.py ....                                                                                                                            [ 40%]
+test_snapshot.py ...                                                                                                                           [ 60%]
+test_api.py .                                                                                                                                  [ 66%]
+test_batcher.py .                                                                                                                              [ 73%]
+test_filters.py ...                                                                                                                            [ 93%]
+test_cli.py .                                                                                                                                  [100%]
+
+====================================================================== FAILURES ======================================================================
+__________________________________________________________________ test_md5_sha256 ___________________________________________________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-296/test_md5_sha2560')
+
+    def test_md5_sha256(tmp_path):
+        f = tmp_path / "data.bin"
+        content = b"abcdef"
+        f.write_bytes(content)
+        md5 = hash_file(str(f), algorithm="md5")
+        sha = hash_file(str(f), algorithm="sha256")
+        assert md5 == "e80b5017098950fc58aad83c8c14978e"
+>       assert sha == "bef575f1f8ecbd9b8fa940c6e3c8417adb07e6af5c184ca7f47f2905f8a6c1ee"
+E       AssertionError: assert 'bef57ec7f53a...5c6dcd93c4721' == 'bef575f1f8ec...f2905f8a6c1ee'
+E         
+E         - bef575f1f8ecbd9b8fa940c6e3c8417adb07e6af5c184ca7f47f2905f8a6c1ee
+E         + bef57ec7f53a6d40beb640a780a639c83bc29ac8a9816f1fc6c5c6dcd93c4721
+
+test_hash_utils.py:11: AssertionError
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================== short test summary info ===============================================================
+FAILED test_hash_utils.py::test_md5_sha256 - AssertionError: assert 'bef57ec7f53a...5c6dcd93c4721' == 'bef575f1f8ec...f2905f8a6c1ee'
+============================================================ 1 failed, 14 passed in 0.10s ============================================================

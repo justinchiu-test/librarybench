@@ -1,0 +1,34 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 8 items
+
+test_scheduler.py ........                                                                                                                     [100%]
+
+================================================================== warnings summary ==================================================================
+task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py::test_calendar_exclusions
+task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py::test_concurrency_limits
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_manager/campaign_scheduler.py:58: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    record = {'message': message, 'channel': channel, 'time': datetime.datetime.utcnow()}
+
+task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py::test_concurrency_limits
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py:42: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py::test_priority_queue_and_next_run
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py:53: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py::test_persist_and_load_jobs
+  /Users/celine/Research/librarybench/task_scheduler_o4-mini_0/marketing_manager/test_scheduler.py:65: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now = datetime.datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+=========================================================== 8 passed, 5 warnings in 0.46s ============================================================

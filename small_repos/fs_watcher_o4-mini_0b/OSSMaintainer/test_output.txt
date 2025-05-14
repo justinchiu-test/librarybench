@@ -1,0 +1,21 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 9 items
+
+test_fswatcher.py .........                                                                                                                    [100%]
+
+================================================================== warnings summary ==================================================================
+test_fswatcher.py:103
+  /Users/celine/Research/librarybench/fs_watcher_o4-mini_0/OSSMaintainer/test_fswatcher.py:103: PytestUnknownMarkWarning: Unknown pytest.mark.asyncio - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.asyncio
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================ 9 passed, 1 warning in 0.32s ============================================================

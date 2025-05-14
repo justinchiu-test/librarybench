@@ -1,0 +1,30 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 7 items
+
+test_scheduler.py .......                                                                                   [100%]
+
+================================================ warnings summary =================================================
+micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py::test_manual_trigger_and_dependency
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py:14: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id2 = scheduler.schedule_job('job2', job2, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py::test_priority_sorting
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py:73: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id1 = scheduler.schedule_job('a', f, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py::test_priority_sorting
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py:74: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id2 = scheduler.schedule_job('b', f, run_at=datetime.utcnow())
+
+micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py::test_namespace_and_tags_and_query
+  /Users/celine/Research/librarybench/micro_scheduler_o4-mini_0/ecommerce_manager/test_scheduler.py:101: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    id1 = scheduler.schedule_job('job', f, run_at=datetime.utcnow(), tags=tags, tenant='store_north')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+========================================== 7 passed, 4 warnings in 0.05s ==========================================

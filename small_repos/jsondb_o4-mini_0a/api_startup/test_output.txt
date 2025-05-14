@@ -1,0 +1,20 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 18 items
+
+test_batch_upsert.py .                                                                                      [  5%]
+test_plugin.py .                                                                                            [ 11%]
+test_persistence_atomic.py .                                                                                [ 16%]
+test_schema.py .                                                                                            [ 22%]
+test_indices.py .                                                                                           [ 27%]
+test_server.py ...                                                                                          [ 44%]
+test_db_engine.py ........                                                                                  [ 88%]
+test_ttl.py .                                                                                               [ 94%]
+test_encryption.py .                                                                                        [100%]
+
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+=============================================== 18 passed in 4.89s ================================================

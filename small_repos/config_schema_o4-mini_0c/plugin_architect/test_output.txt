@@ -1,0 +1,31 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 23 items
+
+test_dotenv.py .                                                                                                                               [  4%]
+test_utils.py ...                                                                                                                              [ 17%]
+test_postprocessor_plugin.py .                                                                                                                 [ 21%]
+test_plugin.py ..                                                                                                                              [ 30%]
+test_error_integration.py .                                                                                                                    [ 34%]
+test_errors.py ..                                                                                                                              [ 43%]
+test_transformer_plugin.py .                                                                                                                   [ 47%]
+test_watch.py .                                                                                                                                [ 52%]
+test_register_multiple_plugins.py .                                                                                                            [ 56%]
+test_schema.py .                                                                                                                               [ 60%]
+test_merge.py ..                                                                                                                               [ 69%]
+test_integration_dotenv_yaml.py .                                                                                                              [ 73%]
+test_cli_override.py .                                                                                                                         [ 78%]
+test_api.py ..                                                                                                                                 [ 86%]
+test_merge_non_dicts.py .                                                                                                                      [ 91%]
+test_compose_empty_schema.py .                                                                                                                 [ 95%]
+test_defaults.py .                                                                                                                             [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 23 passed in 0.60s =================================================================

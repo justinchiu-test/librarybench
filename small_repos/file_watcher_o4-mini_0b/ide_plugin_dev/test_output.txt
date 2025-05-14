@@ -1,0 +1,99 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench/file_watcher_o4-mini_0/ide_plugin_dev
+configfile: pytest.ini
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 5 items / 3 errors
+
+test_events.py .                                                                                                                               [ 20%]
+test_filters.py ....                                                                                                                           [100%]
+
+======================================================================= ERRORS =======================================================================
+__________________________________________________________ ERROR collecting test_webhook.py __________________________________________________________
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+test_webhook.py:5: in <module>
+    from filewatcher.watcher import FileWatcher
+E     File "/Users/celine/Research/librarybench/file_watcher_o4-mini_0/ide_plugin_dev/filewatcher/watcher.py", line 3
+E       @@ async def _detect_changes(self, old, new):
+E        ^
+E   SyntaxError: invalid syntax
+____________________________________________________________ ERROR collecting test_cli.py ____________________________________________________________
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+test_cli.py:3: in <module>
+    from filewatcher.cli import main as cli_main
+filewatcher/cli.py:4: in <module>
+    from .watcher import FileWatcher
+E     File "/Users/celine/Research/librarybench/file_watcher_o4-mini_0/ide_plugin_dev/filewatcher/watcher.py", line 3
+E       @@ async def _detect_changes(self, old, new):
+E        ^
+E   SyntaxError: invalid syntax
+__________________________________________________________ ERROR collecting test_watcher.py __________________________________________________________
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/python.py:493: in importtestmodule
+    mod = import_path(
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/pathlib.py:587: in import_path
+    importlib.import_module(module_name)
+../../../../miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1331: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:935: in _load_unlocked
+    ???
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/assertion/rewrite.py:185: in exec_module
+    exec(co, module.__dict__)
+test_watcher.py:3: in <module>
+    from filewatcher.watcher import FileWatcher
+E     File "/Users/celine/Research/librarybench/file_watcher_o4-mini_0/ide_plugin_dev/filewatcher/watcher.py", line 3
+E       @@ async def _detect_changes(self, old, new):
+E        ^
+E   SyntaxError: invalid syntax
+================================================================== warnings summary ==================================================================
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/config/__init__.py:1441
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/config/__init__.py:1441: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================== short test summary info ===============================================================
+ERROR test_webhook.py
+ERROR test_cli.py
+ERROR test_watcher.py
+======================================================= 5 passed, 1 warning, 3 errors in 0.52s =======================================================

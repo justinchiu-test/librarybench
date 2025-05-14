@@ -8,6 +8,7 @@ from functools import partial
 import hashlib
 import json
 import numpy as np
+import math
 
 
 def load_code(repo_path):
@@ -132,9 +133,10 @@ def get_embedding_clusters(directory_paths, num_clusters):
 
     labels = embedding_clusterer.fit_predict(all_embeddings)
     clusters = [[] for _ in range(num_clusters)]
-    for idx, lab in enumerate(labels):
-        clusters[lab].append(directory_paths[idx])
-    return clusters
+    for idx, label in enumerate(labels):
+        clusters[label].append(idx)
+        # clusters[label].append(directory_paths[idx])
+    return clusters, np.array(all_embeddings)
 
 def get_string_clusters(directory_paths, num_clusters, processes=None):
     # compute similarity matrices in parallel
@@ -156,35 +158,72 @@ def get_string_clusters(directory_paths, num_clusters, processes=None):
     task_clusters = [[] for _ in range(num_clusters)]
     code_clusters = [[] for _ in range(num_clusters)]
     for idx, lab in enumerate(task_labels):
-        task_clusters[lab].append(directory_paths[idx])
+        task_clusters[lab].append(idx)
+        # task_clusters[lab].append(directory_paths[idx])
     for idx, lab in enumerate(code_labels):
-        code_clusters[lab].append(directory_paths[idx])
+        code_clusters[lab].append(idx)
+        # code_clusters[lab].append(directory_paths[idx])
 
-    return task_clusters, code_clusters
+    return (task_clusters, task_dist), (code_clusters, code_dist)
+
+###### CLUSTERING HELPERS #####
+def select_best_embedding_cluster(all_repos, embeddings, clusters):
+    # compute centroid & avg distance per cluster
+    centroids = [
+        np.mean([embeddings[i] for i in cluster], axis=0)
+        for cluster in clusters
+    ]
+    avg_dists = [
+        sum(math.dist(embeddings[i], centroids[idx]) for i in cluster) / len(cluster)
+        for idx, cluster in enumerate(clusters)
+    ]
+    best_idx = int(np.argmin(avg_dists))
+    return best_idx, avg_dists
+
+def select_best_string_cluster(clusters, dist_matrix):
+    avg_dists = []
+    for cluster in clusters:
+        if len(cluster) < 2:
+            avg_dists.append(float('inf'))
+        else:
+            pairs = list(itertools.combinations(cluster, 2))
+            avg = sum(dist_matrix[i][j] for i,j in pairs) / len(pairs)
+            avg_dists.append(avg)
+    best_idx = int(np.argmin(avg_dists))
+    return best_idx, avg_dists
 
 if __name__ == "__main__":
-    all_repos = sys.argv[1:-1]
+    folders_of_repos = sys.argv[1:-1]
+    all_repos = []
+    for repo_folder in folders_of_repos:
+        for subfolder in glob.glob(os.path.join(repo_folder, "*")):
+            if os.path.isdir(subfolder) and "__pycache__" not in subfolder:
+                all_repos.append(subfolder)
+
     NUM_CLUSTERS = int(sys.argv[-1])
+    print(f"Clustering {' and '.join(all_repos)} into {NUM_CLUSTERS} clusters...")
 
-    embedding_task_clusters = get_embedding_clusters(all_repos, NUM_CLUSTERS)
-
+    embedding_task_clusters, task_embeddings = get_embedding_clusters(all_repos, NUM_CLUSTERS)
+    emb_i, emb_dists = select_best_embedding_cluster(all_repos, task_embeddings, embedding_task_clusters)
     print("=== EMBEDDING TASK CLUSTERS ===")
-    for cluster in embedding_task_clusters:
-        print(",".join(p for p in cluster))
+    for idx, cluster in enumerate(embedding_task_clusters):
+        print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == emb_i else ''} {emb_dists[idx]}")
 
-    string_task_clusters, string_code_clusters = get_string_clusters(all_repos, NUM_CLUSTERS)
+    (string_task_clusters, string_task_dist), (string_code_clusters, string_code_dist) = get_string_clusters(all_repos, NUM_CLUSTERS)
 
+    task_i, task_dists = select_best_string_cluster(string_task_clusters, string_task_dist)
     print("=== STRING TASK CLUSTERS ===")
-    for cluster in string_task_clusters:
-        print(",".join(p for p in cluster))
+    for idx, cluster in enumerate(string_task_clusters):
+        print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == task_i else ''} {task_dists[idx]}")
 
+    code_i, code_dists = select_best_string_cluster(string_code_clusters, string_code_dist)
     print("=== STRING CODE CLUSTERS ===")
-    for cluster in string_code_clusters:
-        print(",".join(p for p in cluster))
+    for idx, cluster in enumerate(string_code_clusters):
+        print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == code_i else ''} {code_dists[idx]}")
 
 
 # determine which generated personas to refactor tg: 
-# python repo_similarity.py clitools_o4-mini_0/backend_dev/ clitools_o4-mini_0/cloud_infra_engineer/ clitools_o4-mini_0/data_scientist/ clitools_o4-mini_0/devops_engineer/ clitools_o4-mini_0/localization_manager/ clitools_o4-mini_0/opensource_maintainer/ clitools_o4-mini_0/ops_engineer/ clitools_o4-mini_0/plugin_developer/ clitools_o4-mini_0/qa_automation/ clitools_o4-mini_0/security_analyst/ clitools_o4-mini_0/translator/  3
+# python repo_similarity.py clitools_o4-mini_0 3 > clitools_o4-mini_0/clusters.txt
 
 # can also use to see that generated clusters would indeed cluster:
-# python repo_similarity.py clitools_o4-mini_0/... micro_scheduler_o4-mini_0/...  2
+# python repo_similarity.py clitools_o4-mini_0a micro_scheduler_o4-mini_0ba 2

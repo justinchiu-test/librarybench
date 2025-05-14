@@ -1,0 +1,24 @@
+=============================================== test session starts ===============================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, metadata-3.1.1
+collected 29 items
+
+test_config_parser.py ...                                                                                   [ 10%]
+test_version.py ...                                                                                         [ 20%]
+test_signals.py .                                                                                           [ 24%]
+test_di.py .                                                                                                [ 27%]
+test_env.py ...                                                                                             [ 37%]
+test_config_schema.py .                                                                                     [ 41%]
+test_config_validator.py ....                                                                               [ 55%]
+test_i18n.py ..                                                                                             [ 62%]
+test_help_formatter.py ...                                                                                  [ 72%]
+test_commands.py .                                                                                          [ 75%]
+test_secrets.py ..                                                                                          [ 82%]
+test_publish.py ...                                                                                         [ 93%]
+test_scaffold.py ..                                                                                         [100%]
+
+--------------------------------------------------- JSON report ---------------------------------------------------
+report saved to: report.json
+=============================================== 29 passed in 0.14s ================================================

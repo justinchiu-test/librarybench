@@ -1,0 +1,22 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench/state_machine_o4-mini_0/home_automation_engineer
+configfile: pytest.ini
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 9 items
+
+test_statemachine.py .........                                                                                                                 [100%]
+
+================================================================== warnings summary ==================================================================
+../../../../miniconda3/envs/library/lib/python3.13/site-packages/_pytest/config/__init__.py:1441
+  /Users/celine/miniconda3/envs/library/lib/python3.13/site-packages/_pytest/config/__init__.py:1441: PytestConfigWarning: Unknown config option: anyio_backend
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+============================================================ 9 passed, 1 warning in 0.17s ============================================================

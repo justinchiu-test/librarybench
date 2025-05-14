@@ -1,10 +1,10 @@
 # CLAUDE.md - Guide for Refactorbench Project
 
 ## Build & Run Commands
-- Run main script: `uv run python hello.py`
-- Install dependencies: `uv sync`
-- Run tests: `uv run pytest`
-- Run single test: `uv run pytest path/to/test.py::test_function_name`
+- Run main script: `python hello.py`
+- Install dependencies: `uv pip install`
+- Run tests: `pytest`
+- Run single test: `pytest path/to/test.py::test_function_name`
 - Format code: `uv run ruff format`
 - Lint code: `uv run ruff check .`
 - Type check: `uv run pyright`

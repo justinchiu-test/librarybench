@@ -1,0 +1,2 @@
+{"event": "enqueue", "task_id": "t1", "details": {"foo": "bar"}}
+{"event": "retry", "task_id": "t1", "details": {}}

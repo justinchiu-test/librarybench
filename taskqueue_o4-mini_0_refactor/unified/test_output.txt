@@ -1,0 +1,1 @@
+scripts/refactor_claude_codex.sh: line 74: pytest: command not found

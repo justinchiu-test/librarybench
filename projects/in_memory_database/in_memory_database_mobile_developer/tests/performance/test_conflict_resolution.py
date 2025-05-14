@@ -163,10 +163,8 @@ def test_conflict_resolution_performance(conflict_count):
     server_conflicts = server.get_conflict_history()
     assert len(server_conflicts) > 0, "No conflicts were recorded in the audit log"
     
-    # Return the performance data
-    return {
-        "conflict_count": conflict_count,
-        "sync_time": sync_time,
-        "conflicts_resolved": resolved_count,
-        "success": True
-    }
+    # Assert success instead of returning data
+    assert conflict_count > 0
+    assert sync_time > 0
+    assert resolved_count > 0
+    # No return value needed

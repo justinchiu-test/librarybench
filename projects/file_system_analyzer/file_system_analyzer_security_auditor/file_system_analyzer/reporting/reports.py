@@ -88,7 +88,7 @@ class ComplianceReport(BaseModel):
     def sign(self, crypto_provider: CryptoProvider) -> None:
         """Sign the report with cryptographic verification."""
         # Create a canonical representation of the report
-        report_data = self.dict(exclude={"verification_info"})
+        report_data = self.model_dump(exclude={"verification_info"})
         report_json = json.dumps(report_data, sort_keys=True, default=str).encode()
         
         # Create a hash of the report
@@ -110,7 +110,7 @@ class ComplianceReport(BaseModel):
             return False
             
         # Recreate the report data without verification_info
-        report_data = self.dict(exclude={"verification_info"})
+        report_data = self.model_dump(exclude={"verification_info"})
         report_json = json.dumps(report_data, sort_keys=True, default=str).encode()
         
         # Verify the hash
@@ -125,7 +125,7 @@ class ComplianceReport(BaseModel):
     
     def to_json(self) -> str:
         """Convert the report to a JSON string."""
-        return json.dumps(self.dict(), default=lambda o: o.dict() if hasattr(o, "dict") else str(o))
+        return json.dumps(self.model_dump(), default=lambda o: o.model_dump() if hasattr(o, "model_dump") else str(o))
     
     def save(self, file_path: str, verify: bool = False, crypto_provider: Optional[CryptoProvider] = None) -> None:
         """Save the report to a file, optionally with verification."""

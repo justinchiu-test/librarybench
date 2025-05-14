@@ -73,7 +73,7 @@ class EvidencePackage(BaseModel):
     def sign(self, crypto_provider: CryptoProvider) -> None:
         """Sign the package with cryptographic verification."""
         # Create a canonical representation of the package
-        package_data = self.dict(exclude={"verification_info"})
+        package_data = self.model_dump(exclude={"verification_info"})
         package_json = json.dumps(package_data, sort_keys=True, default=str).encode()
         
         # Create a hash of the package
@@ -95,7 +95,7 @@ class EvidencePackage(BaseModel):
             return False
             
         # Recreate the package data without verification_info
-        package_data = self.dict(exclude={"verification_info"})
+        package_data = self.model_dump(exclude={"verification_info"})
         package_json = json.dumps(package_data, sort_keys=True, default=str).encode()
         
         # Verify the hash
@@ -245,7 +245,7 @@ class EvidencePackager:
         # Create zip file
         with zipfile.ZipFile(package_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             # Add manifest
-            manifest_data = package.dict()
+            manifest_data = package.model_dump()
             manifest_json = json.dumps(manifest_data, default=str, indent=2)
             zipf.writestr("manifest.json", manifest_json)
             

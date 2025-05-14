@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional, Any, Union, Tuple
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 from file_system_analyzer.utils.crypto import CryptoProvider
 
@@ -47,27 +47,33 @@ class AuditEntry(BaseModel):
     source_ip: Optional[str] = None
     previous_entry_hash: Optional[str] = None
     entry_hash: Optional[str] = None
-    
-    @validator("entry_hash", always=True)
-    def hash_entry(cls, v, values):
-        """Calculate a hash of this entry, incorporating the previous entry hash."""
-        if v is not None:
-            return v
-            
+
+    def model_post_init(self, __context):
+        """Post initialization hook to calculate hash if not provided."""
+        if self.entry_hash is None:
+            self.calculate_hash()
+
+    def calculate_hash(self):
+        """Calculate a hash of this entry and set it as the entry_hash."""
         # Create a copy of values without the entry_hash (which doesn't exist yet)
-        hashable_values = {k: v for k, v in values.items() if k != "entry_hash"}
-        
+        hashable_values = {k: v for k, v in self.model_dump().items() if k != "entry_hash"}
+
         # Convert datetime to ISO format for consistent serialization
-        if "timestamp" in hashable_values:
+        if "timestamp" in hashable_values and isinstance(hashable_values["timestamp"], datetime):
             hashable_values["timestamp"] = hashable_values["timestamp"].isoformat()
-            
+
         # Sort keys for deterministic serialization
-        serialized = json.dumps(hashable_values, sort_keys=True)
-        return hashlib.sha256(serialized.encode()).hexdigest()
+        serialized = json.dumps(hashable_values, sort_keys=True, default=str)
+        self.entry_hash = hashlib.sha256(serialized.encode()).hexdigest()
+        return self.entry_hash
+
+    def hash_entry(self, v, info):
+        """Legacy method for compatibility."""
+        return self.calculate_hash()
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to a dictionary suitable for serialization."""
-        data = self.dict()
+        data = self.model_dump()
         data["timestamp"] = data["timestamp"].isoformat()
         return data
 
@@ -85,10 +91,10 @@ class AuditLog(BaseModel):
         if self.entries:
             # Link to the previous entry
             entry.previous_entry_hash = self.entries[-1].entry_hash
-        
+
         # Recalculate the entry hash to include the previous hash link
-        entry.entry_hash = None  # Clear it to trigger the validator
-        entry.entry_hash = entry.hash_entry(None, entry.dict())
+        entry.entry_hash = None  # Clear it to force recalculation
+        entry.calculate_hash()
         
         # Sign the entry if crypto provider is available
         if crypto_provider:
@@ -115,7 +121,16 @@ class AuditLog(BaseModel):
                 errors.append(f"Entry {i}: Hash link broken. Expected {prev_hash}, got {entry.previous_entry_hash}")
             
             # Verify entry hash
-            current_hash = entry.hash_entry(None, {k: v for k, v in entry.dict().items() if k != "entry_hash"})
+            # Save original hash
+            original_hash = entry.entry_hash
+
+            # Calculate the hash
+            entry.entry_hash = None
+            current_hash = entry.calculate_hash()
+
+            # Restore original hash for comparison
+            expected_hash = original_hash
+            entry.entry_hash = original_hash
             if entry.entry_hash != current_hash:
                 errors.append(f"Entry {i}: Hash mismatch. Expected {entry.entry_hash}, calculated {current_hash}")
             
@@ -137,10 +152,10 @@ class AuditLog(BaseModel):
     
     def to_json(self) -> str:
         """Convert the entire log to a JSON string."""
-        data = self.dict()
+        data = self.model_dump()
         data["creation_time"] = data["creation_time"].isoformat()
         data["last_modified"] = data["last_modified"].isoformat()
-        return json.dumps(data, default=lambda o: o.dict() if hasattr(o, "dict") else str(o))
+        return json.dumps(data, default=lambda o: o.model_dump() if hasattr(o, "model_dump") else str(o))
 
 
 class AuditLogger:

@@ -50,7 +50,7 @@ class ScanBaseline(BaseModel):
     def sign(self, crypto_provider: CryptoProvider) -> None:
         """Sign the baseline with cryptographic verification."""
         # Create a canonical representation of the baseline
-        baseline_data = self.dict(exclude={"verification_info"})
+        baseline_data = self.model_dump(exclude={"verification_info"})
         baseline_json = json.dumps(baseline_data, sort_keys=True, default=str).encode()
         
         # Create a hash of the baseline
@@ -72,7 +72,7 @@ class ScanBaseline(BaseModel):
             return False
             
         # Recreate the baseline data without verification_info
-        baseline_data = self.dict(exclude={"verification_info"})
+        baseline_data = self.model_dump(exclude={"verification_info"})
         baseline_json = json.dumps(baseline_data, sort_keys=True, default=str).encode()
         
         # Verify the hash
@@ -204,7 +204,7 @@ class DifferentialAnalyzer:
         
         # Save as JSON for interoperability
         with open(file_path, 'w') as f:
-            f.write(json.dumps(baseline.dict(), default=str))
+            f.write(json.dumps(baseline.model_dump(), default=str))
     
     def load_baseline(self, file_path: str) -> ScanBaseline:
         """Load a baseline from a file."""

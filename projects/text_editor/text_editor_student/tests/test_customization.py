@@ -3,6 +3,7 @@ Tests for the customization system.
 """
 import pytest
 import time
+import sys
 
 from text_editor.customization.models import (
     CustomizableComponent,
@@ -292,24 +293,23 @@ class TestCustomizationPlayground:
         assert components
         assert all(isinstance(c, CustomizableComponent) for c in components)
     
+    @pytest.mark.skipif(
+        condition=sys.platform.startswith("win"),
+        reason="May fail in certain environments due to isolation implementation differences"
+    )
     def test_run_custom_code(self):
         """Test running custom code in the playground."""
         editor = Editor("Hello World")
         playground = CustomizationPlayground(editor=editor)
 
-        try:
-            # Run code that uses the editor
-            code = "result = {'content': editor.get_content()}"
-            success, result, error = playground.run_custom_code(code)
+        # Run code that uses the editor
+        code = "result = {'content': editor.get_content()}"
+        success, result, error = playground.run_custom_code(code)
 
-            assert success
-            # Do a less strict check to avoid implementation-specific details
-            assert success
-            if success and result:
-                assert isinstance(result, dict)
-        except Exception:
-            # This test may be environment-dependent, so we'll skip it if it fails
-            pass
+        assert success
+        # Do a less strict check to avoid implementation-specific details
+        assert isinstance(result, dict)
+        assert "content" in result
     
     def test_experiment_lifecycle(self):
         """Test the lifecycle of a customization experiment in the playground."""

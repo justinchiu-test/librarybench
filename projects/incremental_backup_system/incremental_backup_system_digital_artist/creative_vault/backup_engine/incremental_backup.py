@@ -84,7 +84,7 @@ class DeltaBackupEngine(BackupEngine):
             repo_metadata = {
                 "version": "1.0.0",
                 "created_at": datetime.now().isoformat(),
-                "config": self.config.dict(),
+                "config": self.config.model_dump(),
             }
             save_json(repo_metadata, self._repository_path / "repository.json")
             
@@ -170,10 +170,10 @@ class DeltaBackupEngine(BackupEngine):
         )
         
         # Save snapshot metadata
-        save_json(snapshot_info.dict(), snapshot_path / "info.json")
+        save_json(snapshot_info.model_dump(), snapshot_path / "info.json")
         
         # Save file list
-        file_list = [f.dict() for f in current_files]
+        file_list = [f.model_dump() for f in current_files]
         save_json(file_list, snapshot_path / "files.json")
         
         # Store new and modified files

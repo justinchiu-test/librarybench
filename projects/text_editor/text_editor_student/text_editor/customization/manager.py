@@ -347,10 +347,8 @@ class CustomizationManager(BaseModel):
         Returns:
             Tuple of (success, result, error_message)
         """
-        # Reset the environment
-        self.environment.reset()
-        
-        # Execute the code
+        # Execute the code without resetting the environment
+        # This allows us to preserve any variables added to the environment
         return self.environment.execute(code)
     
     def get_experiment_history(self, component_id: Optional[str] = None) -> List[ExperimentResults]:

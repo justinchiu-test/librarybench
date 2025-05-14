@@ -150,7 +150,7 @@ class CreativeEnvironmentCapture(WorkspaceCapture):
             
             # Save metadata
             metadata_path = temp_dir / "metadata.json"
-            save_json(workspace_state.dict(), metadata_path)
+            save_json(workspace_state.model_dump(), metadata_path)
             
             # Create a zip archive
             output_path.parent.mkdir(parents=True, exist_ok=True)

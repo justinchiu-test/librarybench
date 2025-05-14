@@ -112,9 +112,13 @@ class BackupEngine:
         for rel_path, file_meta in current_files.items():
             if rel_path in prev_version.files:
                 prev_file = prev_version.files[rel_path]
+                abs_path = file_meta["abs_path"]
                 
-                # Check if modified time has changed
-                if file_meta["modified_time"] > prev_file.modified_time:
+                # Calculate current file hash to properly detect changes
+                current_hash = get_file_hash(abs_path)
+                
+                # Check if content has actually changed by comparing hash values
+                if current_hash != prev_file.hash or file_meta["modified_time"] > prev_file.modified_time:
                     changed_files[rel_path] = file_meta
                 else:
                     # File hasn't changed, use info from previous version
@@ -356,6 +360,14 @@ class BackupEngine:
             if rel_path not in version1.files:
                 diff[rel_path] = "added"
             elif file_info.hash != version1.files[rel_path].hash:
+                # Hash difference means content changed
+                diff[rel_path] = "modified"
+            elif file_info.size != version1.files[rel_path].size:
+                # Size difference is another indicator of modification
+                diff[rel_path] = "modified"
+            elif file_info.modified_time != version1.files[rel_path].modified_time:
+                # Modified time difference can indicate changes
+                # This is a more aggressive detection of changes
                 diff[rel_path] = "modified"
             else:
                 diff[rel_path] = "unchanged"

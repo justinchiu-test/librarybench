@@ -3,6 +3,8 @@ Tests for the interview preparation system.
 """
 import pytest
 import time
+import sys
+import platform
 
 from text_editor.interview.models import (
     InterviewProblem,
@@ -229,6 +231,10 @@ class TestInterviewManager:
         # Test with a non-existent problem
         assert manager.start_attempt("non_existent") is None
     
+    @pytest.mark.skipif(
+        condition=platform.system() == "Windows" or sys.platform.startswith("win"),
+        reason="Code execution may not work reliably in all CI environments"
+    )
     def test_submit_solution(self):
         """Test submitting a solution for a problem."""
         manager = InterviewManager()
@@ -249,24 +255,18 @@ def two_sum(nums, target):
     return []
 """
         
-        # This test might fail as it depends on the actual execution of the code
-        # which might not be possible in all environments (like a CI runner)
-        # So we'll just test the API structure, not the actual execution
-        try:
-            result = manager.submit_solution(solution_code)
-            
-            # If we get here, check the structure of the result
-            assert "problem_id" in result
-            assert "is_correct" in result
-            assert "passed_test_cases" in result
-            assert "total_test_cases" in result
-            
-            # The attempt should be complete and added to history
-            assert manager.current_attempt is None
-            assert problem_id in manager.attempts_history
-        except Exception:
-            # If execution fails, just skip this test
-            pass
+        # Execute the solution submission
+        result = manager.submit_solution(solution_code)
+        
+        # Check the structure of the result
+        assert "problem_id" in result
+        assert "is_correct" in result
+        assert "passed_test_cases" in result
+        assert "total_test_cases" in result
+        
+        # The attempt should be complete and added to history
+        assert manager.current_attempt is None
+        assert problem_id in manager.attempts_history
     
     def test_get_attempt_history(self):
         """Test getting the history of attempts."""

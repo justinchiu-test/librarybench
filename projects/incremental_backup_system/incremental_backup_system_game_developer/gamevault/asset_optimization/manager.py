@@ -237,8 +237,7 @@ class AssetOptimizationManager:
         """
         Get the base version for a delta-compressed file.
         
-        This is a placeholder. In a real system, you would retrieve
-        this from your version history.
+        Retrieves the FileInfo of a previous version based on its hash.
         
         Args:
             base_version_hash: Hash of the base version
@@ -249,9 +248,40 @@ class AssetOptimizationManager:
         Raises:
             ValueError: If the base version can't be found
         """
-        # In a real system, you would look up the base version
-        # For now, we'll just raise an error
-        raise ValueError(f"Base version {base_version_hash} not found")
+        # Search for the file in the storage system by its hash
+        try:
+            # Check if the file exists in storage
+            file_path = self.storage_manager.get_file_path_by_hash(base_version_hash)
+            if file_path:
+                # Create basic FileInfo from the stored file
+                file_size = os.path.getsize(file_path)
+                chunks = self.storage_manager.get_chunks_for_file(base_version_hash)
+                
+                return FileInfo(
+                    path=os.path.basename(file_path),
+                    size=file_size,
+                    hash=base_version_hash,
+                    modified_time=os.path.getmtime(file_path),
+                    is_binary=True,
+                    chunks=chunks or []
+                )
+            
+            # If no direct file is found, try looking for chunks
+            chunks = self.storage_manager.get_chunks_for_file(base_version_hash)
+            if chunks:
+                # Return FileInfo with just the chunks
+                return FileInfo(
+                    path="unknown",  # Path is not critical for reconstruction
+                    size=0,  # Size will be determined after reconstruction
+                    hash=base_version_hash,
+                    modified_time=0,  # Not critical for reconstruction
+                    is_binary=True,
+                    chunks=chunks
+                )
+                
+            raise ValueError(f"Base version {base_version_hash} not found")
+        except Exception as e:
+            raise ValueError(f"Failed to retrieve base version {base_version_hash}: {str(e)}")
     
     def _restore_from_chunks(
         self,

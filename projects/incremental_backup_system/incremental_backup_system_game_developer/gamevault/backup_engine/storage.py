@@ -247,3 +247,43 @@ class StorageManager:
             "chunks": chunk_size,
             "total": file_size + chunk_size
         }
+    
+    def get_file_path_by_hash(self, file_hash: str) -> Optional[Path]:
+        """
+        Get the storage path for a file using its hash.
+        
+        Args:
+            file_hash: Hash of the file to find
+            
+        Returns:
+            Optional[Path]: Path to the stored file if found, None otherwise
+        """
+        file_path = self._get_file_path(file_hash)
+        return file_path if file_path.exists() else None
+    
+    def get_chunks_for_file(self, file_hash: str) -> Optional[List[str]]:
+        """
+        Get the list of chunk IDs associated with a file.
+        
+        This method requires an external mapping of files to chunks.
+        In a real implementation, this would query a database or index.
+        For now, it implements a simple fallback approach that works
+        for files directly managed by this storage system.
+        
+        Args:
+            file_hash: Hash of the file
+            
+        Returns:
+            Optional[List[str]]: List of chunk IDs if found, None otherwise
+        """
+        # In a full implementation, this would query a database or index
+        # As a fallback, we check if there's a chunk with the same ID as the file
+        if self.chunk_exists(file_hash):
+            return [file_hash]
+        
+        # For files stored as-is (not chunked), there's typically no chunk mapping
+        # A more complete implementation would maintain a file-to-chunks mapping
+        if self.file_exists(file_hash):
+            return []
+            
+        return None

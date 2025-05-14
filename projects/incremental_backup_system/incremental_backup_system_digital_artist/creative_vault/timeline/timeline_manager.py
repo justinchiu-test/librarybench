@@ -46,6 +46,7 @@ class CreativeTimelineManager(TimelineManager):
         
         self.snapshots_path = repository_path / "snapshots"
         self.objects_path = repository_path / "objects"
+        self._metadata_path = repository_path / "metadata"
         
         self.diff_generator = diff_generator or CreativeVisualDiffGenerator(
             output_directory=repository_path / "diffs"
@@ -79,9 +80,6 @@ class CreativeTimelineManager(TimelineManager):
         # Create a unique version ID
         version_id = create_unique_id("ver-")
         
-        # Get the file path relative to the source directory
-        relative_path = str(file_path)
-        
         # Get the snapshot manifest to find the file
         manifest_path = snapshot_path / "manifest.json"
         try:
@@ -89,9 +87,18 @@ class CreativeTimelineManager(TimelineManager):
         except Exception as e:
             raise ValueError(f"Failed to load snapshot manifest: {e}")
         
-        # Find the file in the manifest
+        # Try to find the file in the manifest using different path formats
+        # First try the original path as-is
+        relative_path = str(file_path)
         if relative_path not in manifest["files"]:
-            raise ValueError(f"File {relative_path} not found in snapshot {snapshot_id}")
+            # Try using just the filename
+            file_name = file_path.name
+            matching_paths = [path for path in manifest["files"].keys() if path.endswith(file_name)]
+            if matching_paths:
+                relative_path = matching_paths[0]
+            else:
+                # If still not found, fail with a clear error
+                raise ValueError(f"File {relative_path} not found in snapshot {snapshot_id}")
         
         file_info = manifest["files"][relative_path]
         file_hash = file_info["hash"]
@@ -198,10 +205,8 @@ class CreativeTimelineManager(TimelineManager):
         # Find the version metadata
         version_info = self._get_version_info(version_id)
         
-        # Get the file path and hash
-        file_path = Path(version_info["file_path"])
+        # Get the file hash and determine content type from the hash metadata
         file_hash = version_info["file_hash"]
-        content_type = version_info.get("content_type", detect_file_type(file_path))
         
         # Get the object path
         object_path = self._get_object_path(file_hash)
@@ -211,14 +216,34 @@ class CreativeTimelineManager(TimelineManager):
         # Create the thumbnail path
         thumbnail_path = self.thumbnails_path / f"{version_id}.png"
         
+        # Determine the content type from the file info
+        content_type = version_info.get("content_type")
+        if not content_type:
+            # Try to determine from metadata
+            metadata_path = self._metadata_path / file_hash[:2] / file_hash[2:4] / f"{file_hash}.json"
+            if metadata_path.exists():
+                try:
+                    metadata = load_json(metadata_path)
+                    content_type = metadata.get("content_type")
+                except Exception:
+                    pass
+        
+        # If we still don't have a content type, try to guess from the filename
+        if not content_type:
+            file_path_str = version_info.get("file_path", "")
+            if file_path_str.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                content_type = "image"
+            elif file_path_str.lower().endswith(('.obj', '.fbx', '.3ds', '.stl')):
+                content_type = "model"
+        
         # Generate the thumbnail based on the file type
         if content_type == "image":
             self._generate_image_thumbnail(object_path, thumbnail_path)
         elif content_type == "model":
             self._generate_model_thumbnail(object_path, thumbnail_path)
         else:
-            # For unsupported file types, generate a generic thumbnail
-            self._generate_generic_thumbnail(file_path, version_id, thumbnail_path)
+            # For unsupported file types, generate a generic thumbnail using the version info
+            self._generate_generic_thumbnail_from_info(version_info, thumbnail_path)
         
         return thumbnail_path
     
@@ -254,9 +279,18 @@ class CreativeTimelineManager(TimelineManager):
         diff_id = create_unique_id("compare-")
         diff_path = self.repository_path / "diffs" / f"{diff_id}.png"
         
-        # Get content type
-        content_type = version_info_1.get("content_type", 
-                                         detect_file_type(Path(version_info_1["file_path"])))
+        # Determine the content type from version info
+        content_type = version_info_1.get("content_type")
+        
+        # If not available, try to determine from file extension
+        if not content_type:
+            file_path_str = version_info_1.get("file_path", "")
+            if file_path_str.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                content_type = "image"
+            elif file_path_str.lower().endswith(('.obj', '.fbx', '.3ds', '.stl')):
+                content_type = "model"
+            else:
+                content_type = "unknown"
         
         # Generate a visual diff
         if content_type == "image":
@@ -287,6 +321,42 @@ class CreativeTimelineManager(TimelineManager):
         }
         
         return result
+        
+    def _generate_generic_thumbnail_from_info(self, version_info: Dict[str, Any], thumbnail_path: Path) -> None:
+        """Generate a generic thumbnail for unsupported file types using version info.
+        
+        Args:
+            version_info: Dictionary containing version metadata
+            thumbnail_path: Path to save the thumbnail
+        """
+        # Create a blank image with file information
+        img = Image.new('RGB', self.thumbnail_size, color=(240, 240, 240))
+        draw = ImageDraw.Draw(img)
+        
+        # Add file name from version_info
+        file_path_str = version_info.get("file_path", "Unknown file")
+        file_name = Path(file_path_str).name
+        draw.text((10, 10), file_name, fill=(0, 0, 0))
+        
+        # Add file type
+        file_type = Path(file_path_str).suffix.upper() if "." in file_path_str else "UNKNOWN"
+        draw.text((10, 40), f"Type: {file_type}", fill=(0, 0, 0))
+        
+        # Add version ID
+        version_id = version_info.get("id", "unknown")
+        draw.text((10, 70), f"Version: {version_id[:10]}...", fill=(0, 0, 0))
+        
+        # Add timestamp
+        timestamp = version_info.get("timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        if isinstance(timestamp, str):
+            display_time = timestamp.split("T")[0] if "T" in timestamp else timestamp
+        else:
+            display_time = "Unknown time"
+        draw.text((10, 100), f"Time: {display_time}", fill=(0, 0, 0))
+        
+        # Save the thumbnail
+        thumbnail_path.parent.mkdir(parents=True, exist_ok=True)
+        img.save(thumbnail_path, "PNG")
     
     def _get_file_timeline_path(self, file_path: Path) -> Path:
         """Get the path to the timeline directory for a file.
@@ -297,8 +367,9 @@ class CreativeTimelineManager(TimelineManager):
         Returns:
             Path to the file's timeline directory
         """
-        # Normalize the file path
-        path_str = str(file_path)
+        # Normalize the file path - use just the name to avoid path issues
+        # This ensures consistency regardless of absolute vs relative paths
+        path_str = file_path.name
         
         # Create a hash of the path to avoid issues with special characters
         path_hash = hash(path_str) % 10000

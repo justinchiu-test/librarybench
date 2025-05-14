@@ -10,6 +10,7 @@ import json
 import pytest
 import tempfile
 from datetime import datetime, timedelta
+from unittest.mock import patch, MagicMock
 
 from file_system_analyzer.audit.logger import (
     AuditLogger,

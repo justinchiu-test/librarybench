@@ -12,6 +12,7 @@ import tempfile
 import zipfile
 import hashlib
 from datetime import datetime
+from unittest.mock import patch, MagicMock
 
 from file_system_analyzer.custody.evidence import (
     EvidencePackager,

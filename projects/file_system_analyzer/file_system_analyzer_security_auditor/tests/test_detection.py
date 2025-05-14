@@ -8,9 +8,10 @@ functionality of the Sensitive Data Detection Engine.
 import os
 import pytest
 from datetime import datetime
+from unittest.mock import patch, MagicMock
 
 from file_system_analyzer.detection.patterns import (
-    PatternDefinitions, 
+    PatternDefinitions,
     PatternValidators,
     ComplianceCategory,
     SensitivityLevel,

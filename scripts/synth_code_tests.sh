@@ -42,7 +42,7 @@ process_instruction() {
     local persona=""
     
     # Loop through all projects and find a match
-    for project in $(ls /Users/justinchiu/code/librarybench/ideas/*.txt | xargs -n1 basename | cut -d. -f1); do
+    for project in $(ls ideas/*.txt | xargs -n1 basename | cut -d. -f1); do
         if [[ "$full_dir_name" == ${project}_* ]]; then
             project_name=$project
             persona=${full_dir_name#${project}_}
@@ -98,12 +98,12 @@ process_instruction() {
 if [[ -n "$SINGLE_TEST" ]]; then
     echo "Running single test for: $SINGLE_TEST"
     # Find matching instruction files
-    find /Users/justinchiu/code/librarybench/projects -name "INSTRUCTIONS.md" | grep "$SINGLE_TEST" | while read instruction_file; do
+    find ./projects -name "INSTRUCTIONS.md" | grep "$SINGLE_TEST" | while read instruction_file; do
         process_instruction "$instruction_file"
     done
 else
     # Process all instruction files in parallel
-    find /Users/justinchiu/code/librarybench/projects -name "INSTRUCTIONS.md" | while read instruction_file; do
+    find ./projects -name "INSTRUCTIONS.md" | while read instruction_file; do
         # Check if we have reached max parallel processes
         while [ $(jobs -p | wc -l) -ge $MAX_PARALLEL ]; do
             # Wait for any job to finish

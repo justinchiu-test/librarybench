@@ -206,7 +206,7 @@ class JobScheduler:
         
         # Find suitable nodes based on requirements
         suitable_nodes = []
-        for node_id, node in self.node_registry.items() if hasattr(self, 'node_registry') else []:
+        for node_id, node in self.node_registry.items():
             # If simulation requires GPUs, prefer GPU nodes
             if requires_gpus and hasattr(node, 'gpu_count') and node.gpu_count > 0:
                 suitable_nodes.append(node_id)

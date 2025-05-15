@@ -627,6 +627,32 @@ class RenderFarmManager:
                     and job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]
                 ]
                 
+                # Filter out jobs with dependencies that aren't completed yet
+                eligible_jobs = []
+                for job in client_jobs:
+                    # Log dependencies for debugging
+                    self.logger.info(f"Job {job.id} dependencies: {getattr(job, 'dependencies', [])}, type: {type(getattr(job, 'dependencies', []))}, empty: {not getattr(job, 'dependencies', [])}")
+                    
+                    if not hasattr(job, 'dependencies') or not job.dependencies:
+                        # No dependencies, job is eligible
+                        self.logger.info(f"Job {job.id} has no dependencies, eligible")
+                        eligible_jobs.append(job)
+                    else:
+                        # Check if all dependencies are completed
+                        all_deps_completed = True
+                        for dep_id in job.dependencies:
+                            if dep_id in self.jobs and self.jobs[dep_id].status != RenderJobStatus.COMPLETED:
+                                self.logger.info(f"Job {job.id} has dependency {dep_id} with status {self.jobs[dep_id].status}, not eligible")
+                                all_deps_completed = False
+                                break
+                        
+                        if all_deps_completed:
+                            self.logger.info(f"Job {job.id} has all dependencies completed, eligible")
+                            eligible_jobs.append(job)
+                
+                # Replace client_jobs with eligible jobs (those without pending dependencies)
+                client_jobs = eligible_jobs
+                
                 if not client_jobs:
                     continue
                 
@@ -1239,6 +1265,9 @@ class RenderFarmManager:
                 job.status = RenderJobStatus.QUEUED
                 job.error_count += 1
                 job.assigned_node_id = None
+                
+                # Clear job ID from node
+                node.current_job_id = None
                 
                 affected_jobs.append(job_id)
                 

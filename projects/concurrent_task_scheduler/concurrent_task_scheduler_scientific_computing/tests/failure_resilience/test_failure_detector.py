@@ -16,11 +16,13 @@ from concurrent_task_scheduler.failure_resilience.failure_detector import (
 from concurrent_task_scheduler.models import (
     ComputeNode,
     NodeStatus,
+    NodeType,
     Result,
     Simulation,
     SimulationStage,
     SimulationStageStatus,
     SimulationPriority,
+    SimulationStatus,
 )
 
 
@@ -36,11 +38,15 @@ def sample_compute_node():
     return ComputeNode(
         id="node_001",
         name="Compute Node 1",
+        node_type=NodeType.COMPUTE,
         status=NodeStatus.ONLINE,
-        capabilities=["gpu", "high_memory"],
+        cpu_cores=32,
+        memory_gb=128,
+        gpu_count=4,
+        storage_gb=2048,
+        network_bandwidth_gbps=10,
         current_load={"cpu": 0.4, "memory": 0.3, "storage": 0.2},
-        resources={"cpu_cores": 32, "memory_gb": 128, "storage_gb": 2048},
-        last_heartbeat=datetime.now(),
+        location="data_center_1",
     )
 
 

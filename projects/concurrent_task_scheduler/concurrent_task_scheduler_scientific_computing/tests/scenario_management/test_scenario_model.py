@@ -367,13 +367,18 @@ class TestScenario:
         # Test with no simulations
         assert scenario.total_progress() == 0.0
         
-        # Add simulations with different progress
-        sim1 = Simulation(id="sim-1", name="Sim 1", description="Sim 1", stages={})
-        sim2 = Simulation(id="sim-2", name="Sim 2", description="Sim 2", stages={})
+        # Create a mock class that overrides total_progress
+        class MockSimulation(Simulation):
+            def __init__(self, id, name, description, progress_value, **kwargs):
+                super().__init__(id=id, name=name, description=description, **kwargs)
+                self._progress_value = progress_value
+                
+            def total_progress(self) -> float:
+                return self._progress_value
         
-        # Mock the total_progress method on simulations
-        sim1.total_progress = lambda: 0.25
-        sim2.total_progress = lambda: 0.75
+        # Add simulations with different progress
+        sim1 = MockSimulation(id="sim-1", name="Sim 1", description="Sim 1", stages={}, progress_value=0.25)
+        sim2 = MockSimulation(id="sim-2", name="Sim 2", description="Sim 2", stages={}, progress_value=0.75)
         
         scenario.simulations = {
             "sim-1": sim1,

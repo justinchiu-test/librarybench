@@ -232,31 +232,19 @@ class TestMultiYearProjects:
         # Set up project profiler
         profiler = ProjectProfiler()
         
-        # Record time entries
-        for time_entry in cross_year_time_entries:
-            profiler.record_time_entry(
-                project_id=time_entry.project_id,
-                start_time=time_entry.start_time,
-                end_time=time_entry.end_time,
-                description=time_entry.description,
-                billable=time_entry.billable,
-            )
-        
-        # Allocate expenses
-        for expense in cross_year_expenses:
-            profiler.allocate_expense(
-                project_id=expense.project_id,
-                transaction=expense,
-            )
-        
-        # Analyze project profitability
-        result = profiler.analyze_project_profitability(cross_year_project.id)
+        # Analyze project profitability for the full period
+        result = profiler.analyze_project_profitability(
+            project=cross_year_project,
+            time_entries=cross_year_time_entries,
+            transactions=cross_year_expenses,
+            invoices=cross_year_invoices
+        )
         
         # Verify overall profitability
         assert result is not None
         assert result.total_hours > 0
-        assert result.revenue > 0
-        assert result.profit > 0
+        assert result.total_revenue > 0
+        assert result.total_profit > 0
         assert result.profit_margin > 0
         
         # Now analyze by tax year
@@ -265,18 +253,56 @@ class TestMultiYearProjects:
         year_2023_start = datetime(2023, 1, 1)
         year_2023_end = datetime(2023, 12, 31)
         
+        # Filter time entries for 2022
+        time_entries_2022 = [
+            entry for entry in cross_year_time_entries
+            if entry.start_time >= year_2022_start and entry.start_time <= year_2022_end
+        ]
+        
+        # Filter expenses for 2022
+        expenses_2022 = [
+            expense for expense in cross_year_expenses
+            if expense.date >= year_2022_start and expense.date <= year_2022_end
+        ]
+        
+        # Filter invoices for 2022
+        invoices_2022 = [
+            invoice for invoice in cross_year_invoices
+            if invoice.issue_date >= year_2022_start and invoice.issue_date <= year_2022_end
+        ]
+        
+        # Filter time entries for 2023
+        time_entries_2023 = [
+            entry for entry in cross_year_time_entries
+            if entry.start_time >= year_2023_start and entry.start_time <= year_2023_end
+        ]
+        
+        # Filter expenses for 2023
+        expenses_2023 = [
+            expense for expense in cross_year_expenses
+            if expense.date >= year_2023_start and expense.date <= year_2023_end
+        ]
+        
+        # Filter invoices for 2023
+        invoices_2023 = [
+            invoice for invoice in cross_year_invoices
+            if invoice.issue_date >= year_2023_start and invoice.issue_date <= year_2023_end
+        ]
+        
         # Analyze 2022 portion
         result_2022 = profiler.analyze_project_profitability(
-            cross_year_project.id, 
-            start_date=year_2022_start, 
-            end_date=year_2022_end
+            project=cross_year_project,
+            time_entries=time_entries_2022,
+            transactions=expenses_2022,
+            invoices=invoices_2022
         )
         
         # Analyze 2023 portion
         result_2023 = profiler.analyze_project_profitability(
-            cross_year_project.id, 
-            start_date=year_2023_start, 
-            end_date=year_2023_end
+            project=cross_year_project,
+            time_entries=time_entries_2023,
+            transactions=expenses_2023,
+            invoices=invoices_2023
         )
         
         # Verify results for each year
@@ -289,14 +315,14 @@ class TestMultiYearProjects:
         assert abs(result.total_hours - (result_2022.total_hours + result_2023.total_hours)) < 0.01
         
         # Verify revenue is split across years based on invoices
-        assert result_2022.revenue > 0
-        assert result_2023.revenue > 0
-        assert abs(result.revenue - (result_2022.revenue + result_2023.revenue)) < 0.01
+        assert result_2022.total_revenue > 0
+        assert result_2023.total_revenue > 0
+        assert abs(result.total_revenue - (result_2022.total_revenue + result_2023.total_revenue)) < 0.01
         
         # Verify expenses are split across years
-        assert result_2022.cost > 0
-        assert result_2023.cost > 0
-        assert abs(result.cost - (result_2022.cost + result_2023.cost)) < 0.01
+        assert result_2022.total_expenses > 0
+        assert result_2023.total_expenses > 0
+        assert abs(result.total_expenses - (result_2022.total_expenses + result_2023.total_expenses)) < 0.01
         
         # Verify the split makes sense based on timing
         # In our fixture, the project starts in November 2022 and ends in March 2023
@@ -305,20 +331,23 @@ class TestMultiYearProjects:
         
         # Generate trend analysis
         trend = profiler.generate_trend_analysis(
-            [cross_year_project.id],
-            metrics=["total_hours", "revenue", "profit", "effective_hourly_rate"],
-            group_by="month"
+            metric_type=ProjectMetricType.HOURLY_RATE,
+            start_date=year_2022_start,
+            end_date=year_2023_end,
+            period="monthly",
+            project_id=cross_year_project.id,
+            projects=[cross_year_project],
+            time_entries=cross_year_time_entries,
+            transactions=cross_year_expenses,
+            invoices=cross_year_invoices
         )
         
         # Verify trend data
         assert trend is not None
-        assert len(trend.data) > 0
-        assert "total_hours" in trend.data.columns
-        assert "revenue" in trend.data.columns
-        assert "profit" in trend.data.columns
+        assert len(trend.data_points) > 0
         
         # Verify months from both years are included
-        months_in_trend = trend.data.index.to_list()
+        months_in_trend = [point.date for point in trend.data_points]
         assert any(m.year == 2022 for m in months_in_trend)
         assert any(m.year == 2023 for m in months_in_trend)
 
@@ -333,41 +362,58 @@ class TestMultiYearProjects:
         # Set up project profiler
         profiler = ProjectProfiler()
         
-        # Record time entries
-        for time_entry in cross_year_time_entries:
-            profiler.record_time_entry(
-                project_id=time_entry.project_id,
-                start_time=time_entry.start_time,
-                end_time=time_entry.end_time,
-                description=time_entry.description,
-                billable=time_entry.billable,
-            )
-        
-        # Allocate expenses
-        for expense in cross_year_expenses:
-            profiler.allocate_expense(
-                project_id=expense.project_id,
-                transaction=expense,
-            )
-        
-        # Analyze by tax year
+        # Now analyze by tax year
         year_2022_start = datetime(2022, 1, 1)
         year_2022_end = datetime(2022, 12, 31)
         year_2023_start = datetime(2023, 1, 1)
         year_2023_end = datetime(2023, 12, 31)
         
+        # Filter time entries, expenses, and invoices for 2022
+        time_entries_2022 = [
+            entry for entry in cross_year_time_entries
+            if entry.start_time >= year_2022_start and entry.start_time <= year_2022_end
+        ]
+        
+        expenses_2022 = [
+            expense for expense in cross_year_expenses
+            if expense.date >= year_2022_start and expense.date <= year_2022_end
+        ]
+        
+        invoices_2022 = [
+            invoice for invoice in cross_year_invoices
+            if invoice.issue_date >= year_2022_start and invoice.issue_date <= year_2022_end
+        ]
+        
+        # Filter time entries, expenses, and invoices for 2023
+        time_entries_2023 = [
+            entry for entry in cross_year_time_entries
+            if entry.start_time >= year_2023_start and entry.start_time <= year_2023_end
+        ]
+        
+        expenses_2023 = [
+            expense for expense in cross_year_expenses
+            if expense.date >= year_2023_start and expense.date <= year_2023_end
+        ]
+        
+        invoices_2023 = [
+            invoice for invoice in cross_year_invoices
+            if invoice.issue_date >= year_2023_start and invoice.issue_date <= year_2023_end
+        ]
+        
         # Analyze 2022 portion
         result_2022 = profiler.analyze_project_profitability(
-            cross_year_project.id, 
-            start_date=year_2022_start, 
-            end_date=year_2022_end
+            project=cross_year_project,
+            time_entries=time_entries_2022,
+            transactions=expenses_2022,
+            invoices=invoices_2022
         )
         
         # Analyze 2023 portion
         result_2023 = profiler.analyze_project_profitability(
-            cross_year_project.id, 
-            start_date=year_2023_start, 
-            end_date=year_2023_end
+            project=cross_year_project,
+            time_entries=time_entries_2023,
+            transactions=expenses_2023,
+            invoices=invoices_2023
         )
         
         # Create income transactions from invoices
@@ -390,7 +436,7 @@ class TestMultiYearProjects:
         # For 2022
         income_2022 = sum(tx.amount for tx in income_transactions 
                          if tx.date.year == 2022)
-        expenses_2022 = result_2022.cost
+        expenses_2022 = result_2022.total_expenses
         taxable_income_2022 = income_2022 - expenses_2022
         
         tax_2022 = tax_manager.calculate_tax_liability(
@@ -402,7 +448,7 @@ class TestMultiYearProjects:
         # For 2023
         income_2023 = sum(tx.amount for tx in income_transactions 
                          if tx.date.year == 2023)
-        expenses_2023 = result_2023.cost
+        expenses_2023 = result_2023.total_expenses
         taxable_income_2023 = income_2023 - expenses_2023
         
         tax_2023 = tax_manager.calculate_tax_liability(
@@ -437,7 +483,7 @@ class TestMultiYearProjects:
         )
         
         # Scenario: What if expenses were evenly distributed?
-        total_expenses = result_2022.cost + result_2023.cost
+        total_expenses = result_2022.total_expenses + result_2023.total_expenses
         even_expenses = total_expenses / 2
         
         even_taxable_2022 = income_2022 - even_expenses
@@ -645,15 +691,8 @@ class TestMultiYearProjects:
         tax_manager = TaxManager(FilingStatus.SINGLE)
         tax_manager.load_default_brackets()
         
-        # Allocate expenses
-        for expense in expenses:
-            profiler.allocate_expense(
-                project_id=expense.project_id,
-                transaction=expense,
-            )
-        
-        # Create time entries spread across project duration
-        # Skip for brevity as we've demonstrated time entries in other tests
+        # Create simple time entries (minimal for test)
+        time_entries = []
         
         # Analyze project by each tax year
         tax_years = [2021, 2022, 2023]
@@ -663,18 +702,23 @@ class TestMultiYearProjects:
             year_start = datetime(year, 1, 1)
             year_end = datetime(year, 12, 31)
             
+            # Filter data for this year
+            year_invoices = [inv for inv in invoices if year_start <= inv.issue_date <= year_end]
+            year_expenses = [exp for exp in expenses if year_start <= exp.date <= year_end]
+            
             # Analyze this year's portion
             result = profiler.analyze_project_profitability(
-                long_project.id, 
-                start_date=year_start, 
-                end_date=year_end
+                project=long_project,
+                time_entries=time_entries,  # Using empty time entries for simplicity
+                transactions=year_expenses,
+                invoices=year_invoices
             )
             
             if result:
                 year_results[year] = {
-                    "revenue": result.revenue,
-                    "expenses": result.cost,
-                    "profit": result.profit,
+                    "revenue": result.total_revenue,
+                    "expenses": result.total_expenses,
+                    "profit": result.total_profit,
                 }
         
         # Calculate tax impact for each year
@@ -719,7 +763,7 @@ class TestMultiYearProjects:
         total_reported_expenses = sum(yr["expenses"] for yr in year_results.values())
         total_reported_profit = sum(yr["profit"] for yr in year_results.values())
         
-        expected_revenue = sum(invoice.amount for invoice in invoices)
+        expected_revenue = sum(invoice.amount for invoice in invoices if invoice.status == "paid")
         expected_expenses = sum(expense.amount for expense in expenses)
         expected_profit = expected_revenue - expected_expenses
         

@@ -62,7 +62,7 @@ class ResearchObjective(BaseModel):
     description: str
     importance: float = 1.0  # Scale of 0-5
     target_metrics: Dict[str, float] = Field(default_factory=dict)
-    success_criteria: str
+    success_criteria: str = "Meet target metrics with at least 95% confidence"
     
     def is_relevant_to_scenario(self, scenario: Scenario) -> bool:
         """Determine if this objective is relevant to the given scenario."""

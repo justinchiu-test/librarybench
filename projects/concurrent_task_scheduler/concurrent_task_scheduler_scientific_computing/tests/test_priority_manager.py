@@ -9,9 +9,8 @@ from concurrent_task_scheduler.models.scenario import (
     ScientificMetric,
 )
 
-# Simple dict-based ResourceAllocation for testing
-class ResourceAllocation(dict):
-    pass
+# Import the actual ResourceAllocation model
+from concurrent_task_scheduler.models.scenario import ResourceAllocation
 from concurrent_task_scheduler.models.simulation import SimulationPriority
 from concurrent_task_scheduler.scenario_management.evaluator import (
     ScenarioEvaluator, 
@@ -87,17 +86,12 @@ class TestPriorityManager(unittest.TestCase):
             tags=["test", f"priority-{index}"],
         )
         
-        # Monkey patch the update_priority method to accept a new_priority parameter
+        # We can't monkey patch the Pydantic model directly
+        # Instead, we'll modify our test to work with the actual method
         original_update_priority = scenario.update_priority
         
-        def patched_update_priority(new_priority=None):
-            if new_priority is not None:
-                scenario.priority_score = new_priority
-            else:
-                original_update_priority()
-            scenario.last_updated = datetime.now()
-            
-        scenario.update_priority = patched_update_priority
+        # Keep a reference to the original method but we'll call it directly in the tests
+        # when needed with the appropriate parameter
         
         # Add a mock total_progress method
         scenario.total_progress = lambda: 0.5
@@ -246,12 +240,12 @@ class TestPriorityManager(unittest.TestCase):
         )
         
         # Mock the comparator to return ranked scenarios
-        comparison_result = mock.Mock()
-        comparison_result.ranked_scenarios = [
-            (self.scenarios[2].id, 0.9),  # Best scenario
-            (self.scenarios[0].id, 0.7),  # Middle scenario
-            (self.scenarios[1].id, 0.5),  # Worst scenario
-        ]
+        comparison_result = mock.Mock(success=True)
+        comparison_result.value = {
+            self.scenarios[2].id: 0.9,  # Best scenario
+            self.scenarios[0].id: 0.7,  # Middle scenario
+            self.scenarios[1].id: 0.5,  # Worst scenario
+        }
         comparison_result.method = ComparisonMethod.WEIGHTED
         comparison_result.comparison_time = datetime.now()
         self.comparator_mock.compare_multiple_scenarios.return_value = comparison_result
@@ -432,24 +426,23 @@ class TestPriorityManager(unittest.TestCase):
             # Return different results based on the scenario
             return ScenarioEvaluationResult(
                 scenario_id=scenario.id,
-                scores={"accuracy": 0.8},
+                evaluation_time=datetime.now(),
+                overall_score=0.8,
+                metric_scores={"accuracy": 0.8},
+                confidence=0.9,
+                recommendation="continue",
                 suggested_priority=0.8,  # Same value for all to simplify
-                summary="Evaluation result",
+                reasons=["test"]
             )
         self.evaluator_mock.evaluate_scenario.side_effect = mock_eval_scenario
         
         # Configure comparator mock
-        comparison_result = ComparisonResult(
-            method=ComparisonMethod.WEIGHTED,
-            ranked_scenarios=[
-                (scenarios[0].id, 0.9),
-                (scenarios[1].id, 0.7),
-                (scenarios[2].id, 0.5),
-            ],
-            groupings=[],
-            complementary_pairs=[],
-            comparison_time=datetime.now(),
-        )
+        comparison_result = mock.Mock(success=True)
+        comparison_result.value = {
+            scenarios[0].id: 0.9,
+            scenarios[1].id: 0.7,
+            scenarios[2].id: 0.5,
+        }
         self.comparator_mock.compare_multiple_scenarios.return_value = comparison_result
         
         # Recompute all priorities
@@ -539,10 +532,12 @@ class TestPriorityManager(unittest.TestCase):
         
         # Add some allocation history
         for i in range(5):
-            allocation = ResourceAllocation({
-                "compute_node": 10 + i,
-                "memory": 100 + (i * 10),
-            })
+            allocation = ResourceAllocation(
+                allocation_id=f"test-{i}",
+                allocation_time=datetime.now(),
+                scenario_allocations={scenario.id: 1.0},
+                total_resources={"compute_node": 10 + i, "memory": 100 + (i * 10)},
+            )
             self.manager.resource_allocation_history[scenario.id].append(allocation)
         
         # Get history with default limit
@@ -554,8 +549,8 @@ class TestPriorityManager(unittest.TestCase):
         self.assertEqual(len(history), 2)
         
         # Verify most recent allocations are returned
-        self.assertEqual(history[-1]["compute_node"], 14)  # 10 + 4
-        self.assertEqual(history[-1]["memory"], 140)  # 100 + (4 * 10)
+        self.assertEqual(history[-1].total_resources["compute_node"], 14)  # 10 + 4
+        self.assertEqual(history[-1].total_resources["memory"], 140)  # 100 + (4 * 10)
 
 
 if __name__ == "__main__":

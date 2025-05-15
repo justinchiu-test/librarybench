@@ -105,8 +105,9 @@ class TestScenarioManagementIntegration(unittest.TestCase):
                 id=f"sim-{index}-{j}",
                 name=f"Simulation {index}-{j}",
                 description=f"Test simulation {j} for scenario {index}",
-                estimated_runtime=timedelta(hours=24 * (j + 1)),
+                estimated_total_duration=timedelta(hours=24 * (j + 1)),
                 priority=SimulationPriority.MEDIUM,
+                stages={},  # Empty stages dictionary to satisfy the requirement
             )
             for j in range(2)
         }

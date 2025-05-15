@@ -74,12 +74,12 @@ class ResourceReservation(TimeRange):
     """A reservation for computational resources."""
 
     id: str = generate_id("rsv")
-    simulation_id: str
+    simulation_id: str = ""
     stage_id: Optional[str] = None
-    node_ids: List[str]
-    resources: Dict[ResourceType, float]
+    node_ids: List[str] = []
+    resources: Dict[ResourceType, float] = {}
     status: ReservationStatus = ReservationStatus.REQUESTED
-    priority: SimulationPriority
+    priority: SimulationPriority = SimulationPriority.MEDIUM
     preemptible: bool = False
     
     def is_active(self, current_time: Optional[datetime] = None) -> bool:
@@ -132,6 +132,15 @@ class JobScheduler:
         }
         self.preemption_history: Dict[str, List[datetime]] = {}
         self.node_registry: Dict[str, ComputeNode] = {}
+
+# For compatibility with tests
+class Scheduler(JobScheduler):
+    """Wrapper around JobScheduler for backward compatibility."""
+    
+    def __init__(self, job_queue=None, reservation_system=None, strategy: SchedulingStrategy = SchedulingStrategy.HYBRID):
+        super().__init__(strategy=strategy)
+        self.job_queue = job_queue
+        self.reservation_system = reservation_system
     
     def reserve_resources(
         self,

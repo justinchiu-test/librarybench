@@ -15,8 +15,8 @@ T = TypeVar("T")
 class TimeRange(BaseModel):
     """A time range with start and end times."""
 
-    start_time: datetime
-    end_time: datetime
+    start_time: datetime = Field(default_factory=datetime.now)
+    end_time: datetime = Field(default_factory=lambda: datetime.now() + timedelta(hours=1))
     
     def duration(self) -> timedelta:
         """Get the duration of this time range."""

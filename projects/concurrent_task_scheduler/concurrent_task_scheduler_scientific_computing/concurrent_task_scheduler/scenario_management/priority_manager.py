@@ -339,8 +339,12 @@ class PriorityManager:
             scenarios, method=comparison_method
         )
         
-        # Extract the ranked scenarios and scores
-        ranked_scenarios = comparison_results.ranked_scenarios
+        # The comparison results contain a dict of scenario_id -> score
+        if not comparison_results.success:
+            return []
+            
+        # Extract the ranked scenarios and scores from the dictionary
+        ranked_scenarios = list(comparison_results.value.items())
         
         # No changes needed if we couldn't rank them
         if not ranked_scenarios:

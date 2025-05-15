@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "productmind"
+version = "0.1.0"
+description = "A Knowledge Management System for Product Managers"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = [
+    "numpy",
+    "scikit-learn",
+    "pandas",
+    "nltk",
+    "pydantic",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-json-report",
+]
+
+[tool.setuptools]
+packages = ["productmind"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+minversion = "6.0"
+addopts = "--cov=productmind"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"]
+
+[tool.pyright]
+include = ["productmind/**/*.py", "tests/**/*.py"]
+exclude = ["**/__pycache__"]
+typeCheckingMode = "basic"

@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personal_finance_tracker"
+version = "0.1.0"
+description = "A specialized financial management system for freelancers"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+dependencies = [
+    "numpy>=1.22.0",
+    "pandas>=1.4.0",
+    "pydantic>=1.9.0",
+    "python-dateutil>=2.8.2",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.pyright]
+include = ["personal_finance_tracker"]
+exclude = ["**/__pycache__", "**/.pytest_cache"]
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"

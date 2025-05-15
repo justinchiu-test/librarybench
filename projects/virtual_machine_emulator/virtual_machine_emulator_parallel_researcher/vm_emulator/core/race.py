@@ -129,21 +129,44 @@ class RaceDetector:
         
         # Update happens-before relationships
         if operation == "release":
-            for other_thread_id in self.sync_operations:
-                if other_thread_id == thread_id:
-                    continue
+            # Create thread entry in happens-before if it doesn't exist
+            if thread_id not in self.happens_before:
+                self.happens_before[thread_id] = set()
                 
-                # Find next acquire by the other thread for this sync object
-                for other_op in self.sync_operations[other_thread_id]:
-                    if (other_op["operation"] == "acquire" and
-                            other_op["sync_object_id"] == sync_object_id and
-                            other_op["sync_type"] == sync_type and
-                            other_op["timestamp"] > timestamp):
-                        # Establish happens-before relationship
-                        if thread_id not in self.happens_before:
-                            self.happens_before[thread_id] = set()
-                        self.happens_before[thread_id].add(other_thread_id)
-                        break
+            # Track this release operation for future reference
+            release_op = {
+                "thread_id": thread_id,
+                "sync_object_id": sync_object_id,
+                "sync_type": sync_type,
+                "timestamp": timestamp
+            }
+            
+            # Store in a structure for later matching with acquire operations
+            if "releases" not in self.__dict__:
+                self.__dict__["releases"] = []
+            self.__dict__["releases"].append(release_op)
+                
+        elif operation == "acquire":
+            # Check for any prior releases of this sync object
+            if "releases" in self.__dict__:
+                for release in self.__dict__["releases"]:
+                    if (release["sync_object_id"] == sync_object_id and
+                            release["sync_type"] == sync_type and
+                            release["timestamp"] < timestamp and
+                            release["thread_id"] != thread_id):
+                        
+                        # Establish happens-before relationship from releaser to acquirer
+                        release_thread = release["thread_id"]
+                        if release_thread not in self.happens_before:
+                            self.happens_before[release_thread] = set()
+                        self.happens_before[release_thread].add(thread_id)
+                        
+                        # Also establish the inverse relationship for easy lookup
+                        if "happens_after" not in self.__dict__:
+                            self.__dict__["happens_after"] = {}
+                        if thread_id not in self.__dict__["happens_after"]:
+                            self.__dict__["happens_after"][thread_id] = set()
+                        self.__dict__["happens_after"][thread_id].add(release_thread)
     
     def define_atomic_region(
         self,
@@ -192,7 +215,11 @@ class RaceDetector:
             
             # Check happens-before relationship
             has_happens_before = False
+            # Direct happens-before relation
             if prev_thread_id in self.happens_before and thread_id in self.happens_before[prev_thread_id]:
+                has_happens_before = True
+            # Reverse happens-before relation (happens-after)
+            elif hasattr(self, "happens_after") and thread_id in self.__dict__["happens_after"] and prev_thread_id in self.__dict__["happens_after"][thread_id]:
                 has_happens_before = True
             
             # Check if the accesses are protected by a common lock

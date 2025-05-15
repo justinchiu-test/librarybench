@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -74,6 +74,14 @@ class ResearchTask(BaseModel):
     custom_metadata: Dict[str, Union[str, int, float, bool, list, dict]] = Field(
         default_factory=dict
     )
+    
+    # Additional properties for integration tests
+    # These aren't persisted, but used for convenience in tests
+    research_questions: List[Any] = Field(default_factory=list, exclude=True)
+    references: List[Any] = Field(default_factory=list, exclude=True)
+    datasets: List[Any] = Field(default_factory=list, exclude=True)
+    environments: List[Any] = Field(default_factory=list, exclude=True)
+    experiments: List[Any] = Field(default_factory=list, exclude=True)
     
     def update(self, **kwargs) -> None:
         """Update task fields."""

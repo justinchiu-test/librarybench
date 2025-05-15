@@ -254,8 +254,17 @@ class ReentrantLock(Lock):
         if self.recursion_level > 0:
             return None
         
+        # Reset recursion level to avoid negative values
+        self.recursion_level = 0
+        
         # Otherwise, release the lock normally
-        return super().release(thread_id, timestamp)
+        next_thread = super().release(thread_id, timestamp)
+        
+        # Update recursion level for the new owner
+        if next_thread is not None:
+            self.recursion_level = 1
+        
+        return next_thread
     
     def get_statistics(self) -> Dict[str, Any]:
         """
@@ -560,7 +569,8 @@ class Semaphore:
         self.semaphore_id = semaphore_id
         self.permits = permits
         self.max_permits = permits
-        self.waiting_threads: List[str] = []
+        # List of tuples (thread_id, permits_requested)
+        self.waiting_threads: List[Tuple[str, int]] = []
         self.acquisitions = 0
         self.contentions = 0
         self.events: List[Dict[str, Any]] = []
@@ -609,8 +619,8 @@ class Semaphore:
             return True
         
         # Not enough permits, add to waiting list if not already there
-        if thread_id not in self.waiting_threads:
-            self.waiting_threads.append(thread_id)
+        if not any(tid == thread_id for tid, _ in self.waiting_threads):
+            self.waiting_threads.append((thread_id, count))
             self.contentions += 1
             
             # Record event
@@ -664,26 +674,37 @@ class Semaphore:
         # If there are waiting threads, try to satisfy them
         unblocked_threads = []
         if self.waiting_threads and self.permits > 0:
-            # In a real implementation, we would track how many permits each thread wants
-            # For simplicity, we assume each wants 1 permit
             permits_to_distribute = self.permits
             
-            while permits_to_distribute > 0 and self.waiting_threads:
-                # Unblock a waiting thread
-                thread = self.waiting_threads.pop(0)
-                unblocked_threads.append(thread)
-                permits_to_distribute -= 1
-                self.acquisitions += 1
+            # Try to satisfy waiting threads one by one
+            idx = 0
+            while idx < len(self.waiting_threads) and permits_to_distribute > 0:
+                waiting_thread_id, permits_needed = self.waiting_threads[idx]
                 
-                # Record event
-                self.events.append({
-                    "event": "semaphore_acquired",
-                    "thread_id": thread,
-                    "timestamp": timestamp,
-                    "permits_acquired": 1,
-                    "permits_remaining": permits_to_distribute,
-                    "contended": True,
-                })
+                # If we have enough permits for this thread
+                if permits_to_distribute >= permits_needed:
+                    # Remove this thread from waiting list
+                    self.waiting_threads.pop(idx)
+                    
+                    # Unblock the thread
+                    unblocked_threads.append(waiting_thread_id)
+                    
+                    # Distribute permits
+                    permits_to_distribute -= permits_needed
+                    self.acquisitions += 1
+                    
+                    # Record event
+                    self.events.append({
+                        "event": "semaphore_acquired",
+                        "thread_id": waiting_thread_id,
+                        "timestamp": timestamp,
+                        "permits_acquired": permits_needed,
+                        "permits_remaining": permits_to_distribute,
+                        "contended": True,
+                    })
+                else:
+                    # Not enough permits for this thread, try the next one
+                    idx += 1
             
             # Update permits
             self.permits = permits_to_distribute

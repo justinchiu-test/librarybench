@@ -8,7 +8,4 @@ research questions, and linking them with other research artifacts.
 
 from .models import ResearchTask, ResearchQuestion, TaskStatus, TaskPriority
 from .storage import TaskStorageInterface, InMemoryTaskStorage
-from .service import TaskManagementService
-
-# Alias for integration with other modules
-TaskService = TaskManagementService
+from .service import TaskManagementService, TaskService

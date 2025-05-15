@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
@@ -81,6 +81,10 @@ class Dataset(BaseModel):
     hash: Optional[str] = None  # Content hash for verification
     version: Optional[str] = None  # Version identifier
     parent_dataset_id: Optional[UUID] = None  # Previous version in lineage
+    
+    # Additional properties for integration tests
+    # This isn't persisted, but used for convenience in tests
+    versions: List[Any] = Field(default_factory=list, exclude=True)
     
     def update(self, **kwargs) -> None:
         """Update dataset fields."""

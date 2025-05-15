@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
 from .models import ResearchQuestion, ResearchTask, TaskPriority, TaskStatus
@@ -446,13 +446,14 @@ class TaskManagementService:
         return self._storage.delete_research_question(question_id)
     
     def list_research_questions(
-        self, parent_question_id: Optional[UUID] = None
+        self, parent_question_id: Optional[UUID] = ...
     ) -> List[ResearchQuestion]:
         """
         List research questions with optional filtering.
         
         Args:
-            parent_question_id: Filter by parent question ID
+            parent_question_id: Filter by parent question ID. If not provided, returns all questions.
+                                If set to None, returns only top-level questions (with no parent).
             
         Returns:
             List[ResearchQuestion]: List of research questions matching the criteria
@@ -806,3 +807,576 @@ class TaskManagementService:
             raise ValueError(f"Task with ID {task_id} does not exist")
 
         return task.experiment_ids
+
+
+class TaskService:
+    """
+    Service for managing research tasks and questions, designed for integration with other services.
+    
+    This service wraps the TaskManagementService to provide a compatible API for integration tests.
+    It adjusts method signatures and return types to match expected usage patterns.
+    """
+    
+    def __init__(self, storage):
+        """
+        Initialize the task service with a storage implementation.
+        
+        Args:
+            storage: Storage implementation for tasks and questions
+        """
+        self._service = TaskManagementService(storage)
+        
+        # Maps for resolving external references
+        self._references = {}
+        self._datasets = {}
+        self._environments = {}
+        self._experiments = {}
+        
+    def create_task(
+        self,
+        title: str,
+        description: str,
+        status: TaskStatus = TaskStatus.PLANNED,
+        priority: TaskPriority = TaskPriority.MEDIUM,
+        estimated_hours: Optional[float] = None,
+        due_date: Optional[datetime] = None,
+        parent_id: Optional[UUID] = None,  # Different parameter name from TaskManagementService
+        research_question_ids: Optional[Set[UUID]] = None,
+        tags: Optional[Set[str]] = None,
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
+    ) -> ResearchTask:
+        """
+        Create a new research task.
+        
+        Args:
+            title: Task title
+            description: Task description
+            status: Task status
+            priority: Task priority
+            estimated_hours: Estimated hours to complete the task
+            due_date: Task due date
+            parent_id: Parent task ID if this is a subtask (note: different from parent_task_id)
+            research_question_ids: Associated research question IDs
+            tags: Task tags
+            custom_metadata: Custom metadata key-value pairs
+            
+        Returns:
+            ResearchTask: The created task (not just the ID)
+            
+        Raises:
+            ValueError: If parent task doesn't exist
+        """
+        task_id = self._service.create_task(
+            title=title,
+            description=description,
+            status=status,
+            priority=priority,
+            estimated_hours=estimated_hours,
+            due_date=due_date,
+            parent_task_id=parent_id,  # Map parent_id to parent_task_id
+            research_question_ids=research_question_ids,
+            tags=tags,
+            custom_metadata=custom_metadata,
+        )
+        
+        # Return the task object, not just the ID
+        return self._service.get_task(task_id)
+    
+    def get_task(self, task_id: UUID) -> Optional[ResearchTask]:
+        """
+        Retrieve a task by ID.
+        
+        Args:
+            task_id: The ID of the task to retrieve
+            
+        Returns:
+            Optional[ResearchTask]: The task if found, None otherwise
+        """
+        task = self._service.get_task(task_id)
+        if task:
+            # Populate convenience properties for integration tests
+            # References
+            reference_ids = task.reference_ids
+            task.references = [self._references.get(ref_id) for ref_id in reference_ids if ref_id in self._references]
+            
+            # Datasets
+            dataset_ids = task.dataset_ids
+            task.datasets = [self._datasets.get(ds_id) for ds_id in dataset_ids if ds_id in self._datasets]
+            
+            # Environments
+            environment_ids = task.environment_ids
+            task.environments = [self._environments.get(env_id) for env_id in environment_ids if env_id in self._environments]
+            
+            # Experiments
+            experiment_ids = task.experiment_ids
+            task.experiments = [self._experiments.get(exp_id) for exp_id in experiment_ids if exp_id in self._experiments]
+            
+            # Research Questions
+            question_ids = task.research_question_ids
+            task.research_questions = [self._service.get_research_question(q_id) for q_id in question_ids]
+        
+        return task
+    
+    def update_task(
+        self,
+        task_id: UUID,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        status: Optional[TaskStatus] = None,
+        priority: Optional[TaskPriority] = None,
+        estimated_hours: Optional[float] = None,
+        actual_hours: Optional[float] = None,
+        due_date: Optional[datetime] = None,
+    ) -> ResearchTask:
+        """
+        Update an existing task.
+        
+        Args:
+            task_id: The ID of the task to update
+            title: New task title
+            description: New task description
+            status: New task status
+            priority: New task priority
+            estimated_hours: New estimated hours
+            actual_hours: New actual hours
+            due_date: New due date
+            
+        Returns:
+            ResearchTask: The updated task
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        self._service.update_task(
+            task_id=task_id,
+            title=title,
+            description=description,
+            status=status,
+            priority=priority,
+            estimated_hours=estimated_hours,
+            actual_hours=actual_hours,
+            due_date=due_date,
+        )
+        
+        # Return the updated task object
+        return self._service.get_task(task_id)
+    
+    def delete_task(self, task_id: UUID) -> bool:
+        """
+        Delete a task by ID.
+        
+        Args:
+            task_id: The ID of the task to delete
+            
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        return self._service.delete_task(task_id)
+    
+    def get_subtasks(self, parent_id: UUID) -> List[ResearchTask]:
+        """
+        Get all subtasks of a parent task.
+        
+        Args:
+            parent_id: The ID of the parent task
+            
+        Returns:
+            List[ResearchTask]: List of subtasks
+        """
+        return self._service.get_subtasks(parent_id)
+    
+    def create_research_question(
+        self, 
+        text: str = None,  # Make text optional
+        description: Optional[str] = None, 
+        parent_question_id: Optional[UUID] = None,
+        task_id: Optional[UUID] = None,
+        question: Optional[str] = None  # Add new parameter for integration tests
+    ) -> ResearchQuestion:
+        """
+        Create a new research question.
+        
+        Args:
+            text: The research question text (original parameter)
+            description: Optional detailed description
+            parent_question_id: Parent question ID if this is a sub-question
+            task_id: Optional task ID to associate with this question
+            question: Alternative parameter for the question text (for integration tests)
+            
+        Returns:
+            ResearchQuestion: The created research question (not just the ID)
+            
+        Raises:
+            ValueError: If parent question doesn't exist
+        """
+        # Use 'question' parameter if provided, otherwise use 'text'
+        actual_text = question if question is not None else text
+        if actual_text is None:
+            raise ValueError("Either 'text' or 'question' parameter must be provided")
+            
+        question_id = self._service.create_research_question(
+            text=actual_text,
+            description=description,
+            parent_question_id=parent_question_id,
+            task_id=task_id
+        )
+        
+        # Return the question object, not just the ID
+        return self._service.get_research_question(question_id)
+    
+    def get_research_question(self, question_id: UUID) -> Optional[ResearchQuestion]:
+        """
+        Retrieve a research question by ID.
+        
+        Args:
+            question_id: The ID of the research question to retrieve
+            
+        Returns:
+            Optional[ResearchQuestion]: The research question if found, None otherwise
+        """
+        return self._service.get_research_question(question_id)
+    
+    def update_research_question(
+        self, question_id: UUID, text: Optional[str] = None, description: Optional[str] = None
+    ) -> ResearchQuestion:
+        """
+        Update an existing research question.
+        
+        Args:
+            question_id: The ID of the question to update
+            text: New question text
+            description: New description
+            
+        Returns:
+            ResearchQuestion: The updated research question
+            
+        Raises:
+            ValueError: If question doesn't exist
+        """
+        self._service.update_research_question(
+            question_id=question_id,
+            text=text,
+            description=description,
+        )
+        
+        # Return the updated question object
+        return self._service.get_research_question(question_id)
+    
+    def delete_research_question(self, question_id: UUID) -> bool:
+        """
+        Delete a research question by ID.
+        
+        Args:
+            question_id: The ID of the research question to delete
+            
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        return self._service.delete_research_question(question_id)
+    
+    def list_research_questions(
+        self, parent_question_id: Optional[UUID] = ...
+    ) -> List[ResearchQuestion]:
+        """
+        List research questions with optional filtering.
+        
+        Args:
+            parent_question_id: Filter by parent question ID. If not provided, returns all questions.
+                                If set to None, returns only top-level questions (with no parent).
+            
+        Returns:
+            List[ResearchQuestion]: List of research questions matching the criteria
+        """
+        return self._service.list_research_questions(parent_question_id=parent_question_id)
+    
+    # Reference association methods
+    
+    def register_reference(self, reference_id: UUID, reference_obj):
+        """
+        Register a reference object for lookup by ID.
+        
+        Args:
+            reference_id: The ID of the reference
+            reference_obj: The reference object
+        """
+        self._references[reference_id] = reference_obj
+    
+    def add_reference_to_task(self, task_id: UUID, reference_or_id: Union[UUID, Any]) -> bool:
+        """
+        Associate a bibliographic reference with a task.
+        
+        Args:
+            task_id: The ID of the task
+            reference_or_id: The reference object or ID of the reference
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        # Handle both reference objects and UUIDs
+        reference_id = reference_or_id
+        if hasattr(reference_or_id, 'id') and not isinstance(reference_or_id, UUID):
+            reference_id = reference_or_id.id
+            # Register the reference object for lookup
+            self._references[reference_id] = reference_or_id
+        
+        return self._service.add_reference_to_task(task_id, reference_id)
+    
+    def remove_reference_from_task(self, task_id: UUID, reference_id: UUID) -> bool:
+        """
+        Remove association between a bibliographic reference and a task.
+        
+        Args:
+            task_id: The ID of the task
+            reference_id: The ID of the bibliographic reference
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        return self._service.remove_reference_from_task(task_id, reference_id)
+    
+    def get_task_references(self, task_id: UUID) -> List:
+        """
+        Get all bibliographic references associated with a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List: List of reference objects associated with the task
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        reference_ids = self._service.get_task_references(task_id)
+        references = [self._references.get(ref_id) for ref_id in reference_ids if ref_id in self._references]
+        # Add references property for compatibility with integration tests
+        task = self._service.get_task(task_id)
+        if task:
+            task.references = references
+        return references
+    
+    # Dataset association methods
+    
+    def register_dataset(self, dataset_id: UUID, dataset_obj):
+        """
+        Register a dataset object for lookup by ID.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            dataset_obj: The dataset object
+        """
+        self._datasets[dataset_id] = dataset_obj
+    
+    def add_dataset_to_task(self, task_id: UUID, dataset_or_id: Union[UUID, Any]) -> bool:
+        """
+        Associate a dataset with a task.
+        
+        Args:
+            task_id: The ID of the task
+            dataset_or_id: The dataset object or ID of the dataset
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        # Handle both dataset objects and UUIDs
+        dataset_id = dataset_or_id
+        if hasattr(dataset_or_id, 'id') and not isinstance(dataset_or_id, UUID):
+            dataset_id = dataset_or_id.id
+        
+        result = self._service.add_dataset_to_task(task_id, dataset_id)
+        
+        # Register the dataset object for lookup if it's an object
+        if hasattr(dataset_or_id, 'id') and not isinstance(dataset_or_id, UUID) and dataset_or_id.id not in self._datasets:
+            self._datasets[dataset_or_id.id] = dataset_or_id
+            
+        return result
+    
+    def remove_dataset_from_task(self, task_id: UUID, dataset_id: UUID) -> bool:
+        """
+        Remove association between a dataset and a task.
+        
+        Args:
+            task_id: The ID of the task
+            dataset_id: The ID of the dataset
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        return self._service.remove_dataset_from_task(task_id, dataset_id)
+    
+    def get_task_datasets(self, task_id: UUID) -> List:
+        """
+        Get all datasets associated with a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List: List of dataset objects associated with the task
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        dataset_ids = self._service.get_task_datasets(task_id)
+        datasets = [self._datasets.get(ds_id) for ds_id in dataset_ids if ds_id in self._datasets] 
+        # Add datasets property for compatibility with integration tests
+        task = self._service.get_task(task_id)
+        if task:
+            task.datasets = datasets
+        return datasets
+    
+    # Environment association methods
+    
+    def register_environment(self, environment_id: UUID, environment_obj):
+        """
+        Register an environment object for lookup by ID.
+        
+        Args:
+            environment_id: The ID of the environment
+            environment_obj: The environment object
+        """
+        self._environments[environment_id] = environment_obj
+    
+    def add_environment_to_task(self, task_id: UUID, environment_or_id: Union[UUID, Any]) -> bool:
+        """
+        Associate an environment with a task.
+        
+        Args:
+            task_id: The ID of the task
+            environment_or_id: The environment object or ID of the environment
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        # Handle both environment objects and UUIDs
+        environment_id = environment_or_id
+        if hasattr(environment_or_id, 'id') and not isinstance(environment_or_id, UUID):
+            environment_id = environment_or_id.id
+            # Register the environment object for lookup
+            self._environments[environment_id] = environment_or_id
+            
+        return self._service.add_environment_to_task(task_id, environment_id)
+    
+    def remove_environment_from_task(self, task_id: UUID, environment_id: UUID) -> bool:
+        """
+        Remove association between an environment and a task.
+        
+        Args:
+            task_id: The ID of the task
+            environment_id: The ID of the environment
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        return self._service.remove_environment_from_task(task_id, environment_id)
+    
+    def get_task_environments(self, task_id: UUID) -> List:
+        """
+        Get all environments associated with a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List: List of environment objects associated with the task
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        environment_ids = self._service.get_task_environments(task_id)
+        environments = [self._environments.get(env_id) for env_id in environment_ids if env_id in self._environments]
+        # Add environments property for compatibility with integration tests
+        task = self._service.get_task(task_id)
+        if task:
+            task.environments = environments
+        return environments
+    
+    # Experiment association methods
+    
+    def register_experiment(self, experiment_id: UUID, experiment_obj):
+        """
+        Register an experiment object for lookup by ID.
+        
+        Args:
+            experiment_id: The ID of the experiment
+            experiment_obj: The experiment object
+        """
+        self._experiments[experiment_id] = experiment_obj
+    
+    def add_experiment_to_task(self, task_id: UUID, experiment_or_id: Union[UUID, Any]) -> bool:
+        """
+        Associate an experiment with a task.
+        
+        Args:
+            task_id: The ID of the task
+            experiment_or_id: The experiment object or ID of the experiment
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        # Handle both experiment objects and UUIDs
+        experiment_id = experiment_or_id
+        if hasattr(experiment_or_id, 'id'):
+            experiment_id = experiment_or_id.id
+            # Register the experiment object for lookup
+            self._experiments[experiment_id] = experiment_or_id
+            
+        return self._service.add_experiment_to_task(task_id, experiment_id)
+    
+    def remove_experiment_from_task(self, task_id: UUID, experiment_id: UUID) -> bool:
+        """
+        Remove association between an experiment and a task.
+        
+        Args:
+            task_id: The ID of the task
+            experiment_id: The ID of the experiment
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        return self._service.remove_experiment_from_task(task_id, experiment_id)
+    
+    def get_task_experiments(self, task_id: UUID) -> List:
+        """
+        Get all experiments associated with a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List: List of experiment objects associated with the task
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        experiment_ids = self._service.get_task_experiments(task_id)
+        experiments = [self._experiments.get(exp_id) for exp_id in experiment_ids if exp_id in self._experiments]
+        # Add experiments property for compatibility with integration tests
+        task = self._service.get_task(task_id)
+        if task:
+            task.experiments = experiments
+        return experiments

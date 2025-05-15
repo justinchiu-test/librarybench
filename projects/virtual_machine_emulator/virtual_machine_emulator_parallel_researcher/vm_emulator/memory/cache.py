@@ -320,7 +320,21 @@ class Cache:
         Returns:
             Tuple of (evicted_line, was_dirty) if a line was evicted, or (None, False) otherwise
         """
-        set_idx = self._get_set_index(address)
+        # Align address to cache line boundary
+        aligned_addr = (address // self.line_size) * self.line_size
+        
+        # Calculate set index for this address
+        set_idx = self._get_set_index(aligned_addr)
+        
+        # Check if the address is already in the cache (avoid duplicate allocation)
+        line, existing_set_idx, existing_line_idx = self._find_line(aligned_addr)
+        if line is not None:
+            # Address already cached, just update the data and access time
+            line.update(data)
+            line.last_access = self.access_time
+            return None, False
+            
+        # Need to allocate a new line, select a victim
         victim_idx = self._select_victim(set_idx)
         
         # Get the victim line
@@ -330,6 +344,7 @@ class Cache:
         
         # If the victim is valid, we're evicting it
         if victim.valid:
+            # Create a copy of the victim line to return
             evicted = CacheLine(victim.address, victim.size)
             evicted.data = victim.data.copy()
             evicted.valid = True
@@ -337,8 +352,7 @@ class Cache:
             was_dirty = victim.dirty
             self.evictions += 1
         
-        # Create a new cache line
-        aligned_addr = (address // self.line_size) * self.line_size
+        # Create a new cache line to replace the victim
         new_line = CacheLine(aligned_addr, self.line_size)
         new_line.update(data)
         new_line.last_access = self.access_time

@@ -78,8 +78,8 @@ def test_complete_research_workflow(services):
     )
     
     # Link references to the task
-    services["task"].add_reference_to_task(task.id, ref1.id)
-    services["task"].add_reference_to_task(task.id, ref2.id)
+    services["task"].add_reference_to_task(task.id, ref1)
+    services["task"].add_reference_to_task(task.id, ref2)
     
     # 3. Create a dataset and versions
     dataset = services["dataset"].create_dataset(
@@ -89,7 +89,7 @@ def test_complete_research_workflow(services):
     )
     
     # Link dataset to task
-    services["task"].add_dataset_to_task(task.id, dataset.id)
+    services["task"].add_dataset_to_task(task.id, dataset)
     
     # Create dataset versions
     version1 = services["dataset"].create_version(
@@ -113,6 +113,9 @@ def test_complete_research_workflow(services):
         description="Python environment for deep learning experiments"
     )
     
+    # Register the environment with the task service
+    services["task"].register_environment(env.id, env)
+    
     # Add packages
     services["environment"].add_package(
         env_id=env.id,
@@ -135,6 +138,9 @@ def test_complete_research_workflow(services):
         environment_id=env.id,
         tags=["neural-networks", "image-classification"]
     )
+    
+    # Register the experiment with the task service
+    services["task"].register_experiment(experiment.id, experiment)
     
     # Create experiment runs for different architectures
     # ResNet Run

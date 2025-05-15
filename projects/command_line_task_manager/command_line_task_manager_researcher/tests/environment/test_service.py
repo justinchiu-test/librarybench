@@ -634,11 +634,11 @@ class TestEnvironmentService:
         # Check package differences
         assert "packages" in differences
         assert "only_in_env1" in differences["packages"]
-        assert any("matplotlib" in p for p in differences["packages"]["only_in_env1"])
+        assert any(p["name"] == "matplotlib" for p in differences["packages"]["only_in_env1"])
         assert "only_in_env2" in differences["packages"]
-        assert any("scikit-learn" in p for p in differences["packages"]["only_in_env2"])
+        assert any(p["name"] == "scikit-learn" for p in differences["packages"]["only_in_env2"])
         assert "version_different" in differences["packages"]
-        assert any("numpy" in p for p in differences["packages"]["version_different"])
+        assert any(p["name"] == "numpy" for p in differences["packages"]["version_different"])
         
         # Check environment variable differences
         assert "environment_variables" in differences

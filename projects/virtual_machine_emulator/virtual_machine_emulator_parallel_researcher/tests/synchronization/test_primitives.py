@@ -352,7 +352,7 @@ class TestSemaphore:
         
         # Try to acquire when no permits available
         assert not sem.acquire(thread_id="thread3", timestamp=2, count=1)
-        assert "thread3" in sem.waiting_threads
+        assert any(tid == "thread3" for tid, _ in sem.waiting_threads)
     
     def test_release(self):
         """Test semaphore release."""
@@ -371,7 +371,7 @@ class TestSemaphore:
         # Check that thread2 got a permit
         assert unblocked == ["thread2"]
         assert sem.permits == 0  # All permits used
-        assert "thread3" in sem.waiting_threads  # thread3 still waiting
+        assert any(tid == "thread3" for tid, _ in sem.waiting_threads)  # thread3 still waiting
         
         # Release 2 more permits
         unblocked = sem.release(thread_id="thread1", timestamp=4, count=2)

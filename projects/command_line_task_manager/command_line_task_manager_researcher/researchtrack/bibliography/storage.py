@@ -155,6 +155,45 @@ class BibliographyStorageInterface(ABC):
             List[UUID]: List of associated task IDs
         """
         pass
+    
+    @abstractmethod
+    def get_links_by_task(self, task_id: UUID) -> List[TaskReferenceLink]:
+        """
+        Get all reference links for a specific task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskReferenceLink]: List of task-reference links for this task
+        """
+        pass
+    
+    @abstractmethod
+    def get_tasks_by_reference(self, reference_id: UUID) -> List[UUID]:
+        """
+        Alias for get_tasks_for_reference, to maintain API compatibility.
+        
+        Args:
+            reference_id: The ID of the reference
+            
+        Returns:
+            List[UUID]: List of associated task IDs
+        """
+        pass
+        
+    @abstractmethod
+    def get_references_by_task(self, task_id: UUID) -> List[Reference]:
+        """
+        Alias for get_references_for_task, to maintain API compatibility.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[Reference]: List of associated references
+        """
+        pass
 
 
 class InMemoryBibliographyStorage(BibliographyStorageInterface):
@@ -258,3 +297,42 @@ class InMemoryBibliographyStorage(BibliographyStorageInterface):
         ]
         
         return [link.task_id for link in links]
+    
+    def get_links_by_task(self, task_id: UUID) -> List[TaskReferenceLink]:
+        """
+        Get all reference links for a specific task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskReferenceLink]: List of task-reference links for this task
+        """
+        return [
+            link for link in self._task_reference_links.values()
+            if link.task_id == task_id
+        ]
+    
+    def get_tasks_by_reference(self, reference_id: UUID) -> List[UUID]:
+        """
+        Alias for get_tasks_for_reference, to maintain API compatibility.
+        
+        Args:
+            reference_id: The ID of the reference
+            
+        Returns:
+            List[UUID]: List of associated task IDs
+        """
+        return self.get_tasks_for_reference(reference_id)
+        
+    def get_references_by_task(self, task_id: UUID) -> List[Reference]:
+        """
+        Alias for get_references_for_task, to maintain API compatibility.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[Reference]: List of associated references
+        """
+        return self.get_references_for_task(task_id)

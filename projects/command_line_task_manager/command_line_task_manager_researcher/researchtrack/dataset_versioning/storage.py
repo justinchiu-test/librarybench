@@ -227,6 +227,32 @@ class DatasetStorageInterface(ABC):
         pass
     
     @abstractmethod
+    def find_transformations_by_input_version(self, version_id: UUID) -> List[DataTransformation]:
+        """
+        Find all transformations where the specified version is the input.
+        
+        Args:
+            version_id: The ID of the dataset version
+            
+        Returns:
+            List[DataTransformation]: List of transformations with this version as input
+        """
+        pass
+    
+    @abstractmethod
+    def find_transformations_by_output_version(self, version_id: UUID) -> List[DataTransformation]:
+        """
+        Find all transformations where the specified version is the output.
+        
+        Args:
+            version_id: The ID of the dataset version
+            
+        Returns:
+            List[DataTransformation]: List of transformations with this version as output
+        """
+        pass
+    
+    @abstractmethod
     def create_task_dataset_link(self, link: TaskDatasetLink) -> UUID:
         """
         Create a link between a task and a dataset version.
@@ -301,6 +327,19 @@ class DatasetStorageInterface(ABC):
             
         Returns:
             List[UUID]: List of associated task IDs
+        """
+        pass
+    
+    @abstractmethod
+    def get_links_by_task(self, task_id: UUID) -> List[TaskDatasetLink]:
+        """
+        Get all dataset links for a specific task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskDatasetLink]: List of task-dataset links for this task
         """
         pass
 
@@ -504,6 +543,36 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         
         return result
     
+    def find_transformations_by_input_version(self, version_id: UUID) -> List[DataTransformation]:
+        """
+        Find all transformations where the specified version is the input.
+        
+        Args:
+            version_id: The ID of the dataset version
+            
+        Returns:
+            List[DataTransformation]: List of transformations with this version as input
+        """
+        return [
+            t for t in self._transformations.values() 
+            if t.input_dataset_version_id == version_id
+        ]
+    
+    def find_transformations_by_output_version(self, version_id: UUID) -> List[DataTransformation]:
+        """
+        Find all transformations where the specified version is the output.
+        
+        Args:
+            version_id: The ID of the dataset version
+            
+        Returns:
+            List[DataTransformation]: List of transformations with this version as output
+        """
+        return [
+            t for t in self._transformations.values() 
+            if t.output_dataset_version_id == version_id
+        ]
+    
     def create_task_dataset_link(self, link: TaskDatasetLink) -> UUID:
         self._task_dataset_links[link.id] = link
         return link.id
@@ -548,3 +617,18 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         
         # Return task IDs
         return [link.task_id for link in links]
+    
+    def get_links_by_task(self, task_id: UUID) -> List[TaskDatasetLink]:
+        """
+        Get all dataset links for a specific task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskDatasetLink]: List of task-dataset links for this task
+        """
+        return [
+            link for link in self._task_dataset_links.values()
+            if link.task_id == task_id
+        ]

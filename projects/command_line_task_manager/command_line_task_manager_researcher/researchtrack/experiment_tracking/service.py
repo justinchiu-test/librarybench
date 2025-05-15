@@ -203,7 +203,7 @@ class ExperimentService:
     
     # Parameter operations
     
-    def create_parameter(
+    def add_parameter(
         self,
         name: str,
         type: Union[ParameterType, str],
@@ -238,6 +238,28 @@ class ExperimentService:
         )
         
         return parameter
+        
+    def create_parameter(
+        self,
+        name: str,
+        type: Union[ParameterType, str],
+        value: Any,
+        description: Optional[str] = None,
+    ) -> Parameter:
+        """
+        Create a parameter for experiments.
+        
+        Args:
+            name: Parameter name
+            type: Parameter type
+            value: Parameter value
+            description: Parameter description
+            
+        Returns:
+            Parameter: The created parameter
+        """
+        # Use the add_parameter method to avoid code duplication
+        return self.add_parameter(name, type, value, description)
     
     def _validate_parameter(self, type: ParameterType, value: Any) -> None:
         """

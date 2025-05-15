@@ -842,6 +842,52 @@ class ReportGenerator:
             ]
         )
         
+        # Evidence Report
+        templates[ReportType.EVIDENCE_REPORT] = ReportTemplate(
+            name="evidence_report",
+            title="Evidence Report",
+            description="Detailed report of evidence collected during assessment",
+            sections=[
+                ReportSection(
+                    name="overview",
+                    title="Overview",
+                    template=self.default_templates["evidence_report/overview.md"],
+                    audience_level=RedactionLevel.NONE,
+                    required=True
+                ),
+                ReportSection(
+                    name="evidence",
+                    title="Evidence Details",
+                    template=self.default_templates["evidence_report/evidence.md"],
+                    audience_level=RedactionLevel.LOW,
+                    required=True
+                )
+            ]
+        )
+        
+        # Status Update
+        templates[ReportType.STATUS_UPDATE] = ReportTemplate(
+            name="status_update",
+            title="Status Update",
+            description="Current status of findings and remediation efforts",
+            sections=[
+                ReportSection(
+                    name="overview",
+                    title="Overview",
+                    template=self.default_templates["status_update/overview.md"],
+                    audience_level=RedactionLevel.NONE,
+                    required=True
+                ),
+                ReportSection(
+                    name="findings_status",
+                    title="Findings Status",
+                    template=self.default_templates["status_update/findings_status.md"],
+                    audience_level=RedactionLevel.NONE,
+                    required=True
+                )
+            ]
+        )
+        
         return templates
     
     def _get_template_for_type(self, report_type: ReportType) -> Optional[ReportTemplate]:
@@ -1380,6 +1426,106 @@ This section provides additional technical information to assist with remediatio
 {% endfor %}
 {% endif %}
 
+{% endfor %}
+"""
+        
+        # Evidence Report templates
+        templates["evidence_report/overview.md"] = """
+# Evidence Report
+
+This report provides detailed information about the evidence collected during the security assessment of {{ metadata.get('target', 'the target system') }}.
+
+## Assessment Information
+
+* **Target**: {{ metadata.get('target', 'N/A') }}
+* **Time Period**: {{ metadata.get('start_date', 'N/A') }} to {{ metadata.get('end_date', 'N/A') }}
+* **Assessment Type**: {{ metadata.get('assessment_type', 'Security Assessment') }}
+* **Assessor**: {{ metadata.get('assessor', 'N/A') }}
+"""
+
+        templates["evidence_report/evidence.md"] = """
+## Evidence Details
+
+{% for finding in findings %}
+### {{ finding.severity|upper }}: {{ finding.title }}
+
+{% if get_evidence(finding) %}
+#### Evidence Items
+
+{% for evidence in get_evidence(finding) %}
+##### {{ evidence.title }} ({{ evidence.type }})
+
+* **ID**: {{ evidence.id }}
+* **Description**: {{ evidence.description }}
+* **Uploaded**: {{ format_date(evidence.uploaded_at) }}
+* **Uploaded By**: {{ evidence.uploaded_by }}
+* **Type**: {{ evidence.type }}
+
+{% endfor %}
+{% else %}
+No evidence items attached to this finding.
+{% endif %}
+
+{% endfor %}
+"""
+
+        # Status Update templates
+        templates["status_update/overview.md"] = """
+# Status Update Report
+
+This report provides an update on the current status of security findings and remediation efforts for {{ metadata.get('target', 'the target system') }}.
+
+## Overview
+
+* **Target**: {{ metadata.get('target', 'N/A') }}
+* **Report Date**: {{ format_date(generated_at) }}
+* **Previous Report**: {{ metadata.get('previous_report_date', 'N/A') }}
+
+## Summary
+
+{% set total = findings|length %}
+{% set open = findings|selectattr('status', 'eq', 'open')|list|length %}
+{% set in_progress = findings|selectattr('status', 'eq', 'in_progress')|list|length %}
+{% set remediated = findings|selectattr('status', 'eq', 'remediated')|list|length %}
+{% set closed = findings|selectattr('status', 'eq', 'closed')|list|length %}
+
+* **Total Findings**: {{ total }}
+* **Open**: {{ open }} ({{ (open / total * 100)|round(1) if total > 0 else 0 }}%)
+* **In Progress**: {{ in_progress }} ({{ (in_progress / total * 100)|round(1) if total > 0 else 0 }}%)
+* **Remediated**: {{ remediated }} ({{ (remediated / total * 100)|round(1) if total > 0 else 0 }}%)
+* **Closed**: {{ closed }} ({{ (closed / total * 100)|round(1) if total > 0 else 0 }}%)
+"""
+
+        templates["status_update/findings_status.md"] = """
+## Finding Status Details
+
+| Finding | Severity | Status | Remediation Progress | Due Date |
+|---------|----------|--------|---------------------|----------|
+{% for finding in findings %}
+{% set remediation = get_remediation(finding) %}
+| {{ finding.title }} | {{ finding.severity|upper }} | {{ finding.status }} | {% if remediation %}{{ remediation.progress }}%{% else %}N/A{% endif %} | {% if remediation and remediation.due_date %}{{ format_date(remediation.due_date) }}{% else %}N/A{% endif %} |
+{% endfor %}
+
+## Recent Updates
+
+{% for finding in findings %}
+{% if finding.status == 'in_progress' or finding.status == 'remediated' %}
+### {{ finding.title }}
+
+* **Current Status**: {{ finding.status|upper }}
+{% set remediation = get_remediation(finding) %}
+{% if remediation %}
+* **Assigned To**: {{ remediation.assigned_to if remediation.assigned_to else 'Unassigned' }}
+* **Progress**: {{ remediation.progress }}%
+{% if remediation.due_date %}* **Due Date**: {{ format_date(remediation.due_date) }}{% endif %}
+{% endif %}
+
+{% if finding.status == 'remediated' %}
+#### Resolution
+{{ finding.resolution if finding.resolution else 'No resolution details provided.' }}
+{% endif %}
+
+{% endif %}
 {% endfor %}
 """
         

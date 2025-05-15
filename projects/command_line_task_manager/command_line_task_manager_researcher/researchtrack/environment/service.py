@@ -65,6 +65,7 @@ class EnvironmentService:
         git_repository: Optional[str] = None,
         git_branch: Optional[str] = None,
         tags: Optional[Set[str]] = None,
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
     ) -> EnvironmentSnapshot:
         """
         Create a new environment snapshot.
@@ -127,6 +128,7 @@ class EnvironmentService:
             git_repository=git_repository,
             git_branch=git_branch,
             tags=tags or set(),
+            custom_metadata=custom_metadata or {},
         )
         
         # Save the snapshot
@@ -145,6 +147,18 @@ class EnvironmentService:
             Optional[EnvironmentSnapshot]: The snapshot if found, None otherwise
         """
         return self._storage.get_snapshot(snapshot_id)
+        
+    def get_environment(self, environment_id: UUID) -> Optional[EnvironmentSnapshot]:
+        """
+        Retrieve an environment snapshot by ID.
+        
+        Args:
+            environment_id: The ID of the environment snapshot to retrieve
+            
+        Returns:
+            Optional[EnvironmentSnapshot]: The environment snapshot if found, None otherwise
+        """
+        return self.get_snapshot(environment_id)
     
     def update_snapshot(
         self,
@@ -236,6 +250,144 @@ class EnvironmentService:
         
         snapshot.update(**update_data)
         return self._storage.update_snapshot(snapshot)
+        
+    def update_environment(
+        self,
+        environment_id: UUID,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        python_version: Optional[str] = None,
+        os_type: Optional[Union[OperatingSystemType, str]] = None,
+        os_version: Optional[str] = None,
+        architecture: Optional[str] = None,
+        kernel_version: Optional[str] = None,
+        container_image: Optional[str] = None,
+        container_tag: Optional[str] = None,
+        container_digest: Optional[str] = None,
+        cloud_provider: Optional[str] = None,
+        cloud_region: Optional[str] = None,
+        instance_type: Optional[str] = None,
+        git_commit: Optional[str] = None,
+        git_repository: Optional[str] = None,
+        git_branch: Optional[str] = None,
+    ) -> bool:
+        """
+        Update an existing environment snapshot.
+        
+        Args:
+            environment_id: The ID of the environment snapshot to update
+            name: New snapshot name
+            description: New snapshot description
+            python_version: New Python version
+            os_type: New operating system type
+            os_version: New operating system version
+            architecture: New CPU architecture
+            kernel_version: New kernel version
+            container_image: New container image name
+            container_tag: New container tag
+            container_digest: New container digest
+            cloud_provider: New cloud provider
+            cloud_region: New cloud region
+            instance_type: New instance type
+            git_commit: New Git commit hash
+            git_repository: New Git repository URL
+            git_branch: New Git branch name
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If environment doesn't exist
+        """
+        return self.update_snapshot(
+            snapshot_id=environment_id,
+            name=name,
+            description=description,
+            python_version=python_version,
+            os_type=os_type,
+            os_version=os_version,
+            architecture=architecture,
+            kernel_version=kernel_version,
+            container_image=container_image,
+            container_tag=container_tag,
+            container_digest=container_digest,
+            cloud_provider=cloud_provider,
+            cloud_region=cloud_region,
+            instance_type=instance_type,
+            git_commit=git_commit,
+            git_repository=git_repository,
+            git_branch=git_branch,
+        )
+        """
+        Update an existing environment snapshot.
+        
+        Args:
+            snapshot_id: The ID of the snapshot to update
+            name: New snapshot name
+            description: New snapshot description
+            python_version: New Python version
+            os_type: New operating system type
+            os_version: New operating system version
+            architecture: New CPU architecture
+            kernel_version: New kernel version
+            container_image: New container image name
+            container_tag: New container tag
+            container_digest: New container digest
+            cloud_provider: New cloud provider
+            cloud_region: New cloud region
+            instance_type: New instance type
+            git_commit: New Git commit hash
+            git_repository: New Git repository URL
+            git_branch: New Git branch name
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If snapshot doesn't exist
+        """
+        snapshot = self._storage.get_snapshot(snapshot_id)
+        if not snapshot:
+            raise ValueError(f"Environment snapshot with ID {snapshot_id} does not exist")
+        
+        update_data = {}
+        if name is not None:
+            update_data["name"] = name
+        if description is not None:
+            update_data["description"] = description
+        if python_version is not None:
+            update_data["python_version"] = python_version
+        if os_type is not None:
+            if isinstance(os_type, str):
+                os_type = OperatingSystemType(os_type)
+            update_data["os_type"] = os_type
+        if os_version is not None:
+            update_data["os_version"] = os_version
+        if architecture is not None:
+            update_data["architecture"] = architecture
+        if kernel_version is not None:
+            update_data["kernel_version"] = kernel_version
+        if container_image is not None:
+            update_data["container_image"] = container_image
+        if container_tag is not None:
+            update_data["container_tag"] = container_tag
+        if container_digest is not None:
+            update_data["container_digest"] = container_digest
+        if cloud_provider is not None:
+            update_data["cloud_provider"] = cloud_provider
+        if cloud_region is not None:
+            update_data["cloud_region"] = cloud_region
+        if instance_type is not None:
+            update_data["instance_type"] = instance_type
+        if git_commit is not None:
+            update_data["git_commit"] = git_commit
+        if git_repository is not None:
+            update_data["git_repository"] = git_repository
+        if git_branch is not None:
+            update_data["git_branch"] = git_branch
+        
+        snapshot.update(**update_data)
+        return self._storage.update_snapshot(snapshot)
     
     def delete_snapshot(self, snapshot_id: UUID) -> bool:
         """
@@ -248,6 +400,18 @@ class EnvironmentService:
             bool: True if deletion successful, False otherwise
         """
         return self._storage.delete_snapshot(snapshot_id)
+        
+    def delete_environment(self, environment_id: UUID) -> bool:
+        """
+        Delete an environment snapshot.
+        
+        Args:
+            environment_id: The ID of the environment snapshot to delete
+            
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        return self.delete_snapshot(environment_id)
     
     def list_snapshots(
         self, environment_type: Optional[Union[EnvironmentType, str]] = None, tags: Optional[Set[str]] = None
@@ -266,18 +430,125 @@ class EnvironmentService:
             environment_type = environment_type.value
             
         return self._storage.list_snapshots(environment_type, tags)
+        
+    def list_environments(
+        self, type: Optional[Union[EnvironmentType, str]] = None, tags: Optional[Set[str]] = None
+    ) -> List[EnvironmentSnapshot]:
+        """
+        List environment snapshots with optional filtering.
+        
+        Args:
+            type: Filter by environment type
+            tags: Filter by tags (environments must have all specified tags)
+            
+        Returns:
+            List[EnvironmentSnapshot]: List of environments matching the criteria
+        """
+        return self.list_snapshots(environment_type=type, tags=tags)
+    
+    def create_environment_snapshot(
+        self,
+        name: str,
+        environment_type: Union[EnvironmentType, str] = EnvironmentType.LOCAL,
+        description: Optional[str] = None,
+        python_version: Optional[str] = None,
+        os_type: Optional[Union[OperatingSystemType, str]] = None,
+        os_version: Optional[str] = None,
+        architecture: Optional[str] = None,
+        kernel_version: Optional[str] = None,
+        environment_variables: Optional[Dict[str, str]] = None,
+        packages: Optional[List[PackageInfo]] = None,
+        compute_resources: Optional[List[ComputeResource]] = None,
+        config_files: Optional[Dict[str, str]] = None,
+        container_image: Optional[str] = None,
+        container_tag: Optional[str] = None,
+        container_digest: Optional[str] = None,
+        cloud_provider: Optional[str] = None,
+        cloud_region: Optional[str] = None,
+        instance_type: Optional[str] = None,
+        git_commit: Optional[str] = None,
+        git_repository: Optional[str] = None,
+        git_branch: Optional[str] = None,
+        tags: Optional[Set[str]] = None,
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
+    ) -> UUID:
+        """
+        Create a new environment snapshot.
+        
+        Args:
+            name: Snapshot name
+            environment_type: Environment type
+            description: Snapshot description
+            python_version: Python version
+            os_type: Operating system type
+            os_version: Operating system version
+            architecture: CPU architecture
+            kernel_version: Kernel version
+            environment_variables: Environment variables dictionary
+            packages: List of package information
+            compute_resources: List of compute resources
+            config_files: Dictionary of configuration files (path -> content)
+            container_image: Container image name
+            container_tag: Container tag
+            container_digest: Container digest
+            cloud_provider: Cloud provider
+            cloud_region: Cloud region
+            instance_type: Instance type
+            git_commit: Git commit hash
+            git_repository: Git repository URL
+            git_branch: Git branch name
+            tags: Tags for categorization
+            custom_metadata: Custom metadata dictionary
+            
+        Returns:
+            UUID: The ID of the created snapshot
+        """
+        # Convert string enums to enum values if needed
+        if isinstance(environment_type, str):
+            environment_type = EnvironmentType(environment_type)
+            
+        # Use create_snapshot method to create the actual snapshot
+        snapshot = self.create_snapshot(
+            name=name,
+            description=description,
+            type=environment_type,
+            python_version=python_version,
+            os_type=os_type,
+            os_version=os_version,
+            architecture=architecture,
+            kernel_version=kernel_version,
+            environment_variables=environment_variables,
+            packages=packages,
+            compute_resources=compute_resources,
+            config_files=config_files,
+            container_image=container_image,
+            container_tag=container_tag,
+            container_digest=container_digest,
+            cloud_provider=cloud_provider,
+            cloud_region=cloud_region,
+            instance_type=instance_type,
+            git_commit=git_commit,
+            git_repository=git_repository,
+            git_branch=git_branch,
+            tags=tags,
+            custom_metadata=custom_metadata,
+        )
+        
+        return snapshot.id
     
     def capture_current_environment(
         self, 
         name: str, 
         description: Optional[str] = None,
+        environment_type: Union[EnvironmentType, str] = EnvironmentType.LOCAL,
         include_system_info: bool = True,
         include_env_vars: bool = True,
         include_packages: bool = True,
         include_git_info: bool = True,
         redact_sensitive_env_vars: bool = True,
         tags: Optional[Set[str]] = None,
-    ) -> EnvironmentSnapshot:
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
+    ) -> UUID:
         """
         Capture the current Python environment into a snapshot.
         
@@ -302,6 +573,7 @@ class EnvironmentService:
         kernel_version = None
         packages = []
         environment_variables = {}
+        compute_resources = []
         git_commit = None
         git_repository = None
         git_branch = None
@@ -334,6 +606,41 @@ class EnvironmentService:
                     kernel_version = platform.release()
             except:
                 kernel_version = "Unknown"
+                
+            # Add basic compute resource information
+            try:
+                # Try to detect CPU information
+                cpu_count = os.cpu_count() or 1
+                cpu_model = "Unknown"
+                
+                # On Linux, we can get more detailed CPU info
+                if os_type == OperatingSystemType.LINUX:
+                    try:
+                        with open("/proc/cpuinfo", "r") as f:
+                            for line in f:
+                                if line.startswith("model name"):
+                                    cpu_model = line.split(":", 1)[1].strip()
+                                    break
+                    except:
+                        pass
+                
+                # Add CPU resource
+                compute_resources.append(
+                    ComputeResource(
+                        type=ComputeResourceType.CPU,
+                        count=cpu_count,
+                        model=cpu_model,
+                    )
+                )
+            except:
+                # In case of any detection failure, add a generic resource
+                compute_resources.append(
+                    ComputeResource(
+                        type=ComputeResourceType.CPU,
+                        count=1,
+                        model="Generic CPU",
+                    )
+                )
         
         # Environment variables
         if include_env_vars:
@@ -382,11 +689,15 @@ class EnvironmentService:
                 # If git commands fail, ignore and continue
                 pass
         
+        # Convert string enums to enum values if needed
+        if isinstance(environment_type, str):
+            environment_type = EnvironmentType(environment_type)
+            
         # Create the snapshot
         snapshot = self.create_snapshot(
             name=name,
             description=description,
-            type=EnvironmentType.LOCAL,
+            type=environment_type,
             python_version=python_version,
             os_type=os_type,
             os_version=os_version,
@@ -394,19 +705,22 @@ class EnvironmentService:
             kernel_version=kernel_version,
             environment_variables=environment_variables,
             packages=packages,
+            compute_resources=compute_resources,
             git_commit=git_commit,
             git_repository=git_repository,
             git_branch=git_branch,
             tags=tags,
+            custom_metadata=custom_metadata,
         )
         
-        return snapshot
+        return snapshot.id
     
     def add_package(
         self, 
-        env_id: UUID, 
-        name: str, 
-        version: str, 
+        env_id: UUID,
+        package: Optional[PackageInfo] = None,
+        name: Optional[str] = None, 
+        version: Optional[str] = None, 
         manager: Union[PackageManagerType, str] = PackageManagerType.PIP,
         channel: Optional[str] = None,
         extras: Optional[List[str]] = None,
@@ -432,20 +746,28 @@ class EnvironmentService:
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
-        # Convert string enum to enum value if needed
-        if isinstance(manager, str):
-            manager = PackageManagerType(manager)
+        # Use provided package or create a new one
+        if package is not None:
+            # Use the provided package directly
+            snapshot.add_package(package)
+        else:
+            # Convert string enum to enum value if needed
+            if isinstance(manager, str):
+                manager = PackageManagerType(manager)
+            
+            # Create package with provided parameters
+            if name is not None and version is not None:
+                new_package = PackageInfo(
+                    name=name,
+                    version=version,
+                    manager=manager,
+                    channel=channel,
+                    extras=extras,
+                )
+                snapshot.add_package(new_package)
+            else:
+                raise ValueError("Either a package or name and version must be provided")
         
-        # Create package
-        package = PackageInfo(
-            name=name,
-            version=version,
-            manager=manager,
-            channel=channel,
-            extras=extras,
-        )
-        
-        snapshot.add_package(package)
         return self._storage.update_snapshot(snapshot)
     
     def remove_package(
@@ -480,9 +802,10 @@ class EnvironmentService:
     
     def add_compute_resource(
         self, 
-        env_id: UUID, 
-        type: Union[ComputeResourceType, str], 
-        count: int, 
+        env_id: UUID,
+        resource: Optional[ComputeResource] = None,
+        type: Optional[Union[ComputeResourceType, str]] = None, 
+        count: Optional[int] = None, 
         model: Optional[str] = None,
         memory_gb: Optional[float] = None,
     ) -> bool:
@@ -491,6 +814,7 @@ class EnvironmentService:
         
         Args:
             env_id: The ID of the environment snapshot
+            resource: An already created ComputeResource object
             type: Type of compute resource
             count: Number of resources
             model: Model name/identifier
@@ -506,19 +830,30 @@ class EnvironmentService:
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
-        # Convert string enum to enum value if needed
-        if isinstance(type, str):
-            type = ComputeResourceType(type)
+        # Use provided resource or create a new one
+        if resource is not None:
+            # Use the provided resource directly
+            snapshot.add_compute_resource(resource)
+        else:
+            # Convert string enum to enum value if needed
+            if isinstance(type, str) and type is not None:
+                type_enum = ComputeResourceType(type)
+            else:
+                type_enum = type
+                
+            # Validate required parameters
+            if type_enum is None or count is None:
+                raise ValueError("Either a resource or type and count must be provided")
+                
+            # Create resource with provided parameters
+            new_resource = ComputeResource(
+                type=type_enum,
+                count=count,
+                model=model,
+                memory_gb=memory_gb,
+            )
+            snapshot.add_compute_resource(new_resource)
         
-        # Create resource
-        resource = ComputeResource(
-            type=type,
-            count=count,
-            model=model,
-            memory_gb=memory_gb,
-        )
-        
-        snapshot.add_compute_resource(resource)
         return self._storage.update_snapshot(snapshot)
     
     def remove_compute_resource(self, env_id: UUID, resource_index: int) -> bool:
@@ -534,14 +869,14 @@ class EnvironmentService:
             
         Raises:
             ValueError: If environment doesn't exist
-            IndexError: If resource index is invalid
         """
         snapshot = self._storage.get_snapshot(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         if resource_index < 0 or resource_index >= len(snapshot.compute_resources):
-            raise IndexError(f"Invalid resource index: {resource_index}")
+            # Return False for invalid indices instead of raising IndexError
+            return False
         
         result = snapshot.remove_compute_resource(resource_index)
         if result:
@@ -659,6 +994,22 @@ class EnvironmentService:
         snapshot.add_tag(tag)
         return self._storage.update_snapshot(snapshot)
     
+    def add_environment_tag(self, environment_id: UUID, tag: str) -> bool:
+        """
+        Add a tag to an environment snapshot.
+        
+        Args:
+            environment_id: The ID of the environment snapshot
+            tag: The tag to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If environment doesn't exist
+        """
+        return self.add_tag(environment_id, tag)
+    
     def remove_tag(self, env_id: UUID, tag: str) -> bool:
         """
         Remove a tag from an environment snapshot.
@@ -681,6 +1032,22 @@ class EnvironmentService:
         if result:
             return self._storage.update_snapshot(snapshot)
         return False
+        
+    def remove_environment_tag(self, environment_id: UUID, tag: str) -> bool:
+        """
+        Remove a tag from an environment snapshot.
+        
+        Args:
+            environment_id: The ID of the environment snapshot
+            tag: The tag to remove
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If environment doesn't exist
+        """
+        return self.remove_tag(environment_id, tag)
     
     def update_custom_metadata(
         self, env_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
@@ -734,7 +1101,7 @@ class EnvironmentService:
     def link_task_to_environment(
         self,
         task_id: UUID,
-        env_id: UUID,
+        environment_id: UUID,
         description: Optional[str] = None,
         actual_execution_time: Optional[float] = None,
     ) -> UUID:
@@ -743,7 +1110,7 @@ class EnvironmentService:
         
         Args:
             task_id: The ID of the task
-            env_id: The ID of the environment snapshot
+            environment_id: The ID of the environment snapshot
             description: Description of the relationship
             actual_execution_time: Runtime in seconds, if applicable
             
@@ -753,21 +1120,21 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_snapshot(environment_id)
         if not snapshot:
-            raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
+            raise ValueError(f"Environment snapshot with ID {environment_id} does not exist")
         
         # Check if link already exists
         existing_snapshots = self._storage.get_snapshots_for_task(task_id)
         for s in existing_snapshots:
-            if s.id == env_id:
+            if s.id == environment_id:
                 # Link already exists
                 return UUID('00000000-0000-0000-0000-000000000000')
         
         # Create the link
         link = TaskEnvironmentLink(
             task_id=task_id,
-            environment_id=env_id,
+            environment_id=environment_id,
             description=description,
             actual_execution_time=actual_execution_time,
         )
@@ -796,6 +1163,21 @@ class EnvironmentService:
         
         # Delete the link
         return self._storage.delete_task_environment_link(links[0])
+        
+    def get_links_by_task(self, task_id: UUID) -> List[TaskEnvironmentLink]:
+        """
+        Get all task-environment links for a given task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskEnvironmentLink]: List of links for the task
+        """
+        return [
+            link for link in self._storage._task_environment_links.values()
+            if link.task_id == task_id
+        ]
     
     def get_snapshots_for_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
         """
@@ -808,6 +1190,18 @@ class EnvironmentService:
             List[EnvironmentSnapshot]: List of associated snapshots
         """
         return self._storage.get_snapshots_for_task(task_id)
+        
+    def get_environments_by_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
+        """
+        Get all environment snapshots associated with a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[EnvironmentSnapshot]: List of associated environment snapshots
+        """
+        return self.get_snapshots_for_task(task_id)
     
     def get_tasks_for_snapshot(self, env_id: UUID) -> List[UUID]:
         """
@@ -820,8 +1214,98 @@ class EnvironmentService:
             List[UUID]: List of associated task IDs
         """
         return self._storage.get_tasks_for_snapshot(env_id)
+        
+    def get_tasks_by_environment(self, environment_id: UUID) -> List[UUID]:
+        """
+        Get all task IDs associated with an environment snapshot.
+        
+        Args:
+            environment_id: The ID of the environment snapshot
+            
+        Returns:
+            List[UUID]: List of associated task IDs
+        """
+        return self.get_tasks_for_snapshot(environment_id)
     
-    def add_note_to_link(self, task_id: UUID, env_id: UUID, note: str) -> bool:
+    def get_task_environment_link(self, link_id: UUID) -> Optional[TaskEnvironmentLink]:
+        """
+        Get a task-environment link by ID.
+        
+        Args:
+            link_id: The ID of the link to retrieve
+            
+        Returns:
+            Optional[TaskEnvironmentLink]: The link if found, None otherwise
+        """
+        return self._storage.get_task_environment_link(link_id)
+        
+    def update_task_environment_link(
+        self,
+        link_id: UUID,
+        description: Optional[str] = None,
+        actual_execution_time: Optional[float] = None,
+    ) -> bool:
+        """
+        Update a task-environment link.
+        
+        Args:
+            link_id: The ID of the link to update
+            description: New description
+            actual_execution_time: New execution time
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If link doesn't exist
+        """
+        link = self._storage.get_task_environment_link(link_id)
+        if not link:
+            raise ValueError(f"Task-environment link with ID {link_id} does not exist")
+        
+        update_data = {}
+        if description is not None:
+            update_data["description"] = description
+        if actual_execution_time is not None:
+            update_data["actual_execution_time"] = actual_execution_time
+            
+        link.update(**update_data)
+        return self._storage.update_task_environment_link(link)
+    
+    def add_note_to_link(self, link_id: UUID, note: str) -> bool:
+        """
+        Add a note to a task-environment link.
+        
+        Args:
+            link_id: The ID of the link
+            note: The note to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If link doesn't exist
+        """
+        link = self._storage.get_task_environment_link(link_id)
+        if not link:
+            raise ValueError(f"Task-environment link with ID {link_id} does not exist")
+            
+        link.add_note(note)
+        return self._storage.update_task_environment_link(link)
+        
+    def delete_task_environment_link(self, link_id: UUID) -> bool:
+        """
+        Delete a task-environment link.
+        
+        Args:
+            link_id: The ID of the link to delete
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        return self._storage.delete_task_environment_link(link_id)
+        
+    def add_note_to_task_environment(self, task_id: UUID, env_id: UUID, note: str) -> bool:
         """
         Add a note to the link between a task and an environment snapshot.
         
@@ -871,25 +1355,46 @@ class EnvironmentService:
         # Compare snapshots
         differences = {}
         
+        # System information differences (python version, os info, etc.)
+        system_differences = {}
+        
         # Compare Python version
         if snapshot1.python_version != snapshot2.python_version:
-            differences["python_version"] = {
-                "snapshot1": snapshot1.python_version,
-                "snapshot2": snapshot2.python_version,
+            system_differences["python_version"] = {
+                "env1": snapshot1.python_version,
+                "env2": snapshot2.python_version,
             }
         
         # Compare OS information
         if snapshot1.os_type != snapshot2.os_type:
-            differences["os_type"] = {
-                "snapshot1": snapshot1.os_type,
-                "snapshot2": snapshot2.os_type,
+            system_differences["os_type"] = {
+                "env1": snapshot1.os_type,
+                "env2": snapshot2.os_type,
             }
         
         if snapshot1.os_version != snapshot2.os_version:
-            differences["os_version"] = {
-                "snapshot1": snapshot1.os_version,
-                "snapshot2": snapshot2.os_version,
+            system_differences["os_version"] = {
+                "env1": snapshot1.os_version,
+                "env2": snapshot2.os_version,
             }
+            
+        # Compare architecture
+        if snapshot1.architecture != snapshot2.architecture:
+            system_differences["architecture"] = {
+                "env1": snapshot1.architecture,
+                "env2": snapshot2.architecture,
+            }
+            
+        # Compare kernel version
+        if snapshot1.kernel_version != snapshot2.kernel_version:
+            system_differences["kernel_version"] = {
+                "env1": snapshot1.kernel_version,
+                "env2": snapshot2.kernel_version,
+            }
+            
+        # Add system differences to the main differences dict if any exist
+        if system_differences:
+            differences["system"] = system_differences
         
         # Compare packages
         packages1 = {(p.name, p.manager): p for p in snapshot1.packages}
@@ -897,14 +1402,14 @@ class EnvironmentService:
         
         # Packages in snapshot1 but not in snapshot2
         packages_only_in_1 = [
-            {"name": p.name, "version": p.version, "manager": p.manager}
+            {"name": p.name, "version": p.version, "manager": str(p.manager)}
             for (name, manager), p in packages1.items()
             if (name, manager) not in packages2
         ]
         
         # Packages in snapshot2 but not in snapshot1
         packages_only_in_2 = [
-            {"name": p.name, "version": p.version, "manager": p.manager}
+            {"name": p.name, "version": p.version, "manager": str(p.manager)}
             for (name, manager), p in packages2.items()
             if (name, manager) not in packages1
         ]
@@ -913,7 +1418,7 @@ class EnvironmentService:
         packages_diff_version = [
             {
                 "name": name,
-                "manager": manager,
+                "manager": str(manager),
                 "version1": packages1[(name, manager)].version,
                 "version2": packages2[(name, manager)].version,
             }
@@ -923,19 +1428,127 @@ class EnvironmentService:
         
         if packages_only_in_1 or packages_only_in_2 or packages_diff_version:
             differences["packages"] = {
-                "only_in_snapshot1": packages_only_in_1,
-                "only_in_snapshot2": packages_only_in_2,
-                "different_versions": packages_diff_version,
+                "only_in_env1": packages_only_in_1,
+                "only_in_env2": packages_only_in_2,
+                "version_different": packages_diff_version,
             }
         
         # Compare environment variables
-        env_vars1 = set(snapshot1.environment_variables.keys())
-        env_vars2 = set(snapshot2.environment_variables.keys())
+        env_vars1 = snapshot1.environment_variables
+        env_vars2 = snapshot2.environment_variables
         
-        if env_vars1 != env_vars2:
+        env_vars_keys1 = set(env_vars1.keys())
+        env_vars_keys2 = set(env_vars2.keys())
+        
+        only_in_env1 = list(env_vars_keys1 - env_vars_keys2)
+        only_in_env2 = list(env_vars_keys2 - env_vars_keys1)
+        
+        # Variables with different values
+        different_values = [
+            key for key in env_vars_keys1 & env_vars_keys2
+            if env_vars1[key] != env_vars2[key]
+        ]
+        
+        if only_in_env1 or only_in_env2 or different_values:
             differences["environment_variables"] = {
-                "only_in_snapshot1": list(env_vars1 - env_vars2),
-                "only_in_snapshot2": list(env_vars2 - env_vars1),
+                "only_in_env1": only_in_env1,
+                "only_in_env2": only_in_env2,
+                "value_different": different_values,
             }
+            
+        # Compare config files
+        config_files1 = snapshot1.config_files
+        config_files2 = snapshot2.config_files
+        
+        config_files_keys1 = set(config_files1.keys())
+        config_files_keys2 = set(config_files2.keys())
+        
+        only_in_env1_files = list(config_files_keys1 - config_files_keys2)
+        only_in_env2_files = list(config_files_keys2 - config_files_keys1)
+        
+        # Files with different content
+        different_content = [
+            key for key in config_files_keys1 & config_files_keys2
+            if config_files1[key] != config_files2[key]
+        ]
+        
+        if only_in_env1_files or only_in_env2_files or different_content:
+            differences["config_files"] = {
+                "only_in_env1": only_in_env1_files,
+                "only_in_env2": only_in_env2_files,
+                "content_different": different_content,
+            }
+            
+        # Compare compute resources
+        # For compute resources, just provide a count difference since they don't have unique identifiers
+        if len(snapshot1.compute_resources) != len(snapshot2.compute_resources):
+            differences["compute_resources"] = {
+                "count_env1": len(snapshot1.compute_resources),
+                "count_env2": len(snapshot2.compute_resources),
+            }
+            
+        # Compare container information
+        container_differences = {}
+        
+        if snapshot1.container_image != snapshot2.container_image:
+            container_differences["image"] = {
+                "env1": snapshot1.container_image,
+                "env2": snapshot2.container_image,
+            }
+            
+        if snapshot1.container_tag != snapshot2.container_tag:
+            container_differences["tag"] = {
+                "env1": snapshot1.container_tag,
+                "env2": snapshot2.container_tag,
+            }
+            
+        if snapshot1.container_digest != snapshot2.container_digest:
+            container_differences["digest"] = {
+                "env1": snapshot1.container_digest,
+                "env2": snapshot2.container_digest,
+            }
+            
+        if container_differences:
+            differences["container"] = container_differences
+            
+        # Compare cloud information
+        cloud_differences = {}
+        
+        if snapshot1.cloud_provider != snapshot2.cloud_provider:
+            cloud_differences["provider"] = {
+                "env1": snapshot1.cloud_provider,
+                "env2": snapshot2.cloud_provider,
+            }
+            
+        if snapshot1.cloud_region != snapshot2.cloud_region:
+            cloud_differences["region"] = {
+                "env1": snapshot1.cloud_region,
+                "env2": snapshot2.cloud_region,
+            }
+            
+        if snapshot1.instance_type != snapshot2.instance_type:
+            cloud_differences["instance_type"] = {
+                "env1": snapshot1.instance_type,
+                "env2": snapshot2.instance_type,
+            }
+            
+        if cloud_differences:
+            differences["cloud"] = cloud_differences
         
         return differences
+        
+    def compare_environments(self, env_id1: UUID, env_id2: UUID) -> Dict[str, Any]:
+        """
+        Compare two environment snapshots to find differences.
+        
+        Args:
+            env_id1: The ID of the first environment
+            env_id2: The ID of the second environment
+            
+        Returns:
+            Dict[str, Any]: Dictionary of differences
+            
+        Raises:
+            ValueError: If environments don't exist
+        """
+        return self.compare_snapshots(env_id1, env_id2)

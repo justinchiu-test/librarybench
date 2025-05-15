@@ -136,13 +136,14 @@ class TaskStorageInterface(ABC):
     
     @abstractmethod
     def list_research_questions(
-        self, parent_question_id: Optional[UUID] = None
+        self, parent_question_id: Optional[UUID] = ...
     ) -> List[ResearchQuestion]:
         """
         List research questions with optional filtering.
         
         Args:
-            parent_question_id: Filter by parent question ID
+            parent_question_id: Filter by parent question ID. If not provided, returns all questions.
+                                If set to None, returns only top-level questions (with no parent).
             
         Returns:
             List[ResearchQuestion]: List of research questions matching the criteria
@@ -270,14 +271,19 @@ class InMemoryTaskStorage(TaskStorageInterface):
         return True
     
     def list_research_questions(
-        self, parent_question_id: Optional[UUID] = None
+        self, parent_question_id: Optional[UUID] = ...
     ) -> List[ResearchQuestion]:
         questions = list(self._questions.values())
         
-        if parent_question_id is not None:
-            questions = [
-                q for q in questions if q.parent_question_id == parent_question_id
-            ]
+        # If parent_question_id is not specified (default value), return all questions
+        if parent_question_id is ...:
+            return questions
+        
+        # If parent_question_id is set to None, return top-level questions (those with no parent)
+        # Otherwise, return questions with the specified parent
+        questions = [
+            q for q in questions if q.parent_question_id == parent_question_id
+        ]
         
         return questions
     

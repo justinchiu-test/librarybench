@@ -14,12 +14,12 @@ from .models import (
 from .storage import DatasetStorageInterface
 
 
-class DatasetService:
-    """Service for managing datasets and their versions."""
+class DatasetVersioningService:
+    """Service for managing datasets, their versions, and transformations."""
     
     def __init__(self, storage: DatasetStorageInterface):
         """
-        Initialize the dataset service.
+        Initialize the dataset versioning service.
         
         Args:
             storage: The storage implementation to use
@@ -42,7 +42,8 @@ class DatasetService:
         tags: Optional[Set[str]] = None,
         hash: Optional[str] = None,
         version: Optional[str] = None,
-    ) -> Dataset:
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
+    ) -> UUID:
         """
         Create a new dataset.
         
@@ -59,9 +60,10 @@ class DatasetService:
             tags: Tags for categorization
             hash: Content hash for verification
             version: Version identifier
+            custom_metadata: Custom metadata fields
             
         Returns:
-            Dataset: The created dataset
+            UUID: The ID of the created dataset
         """
         # Convert string enums to enum values if needed
         if isinstance(format, str):
@@ -84,12 +86,11 @@ class DatasetService:
             tags=tags or set(),
             hash=hash,
             version=version,
+            custom_metadata=custom_metadata or {},
         )
         
         # Save the dataset
-        self._storage.create_dataset(dataset)
-        
-        return dataset
+        return self._storage.create_dataset(dataset)
     
     def get_dataset(self, dataset_id: UUID) -> Optional[Dataset]:
         """
@@ -177,24 +178,40 @@ class DatasetService:
         return self._storage.delete_dataset(dataset_id)
     
     def list_datasets(
-        self, format: Optional[Union[DatasetFormat, str]] = None, tags: Optional[Set[str]] = None
+        self, 
+        format: Optional[Union[DatasetFormat, str]] = None, 
+        storage_type: Optional[Union[DatasetStorageType, str]] = None,
+        tags: Optional[Set[str]] = None
     ) -> List[Dataset]:
         """
         List datasets with optional filtering.
         
         Args:
             format: Filter by dataset format
+            storage_type: Filter by storage type
             tags: Filter by tags (datasets must have all specified tags)
             
         Returns:
             List[Dataset]: List of datasets matching the criteria
         """
-        if isinstance(format, DatasetFormat):
-            format = format.value
+        # Get unfiltered list from storage
+        datasets = self._storage.list_datasets(None, None)
+        
+        # Apply filters in memory
+        if format:
+            format_value = format.value if isinstance(format, DatasetFormat) else format
+            datasets = [d for d in datasets if d.format.value == format_value]
             
-        return self._storage.list_datasets(format, tags)
+        if storage_type:
+            storage_type_value = storage_type.value if isinstance(storage_type, DatasetStorageType) else storage_type
+            datasets = [d for d in datasets if d.storage_type.value == storage_type_value]
+            
+        if tags:
+            datasets = [d for d in datasets if all(tag in d.tags for tag in tags)]
+            
+        return datasets
     
-    def add_tag_to_dataset(self, dataset_id: UUID, tag: str) -> bool:
+    def add_dataset_tag(self, dataset_id: UUID, tag: str) -> bool:
         """
         Add a tag to a dataset.
         
@@ -214,6 +231,22 @@ class DatasetService:
         
         dataset.add_tag(tag)
         return self._storage.update_dataset(dataset)
+        
+    def add_tag_to_dataset(self, dataset_id: UUID, tag: str) -> bool:
+        """
+        Alias for add_dataset_tag for backward compatibility.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            tag: The tag to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If dataset doesn't exist
+        """
+        return self.add_dataset_tag(dataset_id, tag)
     
     def remove_tag_from_dataset(self, dataset_id: UUID, tag: str) -> bool:
         """
@@ -235,6 +268,22 @@ class DatasetService:
         
         dataset.remove_tag(tag)
         return self._storage.update_dataset(dataset)
+        
+    def remove_dataset_tag(self, dataset_id: UUID, tag: str) -> bool:
+        """
+        Alias for remove_tag_from_dataset for API consistency.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            tag: The tag to remove
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If dataset doesn't exist
+        """
+        return self.remove_tag_from_dataset(dataset_id, tag)
     
     def update_dataset_metadata(
         self, dataset_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
@@ -259,10 +308,53 @@ class DatasetService:
         
         dataset.update_custom_metadata(key, value)
         return self._storage.update_dataset(dataset)
+        
+    def update_dataset_custom_metadata(
+        self, dataset_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
+    ) -> bool:
+        """
+        Alias for update_dataset_metadata for API consistency.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            key: The metadata key
+            value: The metadata value
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If dataset doesn't exist
+        """
+        return self.update_dataset_metadata(dataset_id, key, value)
+        
+    def remove_dataset_custom_metadata(self, dataset_id: UUID, key: str) -> bool:
+        """
+        Remove a custom metadata field from a dataset.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            key: The metadata key to remove
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If dataset doesn't exist
+        """
+        dataset = self._storage.get_dataset(dataset_id)
+        if not dataset:
+            raise ValueError(f"Dataset with ID {dataset_id} does not exist")
+        
+        if key in dataset.custom_metadata:
+            result = dataset.remove_custom_metadata(key)
+            if result:
+                return self._storage.update_dataset(dataset)
+        return False
     
     # Dataset version operations
     
-    def create_version(
+    def create_dataset_version(
         self,
         dataset_id: UUID,
         version_number: str,
@@ -275,7 +367,8 @@ class DatasetService:
         column_count: Optional[int] = None,
         schema: Optional[Dict[str, str]] = None,
         parent_version_id: Optional[UUID] = None,
-    ) -> DatasetVersion:
+        custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
+    ) -> UUID:
         """
         Create a new version of a dataset.
         
@@ -291,9 +384,10 @@ class DatasetService:
             column_count: Number of columns
             schema: Data schema (column name -> data type)
             parent_version_id: ID of the parent version
+            custom_metadata: Custom metadata fields
             
         Returns:
-            DatasetVersion: The created version
+            UUID: The ID of the created version
             
         Raises:
             ValueError: If dataset or parent version doesn't exist
@@ -326,14 +420,13 @@ class DatasetService:
             column_count=column_count,
             schema=schema or {},
             parent_version_id=parent_version_id,
+            custom_metadata=custom_metadata or {},
         )
         
         # Save version
-        self._storage.create_dataset_version(version)
-        
-        return version
+        return self._storage.create_dataset_version(version)
     
-    def get_version(self, version_id: UUID) -> Optional[DatasetVersion]:
+    def get_dataset_version(self, version_id: UUID) -> Optional[DatasetVersion]:
         """
         Retrieve a dataset version by ID.
         
@@ -345,7 +438,7 @@ class DatasetService:
         """
         return self._storage.get_dataset_version(version_id)
     
-    def update_version(
+    def update_dataset_version(
         self,
         version_id: UUID,
         description: Optional[str] = None,
@@ -398,7 +491,7 @@ class DatasetService:
         version.update(**update_data)
         return self._storage.update_dataset_version(version)
     
-    def delete_version(self, version_id: UUID) -> bool:
+    def delete_dataset_version(self, version_id: UUID) -> bool:
         """
         Delete a dataset version.
         
@@ -410,7 +503,7 @@ class DatasetService:
         """
         return self._storage.delete_dataset_version(version_id)
     
-    def list_versions(
+    def list_dataset_versions(
         self, dataset_id: UUID, include_lineage: bool = False
     ) -> List[DatasetVersion]:
         """
@@ -431,8 +524,36 @@ class DatasetService:
             raise ValueError(f"Dataset with ID {dataset_id} does not exist")
         
         return self._storage.list_dataset_versions(dataset_id, include_lineage)
+        
+    def get_latest_dataset_version(self, dataset_id: UUID) -> Optional[DatasetVersion]:
+        """
+        Get the latest version of a dataset (by creation timestamp).
+        
+        Args:
+            dataset_id: The ID of the dataset
+            
+        Returns:
+            Optional[DatasetVersion]: The latest version if found, None if no versions exist
+            
+        Raises:
+            ValueError: If dataset doesn't exist
+        """
+        dataset = self._storage.get_dataset(dataset_id)
+        if not dataset:
+            raise ValueError(f"Dataset with ID {dataset_id} does not exist")
+        
+        # Get all versions for this dataset
+        versions = self._storage.list_dataset_versions(dataset_id)
+        
+        if not versions:
+            return None
+        
+        # Sort by creation time (newest first)
+        sorted_versions = sorted(versions, key=lambda v: v.created_at, reverse=True)
+        
+        return sorted_versions[0]
     
-    def get_version_lineage(self, version_id: UUID) -> List[DatasetVersion]:
+    def get_dataset_lineage(self, version_id: UUID) -> Dict[str, Dict[str, Any]]:
         """
         Get the complete version lineage for a dataset version.
         
@@ -440,7 +561,7 @@ class DatasetService:
             version_id: The ID of the dataset version
             
         Returns:
-            List[DatasetVersion]: List of versions in lineage order (oldest first)
+            Dict[str, Dict[str, Any]]: Dictionary with version ID keys and lineage information
             
         Raises:
             ValueError: If version doesn't exist
@@ -449,7 +570,7 @@ class DatasetService:
         if not version:
             raise ValueError(f"Dataset version with ID {version_id} does not exist")
         
-        lineage = []
+        lineage = {}
         current = version
         
         # First, walk backwards to find the root
@@ -461,7 +582,27 @@ class DatasetService:
             else:
                 break
         
-        return ancestor_chain
+        # Add each version to the lineage dict with its transformations
+        for i, v in enumerate(ancestor_chain):
+            lineage[str(v.id)] = {
+                "version": v,
+                "input_transformations": [],
+                "output_transformations": []
+            }
+            
+            # Link with input transformations (except for first version)
+            if i > 0:
+                # Find transformations where this version is the output
+                input_transformations = self._storage.find_transformations_by_output_version(v.id)
+                lineage[str(v.id)]["input_transformations"] = input_transformations
+            
+            # Link with output transformations (except for last version)
+            if i < len(ancestor_chain) - 1:
+                # Find transformations where this version is the input
+                output_transformations = self._storage.find_transformations_by_input_version(v.id)
+                lineage[str(v.id)]["output_transformations"] = output_transformations
+        
+        return lineage
     
     def update_version_metadata(
         self, version_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
@@ -489,25 +630,25 @@ class DatasetService:
     
     # Data transformation operations
     
-    def create_transformation(
+    def create_data_transformation(
         self,
-        input_version_id: UUID,
-        output_version_id: UUID,
-        type: Union[DataTransformationType, str],
+        input_dataset_version_id: UUID,
+        output_dataset_version_id: UUID,
+        transformation_type: Union[DataTransformationType, str],
         name: str,
         description: Optional[str] = None,
         parameters: Optional[Dict[str, Any]] = None,
         code_reference: Optional[str] = None,
         execution_time_seconds: Optional[float] = None,
         tags: Optional[Set[str]] = None,
-    ) -> DataTransformation:
+    ) -> UUID:
         """
         Create a new data transformation.
         
         Args:
-            input_version_id: ID of the input dataset version
-            output_version_id: ID of the output dataset version
-            type: Type of transformation
+            input_dataset_version_id: ID of the input dataset version
+            output_dataset_version_id: ID of the output dataset version
+            transformation_type: Type of transformation
             name: Name of the transformation
             description: Description of the transformation
             parameters: Parameters used in the transformation
@@ -516,31 +657,31 @@ class DatasetService:
             tags: Tags for categorization
             
         Returns:
-            DataTransformation: The created transformation
+            UUID: The ID of the created transformation
             
         Raises:
             ValueError: If versions don't exist
         """
         # Check if versions exist
-        input_version = self._storage.get_dataset_version(input_version_id)
+        input_version = self._storage.get_dataset_version(input_dataset_version_id)
         if not input_version:
-            raise ValueError(f"Input version with ID {input_version_id} does not exist")
+            raise ValueError(f"Input dataset version with ID {input_dataset_version_id} does not exist")
         
-        output_version = self._storage.get_dataset_version(output_version_id)
+        output_version = self._storage.get_dataset_version(output_dataset_version_id)
         if not output_version:
-            raise ValueError(f"Output version with ID {output_version_id} does not exist")
+            raise ValueError(f"Output dataset version with ID {output_dataset_version_id} does not exist")
         
         # Convert string enum to enum value if needed
-        if isinstance(type, str):
-            type = DataTransformationType(type)
+        if isinstance(transformation_type, str):
+            transformation_type = DataTransformationType(transformation_type)
         
         # Create transformation
         transformation = DataTransformation(
-            type=type,
+            type=transformation_type,
             name=name,
             description=description,
-            input_dataset_version_id=input_version_id,
-            output_dataset_version_id=output_version_id,
+            input_dataset_version_id=input_dataset_version_id,
+            output_dataset_version_id=output_dataset_version_id,
             parameters=parameters or {},
             code_reference=code_reference,
             execution_time_seconds=execution_time_seconds,
@@ -548,11 +689,9 @@ class DatasetService:
         )
         
         # Save transformation
-        self._storage.create_data_transformation(transformation)
-        
-        return transformation
+        return self._storage.create_data_transformation(transformation)
     
-    def get_transformation(self, transformation_id: UUID) -> Optional[DataTransformation]:
+    def get_data_transformation(self, transformation_id: UUID) -> Optional[DataTransformation]:
         """
         Retrieve a data transformation by ID.
         
@@ -564,7 +703,7 @@ class DatasetService:
         """
         return self._storage.get_data_transformation(transformation_id)
     
-    def update_transformation(
+    def update_data_transformation(
         self,
         transformation_id: UUID,
         name: Optional[str] = None,
@@ -605,7 +744,7 @@ class DatasetService:
         transformation.update(**update_data)
         return self._storage.update_data_transformation(transformation)
     
-    def delete_transformation(self, transformation_id: UUID) -> bool:
+    def delete_data_transformation(self, transformation_id: UUID) -> bool:
         """
         Delete a data transformation.
         
@@ -617,7 +756,7 @@ class DatasetService:
         """
         return self._storage.delete_data_transformation(transformation_id)
     
-    def list_transformations(self, dataset_id: UUID) -> List[DataTransformation]:
+    def list_transformations_for_dataset(self, dataset_id: UUID) -> List[DataTransformation]:
         """
         List all transformations related to a dataset.
         
@@ -635,6 +774,41 @@ class DatasetService:
             raise ValueError(f"Dataset with ID {dataset_id} does not exist")
         
         return self._storage.list_transformations_for_dataset(dataset_id)
+        
+    def list_data_transformations(
+        self, 
+        input_dataset_version_id: Optional[UUID] = None,
+        output_dataset_version_id: Optional[UUID] = None,
+        transformation_type: Optional[DataTransformationType] = None
+    ) -> List[DataTransformation]:
+        """
+        List data transformations with optional filtering.
+        
+        Args:
+            input_dataset_version_id: Filter by input dataset version
+            output_dataset_version_id: Filter by output dataset version
+            transformation_type: Filter by transformation type
+            
+        Returns:
+            List[DataTransformation]: List of matching data transformations
+        """
+        # Get all transformations first
+        if input_dataset_version_id:
+            transformations = self._storage.find_transformations_by_input_version(input_dataset_version_id)
+        elif output_dataset_version_id:
+            transformations = self._storage.find_transformations_by_output_version(output_dataset_version_id)
+        else:
+            # Get all transformations (this might be inefficient, but required for tests)
+            datasets = self._storage.list_datasets()
+            transformations = []
+            for dataset in datasets:
+                transformations.extend(self._storage.list_transformations_for_dataset(dataset.id))
+        
+        # Filter by type if needed
+        if transformation_type:
+            transformations = [t for t in transformations if t.type == transformation_type]
+            
+        return transformations
     
     def get_transformation_lineage(self, version_id: UUID) -> List[DataTransformation]:
         """
@@ -675,6 +849,22 @@ class DatasetService:
         
         transformation.add_tag(tag)
         return self._storage.update_data_transformation(transformation)
+        
+    def add_transformation_tag(self, transformation_id: UUID, tag: str) -> bool:
+        """
+        Alias for add_tag_to_transformation for API consistency.
+        
+        Args:
+            transformation_id: The ID of the transformation
+            tag: The tag to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If transformation doesn't exist
+        """
+        return self.add_tag_to_transformation(transformation_id, tag)
     
     def remove_tag_from_transformation(self, transformation_id: UUID, tag: str) -> bool:
         """
@@ -717,6 +907,22 @@ class DatasetService:
         
         transformation.add_note(note)
         return self._storage.update_data_transformation(transformation)
+        
+    def add_transformation_note(self, transformation_id: UUID, note: str) -> bool:
+        """
+        Alias for add_note_to_transformation for API consistency.
+        
+        Args:
+            transformation_id: The ID of the transformation
+            note: The note to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If transformation doesn't exist
+        """
+        return self.add_note_to_transformation(transformation_id, note)
     
     def update_transformation_parameter(
         self, transformation_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
@@ -741,13 +947,36 @@ class DatasetService:
         
         transformation.update_parameter(key, value)
         return self._storage.update_data_transformation(transformation)
+        
+    def remove_transformation_parameter(self, transformation_id: UUID, key: str) -> bool:
+        """
+        Remove a parameter from a transformation.
+        
+        Args:
+            transformation_id: The ID of the transformation
+            key: The parameter key to remove
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If transformation doesn't exist
+        """
+        transformation = self._storage.get_data_transformation(transformation_id)
+        if not transformation:
+            raise ValueError(f"Transformation with ID {transformation_id} does not exist")
+        
+        result = transformation.remove_parameter(key)
+        if result:
+            return self._storage.update_data_transformation(transformation)
+        return False
     
     # Task-Dataset link operations
     
     def link_task_to_dataset_version(
         self,
         task_id: UUID,
-        version_id: UUID,
+        dataset_version_id: UUID,
         usage_type: Optional[str] = None,
         description: Optional[str] = None,
     ) -> UUID:
@@ -756,7 +985,7 @@ class DatasetService:
         
         Args:
             task_id: The ID of the task
-            version_id: The ID of the dataset version
+            dataset_version_id: The ID of the dataset version
             usage_type: How the dataset is used (input, output, reference, etc.)
             description: Description of the relationship
             
@@ -766,51 +995,83 @@ class DatasetService:
         Raises:
             ValueError: If version doesn't exist
         """
-        version = self._storage.get_dataset_version(version_id)
+        version = self._storage.get_dataset_version(dataset_version_id)
         if not version:
-            raise ValueError(f"Dataset version with ID {version_id} does not exist")
+            raise ValueError(f"Dataset version with ID {dataset_version_id} does not exist")
         
         # Check if link already exists
         existing_versions = self._storage.get_dataset_versions_for_task(task_id)
         for v in existing_versions:
-            if v.id == version_id:
+            if v.id == dataset_version_id:
                 # Link already exists
                 return UUID('00000000-0000-0000-0000-000000000000')
         
         # Create the link
         link = TaskDatasetLink(
             task_id=task_id,
-            dataset_version_id=version_id,
+            dataset_version_id=dataset_version_id,
             usage_type=usage_type,
             description=description,
         )
         
         return self._storage.create_task_dataset_link(link)
     
-    def unlink_task_from_dataset_version(self, task_id: UUID, version_id: UUID) -> bool:
+    def get_task_dataset_link(self, link_id: UUID) -> Optional[TaskDatasetLink]:
         """
-        Remove a link between a task and a dataset version.
+        Get a task-dataset link by ID.
         
         Args:
-            task_id: The ID of the task
-            version_id: The ID of the dataset version
+            link_id: The ID of the link
             
         Returns:
-            bool: True if successful, False otherwise
+            Optional[TaskDatasetLink]: The link if found, None otherwise
         """
-        # Find the link
-        links = [
-            link_id for link_id, link in self._storage._task_dataset_links.items()
-            if link.task_id == task_id and link.dataset_version_id == version_id
-        ]
-        
-        if not links:
-            return False
-        
-        # Delete the link
-        return self._storage.delete_task_dataset_link(links[0])
+        return self._storage.get_task_dataset_link(link_id)
     
-    def get_dataset_versions_for_task(self, task_id: UUID) -> List[DatasetVersion]:
+    def update_task_dataset_link(
+        self,
+        link_id: UUID,
+        usage_type: Optional[str] = None,
+        description: Optional[str] = None,
+    ) -> bool:
+        """
+        Update a task-dataset link.
+        
+        Args:
+            link_id: The ID of the link to update
+            usage_type: New usage type
+            description: New description
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If link doesn't exist
+        """
+        link = self._storage.get_task_dataset_link(link_id)
+        if not link:
+            raise ValueError(f"Link with ID {link_id} does not exist")
+        
+        if usage_type is not None:
+            link.usage_type = usage_type
+        if description is not None:
+            link.description = description
+            
+        return self._storage.update_task_dataset_link(link)
+    
+    def delete_task_dataset_link(self, link_id: UUID) -> bool:
+        """
+        Delete a task-dataset link.
+        
+        Args:
+            link_id: The ID of the link to delete
+            
+        Returns:
+            bool: True if deletion successful, False otherwise
+        """
+        return self._storage.delete_task_dataset_link(link_id)
+    
+    def get_dataset_versions_by_task(self, task_id: UUID) -> List[DatasetVersion]:
         """
         Get all dataset versions associated with a task.
         
@@ -822,7 +1083,7 @@ class DatasetService:
         """
         return self._storage.get_dataset_versions_for_task(task_id)
     
-    def get_tasks_for_dataset_version(self, version_id: UUID) -> List[UUID]:
+    def get_tasks_by_dataset_version(self, version_id: UUID) -> List[UUID]:
         """
         Get all task IDs associated with a dataset version.
         
@@ -834,7 +1095,40 @@ class DatasetService:
         """
         return self._storage.get_tasks_for_dataset_version(version_id)
     
-    def add_note_to_link(self, task_id: UUID, version_id: UUID, note: str) -> bool:
+    def get_links_by_task(self, task_id: UUID) -> List[TaskDatasetLink]:
+        """
+        Get all dataset links for a task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskDatasetLink]: List of links
+        """
+        return self._storage.get_links_by_task(task_id)
+    
+    def add_note_to_link(self, link_id: UUID, note: str) -> bool:
+        """
+        Add a note to a task-dataset link.
+        
+        Args:
+            link_id: The ID of the link
+            note: The note to add
+            
+        Returns:
+            bool: True if successful, False otherwise
+            
+        Raises:
+            ValueError: If link doesn't exist
+        """
+        link = self._storage.get_task_dataset_link(link_id)
+        if not link:
+            raise ValueError(f"Link with ID {link_id} does not exist")
+        
+        link.add_note(note)
+        return self._storage.update_task_dataset_link(link)
+        
+    def add_note_to_task_dataset_link(self, task_id: UUID, version_id: UUID, note: str) -> bool:
         """
         Add a note to the link between a task and a dataset version.
         
@@ -847,14 +1141,10 @@ class DatasetService:
             bool: True if successful, False otherwise
         """
         # Find the link
-        links = [
-            link for link_id, link in self._storage._task_dataset_links.items()
-            if link.task_id == task_id and link.dataset_version_id == version_id
-        ]
+        links = self._storage.get_links_by_task(task_id)
+        for link in links:
+            if link.dataset_version_id == version_id:
+                link.add_note(note)
+                return self._storage.update_task_dataset_link(link)
         
-        if not links:
-            return False
-        
-        link = links[0]
-        link.add_note(note)
-        return self._storage.update_task_dataset_link(link)
+        return False

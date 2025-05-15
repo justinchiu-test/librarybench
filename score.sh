@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Iterate over all matching directories
-for repo in *o4-mini_0; do
+for repo in clitools*o4-mini_0; do
     if [ -d "$repo" ]; then
         echo "Scoring repository: $repo"
         python score.py --enable_logprobs --directory "$repo"

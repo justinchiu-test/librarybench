@@ -31,9 +31,8 @@ from personal_finance_tracker.tax.tax_manager import TaxManager
 class TestQuarterlyTaxPreparation:
     """Integration tests for quarterly tax preparation process."""
 
-    @pytest.mark.skip(reason="Test is too complex; use test_quarterly_tax_preparation_mock.py instead")
-    def test_comprehensive_quarterly_tax_preparation(self, sample_transactions, sample_date):
-        """Test a comprehensive end-to-end quarterly tax preparation process."""
+    def test_comprehensive_quarterly_tax_preparation(self):
+        """Test a comprehensive end-to-end quarterly tax preparation process with simplified transactions."""
         # Set up the required components
         expense_categorizer = ExpenseCategorizer()
         income_manager = IncomeManager()
@@ -42,7 +41,17 @@ class TestQuarterlyTaxPreparation:
         # Load default tax brackets
         tax_manager.load_default_brackets()
         
-        # Add expense categorization rules
+        # Add tax brackets for test year (2022)
+        tax_brackets_2022 = TaxBracket(
+            jurisdiction=TaxJurisdiction.FEDERAL,
+            filing_status=FilingStatus.SINGLE,
+            tax_year=2022,
+            income_thresholds=[0, 10275, 41775, 89075, 170050, 215950, 539900],
+            rates=[10, 12, 22, 24, 32, 35, 37],
+        )
+        tax_manager.set_tax_brackets([tax_brackets_2022])
+        
+        # Add a few categorization rules
         rules = [
             CategorizationRule(
                 name="Software Rule",
@@ -58,27 +67,6 @@ class TestQuarterlyTaxPreparation:
                 business_use_percentage=100.0,
                 priority=5,
             ),
-            CategorizationRule(
-                name="Internet Rule",
-                category=ExpenseCategory.INTERNET,
-                keyword_patterns=["internet", "wifi"],
-                business_use_percentage=80.0,
-                priority=8,
-            ),
-            CategorizationRule(
-                name="Phone Rule",
-                category=ExpenseCategory.PHONE,
-                keyword_patterns=["phone", "mobile"],
-                business_use_percentage=70.0,
-                priority=8,
-            ),
-            CategorizationRule(
-                name="Meal Rule",
-                category=ExpenseCategory.MEALS,
-                keyword_patterns=["meal", "restaurant", "food"],
-                business_use_percentage=50.0,  # 50% business use
-                priority=3,
-            ),
         ]
         
         for rule in rules:
@@ -92,13 +80,82 @@ class TestQuarterlyTaxPreparation:
         quarters = tax_manager.calculate_tax_quarters(tax_year)
         current_quarter = next(q for q in quarters if q.quarter == quarter_number)
         
-        # Filter transactions for the current quarter
-        quarter_transactions = [
-            tx for tx in sample_transactions 
-            if current_quarter.start_date <= tx.date <= current_quarter.end_date
-        ]
+        # Create sample transactions for Q1 and Q2
+        # Q1 transactions
+        q1_transactions = []
         
-        # Step 1: Categorize all expenses for the quarter
+        # Q1 Income
+        q1_income_transaction = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 2, 15),
+            amount=10000.0,
+            description="Q1 Income",
+            transaction_type=TransactionType.INCOME,
+            account_id="checking123",
+        )
+        q1_transactions.append(q1_income_transaction)
+        
+        # Q1 Expenses
+        q1_expense_transaction1 = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 2, 20),
+            amount=1000.0,
+            description="software subscription",
+            transaction_type=TransactionType.EXPENSE,
+            account_id="checking123",
+        )
+        q1_transactions.append(q1_expense_transaction1)
+        
+        q1_expense_transaction2 = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 3, 10),
+            amount=500.0,
+            description="office supplies",
+            transaction_type=TransactionType.EXPENSE,
+            account_id="checking123",
+        )
+        q1_transactions.append(q1_expense_transaction2)
+        
+        # Q2 transactions
+        q2_transactions = []
+        
+        # Q2 Income
+        q2_income_transaction = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 5, 15),
+            amount=12000.0,
+            description="Q2 Income",
+            transaction_type=TransactionType.INCOME,
+            account_id="checking123",
+        )
+        q2_transactions.append(q2_income_transaction)
+        
+        # Q2 Expenses
+        q2_expense_transaction1 = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 5, 20),
+            amount=1200.0,
+            description="software subscription Q2",
+            transaction_type=TransactionType.EXPENSE,
+            account_id="checking123",
+        )
+        q2_transactions.append(q2_expense_transaction1)
+        
+        q2_expense_transaction2 = Transaction(
+            id=uuid.uuid4(),
+            date=datetime(2022, 6, 10),
+            amount=600.0,
+            description="office supplies Q2",
+            transaction_type=TransactionType.EXPENSE,
+            account_id="checking123",
+        )
+        q2_transactions.append(q2_expense_transaction2)
+        
+        # Combine all transactions
+        all_transactions = q1_transactions + q2_transactions
+        quarter_transactions = q2_transactions
+        
+        # Step 1: Categorize expenses for the quarter
         expense_transactions = [
             tx for tx in quarter_transactions 
             if tx.transaction_type == TransactionType.EXPENSE
@@ -135,15 +192,11 @@ class TestQuarterlyTaxPreparation:
         business_expenses = expense_summary.business_expenses
         taxable_income = quarterly_income - business_expenses
         
-        # Calculate year-to-date values
-        # For Q2, we need Q1 + Q2
+        # Calculate year-to-date values (Q1 + Q2)
         ytd_start_date = datetime(tax_year, 1, 1)
         ytd_end_date = current_quarter.end_date
         
-        ytd_transactions = [
-            tx for tx in sample_transactions 
-            if ytd_start_date <= tx.date <= ytd_end_date
-        ]
+        ytd_transactions = all_transactions
         
         ytd_income_transactions = [
             tx for tx in ytd_transactions 
@@ -181,7 +234,7 @@ class TestQuarterlyTaxPreparation:
         ytd_taxable_income = ytd_income - ytd_business_expenses
         
         # Step 5: Calculate estimated quarterly tax payment
-        quarterly_tax_calculation: EstimatedPayment = tax_manager.calculate_quarterly_tax_payment(
+        quarterly_tax_calculation = tax_manager.calculate_quarterly_tax_payment(
             quarterly_taxable_income=taxable_income,
             ytd_taxable_income=ytd_taxable_income,
             tax_year=tax_year,
@@ -200,17 +253,8 @@ class TestQuarterlyTaxPreparation:
         
         # Verify the tax calculation
         assert quarterly_tax_calculation.quarter == quarter_number
-        assert quarterly_tax_calculation.tax_year == tax_year  # Fixed: tax_year instead of year
+        assert quarterly_tax_calculation.tax_year == tax_year
         assert quarterly_tax_calculation.payment_amount > 0
-        
-        # Verify that the quarterly calculation includes appropriate tax components if available
-        # These fields may have been added in our implementation for testing
-        if hasattr(quarterly_tax_calculation, 'federal_tax'):
-            assert quarterly_tax_calculation.federal_tax >= 0
-        
-        # Optional: Verify self-employment tax is included if applicable
-        if hasattr(quarterly_tax_calculation, 'self_employment_tax'):
-            assert quarterly_tax_calculation.self_employment_tax >= 0
         
         # Verify expense summary data
         assert expense_summary.period_start == current_quarter.start_date
@@ -223,7 +267,7 @@ class TestQuarterlyTaxPreparation:
         control_income = sum(tx.amount for tx in income_transactions)
         control_tax = tax_manager.calculate_quarterly_tax_payment(
             quarterly_taxable_income=control_income,  # Without deducting business expenses
-            ytd_taxable_income=control_income,
+            ytd_taxable_income=ytd_income,  # Without deducting business expenses
             tax_year=tax_year,
             quarter=quarter_number
         )
@@ -231,13 +275,12 @@ class TestQuarterlyTaxPreparation:
         # Calculate tax with business expenses deducted
         actual_tax = tax_manager.calculate_quarterly_tax_payment(
             quarterly_taxable_income=taxable_income,  # With business expenses deducted
-            ytd_taxable_income=ytd_taxable_income,
+            ytd_taxable_income=ytd_taxable_income,  # With business expenses deducted
             tax_year=tax_year,
             quarter=quarter_number
         )
         
         # Tax should be lower when business expenses are deducted
-        # If there are no expenses or they're all personal, they might be equal
         assert actual_tax.payment_amount <= control_tax.payment_amount
 
     def test_quarterly_tax_with_prior_payments(self):

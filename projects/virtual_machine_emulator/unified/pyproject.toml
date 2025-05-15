@@ -12,7 +12,7 @@ requires-python = ">=3.8"
 test = ["pytest", "pytest-json-report"]
 
 [tool.setuptools]
-packages = ["common", "secure_vm", "vm_emulator"]
+packages = ["common", "vm_emulator", "secure_vm"]
 
 [tool.pytest]
 

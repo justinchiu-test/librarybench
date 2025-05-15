@@ -20,7 +20,7 @@ Import the original packages directly:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import productmind # Example using first package
+import researchbrain # Example using first package
 
 # Import from common package (for shared functionality)
 from common import core

@@ -797,6 +797,14 @@ def copy_instructions_from_personas(unified_dir, persona_dirs, library_name):
             shutil.copy2(instructions_path, target_path)
         else:
             print(f"No INSTRUCTIONS.md found in {persona_name}")
+    
+    # Copy REFACTOR.md to unified directory
+    refactor_path = Path("REFACTOR.md")
+    if refactor_path.exists():
+        print(f"Copying REFACTOR.md to {unified_dir}")
+        shutil.copy2(refactor_path, unified_dir / "REFACTOR.md")
+    else:
+        print("No REFACTOR.md found in root directory")
 
 
 def main():

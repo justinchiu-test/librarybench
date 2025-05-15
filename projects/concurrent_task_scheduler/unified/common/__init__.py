@@ -71,3 +71,29 @@ from common.core import (
     TimeoutError,
     ValidationError,
 )
+
+from common.dependency_tracking import (
+    DependencyGraph,
+    DependencyTracker,
+    WorkflowManager,
+)
+
+from common.job_management import (
+    # Queue management
+    JobQueue,
+    QueuePolicy,
+    FairnessMetric,
+    QueuedJob,
+    QueueStats,
+    PreemptionAction,
+    PreemptionTrigger,
+    PreemptionPolicy,
+    
+    # Job scheduling
+    JobScheduler,
+    
+    # Priority management
+    PriorityManager,
+    PriorityPolicy,
+    PriorityInheritanceMode,
+)

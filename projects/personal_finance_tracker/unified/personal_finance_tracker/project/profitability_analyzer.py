@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import pandas as pd
 
+# Import directly from common library
 from common.core.models.project import Project, Client, TimeEntry, Invoice
 from common.core.models.transaction import BusinessTransaction as Transaction
 from common.core.models.transaction import TransactionType

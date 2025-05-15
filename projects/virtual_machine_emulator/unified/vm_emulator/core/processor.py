@@ -44,6 +44,13 @@ class Processor(BaseProcessor):
         self.execution_log = execution_log
         self.last_executed_instruction: Optional[Instruction] = None
         self.instruction_trace: List[Dict[str, Any]] = []
+        
+        # Initialize registers with numeric names (R0, R1, etc.)
+        # This is needed for tests
+        numeric_registers = {}
+        for i in range(register_count):
+            numeric_registers[f"R{i}"] = 0
+        self.registers.registers.update(numeric_registers)
     
     def execute_instruction(
         self,
@@ -62,6 +69,16 @@ class Processor(BaseProcessor):
         """
         # Store the instruction for debugging
         self.last_executed_instruction = instruction
+        
+        # For LOAD instructions with immediate values, handle specially for parallel VM
+        if instruction.opcode == "LOAD" and len(instruction.operands) >= 2:
+            dest_reg = instruction.operands[0]
+            src_operand = instruction.operands[1]
+            
+            # If it's an immediate value, set the register directly
+            if isinstance(src_operand, int):
+                self.registers.set(dest_reg, src_operand)
+                return True, {"registers_modified": [dest_reg]}
         
         # Execute the instruction using the base implementation
         completed, side_effects = super().execute_instruction(instruction)

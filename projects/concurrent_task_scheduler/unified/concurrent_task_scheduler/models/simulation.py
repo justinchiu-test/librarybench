@@ -5,27 +5,19 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
+from typing import Dict, List, Optional, Set, Union, Any
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
-
-class ResourceType(str, Enum):
-    """Types of resources that can be allocated to simulations."""
-
-    CPU = "cpu"
-    GPU = "gpu"
-    MEMORY = "memory"
-    STORAGE = "storage"
-    NETWORK = "network"
-
-
-class ResourceRequirement(BaseModel):
-    """Resource requirements for a simulation component."""
-
-    resource_type: ResourceType
-    amount: float
-    unit: str
+from common.core.models import (
+    BaseJob,
+    BaseNode,
+    JobStatus,
+    NodeStatus as CommonNodeStatus,
+    Priority,
+    ResourceRequirement,
+    ResourceType,
+)
 
 
 class SimulationStageStatus(str, Enum):
@@ -39,17 +31,13 @@ class SimulationStageStatus(str, Enum):
     FAILED = "failed"
 
 
-class SimulationStage(BaseModel):
+class SimulationStage(BaseJob):
     """A single stage in a multi-stage simulation workflow."""
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
     description: Optional[str] = None
     estimated_duration: timedelta
-    resource_requirements: List[ResourceRequirement] = Field(default_factory=list)
     dependencies: Set[str] = Field(default_factory=set)
     status: SimulationStageStatus = SimulationStageStatus.PENDING
-    progress: float = 0.0
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
     checkpoint_frequency: timedelta = Field(default=timedelta(hours=1))
@@ -57,15 +45,8 @@ class SimulationStage(BaseModel):
     checkpoint_path: Optional[str] = None
     error_message: Optional[str] = None
 
-
-class SimulationPriority(str, Enum):
-    """Priority level of a simulation."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    BACKGROUND = "background"
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class SimulationStatus(str, Enum):
@@ -79,25 +60,23 @@ class SimulationStatus(str, Enum):
     FAILED = "failed"
 
 
-class Simulation(BaseModel):
+class Simulation(BaseJob):
     """A complete simulation with multiple stages."""
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
     description: Optional[str] = None
     stages: Dict[str, SimulationStage]
-    priority: SimulationPriority = SimulationPriority.MEDIUM
     status: SimulationStatus = SimulationStatus.DEFINED
     creation_time: datetime = Field(default_factory=datetime.now)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
-    owner: str = "default_owner"
-    project: str = "default_project"
     tags: List[str] = Field(default_factory=list)
     metadata: Dict[str, Union[str, int, float, bool]] = Field(default_factory=dict)
     result_path: Optional[str] = None
     scientific_promise: float = 0.5  # Scale of 0-1 for prioritization
     estimated_total_duration: timedelta = Field(default=timedelta(days=1))
+    
+    class Config:
+        arbitrary_types_allowed = True
     
     @property
     def progress(self) -> float:
@@ -190,12 +169,10 @@ class Simulation(BaseModel):
             self.status = SimulationStatus.SCHEDULED
 
 
-class NodeStatus(str, Enum):
+class NodeStatus(CommonNodeStatus):
     """Status of a compute node."""
-
-    ONLINE = "online"
-    OFFLINE = "offline"
-    MAINTENANCE = "maintenance"
+    
+    # Add domain-specific statuses
     RESERVED = "reserved"
 
 
@@ -208,60 +185,33 @@ class NodeType(str, Enum):
     STORAGE = "storage"
 
 
-class ComputeNode(BaseModel):
+class ComputeNode(BaseNode):
     """Representation of a compute node in the cluster."""
 
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    name: str
     node_type: NodeType
-    status: NodeStatus = NodeStatus.ONLINE
-    cpu_cores: int
-    memory_gb: float
-    gpu_count: int = 0
-    storage_gb: float
     network_bandwidth_gbps: float
     current_load: Dict[ResourceType, float] = Field(default_factory=dict)
     assigned_simulations: List[str] = Field(default_factory=list)
-    last_failure_time: Optional[datetime] = None
     maintenance_window: Optional[Dict[str, datetime]] = None
     location: str
     reliability_score: float = 1.0  # Scale of 0-1, with 1 being most reliable
     
-    def is_available(self) -> bool:
-        """Check if the node is available for new simulations."""
-        return self.status == NodeStatus.ONLINE and len(self.assigned_simulations) < self.cpu_cores
+    # For compatibility with BaseNode
+    @property
+    def assigned_jobs(self) -> List[str]:
+        """Alias for assigned_simulations to maintain compatibility with BaseNode."""
+        return self.assigned_simulations
     
-    def get_available_resources(self) -> Dict[ResourceType, float]:
-        """Get the available resources on this node."""
-        available = {
-            ResourceType.CPU: self.cpu_cores,
-            ResourceType.MEMORY: self.memory_gb,
-            ResourceType.GPU: self.gpu_count,
-            ResourceType.STORAGE: self.storage_gb,
-            ResourceType.NETWORK: self.network_bandwidth_gbps
-        }
-        
-        for resource_type, used in self.current_load.items():
-            if resource_type in available:
-                available[resource_type] -= used
-        
-        return available
+    @assigned_jobs.setter
+    def assigned_jobs(self, value: List[str]):
+        """Setter for assigned_jobs that updates assigned_simulations."""
+        self.assigned_simulations = value
     
-    def can_accommodate(self, requirements: List[ResourceRequirement]) -> bool:
-        """Check if this node can accommodate the given resource requirements."""
-        available = self.get_available_resources()
-        
-        for req in requirements:
-            if req.resource_type not in available:
-                return False
-            
-            if available[req.resource_type] < req.amount:
-                return False
-        
-        return True
+    class Config:
+        arbitrary_types_allowed = True
 
 
-class ClusterStatus(BaseModel):
+class ClusterStatus:
     """Overall status of the compute cluster."""
 
     total_nodes: int

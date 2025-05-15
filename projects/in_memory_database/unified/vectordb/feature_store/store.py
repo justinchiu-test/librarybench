@@ -17,11 +17,13 @@ import copy
 from vectordb.core.vector import Vector
 from vectordb.indexing.index import VectorIndex
 from vectordb.indexing.approximate_nn import ApproximateNearestNeighbor
-from vectordb.feature_store.version import VersionManager
-from vectordb.feature_store.lineage import LineageTracker
+from vectordb.feature_store.version import VersionManager, Version
+from vectordb.feature_store.lineage import LineageTracker, LineageNode
+
+from common.core.serialization import Serializable
 
 
-class FeatureStore:
+class FeatureStore(Serializable):
     """
     Feature store with versioning and lineage tracking.
     
@@ -91,6 +93,42 @@ class FeatureStore:
                 self._vector_index = VectorIndex(distance_metric=self._distance_metric)
                 
         return self._vector_index
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the feature store to a dictionary.
+        
+        Returns:
+            Dictionary representation of the feature store
+        """
+        # Only include basic configuration and metadata
+        return {
+            "vector_dimension": self._vector_dimension,
+            "distance_metric": self._distance_metric,
+            "max_versions_per_feature": self._version_manager._max_versions,
+            "approximate_search": self._approximate_search,
+            "entity_count": len(self._entity_metadata),
+            "last_modified": self._last_modified,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'FeatureStore':
+        """
+        Create a FeatureStore from a dictionary.
+        
+        Args:
+            data: Dictionary containing feature store data
+            
+        Returns:
+            A new FeatureStore instance
+        """
+        store = cls(
+            vector_dimension=data.get("vector_dimension"),
+            distance_metric=data.get("distance_metric", "euclidean"),
+            max_versions_per_feature=data.get("max_versions_per_feature"),
+            approximate_search=data.get("approximate_search", True)
+        )
+        return store
     
     def add_entity(
         self,

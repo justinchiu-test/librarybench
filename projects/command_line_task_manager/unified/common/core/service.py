@@ -9,8 +9,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Union, Any, TypeVar, Generic, Callable
 from uuid import UUID
 
-from unified.common.core.models import BaseEntity, BaseTask
-from unified.common.core.storage import BaseStorageInterface, BaseTaskStorageInterface
+from common.core.models import BaseEntity, BaseTask
+from common.core.storage import BaseStorageInterface, BaseTaskStorageInterface
 
 
 # Generic type for entities (must be a subclass of BaseEntity)
@@ -57,7 +57,7 @@ class BaseService(Generic[T]):
             return self._validators[field_name](value)
         return True
     
-    def create(self, entity: T) -> UUID:
+    def create(self, entity: T) -> str:
         """
         Create a new entity.
         
@@ -65,11 +65,11 @@ class BaseService(Generic[T]):
             entity: The entity to create
             
         Returns:
-            UUID: The ID of the created entity
+            str: The ID of the created entity
         """
         return self._storage.create(entity)
     
-    def get(self, entity_id: UUID) -> Optional[T]:
+    def get(self, entity_id: Union[str, UUID]) -> Optional[T]:
         """
         Retrieve an entity by ID.
         
@@ -93,7 +93,7 @@ class BaseService(Generic[T]):
         """
         return self._storage.update(entity)
     
-    def delete(self, entity_id: UUID) -> bool:
+    def delete(self, entity_id: Union[str, UUID]) -> bool:
         """
         Delete an entity by ID.
         
@@ -138,10 +138,10 @@ class BaseTaskService(BaseService[BaseTask]):
         status: str = "planned",
         priority: str = "medium",
         due_date: Optional[datetime] = None,
-        parent_id: Optional[UUID] = None,
+        parent_id: Optional[Union[str, UUID]] = None,
         tags: Optional[Set[str]] = None,
         custom_metadata: Optional[Dict[str, Union[str, int, float, bool, list, dict]]] = None,
-    ) -> UUID:
+    ) -> str:
         """
         Create a new task.
         
@@ -163,7 +163,9 @@ class BaseTaskService(BaseService[BaseTask]):
         """
         # Validate parent task if provided
         if parent_id:
-            parent_task = self._storage.get(parent_id)
+            # Convert UUID to string if needed
+            parent_id_str = str(parent_id) if isinstance(parent_id, UUID) else parent_id
+            parent_task = self._storage.get(parent_id_str)
             if not parent_task:
                 raise ValueError(f"Parent task with ID {parent_id} does not exist")
         
@@ -184,7 +186,9 @@ class BaseTaskService(BaseService[BaseTask]):
         
         # Update parent task if needed
         if parent_id:
-            parent_task = self._storage.get(parent_id)
+            # Convert UUID to string if needed
+            parent_id_str = str(parent_id) if isinstance(parent_id, UUID) else parent_id
+            parent_task = self._storage.get(parent_id_str)
             if parent_task:
                 parent_task.add_subtask(task_id)
                 self._storage.update(parent_task)
@@ -208,7 +212,7 @@ class BaseTaskService(BaseService[BaseTask]):
     
     def update_task(
         self,
-        task_id: UUID,
+        task_id: Union[str, UUID],
         title: Optional[str] = None,
         description: Optional[str] = None,
         status: Optional[str] = None,
@@ -251,7 +255,7 @@ class BaseTaskService(BaseService[BaseTask]):
         task.update(**update_data)
         return self._storage.update(task)
     
-    def get_subtasks(self, parent_id: UUID) -> List[BaseTask]:
+    def get_subtasks(self, parent_id: Union[str, UUID]) -> List[BaseTask]:
         """
         Get all subtasks of a parent task.
         
@@ -287,7 +291,7 @@ class BaseTaskService(BaseService[BaseTask]):
         """
         return self._storage.get_tasks_by_status(status)
     
-    def add_task_note(self, task_id: UUID, note: str) -> bool:
+    def add_task_note(self, task_id: Union[str, UUID], note: str) -> bool:
         """
         Add a note to a task.
         
@@ -308,7 +312,7 @@ class BaseTaskService(BaseService[BaseTask]):
         task.add_note(note)
         return self._storage.update(task)
     
-    def add_task_tag(self, task_id: UUID, tag: str) -> bool:
+    def add_task_tag(self, task_id: Union[str, UUID], tag: str) -> bool:
         """
         Add a tag to a task.
         
@@ -329,7 +333,7 @@ class BaseTaskService(BaseService[BaseTask]):
         task.add_tag(tag)
         return self._storage.update(task)
     
-    def remove_task_tag(self, task_id: UUID, tag: str) -> bool:
+    def remove_task_tag(self, task_id: Union[str, UUID], tag: str) -> bool:
         """
         Remove a tag from a task.
         
@@ -353,7 +357,7 @@ class BaseTaskService(BaseService[BaseTask]):
         return result
     
     def update_task_custom_metadata(
-        self, task_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
+        self, task_id: Union[str, UUID], key: str, value: Union[str, int, float, bool, list, dict]
     ) -> bool:
         """
         Update a custom metadata field on a task.

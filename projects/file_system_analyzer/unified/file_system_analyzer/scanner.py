@@ -16,9 +16,12 @@ from pydantic import BaseModel, Field
 
 # Import from common library
 from common.core.base import ScanSession
-from common.core.analysis import DifferentialAnalyzer
+from common.core.api import BaseAnalyzerAPI, APIResult, NotificationConfig, CacheConfig
+from common.core.analysis import DifferentialAnalyzer, GenericAnalyzer
 from common.core.reporting import GenericReportGenerator, Report
 from common.utils.crypto import CryptoProvider
+from common.utils.export import export_to_json, export_to_html, export_results
+from common.utils.cache import cache_result
 
 # Import from persona-specific modules
 from file_system_analyzer.detection.scanner import (
@@ -374,3 +377,500 @@ class ComplianceScanner:
             
             # Re-raise the exception
             raise
+
+
+class ComplianceScannerAPI(BaseAnalyzerAPI[ScanResult, Any]):
+    """API for compliance scanning operations."""
+    
+    def __init__(
+        self,
+        output_dir: Optional[str] = None,
+        user_id: str = "system",
+        crypto_provider: Optional[CryptoProvider] = None,
+        cache_config: Optional[CacheConfig] = None,
+        notification_config: Optional[NotificationConfig] = None
+    ):
+        """
+        Initialize the compliance scanner API.
+        
+        Args:
+            output_dir: Directory for output files
+            user_id: ID of the user performing operations
+            crypto_provider: Provider for cryptographic operations
+            cache_config: Configuration for result caching
+            notification_config: Configuration for notifications
+        """
+        # Create scanner components
+        scan_options = ScanOptions()
+        scanner = SensitiveDataScanner(scan_options)
+        analyzer = GenericAnalyzer("Compliance Analyzer")
+        
+        # Set up compliance report generator
+        report_generator = ReportGenerator("default")
+        
+        super().__init__(
+            scanner=scanner,
+            analyzer=analyzer,
+            report_generator=report_generator,
+            cache_config=cache_config,
+            notification_config=notification_config
+        )
+        
+        # Security-specific components
+        self.output_dir = output_dir
+        self.user_id = user_id
+        self.crypto_provider = crypto_provider or CryptoProvider.generate()
+        self.audit_logger = AuditLogger(
+            log_file=os.path.join(output_dir, "audit.log") if output_dir else None,
+            crypto_provider=self.crypto_provider,
+            user_id=user_id
+        )
+        self.diff_analyzer = SecurityDifferentialAnalyzer()
+        self.evidence_packager = EvidencePackager(crypto_provider=self.crypto_provider)
+    
+    def analyze_results(self, scan_results: List[ScanResult]) -> Any:
+        """
+        Analyze scan results.
+        
+        Args:
+            scan_results: Scan results to analyze
+            
+        Returns:
+            Analysis results
+        """
+        # Use the security-specific analyzer
+        return self.analyzer.analyze(scan_results)
+    
+    def create_baseline(
+        self,
+        scan_results: List[ScanResult],
+        baseline_name: Optional[str] = None,
+        baseline_id: Optional[str] = None
+    ) -> ScanBaseline:
+        """
+        Create a baseline from scan results.
+        
+        Args:
+            scan_results: Scan results to create baseline from
+            baseline_name: Name for the baseline
+            baseline_id: Optional ID for the baseline
+            
+        Returns:
+            Created baseline
+        """
+        if not baseline_name:
+            baseline_name = f"Baseline_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+        baseline = self.diff_analyzer.create_baseline(
+            scan_results=scan_results,
+            name=baseline_name,
+            baseline_id=baseline_id,
+            crypto_provider=self.crypto_provider
+        )
+        
+        # Log baseline creation
+        self.audit_logger.log_event(
+            event_type=AuditEventType.BASELINE_CREATION,
+            details={
+                "baseline_id": baseline.baseline_id,
+                "baseline_name": baseline_name,
+                "file_count": len(baseline.files)
+            },
+            user_id=self.user_id
+        )
+        
+        return baseline
+    
+    def compare_to_baseline(
+        self,
+        baseline_path: str,
+        scan_results: List[ScanResult]
+    ) -> DifferentialScanResult:
+        """
+        Compare scan results to a baseline.
+        
+        Args:
+            baseline_path: Path to the baseline file
+            scan_results: Current scan results
+            
+        Returns:
+            Differential scan result
+        """
+        # Load baseline
+        baseline = self.diff_analyzer.load_baseline(baseline_path)
+        
+        # Verify baseline integrity
+        if baseline.verification_info and not baseline.verify(self.crypto_provider):
+            raise ValueError("Baseline integrity verification failed")
+            
+        # Compare current scan to baseline
+        diff_result = self.diff_analyzer.compare_to_baseline(
+            baseline=baseline,
+            current_results=scan_results
+        )
+        
+        # Log baseline comparison
+        self.audit_logger.log_event(
+            event_type=AuditEventType.BASELINE_COMPARISON,
+            details={
+                "baseline_id": baseline.baseline_id,
+                "new_files": len(diff_result.new_files),
+                "modified_files": len(diff_result.modified_files),
+                "removed_files": len(diff_result.removed_files),
+                "new_matches": diff_result.total_new_matches,
+                "removed_matches": diff_result.total_removed_matches
+            },
+            user_id=self.user_id
+        )
+        
+        return diff_result
+    
+    def create_evidence_package(
+        self,
+        scan_results: List[ScanResult],
+        scan_summary: ScanSummary,
+        package_name: Optional[str] = None,
+        directory_path: Optional[str] = None
+    ) -> str:
+        """
+        Create an evidence package for scan results.
+        
+        Args:
+            scan_results: Scan results to include in the package
+            scan_summary: Summary of scan results
+            package_name: Name for the evidence package
+            directory_path: Path that was scanned
+            
+        Returns:
+            Path to the exported evidence package
+        """
+        if not self.output_dir:
+            raise ValueError("Output directory is required for evidence packaging")
+            
+        if not package_name:
+            package_name = f"Evidence_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            
+        # Create evidence package
+        package = self.evidence_packager.create_package(
+            name=package_name,
+            description=f"Evidence package for compliance scan",
+            metadata={
+                "scan_directory": directory_path or "unknown",
+                "scan_time": datetime.now().isoformat(),
+                "user_id": self.user_id
+            }
+        )
+        
+        # Create temporary directory for evidence files
+        evidence_dir = os.path.join(self.output_dir, "evidence_files")
+        os.makedirs(evidence_dir, exist_ok=True)
+        
+        # Add scan summary to evidence package
+        summary_path = os.path.join(evidence_dir, "scan_summary.json")
+        with open(summary_path, 'w') as f:
+            f.write(json.dumps(scan_summary.dict(), default=str))
+            
+        self.evidence_packager.add_file_to_package(
+            package=package,
+            file_path=summary_path,
+            evidence_type=EvidenceType.METADATA,
+            description="Scan summary",
+            metadata={
+                "total_files": scan_summary.total_files,
+                "files_with_sensitive_data": scan_summary.files_with_sensitive_data,
+                "total_matches": scan_summary.total_matches
+            }
+        )
+        
+        # Add audit log to evidence package
+        audit_log_path = self.audit_logger.log_file
+        if audit_log_path and os.path.exists(audit_log_path):
+            self.evidence_packager.add_file_to_package(
+                package=package,
+                file_path=audit_log_path,
+                evidence_type=EvidenceType.AUDIT_LOG,
+                description="Audit log",
+                metadata={
+                    "entry_count": len(self.audit_logger.audit_log.entries)
+                }
+            )
+        
+        # Export the evidence package
+        package_path = self.evidence_packager.export_package(
+            package=package,
+            output_dir=self.output_dir,
+            files_dir=evidence_dir,
+            user_id=self.user_id
+        )
+        
+        # Log evidence package creation
+        self.audit_logger.log_event(
+            event_type=AuditEventType.REPORT_EXPORT,
+            details={
+                "package_id": package.package_id,
+                "package_name": package_name,
+                "file_path": package_path,
+                "item_count": len(package.items)
+            },
+            user_id=self.user_id
+        )
+        
+        return package_path
+    
+    def generate_compliance_report(
+        self,
+        scan_results: List[ScanResult],
+        scan_summary: ScanSummary,
+        framework_id: str
+    ) -> ComplianceReport:
+        """
+        Generate a compliance report for a specific framework.
+        
+        Args:
+            scan_results: Scan results to include in the report
+            scan_summary: Summary of scan results
+            framework_id: ID of the compliance framework
+            
+        Returns:
+            Generated compliance report
+        """
+        # Create framework-specific report generator
+        report_generator = ReportGenerator(framework_id)
+        
+        # Generate report
+        report = report_generator.generate_report(
+            scan_results=scan_results,
+            scan_summary=scan_summary
+        )
+        
+        # Sign the report
+        report.sign(self.crypto_provider)
+        
+        # Log report generation
+        self.audit_logger.log_event(
+            event_type=AuditEventType.REPORT_GENERATION,
+            details={
+                "framework_id": framework_id,
+                "framework_name": report.framework_name,
+                "finding_count": report.total_findings
+            },
+            user_id=self.user_id
+        )
+        
+        return report
+    
+    def comprehensive_analysis(
+        self,
+        target_path: Union[str, Path],
+        output_dir: Optional[Union[str, Path]] = None,
+        options: Optional[Dict[str, Any]] = None,
+        use_cache: bool = True
+    ) -> APIResult:
+        """
+        Perform a comprehensive compliance analysis of a target path.
+        
+        Args:
+            target_path: Path to analyze
+            output_dir: Optional directory for output files
+            options: Optional analysis options
+            use_cache: Whether to use cached results if available
+            
+        Returns:
+            API result with comprehensive analysis information
+        """
+        # Combine options with target_path for cache key
+        options_key = json.dumps(options, sort_keys=True) if options else ""
+        cache_key = f"compliance_analysis:{target_path}:{options_key}"
+        
+        # Try to get from cache
+        if use_cache:
+            cached_result = self.cache.get(cache_key)
+            if cached_result:
+                return APIResult(
+                    success=True,
+                    message=f"Retrieved cached compliance analysis for {target_path}",
+                    result_data=cached_result
+                )
+        
+        try:
+            start_time = datetime.now()
+            
+            # Set up scan options from provided options
+            scan_options = self.scanner.options
+            if options:
+                # Update scanner options if provided
+                if "recursive" in options:
+                    scan_options.recursive = options["recursive"]
+                if "max_file_size" in options:
+                    scan_options.max_file_size = options["max_file_size"]
+                if "categories" in options:
+                    scan_options.categories = options["categories"]
+                if "min_sensitivity" in options:
+                    scan_options.min_sensitivity = options["min_sensitivity"]
+            
+            # Create scan session
+            session = ScanSession(scanner=self.scanner)
+            
+            # Log scan start
+            self.audit_logger.log_event(
+                event_type=AuditEventType.SCAN_START,
+                details={
+                    "directory": str(target_path),
+                    "recursive": scan_options.recursive,
+                    "max_file_size": scan_options.max_file_size,
+                    "min_sensitivity": scan_options.min_sensitivity
+                },
+                user_id=self.user_id
+            )
+            
+            # Perform the scan
+            scan_summary = session.scan_directory(target_path)
+            scan_results = session.scan_results
+            
+            # Analyze the results
+            analysis_result = self.analyze_results(scan_results)
+            
+            # Create compliance reports for all frameworks
+            frameworks = options.get("frameworks", []) if options else []
+            if not frameworks:
+                # Use all frameworks if none specified
+                frameworks = list(FrameworkRegistry.get_all_frameworks().keys())
+            
+            # Generate reports
+            reports = {}
+            for framework_id in frameworks:
+                try:
+                    reports[framework_id] = self.generate_compliance_report(
+                        scan_results=scan_results,
+                        scan_summary=scan_summary,
+                        framework_id=framework_id
+                    )
+                except Exception as e:
+                    self.audit_logger.log_event(
+                        event_type=AuditEventType.SYSTEM_ERROR,
+                        details={
+                            "error": f"Failed to generate report for framework {framework_id}: {str(e)}",
+                            "framework_id": framework_id
+                        },
+                        user_id=self.user_id
+                    )
+            
+            # Create differential analysis if requested
+            diff_result = None
+            if options and options.get("baseline_path"):
+                try:
+                    diff_result = self.compare_to_baseline(
+                        baseline_path=options["baseline_path"],
+                        scan_results=scan_results
+                    )
+                except Exception as e:
+                    self.audit_logger.log_event(
+                        event_type=AuditEventType.SYSTEM_ERROR,
+                        details={
+                            "error": f"Failed to perform differential analysis: {str(e)}",
+                            "baseline_path": options["baseline_path"]
+                        },
+                        user_id=self.user_id
+                    )
+            
+            # Create evidence package if requested
+            evidence_package_path = None
+            if options and options.get("create_evidence") and output_dir:
+                try:
+                    evidence_package_path = self.create_evidence_package(
+                        scan_results=scan_results,
+                        scan_summary=scan_summary,
+                        package_name=options.get("evidence_name"),
+                        directory_path=str(target_path)
+                    )
+                except Exception as e:
+                    self.audit_logger.log_event(
+                        event_type=AuditEventType.SYSTEM_ERROR,
+                        details={
+                            "error": f"Failed to create evidence package: {str(e)}"
+                        },
+                        user_id=self.user_id
+                    )
+            
+            # Export reports if requested
+            exported_reports = {}
+            if output_dir:
+                output_path = Path(output_dir)
+                os.makedirs(output_path, exist_ok=True)
+                
+                for framework_id, report in reports.items():
+                    try:
+                        export_path = output_path / f"compliance_report_{framework_id}.json"
+                        report.save(export_path, verify=True, crypto_provider=self.crypto_provider)
+                        exported_reports[framework_id] = str(export_path)
+                    except Exception as e:
+                        self.audit_logger.log_event(
+                            event_type=AuditEventType.SYSTEM_ERROR,
+                            details={
+                                "error": f"Failed to export report for framework {framework_id}: {str(e)}",
+                                "framework_id": framework_id
+                            },
+                            user_id=self.user_id
+                        )
+            
+            # Create result dictionary
+            result = {
+                "scan_summary": scan_summary.dict(),
+                "analysis": analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                "frameworks": {
+                    framework_id: {
+                        "name": report.framework_name,
+                        "findings": report.total_findings,
+                        "compliant": report.is_compliant
+                    }
+                    for framework_id, report in reports.items()
+                },
+                "exported_reports": exported_reports,
+                "evidence_package": evidence_package_path,
+                "differential_analysis": diff_result.dict() if diff_result and hasattr(diff_result, "dict") else None
+            }
+            
+            # Cache the result
+            if use_cache:
+                self.cache.set(cache_key, result)
+            
+            # Log scan completion
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            
+            self.audit_logger.log_event(
+                event_type=AuditEventType.SCAN_COMPLETE,
+                details={
+                    "directory": str(target_path),
+                    "duration": duration,
+                    "total_files": scan_summary.total_files,
+                    "files_with_sensitive_data": scan_summary.files_with_sensitive_data,
+                    "total_matches": scan_summary.total_matches
+                },
+                user_id=self.user_id
+            )
+            
+            return APIResult(
+                success=True,
+                message=f"Completed comprehensive compliance analysis of {target_path}",
+                timestamp=end_time,
+                duration_seconds=duration,
+                result_data=result
+            )
+            
+        except Exception as e:
+            # Log scan error
+            self.audit_logger.log_event(
+                event_type=AuditEventType.SCAN_ERROR,
+                details={
+                    "directory": str(target_path),
+                    "error": str(e)
+                },
+                user_id=self.user_id
+            )
+            
+            return APIResult(
+                success=False,
+                message=f"Error during compliance analysis of {target_path}",
+                errors=[str(e)]
+            )

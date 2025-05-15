@@ -1,14 +1,38 @@
 """Models for the concurrent task scheduler."""
 
-from concurrent_task_scheduler.models.checkpoint import (
+# Re-export common models from the unified library
+from common.core.models import (
+    BaseJob,
+    BaseNode,
     Checkpoint,
+    CheckpointStatus,
+    CheckpointType,
+    Dependency,
+    DependencyState,
+    DependencyType,
+    JobStatus,
+    LogLevel,
+    NodeStatus,
+    Priority as SimulationPriority,
+    ResourceRequirement,
+    ResourceType,
+    Result,
+    TimeRange,
+)
+
+from common.core.utils import (
+    DateTimeEncoder,
+    generate_id,
+    datetime_decoder as datetime_parser,
+)
+
+# Legacy imports to maintain compatibility with tests
+from concurrent_task_scheduler.models.checkpoint import (
     CheckpointCompression,
     CheckpointManager,
     CheckpointMetadata,
     CheckpointPolicy,
-    CheckpointStatus,
     CheckpointStorageType,
-    CheckpointType,
 )
 from concurrent_task_scheduler.models.resource_forecast import (
     ForecastAccuracy,
@@ -31,36 +55,42 @@ from concurrent_task_scheduler.models.scenario import (
 from concurrent_task_scheduler.models.simulation import (
     ClusterStatus,
     ComputeNode,
-    NodeStatus,
     NodeType,
-    ResourceRequirement,
-    ResourceType,
     Simulation,
-    SimulationPriority,
     SimulationStage,
     SimulationStageStatus,
     SimulationStatus,
 )
 from concurrent_task_scheduler.models.utils import (
-    DateTimeEncoder,
     PerformanceMetric,
-    Result,
     SystemEvent,
-    TimeRange,
-    datetime_parser,
-    generate_id,
 )
 
 __all__ = [
-    # Checkpoint models
+    # Common models from unified library
+    "BaseJob",
+    "BaseNode",
     "Checkpoint",
+    "CheckpointStatus",
+    "CheckpointType",
+    "Dependency",
+    "DependencyState",
+    "DependencyType",
+    "JobStatus",
+    "LogLevel",
+    "NodeStatus",
+    "SimulationPriority",
+    "ResourceRequirement",
+    "ResourceType", 
+    "Result",
+    "TimeRange",
+    
+    # Checkpoint models
     "CheckpointCompression",
     "CheckpointManager",
     "CheckpointMetadata",
     "CheckpointPolicy",
-    "CheckpointStatus",
     "CheckpointStorageType",
-    "CheckpointType",
     
     # Resource forecast models
     "ForecastAccuracy",
@@ -83,12 +113,8 @@ __all__ = [
     # Simulation models
     "ClusterStatus",
     "ComputeNode",
-    "NodeStatus",
     "NodeType",
-    "ResourceRequirement",
-    "ResourceType",
     "Simulation",
-    "SimulationPriority",
     "SimulationStage",
     "SimulationStageStatus",
     "SimulationStatus",
@@ -96,9 +122,7 @@ __all__ = [
     # Utility models
     "DateTimeEncoder",
     "PerformanceMetric",
-    "Result",
     "SystemEvent",
-    "TimeRange",
     "datetime_parser",
     "generate_id",
 ]

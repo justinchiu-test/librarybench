@@ -18,8 +18,13 @@ class Finding(BaseTask):
     technical details, affected systems, and tracking information.
     """
     
+    # Required fields with defaults for BaseTask compatibility
+    status: str = "open"  # Default value to match the allowed statuses
+    priority: str = "medium"  # Default to medium priority
+    
+    # Custom fields for security findings
     affected_systems: List[str] = Field(default_factory=list)
-    discovered_by: str
+    discovered_by: str = ""  # Default value for backward compatibility
     cvss_vector: Optional[str] = None
     cvss_score: Optional[float] = None
     cvss_severity: Optional[str] = None
@@ -33,6 +38,23 @@ class Finding(BaseTask):
     
     # Field aliases for backward compatibility
     discovered_date: datetime = Field(default_factory=datetime.now, alias="discovered_date")
+    
+    # Prioritize 'severity' over 'priority' if provided in the input
+    def __init__(self, **data):
+        if 'severity' in data and 'priority' not in data:
+            data['priority'] = data['severity']
+        super().__init__(**data)
+    
+    # Add 'severity' property for backward compatibility
+    @property
+    def severity(self) -> str:
+        """Return the priority field as severity for backward compatibility."""
+        return self.priority
+    
+    @severity.setter
+    def severity(self, value: str) -> None:
+        """Set the priority field using severity value."""
+        self.priority = value
     
     @field_validator("status", check_fields=False)
     @classmethod
@@ -48,7 +70,7 @@ class Finding(BaseTask):
             )
         return value
     
-    @field_validator("severity", check_fields=False)
+    @field_validator("priority", mode="before", check_fields=False)
     @classmethod
     def validate_severity(cls, value: str) -> str:
         """Validate that the severity is a known value."""
@@ -87,7 +109,7 @@ class Finding(BaseTask):
         if value is None:
             # Validate current instance
             self.validate_status(self.status)
-            self.validate_severity(self.severity)
+            self.validate_severity(self.priority)
             return self
         else:
             # For Pydantic v2 compatibility

@@ -4,7 +4,7 @@ import re
 from datetime import date, datetime
 from decimal import Decimal
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Pattern, Set, Type, TypeVar, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Pattern, Set, Tuple, Type, TypeVar, Union, cast
 
 from pydantic import BaseModel, validator
 

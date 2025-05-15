@@ -8,13 +8,16 @@ from pathlib import Path
 from typing import Dict, List, Optional, Union, Any
 import json
 
-from .interfaces.api import StorageOptimizerAPI
-from .utils.types import DatabaseEngine
-
 # Import from common library
 from common.core.base import ScanSession
+from common.core.api import BaseAnalyzerAPI, APIResult, NotificationConfig, CacheConfig
 from common.utils.types import ScanOptions
-from common.core.scanner import DirectoryScanner
+from common.utils.export import export_results
+from common.utils.cache import MemoryCache
+
+# Import from persona-specific modules
+from file_system_analyzer_db_admin.interfaces.api import StorageOptimizerAPI
+from file_system_analyzer_db_admin.utils.types import DatabaseEngine
 
 
 # Configure logging
@@ -120,6 +123,14 @@ def parse_arguments():
         default=None
     )
     
+    # Caching options
+    parser.add_argument(
+        "--no-cache",
+        help="Disable result caching",
+        action="store_true",
+        default=False
+    )
+    
     # Debugging and verbose output
     parser.add_argument(
         "--verbose", "-v",
@@ -155,15 +166,46 @@ def main():
     if not output_dir.exists():
         os.makedirs(output_dir)
     
+    # Configure notification and cache options
+    notification_config = NotificationConfig(
+        enabled=args.notify and args.email is not None,
+        min_priority="high",
+        notification_methods=["email", "console"] if args.email else ["console"],
+        recipient=args.email,
+    )
+    
+    cache_config = CacheConfig(
+        enabled=not args.no_cache,
+        ttl_seconds=3600,  # 1 hour default TTL
+        max_items=100
+    )
+    
     # Initialize API
-    api = StorageOptimizerAPI(output_dir=output_dir)
+    api = StorageOptimizerAPI(
+        output_dir=output_dir,
+        cache_results=not args.no_cache,
+        cache_ttl_seconds=3600,
+        read_only=True
+    )
     
     # Prepare export options
     export_format = None if args.export_format == "none" else args.export_format
     export_filename = f"{args.output_filename}.{args.export_format}" if export_format else None
     
-    # Prepare notification options
-    notify = args.notify and args.email is not None
+    # Prepare analysis options
+    analysis_options = {
+        "recursive": args.recursive,
+        "max_depth": args.max_depth,
+        "follow_symlinks": args.follow_symlinks,
+        "export_format": export_format,
+        "export_filename": export_filename,
+        "notify_on_critical": args.notify,
+        "notification_email": args.email,
+    }
+    
+    # Add engine filter if specified
+    if args.engine != "all":
+        analysis_options["engine"] = DatabaseEngine(args.engine)
     
     # Validate path
     path = Path(args.path)
@@ -182,7 +224,7 @@ def main():
                 follow_symlinks=args.follow_symlinks,
                 export_format=export_format,
                 export_filename=f"file_analysis_{export_filename}" if export_filename else None,
-                notify_on_critical=notify,
+                notify_on_critical=args.notify,
                 notification_email=args.email,
             )
             
@@ -202,7 +244,7 @@ def main():
                 recursive=args.recursive,
                 export_format=export_format,
                 export_filename=export_filename,
-                notify_on_critical=notify,
+                notify_on_critical=args.notify,
                 notification_email=args.email,
             )
             
@@ -246,7 +288,7 @@ def main():
                 log_files=log_files,
                 export_format=export_format,
                 export_filename=f"log_analysis_{export_filename}" if export_filename else None,
-                notify_on_critical=notify,
+                notify_on_critical=args.notify,
                 notification_email=args.email,
             )
             
@@ -281,7 +323,7 @@ def main():
                 backups=backup_files,
                 export_format=export_format,
                 export_filename=f"backup_analysis_{export_filename}" if export_filename else None,
-                notify_on_critical=notify,
+                notify_on_critical=args.notify,
                 notification_email=args.email,
             )
             

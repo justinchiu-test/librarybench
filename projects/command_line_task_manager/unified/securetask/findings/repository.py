@@ -38,7 +38,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
         # Create findings directory if it doesn't exist
         os.makedirs(self.findings_dir, exist_ok=True)
     
-    def create(self, finding: Finding) -> str:
+    def create(self, finding: Finding) -> Finding:
         """
         Create a new security finding.
         
@@ -46,7 +46,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             finding: The finding to create
             
         Returns:
-            The created finding ID
+            The created finding
             
         Raises:
             ValidationError: If finding validation fails
@@ -65,7 +65,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding creation took {execution_time*1000:.2f}ms")
                 
-            return finding.id
+            return finding
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
@@ -110,7 +110,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
         # Create the Finding object directly
         return Finding(**finding_dict)
     
-    def update(self, finding: Finding) -> bool:
+    def update(self, finding: Finding) -> Finding:
         """
         Update an existing finding.
         
@@ -118,7 +118,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             finding: The finding to update
             
         Returns:
-            True if update was successful
+            The updated finding
             
         Raises:
             FileNotFoundError: If the finding does not exist
@@ -140,7 +140,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding update took {execution_time*1000:.2f}ms")
             
-            return True
+            return finding
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
@@ -168,17 +168,27 @@ class FindingRepository(BaseStorageInterface[Finding]):
             
         return True
     
-    def list(self, filters: Optional[Dict[str, Any]] = None) -> List[Finding]:
+    def list(self, filters: Optional[Dict[str, Any]] = None, sort_by: str = None, 
+             reverse: bool = False, limit: Optional[int] = None, offset: int = 0) -> List[Finding]:
         """
-        List findings with optional filtering.
+        List findings with optional filtering, sorting, and pagination.
         
         Args:
             filters: Optional filters as field-value pairs
+            sort_by: Field to sort by (e.g. "severity")
+            reverse: Whether to sort in reverse order
+            limit: Maximum number of items to return
+            offset: Number of items to skip
             
         Returns:
             List of findings matching criteria
         """
         findings = []
+        
+        # Deep copy the filters to avoid modifying the original
+        local_filters = {}
+        if filters:
+            local_filters = filters.copy()
         
         # Get all finding IDs from filenames
         for filename in os.listdir(self.findings_dir):
@@ -190,16 +200,28 @@ class FindingRepository(BaseStorageInterface[Finding]):
             try:
                 finding = self.get(finding_id)
                 
-                # Apply filters if provided
-                if filters and not self._matches_filters(finding, filters):
-                    continue
-                    
-                findings.append(finding)
+                # Check if the finding matches all filters
+                if self._matches_all_filters(finding, local_filters):
+                    findings.append(finding)
                     
             except (FileNotFoundError, ValidationError):
                 # Skip invalid files
                 continue
         
+        # Sort findings if sort_by is specified
+        if sort_by:
+            # Special handling for severity (maps to priority field)
+            if sort_by == "severity":
+                findings.sort(key=lambda f: f.severity, reverse=reverse)
+            elif hasattr(findings[0] if findings else None, sort_by):
+                findings.sort(key=lambda f: getattr(f, sort_by), reverse=reverse)
+        
+        # Apply pagination
+        if offset > 0:
+            findings = findings[offset:]
+        if limit is not None:
+            findings = findings[:limit]
+                
         return findings
     
     def count(self, filters: Optional[Dict[str, Any]] = None) -> int:
@@ -218,6 +240,11 @@ class FindingRepository(BaseStorageInterface[Finding]):
         
         # With filters, we need to load and check each finding
         count = 0
+        
+        # Deep copy the filters to avoid modifying the original
+        local_filters = filters.copy()
+        
+        # Check each finding
         for filename in os.listdir(self.findings_dir):
             if not filename.endswith(".json.enc"):
                 continue
@@ -226,8 +253,11 @@ class FindingRepository(BaseStorageInterface[Finding]):
             
             try:
                 finding = self.get(finding_id)
-                if self._matches_filters(finding, filters):
+                
+                # Check if the finding matches all filters
+                if self._matches_all_filters(finding, local_filters):
                     count += 1
+                
             except (FileNotFoundError, ValidationError):
                 # Skip invalid files
                 continue
@@ -256,6 +286,33 @@ class FindingRepository(BaseStorageInterface[Finding]):
         digest_path = os.path.join(self.findings_dir, f"{finding.id}.hmac")
         with open(digest_path, "wb") as f:
             f.write(digest)
+    
+    def _matches_all_filters(self, finding: Finding, filters: Optional[Dict[str, Any]]) -> bool:
+        """
+        Check if a finding matches all the given filters.
+        
+        Args:
+            finding: The finding to check
+            filters: Filters as field-value pairs
+            
+        Returns:
+            True if the finding matches all filters
+        """
+        if not filters:
+            return True
+            
+        # Handle severity filter specially
+        if 'severity' in filters:
+            severity_val = filters.get('severity')
+            if finding.severity != severity_val:
+                return False
+                
+        # Apply remaining filters
+        temp_filters = {k: v for k, v in filters.items() if k != 'severity'}
+        if temp_filters and not self._matches_filters(finding, temp_filters):
+            return False
+            
+        return True
     
     def _matches_filters(self, finding: Finding, filters: Dict[str, Any]) -> bool:
         """

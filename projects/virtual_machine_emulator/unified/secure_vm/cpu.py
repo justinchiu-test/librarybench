@@ -7,6 +7,7 @@ and support for different privilege levels and security isolation.
 
 from __future__ import annotations
 from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
+from enum import Enum
 import struct
 import time
 
@@ -46,6 +47,18 @@ class ProtectionFault(CPUException):
 class InvalidInstruction(CPUException):
     """Raised when attempting to execute an invalid instruction."""
     pass
+
+
+class PrivilegeViolation(CPUException):
+    """Raised when an operation violates privilege restrictions."""
+    
+    def __init__(self, message: str, required_level: str, current_level: str):
+        super().__init__(message)
+        self.required_level = required_level
+        self.current_level = current_level
+    
+    def __str__(self) -> str:
+        return f"{super().__str__()} (required {self.required_level}, had {self.current_level})"
 
 
 class InstructionType(Enum):
@@ -143,9 +156,19 @@ class CPURegisters(RegisterSet):
         """Get the flags register value."""
         return self.flags
     
+    # Add compatibility method for tests that use get_register
+    def get_register(self, index: int) -> int:
+        """Get the value of a register at the given index."""
+        return self.get(index)
+
+    # Add compatibility method for tests that use set_register
+    def set_register(self, index: int, value: int) -> None:
+        """Set the value of a register at the given index."""
+        self.set(index, value)
+    
     def dump_registers(self) -> Dict[str, int]:
         """Get a snapshot of all register values."""
-        result = {f"R{i}": self.get_register(i) for i in range(8)}
+        result = {f"R{i}": self.get(i) for i in range(8)}
         result.update({
             "IP": self.ip,
             "SP": self.sp,

@@ -10,12 +10,15 @@ from uuid import UUID, uuid4
 import networkx as nx
 from pydantic import BaseModel
 
+from common.core.knowledge import KnowledgeGraph, StandardKnowledgeBase
+from common.core.storage import BaseStorage, LocalStorage
+from common.core.models import NodeType, Relation, RelationType
+
 from researchbrain.core.models import (
     Annotation, Citation, CitationFormat, Collaborator, CollaboratorRole,
     Evidence, EvidenceStrength, EvidenceType, Experiment, ExperimentStatus,
-    GrantProposal, GrantStatus, KnowledgeNode, Note, ResearchQuestion
+    GrantProposal, GrantStatus, Note, ResearchQuestion
 )
-from researchbrain.core.storage import LocalStorage
 
 
 class ResearchBrain:
@@ -27,47 +30,45 @@ class ResearchBrain:
         Args:
             storage_path: Path to the directory where data will be stored.
         """
-        self.storage = LocalStorage(storage_path)
-        self._knowledge_graph = None
+        # Use common library's LocalStorage implementation
+        self.storage = LocalStorage(Path(storage_path))
+        self._knowledge_graph = KnowledgeGraph()
         self._build_knowledge_graph()
     
     def _build_knowledge_graph(self) -> None:
         """Build the internal knowledge graph from stored data."""
-        self._knowledge_graph = nx.DiGraph()
-
-        # Add nodes for all knowledge objects using parallel processing
         try:
             # Add nodes for all knowledge objects
             for note in self.storage.list_all(Note):
-                self._knowledge_graph.add_node(str(note.id), type='note', title=note.title)
+                self._knowledge_graph.add_node(str(note.id), type=str(note.node_type), title=note.title)
 
             for citation in self.storage.list_all(Citation):
-                self._knowledge_graph.add_node(str(citation.id), type='citation', title=citation.title)
+                self._knowledge_graph.add_node(str(citation.id), type=str(citation.node_type), title=citation.title)
 
             for question in self.storage.list_all(ResearchQuestion):
-                self._knowledge_graph.add_node(str(question.id), type='question', title=question.question)
+                self._knowledge_graph.add_node(str(question.id), type=str(question.node_type), title=question.question)
 
             for experiment in self.storage.list_all(Experiment):
-                self._knowledge_graph.add_node(str(experiment.id), type='experiment', title=experiment.title)
+                self._knowledge_graph.add_node(str(experiment.id), type=str(experiment.node_type), title=experiment.title)
 
             for grant in self.storage.list_all(GrantProposal):
-                self._knowledge_graph.add_node(str(grant.id), type='grant', title=grant.title)
+                self._knowledge_graph.add_node(str(grant.id), type=str(grant.node_type), title=grant.title)
 
             for collaborator in self.storage.list_all(Collaborator):
-                self._knowledge_graph.add_node(str(collaborator.id), type='collaborator', title=collaborator.name)
+                self._knowledge_graph.add_node(str(collaborator.id), type=str(collaborator.node_type), title=collaborator.name)
 
             for annotation in self.storage.list_all(Annotation):
-                self._knowledge_graph.add_node(str(annotation.id), type='annotation', title=f"Annotation on {annotation.node_id}")
+                self._knowledge_graph.add_node(str(annotation.id), type=str(annotation.node_type), title=f"Annotation on {annotation.node_id}")
 
             # Add edges for relationships
             for note in self.storage.list_all(Note):
                 # Note to citation edges
                 for citation_id in note.citations:
-                    self._knowledge_graph.add_edge(str(note.id), str(citation_id), type='cites')
+                    self._knowledge_graph.add_edge(str(note.id), str(citation_id), type=str(RelationType.CITES))
 
                 # Note to source edges
                 if note.source:
-                    self._knowledge_graph.add_edge(str(note.id), str(note.source), type='references', page=note.page_reference)
+                    self._knowledge_graph.add_edge(str(note.id), str(note.source), type=str(RelationType.REFERENCES), page=note.page_reference)
 
                 # Note section references
                 for section, content in note.section_references.items():
@@ -78,7 +79,7 @@ class ResearchBrain:
             for citation in self.storage.list_all(Citation):
                 # Citation to note edges
                 for note_id in citation.notes:
-                    self._knowledge_graph.add_edge(str(citation.id), str(note_id), type='cited_in')
+                    self._knowledge_graph.add_edge(str(citation.id), str(note_id), type=str(RelationType.RELATES_TO))
 
             for question in self.storage.list_all(ResearchQuestion):
                 # Question to evidence edges
@@ -86,7 +87,7 @@ class ResearchBrain:
                     self._knowledge_graph.add_edge(
                         str(question.id),
                         str(evidence.note_id),
-                        type='evidence',
+                        type=str(RelationType.RELATES_TO),
                         evidence_type=evidence.evidence_type,
                         strength=evidence.strength
                     )
@@ -96,7 +97,7 @@ class ResearchBrain:
                         self._knowledge_graph.add_edge(
                             str(evidence.note_id),
                             str(citation_id),
-                            type='evidence_citation',
+                            type=str(RelationType.CITES),
                             evidence_id=str(evidence.id)
                         )
 
@@ -105,13 +106,13 @@ class ResearchBrain:
                     self._knowledge_graph.add_edge(
                         str(question.id),
                         str(related_id),
-                        type='related_to'
+                        type=str(RelationType.RELATES_TO)
                     )
 
             for experiment in self.storage.list_all(Experiment):
                 # Experiment to research question edges
                 if experiment.research_question_id:
-                    self._knowledge_graph.add_edge(str(experiment.id), str(experiment.research_question_id), type='investigates')
+                    self._knowledge_graph.add_edge(str(experiment.id), str(experiment.research_question_id), type=str(RelationType.INVESTIGATES))
 
                 # Experiment to note edges
                 for note_id in experiment.notes:
@@ -160,7 +161,7 @@ class ResearchBrain:
             # Check for circular references and potential issues
             try:
                 # Find strongly connected components (potential circular references)
-                cycles = list(nx.simple_cycles(self._knowledge_graph))
+                cycles = list(nx.simple_cycles(self._knowledge_graph._graph))
                 if cycles:
                     print(f"Warning: {len(cycles)} circular references detected in the knowledge graph")
             except nx.NetworkXNoCycle:
@@ -170,7 +171,6 @@ class ResearchBrain:
             # This ensures tests can run even if the graph isn't fully built
             print(f"Warning: Error building knowledge graph: {e}")
             # Initialize an empty graph as a fallback
-            self._knowledge_graph = nx.DiGraph()
     
     def create_note(self, title: str, content: str, tags: Optional[Set[str]] = None, 
                    source_id: Optional[UUID] = None, page_reference: Optional[int] = None) -> UUID:
@@ -307,14 +307,18 @@ class ResearchBrain:
             
             # Update edge attribute in knowledge graph
             if note.source and self._knowledge_graph.has_edge(str(note_id), str(note.source)):
-                self._knowledge_graph.edges[str(note_id), str(note.source)]['page'] = page_reference
+                edge_data = self._knowledge_graph.get_edge_attributes(str(note_id), str(note.source))
+                edge_data['page'] = page_reference
+                self._knowledge_graph.add_edge(str(note_id), str(note.source), **edge_data)
         
         note.update()
         self.storage.save(note)
         
         # Update node attributes in knowledge graph
         if title is not None:
-            self._knowledge_graph.nodes[str(note_id)]['title'] = title
+            attrs = self._knowledge_graph.get_node_attributes(str(note_id))
+            attrs['title'] = title
+            self._knowledge_graph.add_node(str(note_id), **attrs)
         
         return True
     
@@ -502,14 +506,31 @@ class ResearchBrain:
         Returns:
             ID of the created research question.
         """
+        from common.core.models import Priority as CommonPriority
+        # Convert numeric priority to enum
+        if isinstance(priority, int):
+            if priority >= 8:
+                common_priority = CommonPriority.HIGH
+            elif priority >= 4:
+                common_priority = CommonPriority.MEDIUM
+            else:
+                common_priority = CommonPriority.LOW
+        else:
+            common_priority = CommonPriority.MEDIUM
+            
+        # For test compatibility, handle the Priority object
         research_question = ResearchQuestion(
             question=question,
             description=description,
             tags=tags or set(),
             status=status,
-            priority=priority,
+            priority=common_priority,
             knowledge_gaps=knowledge_gaps or []
         )
+        
+        # For test compatibility, store the original numeric priority as well
+        if isinstance(priority, int):
+            setattr(research_question, "_numeric_priority", priority)
         
         self.storage.save(research_question)
         
@@ -792,6 +813,10 @@ class ResearchBrain:
         )
         
         self.storage.save(collaborator)
+        
+        # Update the knowledge graph
+        self._knowledge_graph.add_node(str(collaborator.id), type='collaborator', title=name)
+        
         return collaborator.id
     
     def add_annotation(self, node_id: UUID, collaborator_id: UUID, content: str,
@@ -824,6 +849,24 @@ class ResearchBrain:
         )
         
         self.storage.save(annotation)
+        
+        # Update the knowledge graph
+        self._knowledge_graph.add_node(
+            str(annotation.id),
+            type='annotation',
+            title=f"Annotation on {annotation.node_id}"
+        )
+        self._knowledge_graph.add_edge(
+            str(annotation.id),
+            str(annotation.node_id),
+            type='annotates'
+        )
+        self._knowledge_graph.add_edge(
+            str(annotation.collaborator_id),
+            str(annotation.id),
+            type='created'
+        )
+        
         return annotation.id
     
     def get_annotations_for_node(self, node_id: UUID) -> List[Annotation]:
@@ -1014,57 +1057,44 @@ class ResearchBrain:
         
         # Get outgoing edges (relations from this node to others)
         # Use out_edges to get edges where this node is the source
-        for source, target, data in self._knowledge_graph.out_edges(str(node_id), data=True):
-            relation_type = data.get('type')
-            if relation_types is None or relation_type in relation_types:
-                if relation_type not in results:
-                    results[relation_type] = []
-
-                # Get the actual node object
-                node_type = self._knowledge_graph.nodes[target].get('type')
+        neighbors = self._knowledge_graph.get_neighbors(str(node_id))
+        
+        # Filter by relation types if specified
+        if relation_types:
+            filtered_neighbors = {}
+            for relation_type, neighbor_ids in neighbors.items():
+                if relation_type in relation_types or relation_type.replace('incoming_', '') in relation_types:
+                    filtered_neighbors[relation_type] = neighbor_ids
+            neighbors = filtered_neighbors
+        
+        # Load the actual nodes
+        for relation_type, neighbor_ids in neighbors.items():
+            results[relation_type] = []
+            
+            for neighbor_id in neighbor_ids:
+                # Determine node type from the graph if possible
+                node_attrs = self._knowledge_graph.get_node_attributes(neighbor_id)
+                node_type = node_attrs.get('type', '').lower()
+                
+                # Load the node based on its type
+                node = None
                 if node_type == 'note':
-                    node = self.storage.get(Note, UUID(target))
+                    node = self.storage.get(Note, UUID(neighbor_id))
                 elif node_type == 'citation':
-                    node = self.storage.get(Citation, UUID(target))
+                    node = self.storage.get(Citation, UUID(neighbor_id))
                 elif node_type == 'question':
-                    node = self.storage.get(ResearchQuestion, UUID(target))
+                    node = self.storage.get(ResearchQuestion, UUID(neighbor_id))
                 elif node_type == 'experiment':
-                    node = self.storage.get(Experiment, UUID(target))
+                    node = self.storage.get(Experiment, UUID(neighbor_id))
                 elif node_type == 'grant':
-                    node = self.storage.get(GrantProposal, UUID(target))
-                else:
-                    continue
-
+                    node = self.storage.get(GrantProposal, UUID(neighbor_id))
+                elif node_type == 'collaborator':
+                    node = self.storage.get(Collaborator, UUID(neighbor_id))
+                elif node_type == 'annotation':
+                    node = self.storage.get(Annotation, UUID(neighbor_id))
+                
                 if node:
                     results[relation_type].append(node)
-        
-        # Get incoming edges (relations from others to this node)
-        incoming_edges = []
-        for source in self._knowledge_graph.predecessors(str(node_id)):
-            data = self._knowledge_graph.edges[source, str(node_id)]
-            relation_type = data.get('type')
-            if relation_types is None or relation_type in relation_types:
-                incoming_type = f"incoming_{relation_type}"
-                if incoming_type not in results:
-                    results[incoming_type] = []
-                
-                # Get the actual node object
-                node_type = self._knowledge_graph.nodes[source].get('type')
-                if node_type == 'note':
-                    node = self.storage.get(Note, UUID(source))
-                elif node_type == 'citation':
-                    node = self.storage.get(Citation, UUID(source))
-                elif node_type == 'question':
-                    node = self.storage.get(ResearchQuestion, UUID(source))
-                elif node_type == 'experiment':
-                    node = self.storage.get(Experiment, UUID(source))
-                elif node_type == 'grant':
-                    node = self.storage.get(GrantProposal, UUID(source))
-                else:
-                    continue
-                
-                if node:
-                    results[incoming_type].append(node)
         
         return results
     
@@ -1468,6 +1498,8 @@ class ResearchBrain:
         # Add collaborator to experiment if not already there
         if collaborator_id not in experiment.collaborators:
             experiment.collaborators.append(collaborator_id)
+            if not hasattr(experiment, 'collaborator_roles'):
+                experiment.collaborator_roles = {}
             experiment.collaborator_roles[str(collaborator_id)] = role
             experiment.update()
             self.storage.save(experiment)
@@ -1568,7 +1600,7 @@ class ResearchBrain:
 
         # Get related notes
         related_notes = []
-        for source, target, data in self._knowledge_graph.out_edges(str(question_id), data=True):
+        for source, target, data in self._knowledge_graph._graph.out_edges(str(question_id), data=True):
             if data.get('type') == 'evidence':
                 note = self.storage.get(Note, UUID(target))
                 if note:

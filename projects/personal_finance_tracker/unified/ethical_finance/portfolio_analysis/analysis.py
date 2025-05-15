@@ -7,6 +7,11 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
+# Import from common library
+from common.core.analysis.analyzer import BaseAnalyzer
+from common.core.analysis.portfolio import PortfolioAnalyzer as BasePortfolioAnalyzer
+from common.core.utils.performance import Timer
+
 from ethical_finance.models import Investment, Portfolio, InvestmentHolding
 from ethical_finance.ethical_screening.screening import EthicalScreener, ScreeningResult
 
@@ -55,7 +60,7 @@ class PortfolioOptimizationResult:
     processing_time_ms: float = 0
 
 
-class PortfolioAnalysisSystem:
+class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
     """System for analyzing investment portfolios with ESG considerations."""
     
     def __init__(self, ethical_screener: Optional[EthicalScreener] = None):
@@ -64,6 +69,7 @@ class PortfolioAnalysisSystem:
         Args:
             ethical_screener: Optional EthicalScreener for ethical alignment analysis
         """
+        super().__init__()
         self.ethical_screener = ethical_screener
     
     def analyze_portfolio_composition(
@@ -82,10 +88,10 @@ class PortfolioAnalysisSystem:
         Returns:
             PortfolioCompositionResult containing the analysis
         """
-        start_time = time.time()
-        
-        # Calculate total portfolio value
-        total_value = portfolio.total_value
+        # Use the Timer utility from common library for performance measurement
+        with Timer("analyze_portfolio_composition") as timer:
+            # Calculate total portfolio value
+            total_value = portfolio.total_value
         
         # Calculate sector breakdown
         sector_breakdown = {}
@@ -219,20 +225,18 @@ class PortfolioAnalysisSystem:
             ethical_alignment["weighted_governance_score"] = weighted_gov_score
             ethical_alignment["weighted_overall_score"] = weighted_overall_score
         
-        # Calculate processing time
-        processing_time = (time.time() - start_time) * 1000
-        
-        return PortfolioCompositionResult(
-            portfolio_id=portfolio.portfolio_id,
-            analysis_date=date.today(),
-            sector_breakdown=sector_breakdown,
-            industry_breakdown=industry_breakdown,
-            esg_theme_exposure=esg_theme_exposure,
-            concentration_metrics=concentration_metrics,
-            top_holdings=top_holdings[:10],  # Top 10 holdings
-            ethical_alignment=ethical_alignment,
-            processing_time_ms=processing_time
-        )
+            # Return the result
+            return PortfolioCompositionResult(
+                portfolio_id=portfolio.portfolio_id,
+                analysis_date=date.today(),
+                sector_breakdown=sector_breakdown,
+                industry_breakdown=industry_breakdown,
+                esg_theme_exposure=esg_theme_exposure,
+                concentration_metrics=concentration_metrics,
+                top_holdings=top_holdings[:10],  # Top 10 holdings
+                ethical_alignment=ethical_alignment,
+                processing_time_ms=timer.elapsed_ms
+            )
     
     def assess_diversification(
         self, 

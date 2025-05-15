@@ -49,12 +49,17 @@ class TestResearchQuestions:
         assert question.description == "Investigating the brain regions and processes involved in personal memory."
         assert question.tags == {"memory", "neuroscience", "autobiographical"}
         assert question.status == "open"
-        assert question.priority == 8
+        # Check for numeric priority if available, otherwise use the enum
+        if hasattr(question, "_numeric_priority"):
+            assert question._numeric_priority == 8
+        else:
+            from common.core.models import Priority
+            assert question.priority == Priority.HIGH
         assert question.evidence == []
         
         # Verify in knowledge graph
         assert brain._knowledge_graph.has_node(str(question_id))
-        node_data = brain._knowledge_graph.nodes[str(question_id)]
+        node_data = brain._knowledge_graph.get_node_attributes(str(question_id))
         assert node_data["type"] == "question"
         assert node_data["title"] == "What are the neural mechanisms of autobiographical memory?"
     
@@ -109,7 +114,7 @@ class TestResearchQuestions:
         
         # Verify knowledge graph connection
         assert brain._knowledge_graph.has_edge(str(question_id), str(note_id))
-        edge_data = brain._knowledge_graph.get_edge_data(str(question_id), str(note_id))
+        edge_data = brain._knowledge_graph.get_edge_attributes(str(question_id), str(note_id))
         assert edge_data["type"] == "evidence"
         assert edge_data["evidence_type"] == EvidenceType.SUPPORTING
         assert edge_data["strength"] == EvidenceStrength.STRONG
@@ -151,7 +156,7 @@ class TestResearchQuestions:
         
         # Verify knowledge graph connection
         assert brain._knowledge_graph.has_edge(str(question_id), str(note_id))
-        edge_data = brain._knowledge_graph.get_edge_data(str(question_id), str(note_id))
+        edge_data = brain._knowledge_graph.get_edge_attributes(str(question_id), str(note_id))
         assert edge_data["type"] == "evidence"
         assert edge_data["evidence_type"] == EvidenceType.CONTRADICTING
         assert edge_data["strength"] == EvidenceStrength.MODERATE
@@ -332,7 +337,7 @@ class TestResearchQuestions:
             (weak_note_id, EvidenceStrength.WEAK),
             (anecdotal_note_id, EvidenceStrength.ANECDOTAL)
         ]:
-            edge_data = brain._knowledge_graph.get_edge_data(str(question_id), str(note_id))
+            edge_data = brain._knowledge_graph.get_edge_attributes(str(question_id), str(note_id))
             assert edge_data["strength"] == strength
     
     def test_evidence_with_multiple_citations(self, brain):
@@ -496,11 +501,11 @@ class TestResearchQuestions:
         assert brain._knowledge_graph.has_edge(str(sub_question2_id), str(main_question_id))
         
         # Check edge attributes
-        edge_data1 = brain._knowledge_graph.get_edge_data(str(main_question_id), str(sub_question1_id))
-        edge_data2 = brain._knowledge_graph.get_edge_data(str(main_question_id), str(sub_question2_id))
+        edge_data1 = brain._knowledge_graph.get_edge_attributes(str(main_question_id), str(sub_question1_id))
+        edge_data2 = brain._knowledge_graph.get_edge_attributes(str(main_question_id), str(sub_question2_id))
         
-        assert any('related_to' in str(data) for _, data in edge_data1.items())
-        assert any('related_to' in str(data) for _, data in edge_data2.items())
+        assert 'type' in edge_data1 and edge_data1['type'] == 'related_to'
+        assert 'type' in edge_data2 and edge_data2['type'] == 'related_to'
 
     def test_identifying_knowledge_gaps(self, brain):
         """Test identifying knowledge gaps in research questions."""

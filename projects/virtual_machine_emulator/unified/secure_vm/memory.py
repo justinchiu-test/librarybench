@@ -21,11 +21,16 @@ from common.core.memory import (
 from common.core.exceptions import (
     MemoryException, SegmentationFault, ProtectionFault, InvalidAddressException
 )
+from common.extensions.security.memory_protection import (
+    MemoryProtection, MemoryProtectionException, DEPViolationException, StackCanaryException
+)
 
 
 # Re-export common types
 MemoryPermission = MemoryPermission
 MemoryProtectionLevel = MemoryProtectionLevel
+# Re-export MemoryProtection for backward compatibility
+MemoryProtection = MemoryProtection
 
 
 class ProtectionBypassAttempt:

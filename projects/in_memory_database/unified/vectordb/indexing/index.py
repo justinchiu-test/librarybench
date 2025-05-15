@@ -114,6 +114,21 @@ class VectorIndex(InMemoryStorage[Vector]):
         """
         return super().get(record_id)
     
+    def get_metadata(self, record_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve metadata for a vector.
+        
+        Args:
+            record_id: The ID of the vector
+            
+        Returns:
+            Metadata dictionary if found, None otherwise
+        """
+        vector = self.get(record_id)
+        if vector is None:
+            return None
+        return vector.metadata
+    
     def update_metadata(self, record_id: str, metadata: Dict[str, Any]) -> bool:
         """
         Update the metadata for a vector.

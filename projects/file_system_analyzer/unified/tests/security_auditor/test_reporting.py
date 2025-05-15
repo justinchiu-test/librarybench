@@ -214,6 +214,7 @@ class TestReportGeneration:
             end_time=datetime.now(),
             duration=1.2,
             total_files=2,
+            files_matched=2,  # Required for CommonScanSummary compatibility
             files_with_sensitive_data=2,
             total_matches=2,
             files_with_errors=0,

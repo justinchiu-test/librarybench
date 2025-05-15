@@ -19,7 +19,9 @@ class TestResearchQuestion:
             description="Investigating the key factors that affect predictive accuracy of climate models",
         )
         
-        assert isinstance(question.id, UUID)
+        assert isinstance(question.id, str)
+        # Ensure it's a valid UUID string
+        assert UUID(question.id)
         assert question.text == "What factors influence climate model accuracy?"
         assert question.description == "Investigating the key factors that affect predictive accuracy of climate models"
         assert question.parent_question_id is None
@@ -68,7 +70,9 @@ class TestResearchTask:
             estimated_hours=8.5,
         )
         
-        assert isinstance(task.id, UUID)
+        assert isinstance(task.id, str)
+        # Ensure it's a valid UUID string
+        assert UUID(task.id)
         assert task.title == "Analyze climate data from 1950-2020"
         assert task.description == "Perform time series analysis on global temperature data"
         assert task.status == TaskStatus.PLANNED
@@ -234,8 +238,8 @@ class TestResearchTask:
         task.add_subtask(subtask_id2)
         
         assert len(task.subtask_ids) == 2
-        assert subtask_id1 in task.subtask_ids
-        assert subtask_id2 in task.subtask_ids
+        assert str(subtask_id1) in task.subtask_ids
+        assert str(subtask_id2) in task.subtask_ids
         
         task.remove_subtask(subtask_id1)
         

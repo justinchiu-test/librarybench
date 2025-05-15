@@ -8,30 +8,10 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
-
-class KnowledgeNode(BaseModel):
-    """Base class for all knowledge nodes in the system."""
-
-    id: UUID = Field(default_factory=uuid4)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
-    tags: Set[str] = Field(default_factory=set)
-
-    def update(self) -> None:
-        """Update the last modified timestamp."""
-        self.updated_at = datetime.now()
-
-
-class Note(KnowledgeNode):
-    """Represents a research note with content and metadata."""
-
-    title: str
-    content: str
-    source: Optional[UUID] = None  # Reference to a source document
-    page_reference: Optional[int] = None  # Page number in the source document
-    attachments: List[Path] = Field(default_factory=list)
-    citations: List[UUID] = Field(default_factory=list)  # References to Citation objects
-    section_references: Dict[str, str] = Field(default_factory=dict)  # Section references in source documents
+from common.core.models import (
+    KnowledgeNode, NodeType, Priority, Status, 
+    Annotation as CommonAnnotation, RelationType
+)
 
 
 class CitationType(str, Enum):
@@ -45,6 +25,19 @@ class CitationType(str, Enum):
     WEBPAGE = "webpage"
     PREPRINT = "preprint"
     OTHER = "other"
+
+
+class Note(KnowledgeNode):
+    """Represents a research note with content and metadata."""
+
+    title: str
+    content: str
+    source: Optional[UUID] = None  # Reference to a source document
+    page_reference: Optional[int] = None  # Page number in the source document
+    attachments: List[Path] = Field(default_factory=list)
+    citations: List[UUID] = Field(default_factory=list)  # References to Citation objects
+    section_references: Dict[str, str] = Field(default_factory=dict)  # Section references in source documents
+    node_type: NodeType = NodeType.NOTE
 
 
 class Citation(KnowledgeNode):
@@ -69,6 +62,7 @@ class Citation(KnowledgeNode):
     notes: List[UUID] = Field(default_factory=list)  # References to linked Note objects
     pdf_metadata: Dict[str, Any] = Field(default_factory=dict)  # Extracted metadata from PDF
     sections: Dict[str, str] = Field(default_factory=dict)  # Extracted sections from the paper
+    node_type: NodeType = NodeType.CITATION
 
 
 class CitationFormat(str, Enum):
@@ -123,9 +117,10 @@ class ResearchQuestion(KnowledgeNode):
     description: Optional[str] = None
     evidence: List[Evidence] = Field(default_factory=list)
     status: str = "open"  # open, resolved, abandoned
-    priority: int = 0  # 0-10 scale of importance
+    priority: Priority = Priority.MEDIUM
     related_questions: List[UUID] = Field(default_factory=list)  # References to related questions
     knowledge_gaps: List[str] = Field(default_factory=list)  # Identified knowledge gaps
+    node_type: NodeType = NodeType.QUESTION
 
 
 class ExperimentStatus(str, Enum):
@@ -155,6 +150,7 @@ class Experiment(KnowledgeNode):
     collaborators: List[UUID] = Field(default_factory=list)  # References to collaborators
     template_name: Optional[str] = None  # Name of the template used to create the experiment
     reproducibility_info: Dict[str, Any] = Field(default_factory=dict)  # Information for reproducibility
+    node_type: NodeType = NodeType.EXPERIMENT
 
     @field_validator("end_date")
     def end_date_after_start_date(cls, v, info):
@@ -193,6 +189,7 @@ class GrantProposal(KnowledgeNode):
     budget_items: Dict[str, Any] = Field(default_factory=dict)  # Budget line items and justifications
     timeline: Dict[str, Any] = Field(default_factory=dict)  # Project timeline information
     export_history: List[Dict[str, Any]] = Field(default_factory=list)  # Record of exports
+    node_type: NodeType = NodeType.PROJECT
 
 
 class CollaboratorRole(str, Enum):
@@ -217,16 +214,20 @@ class Collaborator(KnowledgeNode):
     permissions: Dict[str, bool] = Field(default_factory=dict)  # Permissions for different operations
     experiments: List[UUID] = Field(default_factory=list)  # Experiments they're involved in
     grants: List[UUID] = Field(default_factory=list)  # Grants they're involved in
+    node_type: NodeType = NodeType.PERSON
 
 
-class Annotation(KnowledgeNode):
+class Annotation(CommonAnnotation):
     """Represents an annotation or comment on a knowledge node."""
 
-    node_id: UUID  # Reference to the annotated knowledge node
     collaborator_id: UUID  # Who made the annotation
-    content: str
-    position: Optional[str] = None  # For annotations with specific position in document
-    status: str = "open"  # Status of the annotation (open, addressed, rejected)
-    replies: List[UUID] = Field(default_factory=list)  # References to reply annotations
-    parent_id: Optional[UUID] = None  # Reference to parent annotation if this is a reply
-    resolved_by: Optional[UUID] = None  # Reference to collaborator who resolved this
+    # Rename from parent CommonAnnotation class
+    author_id: Optional[UUID] = None  # Compatibility with CommonAnnotation
+    
+    def __init__(self, **data):
+        # Map collaborator_id to author_id for compatibility with CommonAnnotation
+        if 'collaborator_id' in data and 'author_id' not in data:
+            data['author_id'] = data['collaborator_id']
+        super().__init__(**data)
+        
+    node_type: NodeType = NodeType.ANNOTATION

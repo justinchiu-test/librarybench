@@ -5,14 +5,21 @@ import logging
 from datetime import datetime
 import json
 import uuid
+import os
 from pathlib import Path
 
+# Import from common library
+from common.core.api import BaseAnalyzerAPI, APIResult, NotificationConfig, CacheConfig
+from common.utils.export import export_results
+from common.utils.types import ScanStatus
+
+# Import from persona-specific modules
 from ..utils.types import (
     DatabaseEngine, 
     FileCategory, 
-    ScanStatus, 
     AnalysisResult,
     OptimizationRecommendation,
+    DatabaseFile
 )
 from ..db_file_recognition.detector import DatabaseFileDetector
 from ..transaction_log_analysis.log_analyzer import TransactionLogAnalyzer
@@ -26,7 +33,7 @@ from .filesystem import FileSystemInterface
 logger = logging.getLogger(__name__)
 
 
-class StorageOptimizerAPI:
+class StorageOptimizerAPI(BaseAnalyzerAPI):
     """
     Main API for the Database Storage Optimization Analyzer.
     
@@ -40,6 +47,8 @@ class StorageOptimizerAPI:
         cache_results: bool = True,
         cache_ttl_seconds: int = 3600,
         read_only: bool = True,
+        notification_config: Optional[NotificationConfig] = None,
+        cache_config: Optional[CacheConfig] = None
     ):
         """
         Initialize the Storage Optimizer API.
@@ -49,10 +58,36 @@ class StorageOptimizerAPI:
             cache_results: Whether to cache analysis results
             cache_ttl_seconds: Time-to-live for cached results
             read_only: Enforce read-only operations
+            notification_config: Configuration for notifications
+            cache_config: Configuration for caching
         """
+        # Set up cache config
+        if cache_config is None:
+            cache_config = CacheConfig(
+                enabled=cache_results,
+                ttl_seconds=cache_ttl_seconds,
+                max_items=100
+            )
+        
+        # Set up notification config
+        if notification_config is None:
+            notification_config = NotificationConfig(
+                enabled=False
+            )
+            
+        # Create file detector for database files
+        self.file_detector = DatabaseFileDetector()
+        
+        # Initialize base analyzer API with file detector as scanner
+        super().__init__(
+            scanner=self.file_detector,
+            analyzer=None,  # We'll use specific analyzers for each analysis type
+            report_generator=None,  # We'll use export_interface for reports
+            cache_config=cache_config,
+            notification_config=notification_config
+        )
+        
         self.output_dir = Path(output_dir) if output_dir else Path.cwd()
-        self.cache_results = cache_results
-        self.cache_ttl_seconds = cache_ttl_seconds
         self.read_only = read_only
         
         # Initialize interfaces
@@ -61,45 +96,31 @@ class StorageOptimizerAPI:
         self.notification_interface = NotificationInterface()
         
         # Initialize analyzers
-        self.file_detector = DatabaseFileDetector()
         self.log_analyzer = TransactionLogAnalyzer()
         self.index_analyzer = IndexEfficiencyAnalyzer()
         self.fragmentation_analyzer = TablespaceFragmentationAnalyzer()
         self.backup_analyzer = BackupCompressionAnalyzer()
         
-        # Initialize results cache
+        # For backward compatibility
+        self.cache_results = cache_config.enabled
+        self.cache_ttl_seconds = cache_config.ttl_seconds
         self.results_cache = {}
         self.cache_timestamps = {}
-
-    def _get_from_cache(self, cache_key: str) -> Optional[Any]:
-        """Get result from cache if available and not expired."""
-        if not self.cache_results or cache_key not in self.results_cache:
-            return None
+    
+    def analyze_results(self, scan_results: List[Any]) -> Any:
+        """
+        Analyze scan results.
+        
+        Args:
+            scan_results: Scan results to analyze
             
-        timestamp = self.cache_timestamps.get(cache_key)
-        if not timestamp:
-            return None
-            
-        # Check if cache has expired
-        elapsed = (datetime.now() - timestamp).total_seconds()
-        if elapsed > self.cache_ttl_seconds:
-            # Cache expired
-            del self.results_cache[cache_key]
-            del self.cache_timestamps[cache_key]
-            return None
-            
-        logger.info(f"Returning cached result for {cache_key}")
-        return self.results_cache[cache_key]
-
-    def _store_in_cache(self, cache_key: str, result: Any) -> None:
-        """Store result in cache."""
-        if not self.cache_results:
-            return
-            
-        self.results_cache[cache_key] = result
-        self.cache_timestamps[cache_key] = datetime.now()
-        logger.debug(f"Stored result in cache for {cache_key}")
-
+        Returns:
+            Analysis results
+        """
+        # This is a placeholder that would typically call a specific analyzer
+        # Actual implementation done in specific analysis methods
+        return {}
+    
     def analyze_database_files(
         self,
         root_path: Union[str, Path],
@@ -129,6 +150,7 @@ class StorageOptimizerAPI:
         Returns:
             Analysis result dictionary
         """
+        # Generate cache key
         cache_key = f"db_files_{root_path}_{recursive}_{max_depth}_{follow_symlinks}_{max_files}"
         cached_result = self._get_from_cache(cache_key)
         if cached_result:
@@ -160,7 +182,7 @@ class StorageOptimizerAPI:
         self._store_in_cache(cache_key, result_dict)
         
         return result_dict
-
+    
     def analyze_transaction_logs(
         self,
         log_files: List[Dict[str, Any]],
@@ -186,8 +208,6 @@ class StorageOptimizerAPI:
         Returns:
             Analysis result dictionary
         """
-        from ..utils.types import DatabaseFile
-        
         # Convert log files to DatabaseFile objects
         db_log_files = []
         for log_file in log_files:
@@ -226,7 +246,7 @@ class StorageOptimizerAPI:
         self._store_in_cache(cache_key, result_dict)
         
         return result_dict
-
+    
     def analyze_index_efficiency(
         self,
         indexes: List[Dict[str, Any]],
@@ -289,7 +309,7 @@ class StorageOptimizerAPI:
         self._store_in_cache(cache_key, result_dict)
         
         return result_dict
-
+    
     def analyze_tablespace_fragmentation(
         self,
         tablespaces: List[Dict[str, Any]],
@@ -352,7 +372,7 @@ class StorageOptimizerAPI:
         self._store_in_cache(cache_key, result_dict)
         
         return result_dict
-
+    
     def analyze_backup_compression(
         self,
         backups: List[Dict[str, Any]],
@@ -412,7 +432,7 @@ class StorageOptimizerAPI:
         self._store_in_cache(cache_key, result_dict)
         
         return result_dict
-
+    
     def comprehensive_analysis(
         self,
         root_path: Union[str, Path],
@@ -421,26 +441,37 @@ class StorageOptimizerAPI:
         export_filename: Optional[str] = None,
         notify_on_critical: bool = False,
         notification_email: Optional[str] = None,
+        options: Optional[Dict[str, Any]] = None,
+        use_cache: bool = True,
     ) -> Dict[str, Any]:
         """
-        Perform comprehensive analysis of all database storage aspects.
-
+        Perform comprehensive analysis of a target path.
+        
+        This is a high-level method that combines scanning, analysis, and reporting
+        in a single operation.
+        
         Args:
-            root_path: Starting directory
-            recursive: Whether to search recursively
+            root_path: Path to analyze
+            recursive: Whether to search recursively 
             export_format: Export format (json, csv, html)
             export_filename: Export filename
             notify_on_critical: Whether to send notifications for critical findings
             notification_email: Email address for notifications
-
+            options: Optional analysis options
+            use_cache: Whether to use cached results if available
+            
         Returns:
-            Comprehensive analysis result dictionary
+            API result with comprehensive analysis information
         """
         # Generate cache key
-        cache_key = f"comprehensive_{root_path}_{recursive}"
-        cached_result = self._get_from_cache(cache_key)
-        if cached_result:
-            return cached_result
+        options_str = json.dumps(options or {}, sort_keys=True)
+        cache_key = f"comprehensive_{root_path}_{recursive}_{options_str}"
+        
+        # Try to get from cache
+        if use_cache:
+            cached_result = self._get_from_cache(cache_key)
+            if cached_result:
+                return cached_result
             
         # Start with database file analysis
         logger.info(f"Starting comprehensive analysis of {root_path}")
@@ -498,7 +529,7 @@ class StorageOptimizerAPI:
                     filename=export_filename,
                     title="Comprehensive Database Storage Analysis",
                 )
-            
+        
         # Send notifications if requested
         if notify_on_critical and notification_email:
             self.notification_interface.send_email_notification(
@@ -508,10 +539,20 @@ class StorageOptimizerAPI:
             )
             
         # Cache result
-        self._store_in_cache(cache_key, comprehensive_result)
+        if use_cache:
+            self._store_in_cache(cache_key, comprehensive_result)
         
         return comprehensive_result
-
+    
+    # Legacy methods for backward compatibility
+    def _get_from_cache(self, cache_key: str) -> Optional[Any]:
+        """Get result from cache if available and not expired."""
+        return self.cache.get(cache_key)
+    
+    def _store_in_cache(self, cache_key: str, result: Any) -> None:
+        """Store result in cache."""
+        self.cache.set(cache_key, result)
+    
     def _export_result(
         self, 
         result: Any, 
@@ -530,50 +571,25 @@ class StorageOptimizerAPI:
             Path to exported file, or None on error
         """
         try:
-            if export_format.lower() == "json":
-                return self.export_interface.export_json(
-                    data=result,
-                    filename=export_filename,
-                )
-            elif export_format.lower() == "csv":
-                # Convert result to list of dictionaries for CSV export
-                if isinstance(result, dict):
-                    # Flatten nested dictionaries
-                    flat_result = []
-                    for key, value in result.items():
-                        if isinstance(value, list) and all(isinstance(item, dict) for item in value):
-                            flat_result.extend(value)
-                        else:
-                            flat_result.append({key: value})
-                            
-                    return self.export_interface.export_csv(
-                        data=flat_result,
-                        filename=export_filename,
-                    )
-                else:
-                    logger.error(f"Cannot export result of type {type(result)} to CSV")
-                    return None
-                    
-            elif export_format.lower() == "html":
-                return self.export_interface.export_html_report(
-                    data=result,
-                    filename=export_filename,
-                    title="Database Storage Analysis Report",
-                )
-            else:
-                logger.error(f"Unsupported export format: {export_format}")
-                return None
+            output_path = self.output_dir / export_filename
+            return export_results(
+                data=result.dict() if hasattr(result, "dict") else result,
+                file_path=output_path,
+                format=export_format
+            )
                 
         except Exception as e:
             logger.error(f"Error exporting result: {e}")
             return None
-
+    
     def clear_cache(self) -> None:
         """Clear the results cache."""
+        self.cache.clear()
+        # For backward compatibility
         self.results_cache.clear()
         self.cache_timestamps.clear()
         logger.info("Cleared results cache")
-
+    
     def get_cached_analysis_keys(self) -> List[str]:
         """Get list of cached analysis keys."""
-        return list(self.results_cache.keys())
+        return self.cache.get_all_keys()

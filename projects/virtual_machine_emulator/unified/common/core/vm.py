@@ -409,6 +409,30 @@ class VirtualMachine(ABC):
                     thread.pc = processor.registers.get_pc()
                     thread.state = processor.state
                     
+                    # Update thread registers from processor registers for any modified registers
+                    if side_effects and "registers_modified" in side_effects:
+                        for reg in side_effects["registers_modified"]:
+                            thread.registers[reg] = processor.registers.get(reg)
+                    elif instruction is not None:
+                        # Handle specific instruction types that modify registers
+                        if instruction.opcode == "LOAD" and len(instruction.operands) >= 1:
+                            # Handle the case where LOAD sets a register value
+                            reg = instruction.operands[0]
+                            if isinstance(reg, str):
+                                if len(instruction.operands) >= 2 and isinstance(instruction.operands[1], int):
+                                    # For immediate LOAD operations
+                                    thread.registers[reg] = instruction.operands[1]
+                                elif reg in processor.registers.registers:
+                                    # Otherwise get the value from the processor
+                                    thread.registers[reg] = processor.registers.get(reg)
+                        
+                        # For ADD, SUB, and other compute operations
+                        elif instruction.opcode in ("ADD", "SUB", "MUL", "DIV", "AND", "OR", "XOR") and len(instruction.operands) >= 1:
+                            # First operand is typically the destination register
+                            reg = instruction.operands[0]
+                            if isinstance(reg, str) and reg in processor.registers.registers:
+                                thread.registers[reg] = processor.registers.get(reg)
+                    
                     # Create an after-execution trace
                     event = ExecutionEvent(
                         event_type="instruction_complete" if completed else "instruction_in_progress",

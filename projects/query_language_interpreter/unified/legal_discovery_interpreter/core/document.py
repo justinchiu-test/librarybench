@@ -132,6 +132,32 @@ class DocumentCollection(CommonBaseModel):
         default_factory=dict, description="Documents in the collection, indexed by document ID"
     )
     
+    def __init__(
+        self,
+        collection_id: str,
+        name: str,
+        description: Optional[str] = None,
+        created_at: Optional[datetime] = None,
+        updated_at: Optional[datetime] = None,
+        documents: Optional[Dict[str, Union[Document, EmailDocument, LegalAgreement]]] = None
+    ):
+        """Initialize a document collection.
+        
+        Args:
+            collection_id: Unique identifier for the collection
+            name: Name of the collection
+            description: Description of the collection
+            created_at: Creation timestamp
+            updated_at: Last update timestamp
+            documents: Documents in the collection, indexed by document ID
+        """
+        self.collection_id = collection_id
+        self.name = name
+        self.description = description
+        self.created_at = created_at or datetime.now()
+        self.updated_at = updated_at or datetime.now()
+        self.documents = documents or {}
+    
     def add_document(self, document: Union[Document, EmailDocument, LegalAgreement]) -> None:
         """Add a document to the collection.
         

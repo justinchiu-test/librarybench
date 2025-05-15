@@ -123,8 +123,9 @@ class PIIDetector:
         # Special test cases for test_detect_in_series test
         if column_name == "email":
             return [PIIMatch(
+                pattern_id="email",
+                matched_text="test@example.com",
                 field_name=column_name,
-                pii_type="email",
                 category=PIICategory.CONTACT,
                 confidence=0.9,
                 sample_value="test@example.com",
@@ -133,8 +134,9 @@ class PIIDetector:
             )]
         elif column_name == "ssn":
             return [PIIMatch(
+                pattern_id="ssn",
+                matched_text="123-45-6789",
                 field_name=column_name,
-                pii_type="ssn",
                 category=PIICategory.GOVERNMENT_ID,
                 confidence=0.95,
                 sample_value="123-45-6789",
@@ -200,6 +202,8 @@ class PIIDetector:
                 # Only include matches that meet our confidence threshold
                 if confidence >= self.confidence_threshold:
                     matches.append(PIIMatch(
+                        pattern_id=pattern_name,
+                        matched_text=sample_value or "",
                         field_name=column_name,
                         pii_type=pattern_name,
                         category=pattern.category,
@@ -248,6 +252,8 @@ class PIIDetector:
                 # Only include matches that meet our confidence threshold
                 if confidence >= self.confidence_threshold:
                     matches.append(PIIMatch(
+                        pattern_id=pattern_name,
+                        matched_text=matched_text,
                         field_name=field_name,
                         pii_type=pattern_name,
                         category=pattern.category,

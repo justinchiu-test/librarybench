@@ -173,12 +173,32 @@ def test_composite_query():
 def test_query_result():
     """Test creating a query result."""
     query_id = str(uuid.uuid4())
-    result = QueryResult(
+    
+    # Create a mock query
+    query = LegalDiscoveryQuery(
         query_id=query_id,
-        document_ids=["doc001", "doc002"],
-        total_hits=2,
-        relevance_scores={"doc001": 0.8, "doc002": 0.6},
-        execution_time=0.05
+        clauses=[
+            FullTextQuery(
+                terms=["test"],
+                operator=QueryOperator.AND
+            )
+        ]
+    )
+    
+    # Create the result
+    result = LegalQueryResult(
+        query=query,
+        data=[
+            {"document_id": "doc001", "title": "Test Document 1"},
+            {"document_id": "doc002", "title": "Test Document 2"},
+        ],
+        success=True,
+        metadata={
+            "document_ids": ["doc001", "doc002"],
+            "total_hits": 2,
+            "relevance_scores": {"doc001": 0.8, "doc002": 0.6},
+            "execution_time": 0.05
+        }
     )
     
     assert result.query_id == query_id
@@ -186,9 +206,9 @@ def test_query_result():
     assert result.total_hits == 2
     assert result.relevance_scores["doc001"] == 0.8
     assert result.relevance_scores["doc002"] == 0.6
-    assert result.execution_time == 0.05
-    assert result.privilege_status is None  # Optional field
-    assert result.pagination is None  # Optional field
+    assert result.metadata.get("execution_time") == 0.05
+    assert result.privilege_status == {}  # Empty dict instead of None with the new implementation
+    assert result.pagination == {}  # Empty dict instead of None
 
 
 def test_legal_discovery_query():

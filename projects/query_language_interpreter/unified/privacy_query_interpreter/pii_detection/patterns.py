@@ -2,23 +2,9 @@
 
 import re
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Dict, List, Optional, Pattern, Union
 
-
-class PIICategory(str, Enum):
-    """Categories of PII for classification and policy enforcement."""
-    
-    DIRECT_IDENTIFIER = "direct_identifier"
-    QUASI_IDENTIFIER = "quasi_identifier"
-    SENSITIVE = "sensitive" 
-    CONTACT = "contact"
-    FINANCIAL = "financial"
-    HEALTH = "health"
-    BIOMETRIC = "biometric"
-    LOCATION = "location"
-    GOVERNMENT_ID = "government_id"
-    CREDENTIAL = "credential"
+from common.models.enums import PIICategory
 
 
 @dataclass

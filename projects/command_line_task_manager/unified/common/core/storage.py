@@ -6,7 +6,7 @@ consistent data access patterns and reducing code duplication.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Set, Any, TypeVar, Generic, Callable
+from typing import Dict, List, Optional, Set, Any, TypeVar, Generic, Callable, Union
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ class BaseStorageInterface(Generic[T], ABC):
     """Abstract interface for entity storage implementations."""
     
     @abstractmethod
-    def create(self, entity: T) -> UUID:
+    def create(self, entity: T) -> str:
         """
         Create a new entity in storage.
         
@@ -30,12 +30,12 @@ class BaseStorageInterface(Generic[T], ABC):
             entity: The entity to create
             
         Returns:
-            UUID: The ID of the created entity
+            str: The ID of the created entity
         """
         pass
     
     @abstractmethod
-    def get(self, entity_id: UUID) -> Optional[T]:
+    def get(self, entity_id: Union[str, UUID]) -> Optional[T]:
         """
         Retrieve an entity by ID.
         
@@ -61,7 +61,7 @@ class BaseStorageInterface(Generic[T], ABC):
         pass
     
     @abstractmethod
-    def delete(self, entity_id: UUID) -> bool:
+    def delete(self, entity_id: Union[str, UUID]) -> bool:
         """
         Delete an entity by ID.
         
@@ -92,9 +92,9 @@ class InMemoryStorage(BaseStorageInterface[T]):
     
     def __init__(self):
         """Initialize the in-memory storage."""
-        self._entities: Dict[UUID, T] = {}
+        self._entities: Dict[str, T] = {}
     
-    def create(self, entity: T) -> UUID:
+    def create(self, entity: T) -> str:
         """
         Create a new entity in storage.
         
@@ -102,12 +102,14 @@ class InMemoryStorage(BaseStorageInterface[T]):
             entity: The entity to create
             
         Returns:
-            UUID: The ID of the created entity
+            str: The ID of the created entity
         """
-        self._entities[entity.id] = entity
-        return entity.id
+        # Ensure ID is a string
+        entity_id = str(entity.id)
+        self._entities[entity_id] = entity
+        return entity_id
     
-    def get(self, entity_id: UUID) -> Optional[T]:
+    def get(self, entity_id: Union[str, UUID]) -> Optional[T]:
         """
         Retrieve an entity by ID.
         
@@ -117,6 +119,10 @@ class InMemoryStorage(BaseStorageInterface[T]):
         Returns:
             Optional[T]: The entity if found, None otherwise
         """
+        # Convert UUID to string if needed
+        if isinstance(entity_id, UUID):
+            entity_id = str(entity_id)
+            
         return self._entities.get(entity_id)
     
     def update(self, entity: T) -> bool:
@@ -129,12 +135,13 @@ class InMemoryStorage(BaseStorageInterface[T]):
         Returns:
             bool: True if update successful, False otherwise
         """
-        if entity.id not in self._entities:
+        entity_id = str(entity.id)
+        if entity_id not in self._entities:
             return False
-        self._entities[entity.id] = entity
+        self._entities[entity_id] = entity
         return True
     
-    def delete(self, entity_id: UUID) -> bool:
+    def delete(self, entity_id: Union[str, UUID]) -> bool:
         """
         Delete an entity by ID.
         
@@ -144,6 +151,10 @@ class InMemoryStorage(BaseStorageInterface[T]):
         Returns:
             bool: True if deletion successful, False otherwise
         """
+        # Convert UUID to string if needed
+        if isinstance(entity_id, UUID):
+            entity_id = str(entity_id)
+            
         if entity_id not in self._entities:
             return False
         del self._entities[entity_id]
@@ -209,7 +220,7 @@ class BaseTaskStorageInterface(BaseStorageInterface[BaseTask], ABC):
     """Abstract interface for task storage implementations."""
     
     @abstractmethod
-    def get_subtasks(self, parent_id: UUID) -> List[BaseTask]:
+    def get_subtasks(self, parent_id: Union[str, UUID]) -> List[BaseTask]:
         """
         Get all subtasks of a parent task.
         
@@ -251,7 +262,7 @@ class BaseTaskStorageInterface(BaseStorageInterface[BaseTask], ABC):
 class InMemoryTaskStorage(InMemoryStorage[BaseTask], BaseTaskStorageInterface):
     """In-memory implementation of task storage."""
     
-    def get_subtasks(self, parent_id: UUID) -> List[BaseTask]:
+    def get_subtasks(self, parent_id: Union[str, UUID]) -> List[BaseTask]:
         """
         Get all subtasks of a parent task.
         
@@ -261,6 +272,10 @@ class InMemoryTaskStorage(InMemoryStorage[BaseTask], BaseTaskStorageInterface):
         Returns:
             List[BaseTask]: List of subtasks
         """
+        # Convert UUID to string if needed
+        if isinstance(parent_id, UUID):
+            parent_id = str(parent_id)
+            
         return [
             task for task in self._entities.values()
             if task.parent_id == parent_id

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from common.pattern.detector import BasePatternDetector
 from common.pattern.matcher import PatternMatch
+from common.pattern.sql import SQLPrivacyPatternDetector
 from common.models.enums import PrivacyFunction
 
 
@@ -13,23 +14,9 @@ class PrivacyPatternDetector(BasePatternDetector):
     def __init__(self):
         """Initialize the privacy pattern detector."""
         super().__init__()
-        self._initialize_patterns()
-    
-    def _initialize_patterns(self) -> None:
-        """Initialize privacy-specific patterns."""
-        # Add privacy function patterns
-        for func in PrivacyFunction:
-            pattern_id = f"privacy_func_{func.value.lower()}"
-            # Capture function name, field, and arguments
-            regex = rf'{func.value}\s*\((?P<field>[^,)]+)(?:,\s*(?P<args>[^)]+))?\)'
-            self.add_pattern(
-                pattern_id=pattern_id,
-                regex=regex,
-                category="privacy_function",
-                metadata={"function_type": func.value}
-            )
-        
-        # Add PII field patterns for common fields
+        # Use the common SQL pattern detector
+        self.sql_detector = SQLPrivacyPatternDetector()
+        # Add PII field patterns
         self._add_pii_field_patterns()
     
     def _add_pii_field_patterns(self) -> None:
@@ -65,33 +52,17 @@ class PrivacyPatternDetector(BasePatternDetector):
         Returns:
             List of detected privacy functions with their parameters
         """
+        # Use the common SQL pattern detector to extract privacy functions
+        privacy_func_dicts = self.sql_detector.detect_privacy_functions(query_text)
+        
+        # Format the results to match the expected format for backward compatibility
         privacy_funcs = []
-        
-        # Use the pattern detector to find all privacy function patterns
-        matches = self.detect_by_category(query_text, "privacy_function")
-        
-        for match in matches:
-            # Extract information from the match
-            function_name = match.metadata.get("function_type")
-            field = match.groups.get("field", "").strip()
-            args_str = match.groups.get("args", "")
-            
-            # Parse arguments into a dictionary
-            args = {}
-            if args_str:
-                for arg_part in args_str.split(','):
-                    if '=' in arg_part:
-                        key, value = arg_part.split('=', 1)
-                        args[key.strip()] = value.strip().strip("'\"")
-                    else:
-                        args[f"arg{len(args)+1}"] = arg_part.strip().strip("'\"")
-            
-            # Create privacy function entry
+        for func_dict in privacy_func_dicts:
             privacy_funcs.append({
-                "function": PrivacyFunction(function_name),
-                "field": field,
-                "args": args,
-                "confidence": match.confidence
+                "function": PrivacyFunction(func_dict["function"]),
+                "field": func_dict["field"],
+                "args": func_dict["args"],
+                "confidence": 1.0  # Default confidence
             })
             
         return privacy_funcs

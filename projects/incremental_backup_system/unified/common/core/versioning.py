@@ -84,8 +84,15 @@ class VersionTracker(ABC):
         Returns:
             List of VersionInfo objects that are marked as milestones
         """
-        # Default implementation filters list_versions results
-        return self.list_versions({"is_milestone": True})
+        print("Fetching milestone versions...")
+        all_versions = self.list_versions()
+        milestone_versions = [v for v in all_versions if v.is_milestone]
+        
+        print(f"Found {len(milestone_versions)} milestone versions out of {len(all_versions)} total versions")
+        for v in milestone_versions:
+            print(f"  - Milestone: {v.id}, name: {v.name}")
+            
+        return milestone_versions
         
     def delete_version(self, version_id: str) -> bool:
         """Delete a version.
@@ -116,6 +123,18 @@ class FileSystemVersionTracker(VersionTracker):
         
         # Create versions directory if it doesn't exist
         self.versions_dir.mkdir(parents=True, exist_ok=True)
+        
+    def _save_version(self, version: VersionInfo) -> None:
+        """Save a version to disk.
+        
+        This helper method is used to update existing versions or save new ones.
+        
+        Args:
+            version: The version info to save
+        """
+        print(f"Saving version {version.id} to {self.versions_dir}, is_milestone: {version.is_milestone}")
+        version_path = self.versions_dir / f"{version.id}.json"
+        save_json(version.model_dump(), version_path)
     
     def create_version(
         self, 
@@ -266,14 +285,28 @@ class FileSystemVersionTracker(VersionTracker):
         Returns:
             List of VersionInfo objects matching the criteria
         """
-        # Find all version files
-        version_files = list(self.versions_dir.glob("version-*.json"))
+        # Find all version files - improve pattern to match both formats
+        # Use glob pattern that will match both "version-*.json" and "*.json"
+        version_files = list(self.versions_dir.glob("*.json"))
+        
+        # Print all found files for debugging
+        print(f"Found {len(version_files)} version files in {self.versions_dir}:")
+        for vf in version_files:
+            print(f"  - {vf.name}")
         
         # Load all versions
         versions = []
         for version_file in version_files:
+            # Skip files that aren't version files (e.g., metadata files)
+            if not (version_file.name.startswith("version-") or 
+                   version_file.stem.startswith(f"version-{self.project_name}-")):
+                continue
+                
             try:
                 version_data = load_json(version_file)
+                
+                # Print version data for debugging
+                print(f"Loading version from {version_file.name}: {version_data.get('id')}, is_milestone: {version_data.get('is_milestone')}")
                 
                 # Convert file data to FileInfo objects
                 if "files" in version_data:
@@ -288,6 +321,7 @@ class FileSystemVersionTracker(VersionTracker):
         
         # Apply filters if provided
         if filter_criteria:
+            print(f"Applying filter criteria: {filter_criteria}")
             filtered_versions = []
             for version in versions:
                 match = True
@@ -295,31 +329,43 @@ class FileSystemVersionTracker(VersionTracker):
                     if key == "before":
                         if version.timestamp >= value:
                             match = False
+                            print(f"Version {version.id} filtered out: timestamp {version.timestamp} not before {value}")
                             break
                     elif key == "after":
                         if version.timestamp <= value:
                             match = False
+                            print(f"Version {version.id} filtered out: timestamp {version.timestamp} not after {value}")
                             break
-                    elif key == "milestone" and value is True:
+                    elif key == "is_milestone" and value is True:
                         if not version.is_milestone:
                             match = False
+                            print(f"Version {version.id} filtered out: not a milestone")
                             break
                     elif key == "tags":
                         if not set(value).issubset(set(version.tags)):
                             match = False
+                            print(f"Version {version.id} filtered out: tags {version.tags} don't contain all required tags {value}")
                             break
                     elif hasattr(version, key):
                         if getattr(version, key) != value:
                             match = False
+                            print(f"Version {version.id} filtered out: {key}={getattr(version, key)} != {value}")
                             break
+                    else:
+                        print(f"Warning: Filter key {key} is not an attribute of version {version.id}")
                 
                 if match:
                     filtered_versions.append(version)
+                    print(f"Version {version.id} matched filter criteria")
             
             versions = filtered_versions
         
         # Sort by timestamp (newest first)
         versions.sort(key=lambda v: v.timestamp, reverse=True)
+        
+        print(f"Returning {len(versions)} versions after filtering")
+        for v in versions:
+            print(f"  - {v.id}, is_milestone: {v.is_milestone}")
         
         return versions
         

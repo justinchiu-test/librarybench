@@ -55,7 +55,7 @@ class ExpenseCategory(BaseCategory):
     is_tax_deductible: bool = False
     default_business_percentage: Optional[float] = None
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_business_category(cls, values):
         """Validate that business categories have proper attributes."""
         is_business = values.get("is_business", False)
@@ -134,7 +134,7 @@ class EthicalCategory(BaseCategory):
     exclusion_flag: bool = False
     inclusion_flag: bool = False
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_ethical_category(cls, values):
         """Validate that ethical categories have proper attributes."""
         # Ensure dimension is one of the allowed values

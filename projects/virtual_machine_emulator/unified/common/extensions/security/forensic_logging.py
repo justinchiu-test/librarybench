@@ -1,51 +1,113 @@
 """
-Forensic logging extension for VM security.
+Forensic logging systems for the virtual machine emulator.
 
-This module provides a robust forensic logging system for recording
-and analyzing security events within the virtual machine.
+This module provides comprehensive logging and analysis capabilities:
+- Detailed event logging
+- Memory access tracking
+- Protection violation records
+- Security event reporting and analysis
 """
 
-from __future__ import annotations
 import time
 import json
-from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable, BinaryIO
+from enum import Enum, auto
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, BinaryIO, Callable
 
-from common.extensions.security.control_flow import ControlFlowRecord
+
+class LoggingLevel(Enum):
+    """Logging detail level."""
+    NONE = 0        # No logging
+    MINIMAL = 1     # Basic events only
+    STANDARD = 2    # Standard security events
+    DETAILED = 3    # Detailed events with context
+    MAXIMUM = 4     # Maximum detail including memory operations
+
+
+class EventCategory(Enum):
+    """Categories of forensic events."""
+    SYSTEM = auto()       # System-level events
+    MEMORY = auto()       # Memory-related events
+    CONTROL_FLOW = auto() # Control flow events
+    PROTECTION = auto()   # Security protection events
+    EXECUTION = auto()    # Instruction execution events
+    ATTACK = auto()       # Attack detection events
+    PRIVILEGE = auto()    # Privilege-related events
 
 
 class ForensicLog:
-    """Forensic logging system for security monitoring."""
+    """Forensic logging system for security analysis."""
     
-    def __init__(self, enabled: bool = True, detailed: bool = False):
+    def __init__(
+        self,
+        enabled: bool = True,
+        level: LoggingLevel = LoggingLevel.STANDARD,
+        max_events: int = 10000,
+    ):
         """
         Initialize the forensic logging system.
         
         Args:
             enabled: Whether logging is enabled
-            detailed: Whether to log detailed events
+            level: Logging detail level
+            max_events: Maximum number of events to store
         """
         self.enabled = enabled
-        self.detailed = detailed
+        self.level = level
+        self.max_events = max_events
         self.logs: List[Dict[str, Any]] = []
         self.start_time = time.time()
+        
+        # Category filters
+        self.category_filters: Dict[EventCategory, bool] = {
+            category: True for category in EventCategory
+        }
+        
+        # Statistics
+        self.event_counts: Dict[str, int] = {}
+        self.category_counts: Dict[EventCategory, int] = {}
     
-    def log_event(self, event_type: str, data: Dict[str, Any]) -> None:
+    def log_event(
+        self,
+        event_type: str,
+        category: EventCategory,
+        data: Dict[str, Any],
+        timestamp: Optional[float] = None,
+    ) -> None:
         """
-        Log an event if logging is enabled.
+        Log an event if logging is enabled and level is sufficient.
         
         Args:
             event_type: Type of event
+            category: Event category
             data: Event data
+            timestamp: Event timestamp (defaults to current time)
         """
         if not self.enabled:
             return
         
+        # Check category filter
+        if not self.category_filters.get(category, True):
+            return
+        
+        # Check if we're at our event limit
+        if len(self.logs) >= self.max_events:
+            # Remove oldest event
+            self.logs.pop(0)
+        
+        # Create the event entry
         entry = {
-            "timestamp": time.time() - self.start_time,
+            "timestamp": timestamp or (time.time() - self.start_time),
             "event_type": event_type,
+            "category": category.name,
             "data": data,
         }
+        
+        # Add to the log
         self.logs.append(entry)
+        
+        # Update statistics
+        self.event_counts[event_type] = self.event_counts.get(event_type, 0) + 1
+        self.category_counts[category] = self.category_counts.get(category, 0) + 1
     
     def log_memory_access(
         self,
@@ -62,10 +124,11 @@ class ForensicLog:
             address: Memory address
             access_type: Type of access (read, write, execute)
             size: Size of access in bytes
-            value: Optional value for writes
-            context: Additional context for the access
+            value: Value being written (for write operations)
+            context: Additional context information
         """
-        if not self.enabled or not self.detailed:
+        # Skip if not detailed logging
+        if self.level.value < LoggingLevel.DETAILED.value:
             return
         
         data = {
@@ -73,42 +136,39 @@ class ForensicLog:
             "access_type": access_type,
             "size": size,
         }
+        
         if value is not None:
             data["value"] = value
+        
         if context:
             data["context"] = context
         
-        self.log_event("memory_access", data)
+        self.log_event("memory_access", EventCategory.MEMORY, data)
     
-    def log_control_flow(self, event: Union[Dict[str, Any], ControlFlowRecord]) -> None:
+    def log_control_flow(self, event: Dict[str, Any]) -> None:
         """
         Log a control flow event.
         
         Args:
-            event: Control flow event or record
+            event: Control flow event details
         """
-        if not self.enabled:
+        if self.level.value < LoggingLevel.STANDARD.value:
             return
         
-        # Convert ControlFlowRecord to dict if needed
-        if isinstance(event, ControlFlowRecord):
-            event_dict = event.to_dict()
-        else:
-            event_dict = event
-            
-        self.log_event("control_flow", event_dict)
+        self.log_event("control_flow", EventCategory.CONTROL_FLOW, event)
     
     def log_protection_violation(self, event: Dict[str, Any]) -> None:
         """
         Log a protection violation event.
         
         Args:
-            event: Protection violation event
+            event: Protection violation details
         """
+        # Always log protection violations (unless disabled)
         if not self.enabled:
             return
         
-        self.log_event("protection_violation", event)
+        self.log_event("protection_violation", EventCategory.PROTECTION, event)
     
     def log_system_event(self, event_type: str, details: Dict[str, Any]) -> None:
         """
@@ -118,51 +178,77 @@ class ForensicLog:
             event_type: Type of system event
             details: Event details
         """
-        if not self.enabled:
+        if self.level.value < LoggingLevel.MINIMAL.value:
             return
         
         data = {"system_event": event_type, **details}
-        self.log_event("system", data)
+        self.log_event(event_type, EventCategory.SYSTEM, data)
     
-    def log_vulnerability(self, vuln_type: str, details: Dict[str, Any]) -> None:
+    def log_attack_detection(
+        self,
+        attack_type: str,
+        confidence: float,
+        details: Dict[str, Any],
+    ) -> None:
         """
-        Log a vulnerability-related event.
+        Log an attack detection event.
         
         Args:
-            vuln_type: Type of vulnerability
-            details: Vulnerability details
-        """
-        if not self.enabled:
-            return
-        
-        data = {"vulnerability_type": vuln_type, **details}
-        self.log_event("vulnerability", data)
-    
-    def log_attack(self, attack_type: str, success: bool, details: Dict[str, Any]) -> None:
-        """
-        Log an attack attempt.
-        
-        Args:
-            attack_type: Type of attack
-            success: Whether the attack was successful
+            attack_type: Type of attack detected
+            confidence: Confidence level (0.0-1.0)
             details: Attack details
         """
+        # Always log attack detections (unless disabled)
         if not self.enabled:
             return
         
         data = {
             "attack_type": attack_type,
-            "success": success,
+            "confidence": confidence,
             **details
         }
-        self.log_event("attack", data)
+        
+        self.log_event("attack_detection", EventCategory.ATTACK, data)
+    
+    def log_privilege_change(
+        self,
+        from_level: str,
+        to_level: str,
+        source: str,
+        instruction_pointer: int,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """
+        Log a privilege level change.
+        
+        Args:
+            from_level: Original privilege level
+            to_level: New privilege level
+            source: Source of the change (instruction, syscall, etc.)
+            instruction_pointer: Current instruction pointer
+            details: Additional details
+        """
+        if self.level.value < LoggingLevel.STANDARD.value:
+            return
+        
+        data = {
+            "from_level": from_level,
+            "to_level": to_level,
+            "source": source,
+            "instruction_pointer": instruction_pointer,
+        }
+        
+        if details:
+            data.update(details)
+        
+        self.log_event("privilege_change", EventCategory.PRIVILEGE, data)
     
     def get_logs(self) -> List[Dict[str, Any]]:
         """
         Get all logged events.
         
         Returns:
-            List of log entries
+            List of log events
         """
         return self.logs
     
@@ -171,10 +257,13 @@ class ForensicLog:
         Export logs in the specified format.
         
         Args:
-            format_type: Format to export logs in (dict, json, text)
+            format_type: Export format (dict, json, or text)
             
         Returns:
             Logs in the requested format
+            
+        Raises:
+            ValueError: If format type is unsupported
         """
         if format_type == "dict":
             return self.logs
@@ -185,167 +274,390 @@ class ForensicLog:
             for log in self.logs:
                 timestamp = log["timestamp"]
                 event_type = log["event_type"]
-                data_str = ", ".join(f"{k}={v}" for k, v in log["data"].items())
-                text_logs.append(f"[{timestamp:.6f}] {event_type}: {data_str}")
+                category = log["category"]
+                
+                data_items = []
+                for k, v in log["data"].items():
+                    # Format the value based on type
+                    if isinstance(v, int) and k.lower().endswith(("address", "pointer")):
+                        data_items.append(f"{k}=0x{v:x}")
+                    else:
+                        data_items.append(f"{k}={v}")
+                
+                data_str = ", ".join(data_items)
+                text_logs.append(f"[{timestamp:.6f}] {category}.{event_type}: {data_str}")
+            
             return "\n".join(text_logs)
         else:
             raise ValueError(f"Unsupported export format: {format_type}")
     
-    def clear_logs(self) -> None:
-        """Clear all logged events."""
-        self.logs = []
-    
     def filter_logs(
         self,
+        categories: Optional[List[EventCategory]] = None,
         event_types: Optional[List[str]] = None,
         start_time: Optional[float] = None,
         end_time: Optional[float] = None,
-        filter_fn: Optional[Callable[[Dict[str, Any]], bool]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Filter logs based on specified criteria.
+        Filter logs by various criteria.
         
         Args:
-            event_types: Types of events to include
-            start_time: Start time for filtering
-            end_time: End time for filtering
-            filter_fn: Custom filter function
+            categories: List of categories to include
+            event_types: List of event types to include
+            start_time: Start time filter
+            end_time: End time filter
             
         Returns:
-            Filtered list of log entries
+            Filtered list of log events
         """
-        filtered = self.logs
+        result = self.logs
         
-        # Filter by event types
+        if categories:
+            category_names = [c.name for c in categories]
+            result = [e for e in result if e["category"] in category_names]
+        
         if event_types:
-            filtered = [log for log in filtered if log["event_type"] in event_types]
+            result = [e for e in result if e["event_type"] in event_types]
         
-        # Filter by time range
         if start_time is not None:
-            filtered = [log for log in filtered if log["timestamp"] >= start_time]
+            result = [e for e in result if e["timestamp"] >= start_time]
+        
         if end_time is not None:
-            filtered = [log for log in filtered if log["timestamp"] <= end_time]
+            result = [e for e in result if e["timestamp"] <= end_time]
         
-        # Apply custom filter
-        if filter_fn:
-            filtered = [log for log in filtered if filter_fn(log)]
-        
-        return filtered
-
-
-class ForensicReport:
-    """Generates security reports based on forensic logs."""
+        return result
     
-    def __init__(self, logs: ForensicLog):
+    def get_statistics(self) -> Dict[str, Any]:
         """
-        Initialize with forensic logs.
+        Get statistics about logged events.
+        
+        Returns:
+            Dictionary with logging statistics
+        """
+        category_stats = {
+            category.name: count 
+            for category, count in self.category_counts.items()
+        }
+        
+        return {
+            "total_events": len(self.logs),
+            "event_types": self.event_counts,
+            "categories": category_stats,
+            "logging_level": self.level.name,
+            "enabled": self.enabled,
+            "uptime": time.time() - self.start_time,
+        }
+    
+    def clear(self) -> None:
+        """Clear all logs."""
+        self.logs.clear()
+        self.event_counts.clear()
+        self.category_counts.clear()
+    
+    def enable_category(self, category: EventCategory) -> None:
+        """
+        Enable logging for a specific category.
         
         Args:
-            logs: Forensic log instance to analyze
+            category: Category to enable
         """
-        self.logs = logs
+        self.category_filters[category] = True
     
-    def generate_summary(self) -> Dict[str, Any]:
+    def disable_category(self, category: EventCategory) -> None:
         """
-        Generate a summary report of security events.
+        Disable logging for a specific category.
+        
+        Args:
+            category: Category to disable
+        """
+        self.category_filters[category] = False
+    
+    def set_level(self, level: LoggingLevel) -> None:
+        """
+        Set the logging detail level.
+        
+        Args:
+            level: New logging level
+        """
+        self.level = level
+    
+    def enable(self) -> None:
+        """Enable logging."""
+        self.enabled = True
+    
+    def disable(self) -> None:
+        """Disable logging."""
+        self.enabled = False
+
+
+class ForensicAnalyzer:
+    """
+    Analyzer for forensic logs to detect security anomalies.
+    """
+    
+    def __init__(self, forensic_log: ForensicLog):
+        """
+        Initialize the forensic analyzer.
+        
+        Args:
+            forensic_log: Forensic log to analyze
+        """
+        self.log = forensic_log
+    
+    def detect_control_flow_anomalies(self) -> List[Dict[str, Any]]:
+        """
+        Detect control flow anomalies in the logs.
         
         Returns:
-            Security event summary
+            List of detected anomalies
         """
-        logs = self.logs.get_logs()
+        anomalies = []
         
-        # Count events by type
-        event_counts = {}
-        for log in logs:
-            event_type = log["event_type"]
-            event_counts[event_type] = event_counts.get(event_type, 0) + 1
+        # Filter for control flow events
+        control_flow_events = self.log.filter_logs(
+            categories=[EventCategory.CONTROL_FLOW]
+        )
         
-        # Find protection violations
-        protection_violations = [log for log in logs if log["event_type"] == "protection_violation"]
-        
-        # Find control flow violations
-        control_flow_logs = [log for log in logs if log["event_type"] == "control_flow"]
-        control_flow_violations = [log for log in control_flow_logs 
-                                 if "legitimate" in log["data"] and not log["data"]["legitimate"]]
-        
-        # Find attack logs
-        attack_logs = [log for log in logs if log["event_type"] == "attack"]
-        successful_attacks = [log for log in attack_logs if log["data"]["success"]]
-        
-        return {
-            "total_events": len(logs),
-            "event_counts": event_counts,
-            "protection_violations": len(protection_violations),
-            "control_flow_violations": len(control_flow_violations),
-            "attack_attempts": len(attack_logs),
-            "successful_attacks": len(successful_attacks),
-            "time_period": {
-                "start": logs[0]["timestamp"] if logs else 0,
-                "end": logs[-1]["timestamp"] if logs else 0,
-            }
-        }
-    
-    def get_memory_access_pattern(self) -> Dict[str, Dict[int, int]]:
-        """
-        Analyze memory access patterns from the forensic logs.
-        
-        Returns:
-            Memory access pattern statistics
-        """
-        if not self.logs.detailed:
-            return {"error": "Detailed logging must be enabled for memory access patterns"}
-        
-        patterns = {
-            "read": {},
-            "write": {},
-            "execute": {},
-        }
-        
-        for log in self.logs.get_logs():
-            if log["event_type"] == "memory_access":
-                access_type = log["data"]["access_type"]
-                address = log["data"]["address"]
-                
-                if access_type in patterns:
-                    patterns[access_type][address] = patterns[access_type].get(address, 0) + 1
-        
-        return patterns
-    
-    def get_control_flow_graph(self) -> Dict[str, Any]:
-        """
-        Generate a control flow graph from logged events.
-        
-        Returns:
-            Control flow graph data
-        """
-        # Extract control flow records
-        control_flow_logs = [log for log in self.logs.get_logs() if log["event_type"] == "control_flow"]
-        
-        # Build a graph representation
-        nodes = set()
-        edges = []
-        
-        for log in control_flow_logs:
-            data = log["data"]
-            from_addr = data.get("from_address")
-            to_addr = data.get("to_address")
-            
-            if from_addr is not None and to_addr is not None:
-                nodes.add(from_addr)
-                nodes.add(to_addr)
-                
-                edge = {
-                    "source": from_addr,
-                    "target": to_addr,
-                    "type": data.get("event_type", "unknown"),
-                    "legitimate": data.get("legitimate", True),
+        # Look for illegitimate control flow
+        for event in control_flow_events:
+            data = event["data"]
+            if data.get("legitimate") is False:
+                anomaly = {
+                    "type": "illegitimate_control_flow",
+                    "timestamp": event["timestamp"],
+                    "event_type": data.get("event_type", "unknown"),
+                    "from_address": data.get("from_address", 0),
+                    "to_address": data.get("to_address", 0),
                     "instruction": data.get("instruction", "unknown"),
+                    "expected": data.get("expected_return", 0),
+                    "severity": "critical"
                 }
-                edges.append(edge)
+                
+                anomalies.append(anomaly)
         
-        nodes_list = [{"address": addr} for addr in sorted(nodes)]
+        return anomalies
+    
+    def detect_memory_protection_violations(self) -> List[Dict[str, Any]]:
+        """
+        Detect memory protection violations in the logs.
         
-        return {
-            "nodes": nodes_list,
-            "edges": edges,
+        Returns:
+            List of detected violations
+        """
+        violations = []
+        
+        # Filter for protection violation events
+        protection_events = self.log.filter_logs(
+            categories=[EventCategory.PROTECTION]
+        )
+        
+        for event in protection_events:
+            data = event["data"]
+            
+            violation = {
+                "type": "memory_protection_violation",
+                "timestamp": event["timestamp"],
+                "address": data.get("address", 0),
+                "access_type": data.get("access_type", "unknown"),
+                "current_permission": data.get("current_permission", "unknown"),
+                "required_permission": data.get("required_permission", "unknown"),
+                "instruction_pointer": data.get("instruction_pointer", 0),
+                "severity": "high"
+            }
+            
+            violations.append(violation)
+        
+        return violations
+    
+    def detect_privilege_escalation(self) -> List[Dict[str, Any]]:
+        """
+        Detect privilege escalation in the logs.
+        
+        Returns:
+            List of detected privilege escalations
+        """
+        escalations = []
+        
+        # Filter for privilege change events
+        privilege_events = self.log.filter_logs(
+            categories=[EventCategory.PRIVILEGE],
+            event_types=["privilege_change"]
+        )
+        
+        for event in privilege_events:
+            data = event["data"]
+            
+            from_level = data.get("from_level", "")
+            to_level = data.get("to_level", "")
+            
+            # Check if this is an escalation
+            if self._is_privilege_escalation(from_level, to_level):
+                escalation = {
+                    "type": "privilege_escalation",
+                    "timestamp": event["timestamp"],
+                    "from_level": from_level,
+                    "to_level": to_level,
+                    "source": data.get("source", "unknown"),
+                    "instruction_pointer": data.get("instruction_pointer", 0),
+                    "severity": "critical"
+                }
+                
+                escalations.append(escalation)
+        
+        return escalations
+    
+    def _is_privilege_escalation(self, from_level: str, to_level: str) -> bool:
+        """
+        Check if a privilege change is an escalation.
+        
+        Args:
+            from_level: Original privilege level
+            to_level: New privilege level
+            
+        Returns:
+            True if this is an escalation, False otherwise
+        """
+        # Map privilege levels to numeric values
+        level_map = {
+            "USER": 0,
+            "SUPERVISOR": 1,
+            "KERNEL": 2
         }
+        
+        # Get numeric values
+        from_value = level_map.get(from_level.upper(), -1)
+        to_value = level_map.get(to_level.upper(), -1)
+        
+        # Check if this is an escalation
+        return from_value < to_value
+    
+    def generate_security_report(self) -> Dict[str, Any]:
+        """
+        Generate a comprehensive security report from the logs.
+        
+        Returns:
+            Security report dictionary
+        """
+        # Get statistics
+        stats = self.log.get_statistics()
+        
+        # Detect anomalies
+        control_flow_anomalies = self.detect_control_flow_anomalies()
+        memory_violations = self.detect_memory_protection_violations()
+        privilege_escalations = self.detect_privilege_escalation()
+        
+        # Build report
+        report = {
+            "timestamp": time.time(),
+            "uptime": stats["uptime"],
+            "event_count": stats["total_events"],
+            "anomalies": {
+                "control_flow": control_flow_anomalies,
+                "memory_protection": memory_violations,
+                "privilege_escalation": privilege_escalations,
+                "total": len(control_flow_anomalies) + len(memory_violations) + len(privilege_escalations)
+            },
+            "statistics": stats,
+            "risk_assessment": self._assess_risk(
+                control_flow_anomalies,
+                memory_violations,
+                privilege_escalations
+            )
+        }
+        
+        return report
+    
+    def _assess_risk(
+        self,
+        control_flow_anomalies: List[Dict[str, Any]],
+        memory_violations: List[Dict[str, Any]],
+        privilege_escalations: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """
+        Assess security risk based on detected anomalies.
+        
+        Args:
+            control_flow_anomalies: Detected control flow anomalies
+            memory_violations: Detected memory violations
+            privilege_escalations: Detected privilege escalations
+            
+        Returns:
+            Risk assessment dictionary
+        """
+        # Calculate risk scores
+        control_flow_score = len(control_flow_anomalies) * 10
+        memory_score = len(memory_violations) * 8
+        privilege_score = len(privilege_escalations) * 15
+        
+        total_score = control_flow_score + memory_score + privilege_score
+        
+        # Determine risk level
+        risk_level = "low"
+        if total_score > 50:
+            risk_level = "critical"
+        elif total_score > 30:
+            risk_level = "high"
+        elif total_score > 10:
+            risk_level = "medium"
+        
+        # Generate risk assessment
+        assessment = {
+            "risk_level": risk_level,
+            "risk_score": total_score,
+            "component_scores": {
+                "control_flow": control_flow_score,
+                "memory_protection": memory_score,
+                "privilege_escalation": privilege_score
+            },
+            "recommendations": self._generate_recommendations(
+                risk_level,
+                bool(control_flow_anomalies),
+                bool(memory_violations),
+                bool(privilege_escalations)
+            )
+        }
+        
+        return assessment
+    
+    def _generate_recommendations(
+        self,
+        risk_level: str,
+        has_control_flow_issues: bool,
+        has_memory_issues: bool,
+        has_privilege_issues: bool
+    ) -> List[str]:
+        """
+        Generate security recommendations based on findings.
+        
+        Args:
+            risk_level: Overall risk level
+            has_control_flow_issues: Whether control flow issues were detected
+            has_memory_issues: Whether memory issues were detected
+            has_privilege_issues: Whether privilege issues were detected
+            
+        Returns:
+            List of recommendations
+        """
+        recommendations = []
+        
+        # Add general recommendations based on risk level
+        if risk_level in ("critical", "high"):
+            recommendations.append("Immediate investigation required")
+            recommendations.append("Consider terminating the virtual machine")
+        
+        # Add specific recommendations based on issue type
+        if has_control_flow_issues:
+            recommendations.append("Enable control flow integrity protection")
+            recommendations.append("Implement shadow stack for return address verification")
+        
+        if has_memory_issues:
+            recommendations.append("Enable data execution prevention (DEP)")
+            recommendations.append("Implement stack canaries")
+            recommendations.append("Consider enabling address space layout randomization (ASLR)")
+        
+        if has_privilege_issues:
+            recommendations.append("Review privilege management")
+            recommendations.append("Enforce strict privilege transition controls")
+            recommendations.append("Implement privilege level monitoring")
+        
+        return recommendations

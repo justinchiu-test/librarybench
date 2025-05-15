@@ -49,7 +49,7 @@ After analyzing both the `productmind` and `researchbrain` implementations, seve
 
 ## 2. Core Components and Responsibilities
 
-The unified library will be organized into the following core components:
+The unified library is organized into the following core components:
 
 ### 1. Models Module (`common.core.models`)
 - Base model classes for all knowledge objects
@@ -69,16 +69,11 @@ The unified library will be organized into the following core components:
 - Graph representation of knowledge relationships
 - Traversal and query capabilities
 
-### 4. Search Module (`common.core.search`)
-- Search interfaces and implementations
-- Index management
-- Query capabilities
-
-### 5. Utilities Module (`common.utils`)
+### 4. Utilities Module (`common.utils`)
 - Common utility functions
 - Type conversions
-- ID generation
-- Path management
+- File operations
+- Search helpers
 
 ## 3. Interface Definitions and Abstractions
 
@@ -227,189 +222,101 @@ class KnowledgeBase(ABC):
 +----------------+     +-----------------+
 ```
 
-## 6. Migration Strategy
+## 6. Implementation Status and Remaining Migration
 
-### Phase 1: Core Library Implementation
-1. Implement the common core components
-2. Write comprehensive tests for the core library
-3. Ensure broad coverage of common functionality
+### Current Status:
+1. ✅ Core Components in `common/` have been implemented with:
+   - Base models (KnowledgeNode) in `common.core.models`
+   - Storage system in `common.core.storage`
+   - Knowledge Graph in `common.core.knowledge`
+   - Utilities in `common.utils`
 
-### Phase 2: Productmind Migration
-1. Adapt Productmind models to use the common base models
-2. Refactor Productmind to use the common storage system
-3. Migrate Productmind's knowledge management logic to use the common library
-4. Run all Productmind tests to ensure functionality is preserved
+2. ✅ ProductMind has been migrated to use the common library:
+   - Models inherit from common base models
+   - Uses common storage system
+   - Uses common knowledge graph
 
-### Phase 3: Researchbrain Migration
-1. Adapt Researchbrain models to use the common base models
-2. Refactor Researchbrain to use the common storage system
-3. Migrate Researchbrain's knowledge management logic to use the common library
-4. Run all Researchbrain tests to ensure functionality is preserved
+3. ❌ ResearchBrain still needs migration:
+   - Currently uses custom models
+   - Has custom storage implementation
+   - Uses custom knowledge graph implementation
 
-### Phase 4: Integration and Optimization
-1. Refine the common library based on lessons learned
-2. Optimize performance of shared components
-3. Consolidate any remaining duplicate code
-4. Ensure all tests pass for both personas
+### ResearchBrain Migration Plan:
 
-## 7. Implementation Details
+#### 1. Model Migration
+- Refactor `researchbrain.core.models` to inherit from `common.core.models.KnowledgeNode`
+- Preserve all existing fields and validation logic
+- Standardize common fields (id, created_at, updated_at, tags)
 
-### Models Implementation
+#### 2. Storage Migration
+- Replace `researchbrain.core.storage.LocalStorage` with `common.core.storage.LocalStorage`
+- Adapt serialization/deserialization logic to maintain backward compatibility
+- Update all storage-related calls in the codebase
 
-The base model will provide common fields and methods:
+#### 3. Knowledge Graph Migration
+- Replace `researchbrain.core.brain._knowledge_graph` with `common.core.knowledge.KnowledgeGraph`
+- Update graph building and traversal logic
+- Preserve specialized relationship types and edge attributes
 
-```python
-class KnowledgeNode(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
-    tags: Set[str] = Field(default_factory=set)
-    
-    def update(self) -> None:
-        self.updated_at = datetime.now()
-```
+#### 4. ResearchBrain Class Refactoring
+- Refactor `ResearchBrain` class to use common components
+- Adapt all methods to use the common interfaces
+- Preserve all existing functionality and behavior
 
-Domain-specific models can inherit from this base:
+## 7. Detailed Migration Steps for ResearchBrain
 
-```python
-class Citation(KnowledgeNode):
-    title: str
-    authors: List[str]
-    year: Optional[int] = None
-    # ... other fields
-```
+### Phase 1: Model Migration
 
-### Storage Implementation
+1. Update all models in `researchbrain.core.models` to inherit from `common.core.models.KnowledgeNode`
+2. Update imports to use common enums where applicable
+3. Ensure backward compatibility with existing code
+4. Create adapter models where necessary for special cases
 
-The storage system will handle persistence with an abstract interface:
+### Phase 2: Storage Migration
 
-```python
-class BaseStorage(ABC):
-    @abstractmethod
-    def save(self, item: T) -> None: ...
-    
-    @abstractmethod
-    def get(self, model_type: Type[T], item_id: UUID) -> Optional[T]: ...
-    
-    # ... other methods
-```
+1. Replace `researchbrain.core.storage.LocalStorage` with `common.core.storage.LocalStorage`
+2. Update all imports and references in `researchbrain.core.brain`
+3. Adapt directory structure to match common storage patterns
+4. Update serialization/deserialization logic for compatibility
 
-With a file system implementation:
+### Phase 3: Knowledge Graph Migration
 
-```python
-class LocalStorage(BaseStorage):
-    def __init__(self, base_path: Union[str, Path]):
-        self.base_path = Path(base_path)
-        self._ensure_directories()
-        self._cache = {}
-        
-    def save(self, item: T) -> None:
-        # Implementation details
-        pass
-        
-    # ... other methods
-```
+1. Refactor `ResearchBrain._build_knowledge_graph()` to use `common.core.knowledge.KnowledgeGraph`
+2. Update all graph operations in `ResearchBrain` methods
+3. Preserve specialized relationship types and attributes
+4. Implement any necessary adapter methods
 
-### Knowledge Graph Implementation
+### Phase 4: Testing and Validation
 
-The knowledge graph will manage relationships between objects:
+1. Run all ResearchBrain tests to verify functionality
+2. Fix any integration issues
+3. Refine common components if needed
+4. Ensure performance meets or exceeds original implementation
 
-```python
-class KnowledgeGraph:
-    def __init__(self):
-        self._graph = nx.DiGraph()
-        
-    def add_node(self, node_id: str, **attrs):
-        self._graph.add_node(node_id, **attrs)
-        
-    def add_edge(self, source_id: str, target_id: str, **attrs):
-        self._graph.add_edge(source_id, target_id, **attrs)
-        
-    # ... other methods
-```
+## 8. Testing Strategy
 
-### Search Implementation
+1. Unit test all common components
+2. Integration test with both persona implementations
+3. Use existing tests to verify preserved functionality
+4. Perform performance benchmarks
+5. Run all tests for both personas to ensure compatibility
 
-The search system will provide text search capabilities:
-
-```python
-class SearchIndex:
-    def __init__(self, storage: BaseStorage):
-        self.storage = storage
-        self._indexes = {}
-        
-    def build_index(self, model_type: Type[T], fields: List[str]):
-        # Implementation details
-        pass
-        
-    def search(self, model_type: Type[T], query: str, fields: List[str]) -> List[UUID]:
-        # Implementation details
-        pass
-```
-
-## 8. Refactoring Approach
-
-### For Productmind:
-1. Update model definitions to inherit from common base models
-2. Replace Productmind storage with common storage
-3. Refactor Productmind's core classes to use the common knowledge base
-4. Map Productmind-specific operations to common interfaces
-
-### For Researchbrain:
-1. Update model definitions to inherit from common base models
-2. Replace Researchbrain storage with common storage
-3. Refactor Researchbrain's core classes to use the common knowledge base
-4. Map Researchbrain-specific operations to common interfaces
-
-## 9. Testing Strategy
-
-1. Implement unit tests for all common components
-2. Ensure the common library passes all tests in isolation
-3. Run persona-specific tests using the common library
-4. Fix any integration issues
-5. Ensure performance meets or exceeds original implementations
-
-## 10. Schedule and Milestones
-
-### Milestone 1: Core Library Implementation
-- Common models
-- Storage system
-- Knowledge graph
-- Search capabilities
-
-### Milestone 2: Productmind Migration
-- Adapter models
-- Storage migration
-- Core functionality migration
-- Testing and validation
-
-### Milestone 3: Researchbrain Migration
-- Adapter models
-- Storage migration
-- Core functionality migration
-- Testing and validation
-
-### Milestone 4: Final Integration and Testing
-- Performance optimization
-- Final testing
-- Documentation updates
-
-## 11. Risks and Mitigations
-
-### Risk: Incompatible design patterns
-- Mitigation: Use adapter patterns to bridge differences
-
-### Risk: Performance degradation
-- Mitigation: Implement caching and optimization in the common library
-
-### Risk: Test failures
-- Mitigation: Incremental migration and frequent testing
-
-### Risk: Overgeneralization leads to complexity
-- Mitigation: Focus on common patterns first, then add abstraction only where needed
-
-## 12. Dependencies
+## 9. Dependencies
 
 - Pydantic: For data modeling
 - NetworkX: For knowledge graph representation
 - Python standard library: For core functionality
+
+## 10. Risks and Mitigations
+
+### Risk: Breaking existing functionality
+- Mitigation: Incremental migration with continuous testing
+
+### Risk: Performance degradation
+- Mitigation: Optimize common components and maintain caching
+
+### Risk: Incompatible data formats
+- Mitigation: Implement adapter patterns and migration utilities
+
+### Risk: Test failures
+- Mitigation: Address each test failure incrementally, preserving existing behavior

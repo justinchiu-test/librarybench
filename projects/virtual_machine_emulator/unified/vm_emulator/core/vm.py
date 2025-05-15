@@ -52,17 +52,18 @@ class VirtualMachine(BaseVirtualMachine):
             enable_race_detection: Whether to enable race detection
             enable_cache_coherence: Whether to enable cache coherence
         """
-        # Call parent constructor with minimal initialization
+        # Set these fields before calling parent constructor
+        # because parent constructor calls _create_memory_system which needs these fields
+        self.enable_race_detection = enable_race_detection
+        self.enable_cache_coherence = enable_cache_coherence
+        
+        # Call parent constructor
         super().__init__(
             num_processors=num_processors,
             memory_size=memory_size,
             random_seed=random_seed,
             enable_tracing=enable_tracing
         )
-        
-        # Additional parallel-specific fields
-        self.enable_race_detection = enable_race_detection
-        self.enable_cache_coherence = enable_cache_coherence
         
         # Race condition detection
         self.shared_addresses: Set[int] = set()
@@ -80,6 +81,64 @@ class VirtualMachine(BaseVirtualMachine):
         
         # For testing
         self.debug_mode = False
+    
+    def create_thread(
+        self,
+        entry_point_or_program_id: Union[int, str],
+        registers: Optional[Dict[str, int]] = None,
+        parent_thread_id: Optional[str] = None
+    ) -> str:
+        """
+        Create a new thread for a program or starting at an entry point.
+        
+        Args:
+            entry_point_or_program_id: Program ID or starting program counter value
+            registers: Initial register values
+            parent_thread_id: ID of the parent thread if any
+            
+        Returns:
+            ID of the created thread
+        """
+        # Check if entry_point_or_program_id is a program ID
+        if isinstance(entry_point_or_program_id, str) and entry_point_or_program_id in self.loaded_programs:
+            program = self.loaded_programs[entry_point_or_program_id]
+            entry_point = program.entry_point
+        else:
+            # Assume it's an entry point
+            program = None
+            entry_point = entry_point_or_program_id
+        
+        # Create the thread ID and thread
+        thread_id = self.create_thread_id()
+        thread = Thread(
+            thread_id=thread_id,
+            entry_point=entry_point,
+            registers=registers,
+            parent_thread_id=parent_thread_id,
+            creation_time=self.global_clock
+        )
+        
+        # Add program reference for the parallel VM tests
+        if program is not None:
+            thread.program = program
+        
+        self.threads[thread_id] = thread
+        self.ready_queue.append(thread_id)
+        
+        # Record thread creation in execution trace
+        event = ExecutionEvent(
+            event_type="thread_created",
+            timestamp=self.global_clock,
+            thread_id=thread_id,
+            details={
+                "parent_thread_id": parent_thread_id,
+                "entry_point": entry_point,
+                "program_id": entry_point_or_program_id if isinstance(entry_point_or_program_id, str) else None
+            }
+        )
+        self.add_execution_trace(event)
+        
+        return thread_id
     
     def _create_memory_system(self, memory_size: int) -> BaseMemorySystem:
         """
@@ -145,9 +204,17 @@ class VirtualMachine(BaseVirtualMachine):
         """
         # Check each loaded program for the instruction
         for program in self.loaded_programs.values():
-            instruction = program.get_instruction(address)
-            if instruction is not None:
-                return instruction
+            # Handle the difference between program formats
+            # vm_emulator Program uses lists while common.core.program uses dicts
+            if hasattr(program, 'instructions') and isinstance(program.instructions, list):
+                # vm_emulator format: instructions is a list
+                if 0 <= address < len(program.instructions):
+                    return program.instructions[address]
+            else:
+                # common.core.program format: instructions is a dict
+                instruction = program.get_instruction(address)
+                if instruction is not None:
+                    return instruction
         
         return None
     

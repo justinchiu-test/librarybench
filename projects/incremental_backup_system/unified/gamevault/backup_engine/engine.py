@@ -130,7 +130,7 @@ class BackupEngine:
                 metadata=file_info.metadata or {}
             )
             
-        return ProjectVersion(
+        project_version = ProjectVersion(
             id=version_info.id,
             timestamp=version_info.timestamp,
             name=name,
@@ -141,6 +141,28 @@ class BackupEngine:
             files=converted_files,
             is_milestone=is_milestone
         )
+        
+        # Ensure the milestone flag is properly set in the version
+        if is_milestone:
+            try:
+                print(f"Setting is_milestone=True for version {version_info.id}")
+                # If our version tracker has a _save_version method, use it
+                if hasattr(self.version_tracker, "_save_version"):
+                    # Update the is_milestone flag directly on the version object
+                    version_to_update = self.version_tracker.get_version(version_info.id)
+                    version_to_update.is_milestone = True
+                    self.version_tracker._save_version(version_to_update)
+                    print(f"Updated version {version_info.id} via _save_version")
+                # Otherwise try to update it through the common library's version tracker
+                elif hasattr(self._engine, "version_tracker") and hasattr(self._engine.version_tracker, "_save_version"):
+                    version_to_update = self._engine.version_tracker.get_version(version_info.id)
+                    version_to_update.is_milestone = True
+                    self._engine.version_tracker._save_version(version_to_update)
+                    print(f"Updated version {version_info.id} via common library version tracker")
+            except Exception as e:
+                print(f"Error updating milestone flag for version {version_info.id}: {e}")
+            
+        return project_version
     
     def restore_version(
         self,

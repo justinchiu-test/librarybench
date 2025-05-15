@@ -130,11 +130,13 @@ class ExportService:
 
     def create_citation_block(
         self,
-        reference_ids: List[str],
+        reference_ids: List[Union[str, UUID]],
         context: Optional[str] = None
     ) -> CitationBlock:
         """Create a citation content block."""
-        return CitationBlock(reference_ids=reference_ids, context=context)
+        # Convert UUIDs to strings if necessary
+        str_reference_ids = [str(ref_id) for ref_id in reference_ids]
+        return CitationBlock(reference_ids=str_reference_ids, context=context)
 
     def generate_markdown(self, document_id: UUID) -> str:
         """Generate markdown for an academic document."""

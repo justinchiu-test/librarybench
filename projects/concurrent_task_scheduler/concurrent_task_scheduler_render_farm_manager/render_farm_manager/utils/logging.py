@@ -82,6 +82,239 @@ class AuditLogger(AuditInterface):
             log_level="error",
             severity=severity
         )
+        
+    def log_client_added(self, client_id: str, name: str, service_tier: str) -> AuditLogEntry:
+        """
+        Log a client added event.
+        
+        Args:
+            client_id: ID of the client
+            name: Name of the client
+            service_tier: Service tier of the client
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "client_added",
+            f"Client {client_id} ({name}) added to the render farm",
+            client_id=client_id,
+            client_name=name,
+            service_tier=service_tier
+        )
+    
+    def log_client_updated(self, client_id: str, name: str, old_tier: str, new_tier: str) -> AuditLogEntry:
+        """
+        Log a client updated event.
+        
+        Args:
+            client_id: ID of the client
+            name: Name of the client
+            old_tier: Previous service tier
+            new_tier: New service tier
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "client_updated",
+            f"Client {client_id} ({name}) service tier updated from {old_tier} to {new_tier}",
+            client_id=client_id,
+            client_name=name,
+            old_tier=old_tier,
+            new_tier=new_tier
+        )
+    
+    def log_node_added(self, node_id: str, name: str, status: str, capabilities: dict) -> AuditLogEntry:
+        """
+        Log a node added event.
+        
+        Args:
+            node_id: ID of the node
+            name: Name of the node
+            status: Status of the node
+            capabilities: Capabilities of the node
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "node_added",
+            f"Node {node_id} ({name}) added to the render farm",
+            node_id=node_id,
+            node_name=name,
+            node_status=status,
+            node_capabilities=capabilities
+        )
+    
+    def log_node_updated(self, node_id: str, name: str, old_status: str, new_status: str) -> AuditLogEntry:
+        """
+        Log a node updated event.
+        
+        Args:
+            node_id: ID of the node
+            name: Name of the node
+            old_status: Previous status
+            new_status: New status
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "node_updated",
+            f"Node {node_id} ({name}) status updated from {old_status} to {new_status}",
+            node_id=node_id,
+            node_name=name,
+            old_status=old_status,
+            new_status=new_status
+        )
+        
+    def log_node_failure(self, node_id: str) -> AuditLogEntry:
+        """
+        Log a node failure event.
+        
+        Args:
+            node_id: ID of the failed node
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "node_failure",
+            f"Node {node_id} has failed",
+            node_id=node_id,
+            log_level="warning"
+        )
+    
+    def log_job_submitted(self, job_id: str, client_id: str, name: str, priority: str) -> AuditLogEntry:
+        """
+        Log a job submitted event.
+        
+        Args:
+            job_id: ID of the job
+            client_id: ID of the client
+            name: Name of the job
+            priority: Priority of the job
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "job_submitted",
+            f"Job {job_id} ({name}) submitted by client {client_id}",
+            job_id=job_id,
+            job_name=name,
+            client_id=client_id,
+            priority=priority
+        )
+    
+    def log_job_scheduled(self, job_id: str, node_id: str, client_id: str, priority: str) -> AuditLogEntry:
+        """
+        Log a job scheduled event.
+        
+        Args:
+            job_id: ID of the job
+            node_id: ID of the node
+            client_id: ID of the client
+            priority: Priority of the job
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "job_scheduled",
+            f"Job {job_id} scheduled on node {node_id}",
+            job_id=job_id,
+            node_id=node_id,
+            client_id=client_id,
+            priority=priority
+        )
+    
+    def log_job_updated(self, job_id: str, client_id: str, name: str, old_priority: str, new_priority: str) -> AuditLogEntry:
+        """
+        Log a job updated event.
+        
+        Args:
+            job_id: ID of the job
+            client_id: ID of the client
+            name: Name of the job
+            old_priority: Previous priority
+            new_priority: New priority
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "job_updated",
+            f"Job {job_id} ({name}) priority updated from {old_priority} to {new_priority}",
+            job_id=job_id,
+            job_name=name,
+            client_id=client_id,
+            old_priority=old_priority,
+            new_priority=new_priority
+        )
+    
+    def log_job_completed(self, job_id: str, client_id: str, name: str, completion_time: str) -> AuditLogEntry:
+        """
+        Log a job completed event.
+        
+        Args:
+            job_id: ID of the job
+            client_id: ID of the client
+            name: Name of the job
+            completion_time: Time of completion
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "job_completed",
+            f"Job {job_id} ({name}) completed",
+            job_id=job_id,
+            job_name=name,
+            client_id=client_id,
+            completion_time=completion_time
+        )
+    
+    def log_energy_mode_changed(self, old_mode: str, new_mode: str) -> AuditLogEntry:
+        """
+        Log an energy mode changed event.
+        
+        Args:
+            old_mode: Previous energy mode
+            new_mode: New energy mode
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "energy_mode_changed",
+            f"Energy mode changed from {old_mode} to {new_mode}",
+            old_mode=old_mode,
+            new_mode=new_mode
+        )
+    
+    def log_scheduling_cycle(self, jobs_scheduled: int, utilization_percentage: float, energy_optimized_jobs: int, progressive_outputs: int) -> AuditLogEntry:
+        """
+        Log a scheduling cycle event.
+        
+        Args:
+            jobs_scheduled: Number of jobs scheduled in this cycle
+            utilization_percentage: Percentage of cluster utilization
+            energy_optimized_jobs: Number of jobs optimized for energy usage
+            progressive_outputs: Number of progressive outputs generated
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "scheduling_cycle_completed",
+            f"Scheduling cycle completed: {jobs_scheduled} jobs scheduled, {utilization_percentage:.1f}% utilization",
+            jobs_scheduled=jobs_scheduled,
+            utilization_percentage=utilization_percentage,
+            energy_optimized_jobs=energy_optimized_jobs,
+            progressive_outputs=progressive_outputs
+        )
     
     def get_job_history(self, job_id: str) -> List[AuditLogEntry]:
         """

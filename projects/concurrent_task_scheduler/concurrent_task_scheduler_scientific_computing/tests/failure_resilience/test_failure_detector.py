@@ -87,8 +87,8 @@ def sample_simulation():
     simulation = Simulation(
         id="sim_climate_test",
         name="Climate Model Test",
-        created_at=datetime.now() - timedelta(hours=3),
-        status="running",
+        creation_time=datetime.now() - timedelta(hours=3),
+        status=SimulationStatus.RUNNING,
         priority=SimulationPriority.HIGH,
         stages=stages,
     )

@@ -618,6 +618,32 @@ class DatasetVersioningService:
         sorted_versions = sorted(versions, key=lambda v: v.created_at, reverse=True)
         
         return sorted_versions[0]
+        
+    def get_latest_version(self, dataset_id: UUID) -> Optional[DatasetVersion]:
+        """Alias for get_latest_dataset_version"""
+        return self.get_latest_dataset_version(dataset_id)
+        
+    def get_dataset_derivations(self, dataset_id: UUID) -> List[DataTransformation]:
+        """
+        Get all data transformations where this dataset is used as input.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            
+        Returns:
+            List[DataTransformation]: List of transformations where this dataset is the input
+        """
+        dataset = self.get_dataset(dataset_id)
+        if not dataset:
+            return []
+            
+        # Find all transformations for all versions of this dataset
+        latest_version = self.get_latest_version(dataset_id)
+        if not latest_version:
+            return []
+            
+        # Get transformations where the latest version of this dataset is the input
+        return self._storage.find_transformations_by_input_version(latest_version.id)
     
     def get_dataset_lineage(self, version_id: UUID) -> Dict[str, Dict[str, Any]]:
         """

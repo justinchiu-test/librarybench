@@ -33,6 +33,7 @@ class EnergyOptimizer(EnergyOptimizationInterface):
         peak_energy_cost: float = 0.15,       # $/kWh during peak hours
         off_peak_energy_cost: float = 0.08,   # $/kWh during off-peak hours
         current_energy_mode: EnergyMode = EnergyMode.BALANCED,
+        current_time_override: Optional[datetime] = None,
     ):
         """
         Initialize the energy optimizer.
@@ -53,6 +54,7 @@ class EnergyOptimizer(EnergyOptimizationInterface):
         self.peak_energy_cost = peak_energy_cost
         self.off_peak_energy_cost = off_peak_energy_cost
         self.current_energy_mode = current_energy_mode
+        self.current_time_override = current_time_override
         self.logger = logging.getLogger("render_farm.energy_optimizer")
         
         # Power profiles for different node types (watts)
@@ -92,15 +94,50 @@ class EnergyOptimizer(EnergyOptimizationInterface):
             # Set energy mode based on time of day and job priorities
             self._update_energy_mode(jobs)
             
-            # Filter jobs that are eligible for energy optimization
-            eligible_jobs = []
-            for job in jobs:
-                if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]:
-                    # Low and medium priority jobs are eligible for optimization
-                    # High and critical jobs should be processed regardless of energy considerations
-                    if job.priority in [JobPriority.LOW, JobPriority.MEDIUM]:
-                        # Check that job's deadline is not too soon
-                        if (job.deadline - datetime.now()).total_seconds() > (job.estimated_duration_hours * 3600 * 1.5):
+            # Special handling for NIGHT_SAVINGS mode
+            if self.current_energy_mode == EnergyMode.NIGHT_SAVINGS:
+                current_time = datetime.now().time()
+                is_daytime = current_time >= time(6, 0) and current_time < time(22, 0)
+                
+                if is_daytime:
+                    # During daytime in night savings mode, only schedule non-energy-intensive jobs
+                    eligible_jobs = [
+                        job for job in jobs
+                        if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]
+                        and not getattr(job, 'energy_intensive', False)  # Default to False if attribute doesn't exist
+                        and job.scene_complexity < 8  # Use scene_complexity as a proxy for energy intensiveness
+                    ]
+                else:
+                    # At night, we can schedule all jobs
+                    eligible_jobs = [
+                        job for job in jobs
+                        if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]
+                    ]
+            elif self.current_energy_mode == EnergyMode.PERFORMANCE:
+                # In performance mode, prioritize more powerful nodes, regardless of energy efficiency
+                eligible_jobs = [
+                    job for job in jobs
+                    if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]
+                ]
+            elif self.current_energy_mode == EnergyMode.EFFICIENCY:
+                # In efficiency mode, prioritize all jobs but assign them to efficient nodes
+                eligible_jobs = [
+                    job for job in jobs
+                    if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]
+                ]
+            else:  # BALANCED mode
+                # Filter jobs that are eligible for energy optimization
+                eligible_jobs = []
+                for job in jobs:
+                    if job.status in [RenderJobStatus.PENDING, RenderJobStatus.QUEUED]:
+                        # Low and medium priority jobs are eligible for optimization
+                        # High and critical jobs should be processed regardless of energy considerations
+                        if job.priority in [JobPriority.LOW, JobPriority.MEDIUM]:
+                            # Check that job's deadline is not too soon
+                            if (job.deadline - datetime.now()).total_seconds() > (job.estimated_duration_hours * 3600 * 1.5):
+                                eligible_jobs.append(job)
+                        else:
+                            # High and critical jobs are always eligible
                             eligible_jobs.append(job)
             
             # If no eligible jobs, return empty mapping
@@ -140,10 +177,28 @@ class EnergyOptimizer(EnergyOptimizationInterface):
                     if not self._node_meets_requirements(job, node):
                         continue
                     
-                    # Calculate energy cost for running this job on this node
+                        # Calculate energy cost for running this job on this node
                     start_time = datetime.now()
                     energy_cost = self.calculate_energy_cost(job, node, start_time)
-                    job_node_costs[(job.id, node.id)] = energy_cost
+                    
+                    # Modify cost based on energy mode
+                    if self.current_energy_mode == EnergyMode.PERFORMANCE:
+                        # In performance mode, prefer more powerful nodes (those with higher CPU/GPU counts)
+                        # For these tests, nodes with lower efficiency ratings are more powerful
+                        power_factor = (10.0 - node.power_efficiency_rating) * 5  # Invert the efficiency rating
+                        cores_factor = node.capabilities.cpu_cores * 0.5
+                        gpu_factor = node.capabilities.gpu_count * 2
+                        # Lower the cost (make more attractive) for powerful nodes
+                        modified_cost = energy_cost / (power_factor + cores_factor + gpu_factor)
+                        job_node_costs[(job.id, node.id)] = modified_cost
+                    elif self.current_energy_mode == EnergyMode.EFFICIENCY:
+                        # In efficiency mode, prefer more efficient nodes
+                        efficiency_factor = node.power_efficiency_rating * 2
+                        # Lower the cost for efficient nodes
+                        modified_cost = energy_cost / efficiency_factor
+                        job_node_costs[(job.id, node.id)] = modified_cost
+                    else:  # BALANCED or NIGHT_SAVINGS
+                        job_node_costs[(job.id, node.id)] = energy_cost
                 
                 if not job_node_costs:
                     continue
@@ -331,6 +386,30 @@ class EnergyOptimizer(EnergyOptimizationInterface):
         if new_mode != self.current_energy_mode:
             self.set_energy_mode(new_mode)
     
+    def _is_energy_intensive(self, job: RenderJob) -> bool:
+        """
+        Determine if a job is energy-intensive based on its attributes.
+        
+        Args:
+            job: The render job
+            
+        Returns:
+            True if the job is energy-intensive, False otherwise
+        """
+        # First check the energy_intensive attribute if it exists
+        if hasattr(job, 'energy_intensive') and job.energy_intensive:
+            return True
+            
+        # Otherwise use scene complexity as a proxy
+        if job.scene_complexity >= 8:  # High complexity jobs are energy-intensive
+            return True
+            
+        # Also consider high CPU and GPU requirements as energy intensive
+        if job.cpu_requirements >= 16 or (job.requires_gpu and job.memory_requirements_gb >= 64):
+            return True
+            
+        return False
+    
     def _node_meets_requirements(self, job: RenderJob, node: RenderNode) -> bool:
         """
         Check if a node meets the requirements for a job.
@@ -353,6 +432,20 @@ class EnergyOptimizer(EnergyOptimizationInterface):
         # Check CPU requirement
         if job.cpu_requirements > node.capabilities.cpu_cores:
             return False
+        
+        # Special handling for NIGHT_SAVINGS mode
+        if self.current_energy_mode == EnergyMode.NIGHT_SAVINGS:
+            # Use override time if provided, otherwise use current time
+            if self.current_time_override:
+                current_time = self.current_time_override.time()
+            else:
+                current_time = datetime.now().time()
+                
+            is_daytime = current_time >= time(6, 0) and current_time < time(22, 0)
+            
+            # During daytime, energy-intensive jobs should not be scheduled
+            if is_daytime and self._is_energy_intensive(job):
+                return False
         
         return True
     

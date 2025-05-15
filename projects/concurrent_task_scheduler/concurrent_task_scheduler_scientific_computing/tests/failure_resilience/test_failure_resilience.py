@@ -622,7 +622,7 @@ class TestResilienceCoordinator:
             id="sim-123",
             name="Test Simulation",
             description="A test simulation",
-            status="running",
+            status=SimulationStatus.RUNNING,
             priority=SimulationPriority.HIGH,
         )
         
@@ -893,7 +893,7 @@ class TestResilienceCoordinator:
         stalled_sim = Simulation(
             id="stalled-sim",
             name="Stalled Simulation",
-            status="running",
+            status=SimulationStatus.RUNNING,
         )
         stalled_sim.total_progress = lambda: 0.1
         

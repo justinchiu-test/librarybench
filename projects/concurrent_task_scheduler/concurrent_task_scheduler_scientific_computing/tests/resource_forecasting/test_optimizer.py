@@ -11,6 +11,7 @@ from concurrent_task_scheduler.models import (
     SimulationStage,
     SimulationStageStatus,
     SimulationPriority,
+    SimulationStatus,
     ForecastPeriod,
     ResourceForecast,
     ResourceProjection,
@@ -81,8 +82,8 @@ def sample_simulation():
     simulation = Simulation(
         id="sim_optimizer_test",
         name="Optimizer Test Simulation",
-        created_at=datetime.now() - timedelta(hours=3),
-        status="running",
+        creation_time=datetime.now() - timedelta(hours=3),
+        status=SimulationStatus.RUNNING,
         priority=SimulationPriority.HIGH,
         stages=stages,
     )

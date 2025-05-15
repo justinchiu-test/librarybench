@@ -1573,7 +1573,7 @@ class EnvironmentService:
         if not source:
             raise ValueError(f"Environment snapshot with ID {source_id} does not exist")
         
-        # Create a new snapshot with the same properties but a different ID
+        # Create a new snapshot with basic properties but a different ID
         snapshot = EnvironmentSnapshot(
             name=name,
             description=description or f"Clone of {source.name}",
@@ -1584,8 +1584,6 @@ class EnvironmentService:
             architecture=source.architecture,
             kernel_version=source.kernel_version,
             environment_variables=source.environment_variables.copy(),
-            packages=source.packages.copy() if hasattr(source.packages, 'copy') else source.packages,
-            compute_resources=source.compute_resources.copy() if hasattr(source.compute_resources, 'copy') else source.compute_resources,
             config_files=source.config_files.copy(),
             container_image=source.container_image,
             container_tag=source.container_tag,
@@ -1600,7 +1598,47 @@ class EnvironmentService:
             custom_metadata=source.custom_metadata.copy(),
         )
         
-        # Save the new snapshot
+        # Save the new snapshot to storage
         self._storage.create_environment(snapshot)
+        
+        # Copy packages - need to create new PackageInfo objects
+        if hasattr(source, 'packages') and source.packages:
+            for package in source.packages:
+                # If it's a PackageInfo object, use its attributes
+                if hasattr(package, 'name') and hasattr(package, 'version'):
+                    self.add_package(
+                        snapshot.id,
+                        name=package.name,
+                        version=package.version,
+                        manager=package.manager if hasattr(package, 'manager') else PackageManagerType.PIP,
+                        channel=package.channel if hasattr(package, 'channel') else None,
+                        extras=package.extras if hasattr(package, 'extras') else None
+                    )
+                # If it's a tuple of (name, version) or a string
+                elif isinstance(package, tuple) and len(package) >= 2:
+                    self.add_package(
+                        snapshot.id,
+                        name=package[0],
+                        version=package[1]
+                    )
+                elif isinstance(package, str):
+                    # Assuming string is just the package name, use a default version
+                    self.add_package(
+                        snapshot.id,
+                        name=package,
+                        version="latest"
+                    )
+        
+        # Copy compute resources - need to create new ComputeResource objects
+        if hasattr(source, 'compute_resources') and source.compute_resources:
+            for resource in source.compute_resources:
+                if hasattr(resource, 'type') and hasattr(resource, 'count'):
+                    self.add_compute_resource(
+                        snapshot.id,
+                        type=resource.type,
+                        count=resource.count,
+                        model=resource.model if hasattr(resource, 'model') else None,
+                        memory_gb=resource.memory_gb if hasattr(resource, 'memory_gb') else None
+                    )
         
         return snapshot

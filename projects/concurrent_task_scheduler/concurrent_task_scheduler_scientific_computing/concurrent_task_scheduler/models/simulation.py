@@ -46,7 +46,7 @@ class SimulationStage(BaseModel):
     name: str
     description: Optional[str] = None
     estimated_duration: timedelta
-    resource_requirements: List[ResourceRequirement]
+    resource_requirements: List[ResourceRequirement] = Field(default_factory=list)
     dependencies: Set[str] = Field(default_factory=set)
     status: SimulationStageStatus = SimulationStageStatus.PENDING
     progress: float = 0.0
@@ -91,8 +91,8 @@ class Simulation(BaseModel):
     creation_time: datetime = Field(default_factory=datetime.now)
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
-    owner: str
-    project: str
+    owner: str = "default_owner"
+    project: str = "default_project"
     tags: List[str] = Field(default_factory=list)
     metadata: Dict[str, Union[str, int, float, bool]] = Field(default_factory=dict)
     result_path: Optional[str] = None

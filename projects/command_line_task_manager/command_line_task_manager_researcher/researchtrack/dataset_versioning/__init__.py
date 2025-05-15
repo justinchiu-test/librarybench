@@ -192,5 +192,17 @@ class DatasetService:
             source_dataset_id=source_dataset_id,
             transformation=transformation
         )
+    
+    def get_dataset_derivations(self, dataset_id: UUID) -> List[DataTransformation]:
+        """
+        Get all derivations for a dataset (where this dataset is used as input).
+        
+        Args:
+            dataset_id: The ID of the dataset
+            
+        Returns:
+            List[DataTransformation]: List of transformations where this dataset is the input
+        """
+        return self._versioning_service.get_dataset_derivations(dataset_id)
         
     # Add any other methods needed for integration tests

@@ -1,3 +1,0 @@
-"""
-Data Scientist CLI adapter.
-"""

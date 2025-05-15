@@ -1,4 +1,0 @@
-msgid "Hello"
-msgstr "Hola"
-msgid "Bye"
-msgstr "Adiós"

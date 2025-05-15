@@ -1,3 +1,0 @@
-"""
-Unified source package initializer.
-"""

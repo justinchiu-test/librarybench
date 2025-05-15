@@ -1,3 +1,0 @@
-"""
-DevOps Engineer CLI adapter.
-"""

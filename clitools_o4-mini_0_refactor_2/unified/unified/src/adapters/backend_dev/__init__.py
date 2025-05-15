@@ -1,3 +1,0 @@
-"""
-Backend Developer CLI adapter.
-"""

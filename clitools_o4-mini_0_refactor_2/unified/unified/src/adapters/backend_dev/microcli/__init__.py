@@ -1,3 +1,0 @@
-"""
-Microcli for backend developer.
-"""

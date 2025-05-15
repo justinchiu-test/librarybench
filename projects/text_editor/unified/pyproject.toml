@@ -13,7 +13,7 @@ dependencies = ["nltk", "textstat", "spacy", "pydantic"]
 dev = ["pytest", "pytest-json-report", "ruff", "pyright"]
 
 [tool.setuptools]
-packages = ["common", "writer_text_editor", "text_editor"]
+packages = ["common", "text_editor", "writer_text_editor"]
 
 [tool.pytest]
 

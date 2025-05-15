@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "unified-incremental_backup_system"
+version = "0.1.0"
+description = "Unified libraries for incremental_backup_system with original package names preserved"
+requires-python = ">=3.8"
+
+[tool.setuptools]
+packages = ["common", "creative_vault", "gamevault"]

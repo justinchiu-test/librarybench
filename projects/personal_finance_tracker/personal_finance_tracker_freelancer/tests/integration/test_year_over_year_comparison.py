@@ -23,6 +23,7 @@ from personal_finance_tracker.tax.models import (
     FilingStatus,
     TaxJurisdiction,
     TaxYearSummary,
+    TaxBracket,
 )
 from personal_finance_tracker.project.profitability_analyzer import ProjectProfiler
 

@@ -1,25 +1,40 @@
-# Unified In-Memory Database Library
+# Unified In Memory Database Libraries
 
-This library provides a shared implementation that can be used by both:
-- VectorDB (ML Engineer)
-- SyncDB (Mobile Developer)
+## Overview
+This is a unified implementation of in memory database functionality 
+that preserves the original package names from multiple persona implementations.
+
+The following packages are available:
+- `common` - Shared functionality for all implementations
+- `syncdb` - `vectordb`
 
 ## Installation
-
-To install the unified library:
+Install the library in development mode:
 
 ```bash
 pip install -e .
 ```
 
 ## Usage
-
-Import components from the library:
+Import the original packages directly:
 
 ```python
-from unified_inmemdb import core
+# Import from original packages (preserved for backward compatibility)
+import vectordb # Example using first package
+
+# Import from common package (for shared functionality)
+from common import core
 ```
 
-## Documentation
+## Testing
+Tests are preserved for each persona implementation:
 
-See PLAN.md for the architectural design and component documentation.
+```bash
+cd tests
+pytest
+```
+
+Record test results with:
+```bash
+pytest --json-report --json-report-file=report.json --continue-on-collection-errors
+```

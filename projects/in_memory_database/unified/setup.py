@@ -1,9 +1,9 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(
-    name="unified_inmemdb",
+    name="unified-in_memory_database",
     version="0.1.0",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
-    python_requires=">=3.6",
+    description="Unified libraries for in_memory_database with original package names preserved",
+    packages=["common", "vectordb", "syncdb"],
+    python_requires=">=3.8",
 )

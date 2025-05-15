@@ -1,0 +1,23 @@
+================================================================ test session starts =================================================================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+collected 22 items
+
+test_renderer.py ..                                                                                                                            [  9%]
+test_exporter.py ....                                                                                                                          [ 27%]
+test_validation.py ...                                                                                                                         [ 40%]
+test_plugin.py ..                                                                                                                              [ 50%]
+test_errors.py ..                                                                                                                              [ 59%]
+test_audit.py .                                                                                                                                [ 63%]
+test_fields.py ......                                                                                                                          [ 90%]
+test_layout.py .                                                                                                                               [ 95%]
+test_accessibility.py .                                                                                                                        [100%]
+
+-------------------------------------------------------------------- JSON report ---------------------------------------------------------------------
+report saved to: report.json
+================================================================= 22 passed in 0.05s =================================================================

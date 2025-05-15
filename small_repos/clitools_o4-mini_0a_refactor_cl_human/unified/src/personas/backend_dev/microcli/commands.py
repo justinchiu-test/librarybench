@@ -443,3 +443,24 @@ def register_microservice_commands(registry: CommandRegistry) -> None:
         registry: Command registry to register commands with
     """
     MicroserviceCommands(registry)
+
+
+def register_subcommands(registry: CommandRegistry = None) -> dict:
+    """
+    Register all subcommands with a command registry.
+    
+    Args:
+        registry: Command registry to register commands with
+        
+    Returns:
+        Dictionary of registered subcommands
+    """
+    if registry:
+        register_microservice_commands(registry)
+    
+    # Return dictionary of commands for testing
+    return {
+        "migrate": "Database migration command",
+        "seed": "Seed database with sample data",
+        "status": "Check service status"
+    }

@@ -285,3 +285,38 @@ def configure(name: str = "translator",
     """Configure the global logging setup."""
     global _global_logging_setup
     _global_logging_setup = LoggingSetup(name, level, format, log_file, console, max_bytes, backup_count)
+
+
+def setup_logging(json_format: bool = False, level: int = logging.INFO) -> logging.Logger:
+    """
+    Set up a basic logger with console output.
+    
+    Args:
+        json_format: Whether to use JSON format
+        level: Log level
+        
+    Returns:
+        Configured logger
+    """
+    # Create logger
+    logger = logging.getLogger("translator")
+    logger.setLevel(level)
+    
+    # Remove existing handlers
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+    
+    # Create handler
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(level)
+    
+    # Create formatter
+    if json_format:
+        formatter = logging.Formatter('{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}')
+    else:
+        formatter = logging.Formatter('%(levelname)s:%(message)s')
+    
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    
+    return logger

@@ -1,0 +1,15 @@
+Clustering game_dev and pat_finance_officer and api_startup and mobile_dev and IoTManager and devon_ecommerce_engineer and ComplianceOfficer and data_scientist and dr_sophie_it_admin and MobileGameDev and alice_data_analyst and security_officer and DevOpsEngineer and charlie_game_dev into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+pat_finance_officer,IoTManager,devon_ecommerce_engineer,ComplianceOfficer,dr_sophie_it_admin,alice_data_analyst,DevOpsEngineer 0.29100392401769415
+api_startup,mobile_dev,data_scientist,security_officer 0.25408331100259723
+game_dev,MobileGameDev,charlie_game_dev (BEST) 0.2311184489673357
+=== STRING TASK CLUSTERS ===
+game_dev,api_startup,mobile_dev,data_scientist,security_officer 39.875
+IoTManager,ComplianceOfficer,MobileGameDev,DevOpsEngineer 37.791666666666664
+pat_finance_officer,devon_ecommerce_engineer,dr_sophie_it_admin,alice_data_analyst,charlie_game_dev (BEST) 35.575
+
+api_startup,mobile_dev,data_scientist,security_officer
+game_dev,MobileGameDev,charlie_game_dev
+IoTManager,ComplianceOfficer,DevOpsEngineer
+pat_finance_officer,devon_ecommerce_engineer,dr_sophie_it_admin,alice_data_analyst

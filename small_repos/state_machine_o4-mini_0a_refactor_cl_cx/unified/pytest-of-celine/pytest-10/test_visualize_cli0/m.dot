@@ -1,0 +1,3 @@
+digraph StateMachine {
+  "A" -> "B" [label="go"];
+}

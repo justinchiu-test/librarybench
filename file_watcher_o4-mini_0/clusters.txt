@@ -1,0 +1,15 @@
+Clustering realtime_dashboard and DataScientist and asset_synchronizer and qa_analyst and QAEngineer and security_analyst and ide_plugin_dev and SysAdmin and security_auditor and doc_tester and devops_engineer and DevOpsEngineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+asset_synchronizer,qa_analyst,security_auditor 0.252624259149193
+DataScientist,QAEngineer,SysAdmin,DevOpsEngineer (BEST) 0.23180710056611464
+realtime_dashboard,security_analyst,ide_plugin_dev,doc_tester,devops_engineer 0.2500879597487963
+=== STRING TASK CLUSTERS ===
+DataScientist,QAEngineer,SysAdmin,DevOpsEngineer 39.083333333333336
+asset_synchronizer,qa_analyst,security_auditor 39.583333333333336
+realtime_dashboard,security_analyst,ide_plugin_dev,doc_tester,devops_engineer (BEST) 38.175
+
+
+DataScientist,QAEngineer,SysAdmin,DevOpsEngineer
+realtime_dashboard,security_analyst,ide_plugin_dev,doc_tester,devops_engineer 
+asset_synchronizer,qa_analyst,security_auditor

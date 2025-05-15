@@ -1,0 +1,14 @@
+Clustering qa_engineer and ecommerce_manager and web_scraper and devops_admin and iot_developer and data_scientist and iot_coordinator and devops_engineer and saas_platform_admin and data_engineer and finance_analyst into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+qa_engineer,iot_developer,data_scientist,iot_coordinator,devops_engineer,finance_analyst 0.25450915736294855
+web_scraper,devops_admin,data_engineer 0.23180933966273676
+ecommerce_manager,saas_platform_admin (BEST) 0.21122500697200847
+=== STRING TASK CLUSTERS ===
+ecommerce_manager,iot_coordinator,saas_platform_admin 39.75
+web_scraper,devops_admin,data_engineer (BEST) 37.916666666666664
+qa_engineer,iot_developer,data_scientist,devops_engineer,finance_analyst 39.075
+
+ecommerce_manager,iot_coordinator,saas_platform_admin
+web_scraper,devops_admin,data_engineer
+qa_engineer,iot_developer,data_scientist,devops_engineer,finance_analyst

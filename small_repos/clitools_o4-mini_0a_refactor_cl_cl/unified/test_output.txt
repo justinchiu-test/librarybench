@@ -3,346 +3,57 @@ platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
 rootdir: /Users/celine/Research/librarybench
 configfile: pyproject.toml
 plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
-collected 58 items / 24 errors
+collected 109 items
 
-tests/test_backend_dev_config_parser.py .F.                              [  5%]
-tests/test_backend_dev_config_schema.py .                                [  6%]
-tests/test_backend_dev_config_validator.py ....                          [ 13%]
-tests/test_backend_dev_dev_commands.py .                                 [ 15%]
-tests/test_backend_dev_di.py .                                           [ 17%]
-tests/test_backend_dev_env.py ...                                        [ 22%]
-tests/test_backend_dev_help_formatter.py ...                             [ 27%]
-tests/test_backend_dev_i18n.py ..                                        [ 31%]
-tests/test_backend_dev_publish.py ...                                    [ 36%]
-tests/test_backend_dev_scffold.py ..                                     [ 39%]
-tests/test_backend_dev_secrets.py ..                                     [ 43%]
-tests/test_backend_dev_signals.py .                                      [ 44%]
-tests/test_backend_dev_version.py ...                                    [ 50%]
-tests/test_data_scientist_commands.py ...                                [ 55%]
-tests/test_data_scientist_config_parser.py ...                           [ 60%]
-tests/test_data_scientist_config_schema.py .                             [ 62%]
-tests/test_data_scientist_config_validator.py ...                        [ 67%]
-tests/test_data_scientist_di.py .                                        [ 68%]
-tests/test_data_scientist_help_formatter.py ...                          [ 74%]
-tests/test_data_scientist_i18n.py ...                                    [ 79%]
-tests/test_ops_engineer_config_parser.py .F.s.                           [ 87%]
-tests/test_ops_engineer_config_validator.py F..                          [ 93%]
-tests/test_translator_cache.py ..                                        [ 96%]
-tests/test_translator_retry.py ..                                        [100%]
+tests/test_backend_dev_config_parser.py ...                              [  2%]
+tests/test_backend_dev_config_schema.py .                                [  3%]
+tests/test_backend_dev_config_validator.py ....                          [  7%]
+tests/test_backend_dev_dev_commands.py .                                 [  8%]
+tests/test_backend_dev_di.py .                                           [  9%]
+tests/test_backend_dev_env.py ...                                        [ 11%]
+tests/test_backend_dev_help_formatter.py ...                             [ 14%]
+tests/test_backend_dev_i18n.py ..                                        [ 16%]
+tests/test_backend_dev_publish.py ...                                    [ 19%]
+tests/test_backend_dev_scffold.py ..                                     [ 21%]
+tests/test_backend_dev_secrets.py ..                                     [ 22%]
+tests/test_backend_dev_signals.py .                                      [ 23%]
+tests/test_backend_dev_version.py ...                                    [ 26%]
+tests/test_data_scientist_commands.py ...                                [ 29%]
+tests/test_data_scientist_config_parser.py ...                           [ 32%]
+tests/test_data_scientist_config_schema.py .                             [ 33%]
+tests/test_data_scientist_config_validator.py ...                        [ 35%]
+tests/test_data_scientist_di.py .                                        [ 36%]
+tests/test_data_scientist_help_formatter.py ...                          [ 39%]
+tests/test_data_scientist_i18n.py ...                                    [ 42%]
+tests/test_data_scientist_publish.py .                                   [ 43%]
+tests/test_data_scientist_scaffold.py .                                  [ 44%]
+tests/test_data_scientist_secrets.py ..                                  [ 45%]
+tests/test_data_scientist_signals.py .                                   [ 46%]
+tests/test_data_scientist_version.py ...                                 [ 49%]
+tests/test_localization_manager_features.py ..............               [ 62%]
+tests/test_ops_engineer_commands.py .                                    [ 63%]
+tests/test_ops_engineer_config_parser.py ...s.                           [ 67%]
+tests/test_ops_engineer_config_schema.py .                               [ 68%]
+tests/test_ops_engineer_config_validator.py ...                          [ 71%]
+tests/test_ops_engineer_di.py ..                                         [ 73%]
+tests/test_ops_engineer_env_override.py ..                               [ 75%]
+tests/test_ops_engineer_i18n.py ..                                       [ 77%]
+tests/test_ops_engineer_publisher.py ..                                  [ 78%]
+tests/test_ops_engineer_scaffold.py ..                                   [ 80%]
+tests/test_ops_engineer_secrets.py ..                                    [ 82%]
+tests/test_ops_engineer_signals.py .                                     [ 83%]
+tests/test_ops_engineer_version.py ...                                   [ 86%]
+tests/test_translator_cache.py ..                                        [ 88%]
+tests/test_translator_di.py ..                                           [ 89%]
+tests/test_translator_logging_setup.py ..                                [ 91%]
+tests/test_translator_profile.py .                                       [ 92%]
+tests/test_translator_prompt_style.py .                                  [ 93%]
+tests/test_translator_retry.py ..                                        [ 95%]
+tests/test_translator_run_test.py .                                      [ 96%]
+tests/test_translator_secrets.py .                                       [ 97%]
+tests/test_translator_translator_i18n.py .                               [ 98%]
+tests/test_translator_validator.py ..                                    [100%]
 
-==================================== ERRORS ====================================
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_publish.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_publish.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_data_scientist_publish.py:4: in <module>
-    from data_scientist.datapipeline_cli.publish import publish_package
-E   ModuleNotFoundError: No module named 'data_scientist.datapipeline_cli.publish'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_scaffold.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_scaffold.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_data_scientist_scaffold.py:3: in <module>
-    from data_scientist.datapipeline_cli.scaffold import gen_scaffold
-E   ModuleNotFoundError: No module named 'data_scientist.datapipeline_cli.scaffold'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_secrets.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_secrets.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_data_scientist_secrets.py:3: in <module>
-    from data_scientist.datapipeline_cli.secrets import manage_secrets
-E   ModuleNotFoundError: No module named 'data_scientist.datapipeline_cli.secrets'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_signals.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_signals.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_data_scientist_signals.py:2: in <module>
-    from data_scientist.datapipeline_cli.signals import handle_signals, _get_registered
-E   ModuleNotFoundError: No module named 'data_scientist.datapipeline_cli.signals'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_version.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_data_scientist_version.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_data_scientist_version.py:4: in <module>
-    from data_scientist.datapipeline_cli.version import get_version, bump_version, VERSION_FILE
-E   ModuleNotFoundError: No module named 'data_scientist.datapipeline_cli.version'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_localization_manager_features.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_localization_manager_features.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_localization_manager_features.py:6: in <module>
-    from localization_manager.localcli import __version__
-E   ImportError: cannot import name '__version__' from 'localization_manager.localcli' (/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/localization_manager/localcli/__init__.py)
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_commands.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_commands.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_commands.py:1: in <module>
-    from ops_engineer.cli_toolkit.commands import CLI
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.commands'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_config_schema.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_config_schema.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_config_schema.py:1: in <module>
-    from ops_engineer.cli_toolkit.config_schema import gen_config_schema
-E   ImportError: cannot import name 'gen_config_schema' from 'ops_engineer.cli_toolkit.config_schema' (/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/ops_engineer/cli_toolkit/config_schema.py)
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_di.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_di.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_di.py:2: in <module>
-    from ops_engineer.cli_toolkit.di import Container
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.di'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_env_override.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_env_override.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_env_override.py:2: in <module>
-    from ops_engineer.cli_toolkit.env_override import env_override
-E   ImportError: cannot import name 'env_override' from 'ops_engineer.cli_toolkit.env_override' (/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/ops_engineer/cli_toolkit/env_override.py)
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_i18n.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_i18n.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_i18n.py:3: in <module>
-    from ops_engineer.cli_toolkit.i18n import load_translations
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.i18n'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_publisher.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_publisher.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_publisher.py:1: in <module>
-    from ops_engineer.cli_toolkit.publisher import publish_package
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.publisher'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_scaffold.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_scaffold.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_scaffold.py:1: in <module>
-    from ops_engineer.cli_toolkit.scaffold import gen_scaffold
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.scaffold'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_secrets.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_secrets.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_secrets.py:1: in <module>
-    from ops_engineer.cli_toolkit.secrets import SecretManager
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.secrets'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_signals.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_signals.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_signals.py:4: in <module>
-    from ops_engineer.cli_toolkit.signals import register_cleanup, catch_signals
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.signals'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_version.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_ops_engineer_version.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_ops_engineer_version.py:2: in <module>
-    from ops_engineer.cli_toolkit.version import bump_version
-E   ModuleNotFoundError: No module named 'ops_engineer.cli_toolkit.version'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_di.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_di.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_di.py:2: in <module>
-    from translator.di import DependencyInjector
-E   ModuleNotFoundError: No module named 'translator.di'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_logging_setup.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_logging_setup.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_logging_setup.py:3: in <module>
-    from translator.logging_setup import setup_logging
-E   ModuleNotFoundError: No module named 'translator.logging_setup'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_profile.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_profile.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_profile.py:2: in <module>
-    from translator.profile import profile_command
-E   ModuleNotFoundError: No module named 'translator.profile'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_prompt_style.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_prompt_style.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_prompt_style.py:1: in <module>
-    from translator.prompt_style import PromptStyle
-E   ModuleNotFoundError: No module named 'translator.prompt_style'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_run_test.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_run_test.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_run_test.py:2: in <module>
-    from translator.run_test import run_test
-E   ModuleNotFoundError: No module named 'translator.run_test'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_secrets.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_secrets.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_secrets.py:3: in <module>
-    from translator.secrets import get_secret
-E   ModuleNotFoundError: No module named 'translator.secrets'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_translator_i18n.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_translator_i18n.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_translator_i18n.py:2: in <module>
-    from translator.i18n import I18n
-E   ModuleNotFoundError: No module named 'translator.i18n'
-_ ERROR collecting small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_validator.py _
-ImportError while importing test module '/Users/celine/Research/librarybench/small_repos/clitools_o4-mini_0a_refactor_cl_cl/unified/tests/test_translator_validator.py'.
-Hint: make sure your test modules/packages have valid Python names.
-Traceback:
-/Users/celine/miniconda3/envs/library/lib/python3.13/importlib/__init__.py:88: in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-tests/test_translator_validator.py:3: in <module>
-    from translator.validator import validate_input
-E   ModuleNotFoundError: No module named 'translator.validator'
-=================================== FAILURES ===================================
-________________________________ test_parse_ini ________________________________
-
-tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-469/test_parse_ini0')
-
-    def test_parse_ini(tmp_path):
-        f = tmp_path / "c.ini"
-        cp = configparser.ConfigParser()
-        cp["sec"] = {"k": "v"}
-        with open(f, "w") as fh:
-            cp.write(fh)
-        result = parse_config_files([str(f)])
->       assert "sec" in result
-E       AssertionError: assert 'sec' in {}
-
-tests/test_backend_dev_config_parser.py:20: AssertionError
-________________________________ test_parse_ini ________________________________
-
-    def test_parse_ini():
-        d = parse_config_string(ini_str, 'ini')
->       assert "section" in d and d["section"]["a"] == "10"
-E       AssertionError: assert ('section' in {})
-
-tests/test_ops_engineer_config_parser.py:15: AssertionError
-____________________________ test_validate_success _____________________________
-
-schema = {'properties': {'a': {'type': 'string'}, 'b': {'type': 'integer'}}, 'required': ['a', 'b'], 'type': 'object'}
-
-    def test_validate_success(schema):
-        data = {"a": "foo", "b": 10}
->       assert validate_config(schema, data) is True
-
-tests/test_ops_engineer_config_validator.py:17: 
-_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
-
-config = {'properties': {'a': {'type': 'string'}, 'b': {'type': 'integer'}}, 'required': ['a', 'b'], 'type': 'object'}
-schema = {'a': 'foo', 'b': 10}
-
-    def validate_config(config: Dict[str, Any], schema: Dict[str, Dict[str, str]]) -> bool:
-        """
-        Validate a configuration against a schema.
-    
-        Args:
-            config (Dict[str, Any]): Configuration to validate.
-            schema (Dict[str, Dict[str, str]]): Schema to validate against.
-    
-        Returns:
-            bool: True if the configuration is valid.
-    
-        Raises:
-            ValueError: If the configuration doesn't match the schema.
-        """
-        type_checkers = {
-            'integer': lambda x: isinstance(x, int),
-            'string': lambda x: isinstance(x, str),
-            'boolean': lambda x: isinstance(x, bool),
-            'list': lambda x: isinstance(x, list),
-            'dict': lambda x: isinstance(x, dict),
-            'float': lambda x: isinstance(x, float)
-        }
-    
-        # Check for missing keys
-        for key in schema:
-            if key not in config:
->               raise ValueError(f"Missing required key: {key}")
-E               ValueError: Missing required key: a
-
-data_scientist/datapipeline_cli/config_validator.py:32: ValueError
 --------------------------------- JSON report ----------------------------------
 report saved to: report.json
-=========================== short test summary info ============================
-FAILED tests/test_backend_dev_config_parser.py::test_parse_ini - AssertionErr...
-FAILED tests/test_ops_engineer_config_parser.py::test_parse_ini - AssertionEr...
-FAILED tests/test_ops_engineer_config_validator.py::test_validate_success - V...
-ERROR tests/test_data_scientist_publish.py
-ERROR tests/test_data_scientist_scaffold.py
-ERROR tests/test_data_scientist_secrets.py
-ERROR tests/test_data_scientist_signals.py
-ERROR tests/test_data_scientist_version.py
-ERROR tests/test_localization_manager_features.py
-ERROR tests/test_ops_engineer_commands.py
-ERROR tests/test_ops_engineer_config_schema.py
-ERROR tests/test_ops_engineer_di.py
-ERROR tests/test_ops_engineer_env_override.py
-ERROR tests/test_ops_engineer_i18n.py
-ERROR tests/test_ops_engineer_publisher.py
-ERROR tests/test_ops_engineer_scaffold.py
-ERROR tests/test_ops_engineer_secrets.py
-ERROR tests/test_ops_engineer_signals.py
-ERROR tests/test_ops_engineer_version.py
-ERROR tests/test_translator_di.py
-ERROR tests/test_translator_logging_setup.py
-ERROR tests/test_translator_profile.py
-ERROR tests/test_translator_prompt_style.py
-ERROR tests/test_translator_run_test.py
-ERROR tests/test_translator_secrets.py
-ERROR tests/test_translator_translator_i18n.py
-ERROR tests/test_translator_validator.py
-============== 3 failed, 54 passed, 1 skipped, 24 errors in 0.43s ==============
+======================== 108 passed, 1 skipped in 0.37s ========================

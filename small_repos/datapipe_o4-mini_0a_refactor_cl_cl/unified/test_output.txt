@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 46 items
+
+tests/test_compliance_officer_compliance.py ..............               [ 30%]
+tests/test_iot_engineer_streaming.py .........                           [ 50%]
+tests/test_quant_trader_streaming.py ..........                          [ 71%]
+tests/test_social_media_analyst_streaming_toolkit.py .............       [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+============================== 46 passed in 1.19s ==============================

@@ -419,3 +419,64 @@ def configure(enabled: Optional[bool] = None, theme: str = "default") -> None:
     """Configure the global styler."""
     global _global_styler
     _global_styler = PromptStyler(enabled, theme)
+
+
+class PromptStyle:
+    """
+    Utility class for styling terminal prompts.
+    """
+    
+    # ANSI color codes
+    COLORS = {
+        'black': '\033[30m',
+        'red': '\033[91m',
+        'green': '\033[92m',
+        'yellow': '\033[93m',
+        'blue': '\033[94m',
+        'magenta': '\033[95m',
+        'cyan': '\033[96m',
+        'white': '\033[97m',
+        'reset': '\033[0m'
+    }
+    
+    # ANSI styles
+    STYLES = {
+        'bold': '\033[1m',
+        'dim': '\033[2m',
+        'italic': '\033[3m',
+        'underline': '\033[4m',
+        'blink': '\033[5m',
+        'reverse': '\033[7m',
+        'reset': '\033[0m'
+    }
+    
+    @classmethod
+    def style(cls, text: str, color: str = None, style: str = None) -> str:
+        """
+        Style text with ANSI color and style codes.
+        
+        Args:
+            text: Text to style
+            color: Color name (black, red, green, yellow, blue, magenta, cyan, white)
+            style: Style name (bold, dim, italic, underline, blink, reverse)
+            
+        Returns:
+            Styled text
+        """
+        styled_text = ""
+        
+        # Apply color
+        if color and color in cls.COLORS:
+            styled_text += cls.COLORS[color]
+        
+        # Apply style
+        if style and style in cls.STYLES:
+            styled_text += cls.STYLES[style]
+        
+        # Add text
+        styled_text += text
+        
+        # Reset
+        styled_text += cls.STYLES['reset']
+        
+        return styled_text

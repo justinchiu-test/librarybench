@@ -1,0 +1,18 @@
+Clustering qa_engineer and DataEngineer and backend_engineer and compliance_officer and mobile_developer and data_scientist and qa_tester and APIArchitect and plugin_author and iot_specialist and frontend_dev and MLResearcher and QAAnalyst and data_engineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+compliance_officer,qa_tester,iot_specialist,frontend_dev,data_engineer 0.26317839956736766
+DataEngineer,APIArchitect,MLResearcher,QAAnalyst (BEST) 0.22742538032657222
+qa_engineer,backend_engineer,mobile_developer,data_scientist,plugin_author 0.24882682782800436
+=== STRING TASK CLUSTERS ===
+compliance_officer,qa_tester,iot_specialist,frontend_dev,data_engineer 39.225
+DataEngineer,APIArchitect,MLResearcher,QAAnalyst (BEST) 32.25
+qa_engineer,backend_engineer,mobile_developer,data_scientist,plugin_author 39.1
+=== STRING CODE CLUSTERS ===
+qa_engineer,DataEngineer,backend_engineer,mobile_developer,data_scientist,APIArchitect,plugin_author,MLResearcher,QAAnalyst (BEST) 45.145833333333336
+qa_tester,frontend_dev,data_engineer 45.833333333333336
+compliance_officer,iot_specialist 45.25
+
+DataEngineer,APIArchitect,MLResearcher,QAAnalyst
+qa_engineer,backend_engineer,mobile_developer,data_scientist,plugin_author
+compliance_officer,qa_tester,iot_specialist,frontend_dev,data_engineer

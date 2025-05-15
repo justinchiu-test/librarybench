@@ -1,0 +1,14 @@
+Clustering sysadmin_jane and iotdev_raj and DataEngineer and ResearchScientist and iot_developer and IoTArchitect and fintech_maria and marketing_ops and MarketingManager and data_scientist and devops_engineer and dataeng_alex and DevOpsEngineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+sysadmin_jane,iotdev_raj,IoTArchitect,fintech_maria,dataeng_alex 0.24001556020327897
+iot_developer,marketing_ops,data_scientist,devops_engineer (BEST) 0.2238929593305366
+DataEngineer,ResearchScientist,MarketingManager,DevOpsEngineer 0.23511385786144662
+=== STRING TASK CLUSTERS ===
+iot_developer,marketing_ops,data_scientist,devops_engineer 39.708333333333336
+sysadmin_jane,iotdev_raj,fintech_maria,dataeng_alex 36.375
+DataEngineer,ResearchScientist,IoTArchitect,MarketingManager,DevOpsEngineer (BEST) 35.6
+
+iot_developer,marketing_ops,data_scientist,devops_engineer
+DataEngineer,ResearchScientist,MarketingManager,DevOpsEngineer 
+sysadmin_jane,iotdev_raj,IoTArchitect,fintech_maria,dataeng_alex

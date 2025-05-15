@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 55 items / 1 skipped
+
+tests/test_backend_developer_cache.py ..                                 [  3%]
+tests/test_backend_developer_config_manager.py ..                        [  7%]
+tests/test_backend_developer_expand_env_vars.py .                        [  9%]
+tests/test_backend_developer_export_json_schema.py .                     [ 10%]
+tests/test_backend_developer_export_schema_integration.py .              [ 12%]
+tests/test_backend_developer_load_config.py ...                          [ 18%]
+tests/test_backend_developer_prompt_missing.py .                         [ 20%]
+tests/test_backend_developer_validate_types.py ..                        [ 23%]
+tests/test_backend_developer_with_config.py ..                           [ 27%]
+tests/test_backend_developer_yaml_missing.py .                           [ 29%]
+tests/test_data_scientist_config_manager.py .........                    [ 45%]
+tests/test_data_scientist_prompt_and_types.py .....                      [ 54%]
+tests/test_devops_engineer_task_imports.py .                             [ 56%]
+tests/test_qa_engineer_config_manager.py ..........                      [ 74%]
+tests/test_qa_engineer_json_schema_integration.py ..                     [ 78%]
+tests/test_sysadmin_configtool.py ............                           [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+======================== 55 passed, 1 skipped in 0.40s =========================

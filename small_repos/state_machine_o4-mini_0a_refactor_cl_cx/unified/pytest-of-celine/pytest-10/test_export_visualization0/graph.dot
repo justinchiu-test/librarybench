@@ -1,0 +1,4 @@
+digraph StateMachine {
+  "A" -> "B" [label="go"];
+  "B" -> "A" [label="back"];
+}

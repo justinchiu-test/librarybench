@@ -1,0 +1,14 @@
+Clustering iot_fleet_manager and fintech_compliance_officer and fintech_developer and data_scientist and ml_engineer and devops_engineer and ml_researcher and sre and healthcare_secops and backend_developer and data_engineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+iot_fleet_manager,fintech_compliance_officer,fintech_developer,data_scientist,devops_engineer,healthcare_secops 0.2517772821532977
+ml_researcher,backend_developer 0.21968001753877908
+ml_engineer,sre,data_engineer (BEST) 0.195114146907328
+=== STRING TASK CLUSTERS ===
+ml_researcher,backend_developer 41.5
+fintech_developer,ml_engineer,sre,data_engineer 37.375
+iot_fleet_manager,fintech_compliance_officer,data_scientist,devops_engineer,healthcare_secops (BEST) 36.75
+
+fintech_developer,ml_engineer,sre,data_engineer
+iot_fleet_manager,fintech_compliance_officer,data_scientist,devops_engineer,healthcare_secops
+ml_researcher,backend_developer

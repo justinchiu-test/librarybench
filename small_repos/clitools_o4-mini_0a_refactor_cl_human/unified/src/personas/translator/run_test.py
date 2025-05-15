@@ -6,6 +6,7 @@ Runs tests on translations to ensure quality and correctness.
 import os
 import re
 import json
+import subprocess
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .validator import TranslationValidator
@@ -312,3 +313,46 @@ def run_tests(file_path: str,
 def check_translation(source: str, translation: str) -> Dict[str, Any]:
     """Check a single translation using the global tester."""
     return _global_tester.check_translation(source, translation)
+
+
+def run_test(command: List[str], locale: str = "en_US", env: Optional[Dict[str, str]] = None) -> str:
+    """
+    Run a command with specified locale and environment settings.
+    
+    Args:
+        command: Command to run as a list of strings
+        locale: Locale to use for the command
+        env: Additional environment variables
+        
+    Returns:
+        Command output as a string
+    """
+    # Prepare environment
+    cmd_env = os.environ.copy()
+    
+    # Set locale
+    cmd_env["LC_ALL"] = locale
+    cmd_env["LANG"] = locale
+    
+    # Add additional environment variables
+    if env:
+        cmd_env.update(env)
+    
+    # Run command
+    try:
+        result = subprocess.run(
+            command,
+            env=cmd_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            check=False
+        )
+        
+        # Check for errors
+        if result.returncode != 0:
+            return f"Error: Command failed with code {result.returncode}\n{result.stderr}"
+        
+        return result.stdout
+    except Exception as e:
+        return f"Error: Failed to execute command: {str(e)}"

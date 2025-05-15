@@ -1,0 +1,207 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 39 items
+
+tests/test_business_process_analyst_cli.py .                             [  2%]
+tests/test_business_process_analyst_process_engine.py ......             [ 17%]
+tests/test_game_developer_cli.py ..                                      [ 23%]
+tests/test_game_developer_run_tests.py .                                 [ 25%]
+tests/test_game_developer_statemachine.py .......                        [ 43%]
+tests/test_robotics_engineer_cli.py .F                                   [ 48%]
+tests/test_robotics_engineer_robotfsm.py ...F....                        [ 69%]
+tests/test_ux_prototyper_cli.py .                                        [ 71%]
+tests/test_ux_prototyper_simulate_invalid_transition.py .                [ 74%]
+tests/test_ux_prototyper_wizard_engine.py ....F.....                     [100%]
+
+=================================== FAILURES ===================================
+_______________________________ test_run_command _______________________________
+
+tmp_path = PosixPath('/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-483/test_run_command0')
+capsys = <_pytest.capture.CaptureFixture object at 0x1028b47d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10282b350>
+
+    def test_run_command(tmp_path, capsys, monkeypatch):
+        # Mock print function
+        original_print = print
+        messages = []
+    
+        def mock_print(*args, **kwargs):
+            message = ' '.join(map(str, args))
+            messages.append(message)
+            original_print(message)
+    
+        # Apply the mock
+        monkeypatch.setattr("builtins.print", mock_print)
+    
+        # Mock the yaml.safe_load function
+        def mock_safe_load(yaml_str):
+            return {
+                "states": ["A", "B"],
+                "transitions": [
+                    {"name": "t", "src": "A", "dst": "B", "trigger": "go"}
+                ]
+            }
+        monkeypatch.setattr(yaml, 'safe_load', mock_safe_load)
+    
+        # Create a dummy yaml file
+        content = {
+            'states': ['A', 'B'],
+            'transitions': [
+                {'name': 't', 'src': 'A', 'dst': 'B', 'trigger': 'go'}
+            ]
+        }
+        p = tmp_path / "m.yaml"
+>       p.write_text(yaml.dump(content))
+E       AttributeError: module 'src.interfaces.robotics_engineer.yaml' has no attribute 'dump'
+
+tests/test_robotics_engineer_cli.py:50: AttributeError
+_________________________ test_export_and_load_machine _________________________
+
+    def test_export_and_load_machine():
+        reset_machine()
+        define_transition('t1', 'x', 'y', 'ev1')
+        define_transition('t2', 'y', 'z', 'ev2')
+        yaml_str = export_machine()
+        data = yaml.safe_load(yaml_str)
+        assert set(data['states']) == {'x', 'y', 'z'}
+        reset_machine()
+>       load_machine(yaml_str)
+
+tests/test_robotics_engineer_robotfsm.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/interfaces/robotics_engineer/robotfsm.py:174: in load_machine
+    machine = StateMachine.load_machine(data)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cls = <class 'src.statemachine.core.StateMachine'>
+data = {'current_state': None, 'history_modes': '{}', 'states': ['x', 'y', 'z'], 'transitions': ['name: t1', 'name: t2']}
+
+    @classmethod
+    def load_machine(cls, data: Union[Dict[str, Any], str]) -> 'StateMachine':
+        """
+        Load a state machine from serialized data.
+    
+        Args:
+            data: Either a dictionary or a serialized string (JSON or YAML)
+    
+        Returns:
+            A new StateMachine instance initialized with the loaded data
+        """
+        # Convert string to dictionary if needed
+        if isinstance(data, str):
+            # Check if it's a YAML string (starts with typical YAML indicators)
+            if data.strip().startswith('states:') or data.strip().startswith('---'):
+                # Manually parse YAML for Business Process Analyst tests
+                lines = data.strip().split('\n')
+                dict_data = {}
+                current_section = None
+                current_list = []
+                current_dict = None
+    
+                for line in lines:
+                    line = line.rstrip()
+                    if not line or line.lstrip().startswith('#'):
+                        continue
+    
+                    if ':' in line and not line.strip().startswith('-'):
+                        key, value = line.split(':', 1)
+                        key = key.strip()
+                        value = value.strip()
+    
+                        if not value:  # Section header
+                            current_section = key
+                            if current_section not in dict_data:
+                                if current_section in ["states", "transitions"]:
+                                    dict_data[current_section] = []
+                                else:
+                                    dict_data[current_section] = {}
+                            current_list = []
+                        else:  # Key-value pair
+                            if current_section:
+                                if isinstance(dict_data[current_section], list):
+                                    if current_dict is not None:
+                                        current_dict[key] = value
+                                    else:
+                                        # Unexpected format
+                                        pass
+                                else:
+                                    dict_data[current_section][key] = value
+                            else:
+                                dict_data[key] = value
+                    elif line.strip().startswith('- '):
+                        item = line.strip()[2:].strip()
+                        if current_section:
+                            if isinstance(dict_data[current_section], list):
+                                if item:  # Simple list item
+                                    dict_data[current_section].append(item)
+                                else:  # Start of a new dict in a list
+                                    current_dict = {}
+                                    dict_data[current_section].append(current_dict)
+                        else:
+                            # Unexpected format
+                            pass
+                    elif ':' in line and line.strip().startswith('-'):
+                        # List item with key-value pair
+                        if current_section and current_dict is not None:
+                            key, value = line.strip()[1:].strip().split(':', 1)
+                            key = key.strip()
+                            value = value.strip()
+                            current_dict[key] = value
+            else:
+                # Try JSON
+                try:
+                    dict_data = SerializationManager.from_json(data)
+                except json.JSONDecodeError:
+                    # Fallback to standard YAML parser
+                    dict_data = SerializationManager.from_yaml(data)
+        else:
+            dict_data = data
+    
+        # Create a new state machine
+        machine = cls()
+    
+        # Load states and transitions
+        for state in dict_data.get("states", []):
+            machine.states.add(state)
+    
+        for t in dict_data.get("transitions", []):
+            # Skip guard as it can't be serialized/deserialized
+            machine.define_transition(
+>               t["name"],
+                t["from"],
+                t["to"],
+                t["trigger"]
+            )
+E           TypeError: string indices must be integers, not 'str'
+
+src/statemachine/core.py:428: TypeError
+_________________________ test_export_and_load_machine _________________________
+
+    def test_export_and_load_machine():
+        w = WizardEngine()
+        w.define_transition('t1', 'A', 'B', 'go')
+        w.define_transition('t2', 'B', 'C', 'next')
+        w.on_enter('C', lambda: None)
+        w.add_global_hook('after', lambda *args: None)
+        w.enable_history('grp', mode='deep')
+        data = w.export_machine()
+        w2 = WizardEngine()
+        w2.load_machine(data)
+        data2 = w2.export_machine()
+>       assert data['states'] == data2['states']
+E       AssertionError: assert ['B', 'C', 'A'] == ['A', 'B', 'C']
+E         
+E         At index 0 diff: 'B' != 'A'
+E         Use -v to get more diff
+
+tests/test_ux_prototyper_wizard_engine.py:53: AssertionError
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+=========================== short test summary info ============================
+FAILED tests/test_robotics_engineer_cli.py::test_run_command - AttributeError...
+FAILED tests/test_robotics_engineer_robotfsm.py::test_export_and_load_machine
+FAILED tests/test_ux_prototyper_wizard_engine.py::test_export_and_load_machine
+========================= 3 failed, 36 passed in 0.16s =========================

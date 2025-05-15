@@ -363,3 +363,48 @@ def validate_translations(source_text: str, translated_text: str) -> List[str]:
 def check_completeness(file_path: str, reference_file: Optional[str] = None) -> Dict[str, any]:
     """Check translation completeness using the global validator."""
     return _global_validator.check_completeness(file_path, reference_file)
+
+
+def validate_input(i18n, locale: str, required_keys: List[str] = None, 
+                  placeholders: Dict[str, str] = None, pattern: str = None,
+                  bundle_path: str = None) -> List[str]:
+    """
+    Validate translation input parameters.
+    
+    Args:
+        i18n: I18n instance with loaded translations
+        locale: Locale to validate
+        required_keys: List of required translation keys
+        placeholders: Dictionary of expected placeholders and example strings
+        pattern: Regex pattern that locale should match
+        bundle_path: Path to translation bundle that should exist
+        
+    Returns:
+        List of validation error messages
+    """
+    errors = []
+    
+    # Check if locale matches pattern
+    if pattern and not re.match(pattern, locale):
+        errors.append(f"Locale {locale} does not match pattern: {pattern}")
+    
+    # Check for required translation keys
+    if required_keys:
+        translations = getattr(i18n, 'translations', {}).get(locale, {})
+        for key in required_keys:
+            if key not in translations:
+                errors.append(f"Missing translation for key: {key}")
+    
+    # Check placeholder format
+    if placeholders:
+        for placeholder_name, example in placeholders.items():
+            # Check if the placeholder appears in the format {name}
+            placeholder_pattern = r'\{' + re.escape(placeholder_name) + r'\}'
+            if not re.search(placeholder_pattern, example):
+                errors.append(f"Invalid placeholder: {placeholder_name} in example: {example}")
+    
+    # Check if bundle file exists
+    if bundle_path and not os.path.exists(bundle_path):
+        errors.append(f"Bundle path does not exist: {bundle_path}")
+    
+    return errors

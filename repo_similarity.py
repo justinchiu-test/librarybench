@@ -42,9 +42,11 @@ def compute_pairwise_similarity(pair, task_strings, all_repo_code):
     # compute average fuzzy similarity on tasks
     t_sim = task_string_similarity(task_strings[i], task_strings[j])
     task_avg = sum(t_sim.values()) / len(t_sim)
+    ## Observed that code string sims match task string sims so remove for speed
+    code_avg = 0.
     # compute average fuzzy similarity on code
-    c_sim = code_string_similarity(all_repo_code[i][1], all_repo_code[j][1])
-    code_avg = sum(c_sim.values()) / len(c_sim)
+    # c_sim = code_string_similarity(all_repo_code[i][1], all_repo_code[j][1])
+    # code_avg = sum(c_sim.values()) / len(c_sim)
     return i, j, task_avg, code_avg
 
 def compute_string_matrices_parallel(directory_paths, processes=None):
@@ -216,10 +218,11 @@ if __name__ == "__main__":
     for idx, cluster in enumerate(string_task_clusters):
         print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == task_i else ''} {task_dists[idx]}")
 
-    code_i, code_dists = select_best_string_cluster(string_code_clusters, string_code_dist)
-    print("=== STRING CODE CLUSTERS ===")
-    for idx, cluster in enumerate(string_code_clusters):
-        print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == code_i else ''} {code_dists[idx]}")
+    ## Observed that code string sims match task string sims so remove for speed
+    # code_i, code_dists = select_best_string_cluster(string_code_clusters, string_code_dist)
+    # print("=== STRING CODE CLUSTERS ===")
+    # for idx, cluster in enumerate(string_code_clusters):
+    #     print(",".join(all_repos[cluster_i] for cluster_i in cluster) + f"{' (BEST)' if idx == code_i else ''} {code_dists[idx]}")
 
 
 # determine which generated personas to refactor tg: 

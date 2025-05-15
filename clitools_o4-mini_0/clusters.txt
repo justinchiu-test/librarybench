@@ -1,0 +1,12 @@
+=== EMBEDDING TASK CLUSTERS ===
+backend_dev,data_scientist,localization_manager,ops_engineer,translator
+plugin_developer,qa_automation
+cloud_infra_engineer,devops_engineer,opensource_maintainer,security_analyst
+=== STRING TASK CLUSTERS ===
+backend_dev,cloud_infra_engineer,data_scientist,devops_engineer,localization_manager,opensource_maintainer,ops_engineer,security_analyst
+plugin_developer,qa_automation
+translator
+=== STRING CODE CLUSTERS ===
+backend_dev,cloud_infra_engineer,data_scientist,devops_engineer,localization_manager,opensource_maintainer,ops_engineer,security_analyst
+plugin_developer,qa_automation
+translator

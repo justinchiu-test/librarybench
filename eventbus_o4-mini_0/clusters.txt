@@ -1,0 +1,15 @@
+Clustering game_dev and trading_analyst and quant_trader and healthcare_engineer and iot_engineer and distributed_architect and security_architect and iot_operator and mobile_dev and microservice_owner and sre_engineer and healthcare_architect and sre and data_engineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+trading_analyst,healthcare_engineer,iot_engineer,distributed_architect,mobile_dev 0.2575345806655458
+game_dev,quant_trader,iot_operator,sre_engineer,healthcare_architect (BEST) 0.21541565942856358
+security_architect,microservice_owner,sre,data_engineer 0.2228688448412541
+=== STRING TASK CLUSTERS ===
+trading_analyst,healthcare_engineer,iot_engineer,distributed_architect,mobile_dev 37.725
+game_dev,quant_trader,iot_operator,sre_engineer,healthcare_architect (BEST) 28.425
+security_architect,microservice_owner,sre,data_engineer 35.25
+
+
+game_dev,quant_trader,iot_operator,sre_engineer,healthcare_architect
+security_architect,microservice_owner,sre,data_engineer 
+trading_analyst,healthcare_engineer,iot_engineer,distributed_architect,mobile_dev

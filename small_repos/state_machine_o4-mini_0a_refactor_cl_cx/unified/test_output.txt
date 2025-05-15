@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench/small_repos/state_machine_o4-mini_0a_refactor_cl_cx/unified
+configfile: pytest.ini
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 39 items
+
+tests/test_business_process_analyst_cli.py .                             [  2%]
+tests/test_business_process_analyst_process_engine.py ......             [ 17%]
+tests/test_game_developer_cli.py ..                                      [ 23%]
+tests/test_game_developer_run_tests.py .                                 [ 25%]
+tests/test_game_developer_statemachine.py .......                        [ 43%]
+tests/test_robotics_engineer_cli.py ..                                   [ 48%]
+tests/test_robotics_engineer_robotfsm.py ........                        [ 69%]
+tests/test_ux_prototyper_cli.py .                                        [ 71%]
+tests/test_ux_prototyper_simulate_invalid_transition.py .                [ 74%]
+tests/test_ux_prototyper_wizard_engine.py ..........                     [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+============================== 39 passed in 0.10s ==============================

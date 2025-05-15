@@ -1,0 +1,14 @@
+Clustering SecurityAnalyst and game_dev and SyncToolCreator and data_wrangler and DataPipelineGuru and research_scientist and jane_doe and devops_buildmaster and sysadmin and OSSMaintainer and BackupAdmin and frontend_dev and security_officer and DevOpsEngineer and data_engineer into 3 clusters...
+Computing embeddings in parallel with caching...
+=== EMBEDDING TASK CLUSTERS ===
+data_wrangler,jane_doe,frontend_dev,security_officer 0.25875363324265643
+game_dev,research_scientist,devops_buildmaster,sysadmin,data_engineer (BEST) 0.2524692693130069
+SecurityAnalyst,SyncToolCreator,DataPipelineGuru,OSSMaintainer,BackupAdmin,DevOpsEngineer 0.25875455097083544
+=== STRING TASK CLUSTERS ===
+data_wrangler,jane_doe,frontend_dev,security_officer 38.583333333333336
+SecurityAnalyst,SyncToolCreator,DataPipelineGuru,OSSMaintainer,BackupAdmin,DevOpsEngineer (BEST) 37.416666666666664
+game_dev,research_scientist,devops_buildmaster,sysadmin,data_engineer 37.5
+
+game_dev,research_scientist,devops_buildmaster,sysadmin,data_engineer
+SecurityAnalyst,SyncToolCreator,DataPipelineGuru,OSSMaintainer,BackupAdmin,DevOpsEngineer
+data_wrangler,jane_doe,frontend_dev,security_officer

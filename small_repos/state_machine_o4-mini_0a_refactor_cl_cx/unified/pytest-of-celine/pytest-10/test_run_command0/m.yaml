@@ -1,0 +1,1 @@
+{"states": ["A", "B"], "transitions": [{"name": "t", "src": "A", "dst": "B", "trigger": "go"}]}

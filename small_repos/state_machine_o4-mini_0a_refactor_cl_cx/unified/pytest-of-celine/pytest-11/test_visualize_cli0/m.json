@@ -1,0 +1,1 @@
+{"states": ["B", "A"], "transitions": [{"name": "go", "from": "A", "to": "B", "trigger": "go", "guard": null}], "current_state": "A"}

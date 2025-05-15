@@ -16,3 +16,5 @@ data/
 
 *_metrics.json
 **/report.json
+
+**/.claude/settings.local.json

@@ -1,0 +1,9 @@
+states:
+  - A
+  - B
+transitions:
+  - name: t
+    from: 
+    to: 
+    trigger: go
+    guard: None

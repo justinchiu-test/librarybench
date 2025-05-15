@@ -11,11 +11,22 @@ from writer_text_editor.client import WriterTextEditor
 __version__ = "0.1.0"
 
 __all__ = [
-    "Document", "Section", "TextSegment", "Revision",
-    "FocusMode", "FocusLevel", "FocusContext",
-    "WritingStatistics", "ReadingLevel", "DocumentStats",
-    "NarrativeTracker", "ElementType", "NarrativeElement",
-    "DocumentNavigator", "NavigationViewType",
-    "RevisionManager", "DiffType",
-    "WriterTextEditor"
+    "Document",
+    "Section",
+    "TextSegment",
+    "Revision",
+    "FocusMode",
+    "FocusLevel",
+    "FocusContext",
+    "WritingStatistics",
+    "ReadingLevel",
+    "DocumentStats",
+    "NarrativeTracker",
+    "ElementType",
+    "NarrativeElement",
+    "DocumentNavigator",
+    "NavigationViewType",
+    "RevisionManager",
+    "DiffType",
+    "WriterTextEditor",
 ]

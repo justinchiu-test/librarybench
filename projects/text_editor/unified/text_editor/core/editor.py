@@ -1,10 +1,15 @@
 """
 Core editor implementation that combines buffer and cursor functionality.
+
+This implementation uses the common library's components where appropriate.
 """
+
 from typing import List, Optional, Dict, Any, Tuple
 from pydantic import BaseModel, Field
 import time
 
+from common.core.position import LineColumnPosition
+from common.core.text_content import TextContent
 from text_editor.core.buffer import TextBuffer
 from text_editor.core.cursor import Cursor
 from text_editor.core.file_manager import FileManager
@@ -19,6 +24,7 @@ class Editor(BaseModel):
     of the text editor, including text insertion, deletion, navigation, and
     other fundamental operations.
     """
+
     buffer: TextBuffer = Field(default_factory=TextBuffer)
     cursor: Cursor = None
     file_manager: FileManager = Field(default_factory=FileManager)
@@ -37,25 +43,25 @@ class Editor(BaseModel):
         self.cursor = Cursor(buffer=self.buffer)
         self.file_manager = FileManager(current_path=file_path)
         self.history = History()
-    
+
     def get_content(self) -> str:
         """
         Get the entire content of the editor.
-        
+
         Returns:
             The content as a string
         """
-        return self.buffer.get_content()
-    
+        return self.buffer.get_text()
+
     def get_cursor_position(self) -> Tuple[int, int]:
         """
         Get the current cursor position.
-        
+
         Returns:
             A tuple of (line, column)
         """
         return self.cursor.get_position()
-    
+
     def insert_text(self, text: str) -> None:
         """
         Insert text at the current cursor position.
@@ -64,7 +70,10 @@ class Editor(BaseModel):
             text: The text to insert
         """
         line, column = self.cursor.get_position()
-        self.buffer.insert_text(line, column, text)
+        position = LineColumnPosition(line=line, column=column)
+
+        # Insert the text using the buffer
+        self.buffer.insert(position, text)
 
         # Record the operation in history
         self.history.record_insert(line, column, text)
@@ -79,23 +88,32 @@ class Editor(BaseModel):
         else:
             # Move cursor forward by the length of the inserted text
             self.cursor.move_to(line, column + len(text))
-    
+
     def delete_char_before_cursor(self) -> None:
         """Delete the character before the cursor (backspace operation)."""
         line, column = self.cursor.get_position()
 
         if column > 0:
             # Delete character in the current line
-            deleted_text = self.buffer.delete_text(line, column - 1, line, column)
+            start_position = LineColumnPosition(line=line, column=column - 1)
+            end_position = LineColumnPosition(line=line, column=column)
+
+            deleted_text = self.buffer.delete(start_position, end_position)
             self.history.record_delete(line, column - 1, line, column, deleted_text)
             self.cursor.move_to(line, column - 1)
         elif line > 0:
             # At the beginning of a line, join with the previous line
             prev_line_length = len(self.buffer.get_line(line - 1))
-            deleted_text = self.buffer.delete_text(line - 1, prev_line_length, line, 0)
-            self.history.record_delete(line - 1, prev_line_length, line, 0, deleted_text)
+
+            start_position = LineColumnPosition(line=line - 1, column=prev_line_length)
+            end_position = LineColumnPosition(line=line, column=0)
+
+            deleted_text = self.buffer.delete(start_position, end_position)
+            self.history.record_delete(
+                line - 1, prev_line_length, line, 0, deleted_text
+            )
             self.cursor.move_to(line - 1, prev_line_length)
-    
+
     def delete_char_after_cursor(self) -> None:
         """Delete the character after the cursor (delete key operation)."""
         line, column = self.cursor.get_position()
@@ -103,23 +121,29 @@ class Editor(BaseModel):
 
         if column < line_length:
             # Delete character in the current line
-            deleted_text = self.buffer.delete_text(line, column, line, column + 1)
+            start_position = LineColumnPosition(line=line, column=column)
+            end_position = LineColumnPosition(line=line, column=column + 1)
+
+            deleted_text = self.buffer.delete(start_position, end_position)
             self.history.record_delete(line, column, line, column + 1, deleted_text)
         elif line < self.buffer.get_line_count() - 1:
             # At the end of a line, join with the next line
-            deleted_text = self.buffer.delete_text(line, line_length, line + 1, 0)
+            start_position = LineColumnPosition(line=line, column=line_length)
+            end_position = LineColumnPosition(line=line + 1, column=0)
+
+            deleted_text = self.buffer.delete(start_position, end_position)
             self.history.record_delete(line, line_length, line + 1, 0, deleted_text)
-    
+
     def new_line(self) -> None:
         """Insert a new line at the cursor position."""
         self.insert_text("\n")
-    
+
     def move_cursor(self, direction: str, count: int = 1) -> None:
         """
         Move the cursor in the specified direction.
-        
+
         Args:
-            direction: One of "up", "down", "left", "right", 
+            direction: One of "up", "down", "left", "right",
                       "line_start", "line_end", "buffer_start", "buffer_end"
             count: Number of units to move (for up, down, left, right)
         """
@@ -141,40 +165,46 @@ class Editor(BaseModel):
             self.cursor.move_to_buffer_end()
         else:
             raise ValueError(f"Unknown direction: {direction}")
-    
+
     def set_cursor_position(self, line: int, column: int) -> None:
         """
         Set the cursor to the specified position.
-        
+
         Args:
             line: Line number (0-indexed)
             column: Column number (0-indexed)
         """
         self.cursor.move_to(line, column)
-    
+
     def get_line(self, line_number: int) -> str:
         """
         Get a specific line from the buffer.
-        
+
         Args:
             line_number: The line number to retrieve (0-indexed)
-            
+
         Returns:
             The requested line as a string
         """
         return self.buffer.get_line(line_number)
-    
+
     def get_line_count(self) -> int:
         """
         Get the total number of lines in the buffer.
-        
+
         Returns:
             The number of lines
         """
         return self.buffer.get_line_count()
-    
-    def replace_text(self, start_line: int, start_col: int,
-                    end_line: int, end_col: int, new_text: str) -> str:
+
+    def replace_text(
+        self,
+        start_line: int,
+        start_col: int,
+        end_line: int,
+        end_col: int,
+        new_text: str,
+    ) -> str:
         """
         Replace text between the specified positions with new text.
 
@@ -188,17 +218,29 @@ class Editor(BaseModel):
         Returns:
             The replaced text
         """
-        deleted_text = self.buffer.replace_text(start_line, start_col, end_line, end_col, new_text)
-        self.history.record_replace(start_line, start_col, end_line, end_col, new_text, deleted_text)
+        start_position = LineColumnPosition(line=start_line, column=start_col)
+        end_position = LineColumnPosition(line=end_line, column=end_col)
+
+        deleted_text = self.buffer.replace(start_position, end_position, new_text)
+        self.history.record_replace(
+            start_line, start_col, end_line, end_col, new_text, deleted_text
+        )
         return deleted_text
-    
+
     def clear(self) -> None:
         """Clear the editor, removing all content."""
-        content = self.buffer.get_content()
+        content = self.buffer.get_text()
         if content:
-            self.history.record_delete(0, 0, self.buffer.get_line_count() - 1,
-                                     len(self.buffer.get_line(self.buffer.get_line_count() - 1)),
-                                     content)
+            line_count = self.buffer.get_line_count()
+            last_line_length = len(self.buffer.get_line(line_count - 1))
+
+            start_position = LineColumnPosition(line=0, column=0)
+            end_position = LineColumnPosition(
+                line=line_count - 1, column=last_line_length
+            )
+
+            self.history.record_delete(0, 0, line_count - 1, last_line_length, content)
+
         self.buffer.clear()
         self.cursor.move_to_buffer_start()
 
@@ -209,51 +251,7 @@ class Editor(BaseModel):
         Returns:
             True if an operation was undone, False otherwise
         """
-        operation = self.history.undo()
-        if not operation:
-            return False
-
-        if operation.type == "insert":
-            # To undo an insert, we delete the inserted text
-            self.buffer.delete_text(
-                operation.start_line,
-                operation.start_col,
-                operation.start_line + operation.text.count("\n"),
-                operation.start_col + len(operation.text.split("\n")[-1]) if "\n" in operation.text
-                else operation.start_col + len(operation.text)
-            )
-            self.cursor.move_to(operation.start_line, operation.start_col)
-        elif operation.type == "delete":
-            # To undo a delete, we insert the deleted text
-            self.buffer.insert_text(operation.start_line, operation.start_col, operation.deleted_text)
-            end_lines = operation.deleted_text.split("\n")
-            if len(end_lines) > 1:
-                end_line = operation.start_line + len(end_lines) - 1
-                end_col = len(end_lines[-1])
-            else:
-                end_line = operation.start_line
-                end_col = operation.start_col + len(operation.deleted_text)
-            self.cursor.move_to(end_line, end_col)
-        elif operation.type == "replace":
-            # To undo a replace, we delete the new text and insert the old text
-            self.buffer.replace_text(
-                operation.start_line,
-                operation.start_col,
-                operation.start_line + operation.text.count("\n"),
-                operation.start_col + len(operation.text.split("\n")[-1]) if "\n" in operation.text
-                else operation.start_col + len(operation.text),
-                operation.deleted_text
-            )
-            end_lines = operation.deleted_text.split("\n")
-            if len(end_lines) > 1:
-                end_line = operation.start_line + len(end_lines) - 1
-                end_col = len(end_lines[-1])
-            else:
-                end_line = operation.start_line
-                end_col = operation.start_col + len(operation.deleted_text)
-            self.cursor.move_to(end_line, end_col)
-
-        return True
+        return self.history.undo(self.buffer)
 
     def redo(self) -> bool:
         """
@@ -262,50 +260,7 @@ class Editor(BaseModel):
         Returns:
             True if an operation was redone, False otherwise
         """
-        operation = self.history.redo()
-        if not operation:
-            return False
-
-        if operation.type == "insert":
-            # To redo an insert, we insert the text again
-            self.buffer.insert_text(operation.start_line, operation.start_col, operation.text)
-            end_lines = operation.text.split("\n")
-            if len(end_lines) > 1:
-                end_line = operation.start_line + len(end_lines) - 1
-                end_col = len(end_lines[-1])
-            else:
-                end_line = operation.start_line
-                end_col = operation.start_col + len(operation.text)
-            self.cursor.move_to(end_line, end_col)
-        elif operation.type == "delete":
-            # To redo a delete, we delete the text again
-            self.buffer.delete_text(
-                operation.start_line,
-                operation.start_col,
-                operation.end_line,
-                operation.end_col
-            )
-            self.cursor.move_to(operation.start_line, operation.start_col)
-        elif operation.type == "replace":
-            # To redo a replace, we replace the text again
-            self.buffer.replace_text(
-                operation.start_line,
-                operation.start_col,
-                operation.start_line + operation.deleted_text.count("\n"),
-                operation.start_col + len(operation.deleted_text.split("\n")[-1]) if "\n" in operation.deleted_text
-                else operation.start_col + len(operation.deleted_text),
-                operation.text
-            )
-            end_lines = operation.text.split("\n")
-            if len(end_lines) > 1:
-                end_line = operation.start_line + len(end_lines) - 1
-                end_col = len(end_lines[-1])
-            else:
-                end_line = operation.start_line
-                end_col = operation.start_col + len(operation.text)
-            self.cursor.move_to(end_line, end_col)
-
-        return True
+        return self.history.redo(self.buffer)
 
     def load_file(self, file_path: str) -> None:
         """
@@ -326,7 +281,7 @@ class Editor(BaseModel):
         Args:
             file_path: Path to save to (if None, uses current path)
         """
-        content = self.buffer.get_content()
+        content = self.buffer.get_text()
         self.file_manager.save_file(content, file_path)
 
     def get_current_file_path(self) -> Optional[str]:

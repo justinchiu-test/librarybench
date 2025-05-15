@@ -1,13 +1,14 @@
 """
 Database of interview problems for practice.
 """
+
 from typing import Dict, List, Optional
 
 from text_editor.interview.models import (
     InterviewProblem,
     DifficultyLevel,
     ProblemCategory,
-    TestCase
+    TestCase,
 )
 
 
@@ -41,27 +42,27 @@ def two_sum(nums: List[int], target: int) -> List[int]:
             TestCase(
                 input="nums = [2, 7, 11, 15], target = 9",
                 expected_output="[0, 1]",
-                explanation="nums[0] + nums[1] = 2 + 7 = 9"
+                explanation="nums[0] + nums[1] = 2 + 7 = 9",
             ),
             TestCase(
                 input="nums = [3, 2, 4], target = 6",
                 expected_output="[1, 2]",
-                explanation="nums[1] + nums[2] = 2 + 4 = 6"
+                explanation="nums[1] + nums[2] = 2 + 4 = 6",
             ),
             TestCase(
                 input="nums = [3, 3], target = 6",
                 expected_output="[0, 1]",
-                explanation="nums[0] + nums[1] = 3 + 3 = 6"
+                explanation="nums[0] + nums[1] = 3 + 3 = 6",
             ),
             TestCase(
                 input="nums = [1, 2, 3, 4, 5], target = 9",
                 expected_output="[3, 4]",
-                explanation="nums[3] + nums[4] = 4 + 5 = 9"
+                explanation="nums[3] + nums[4] = 4 + 5 = 9",
             ),
             TestCase(
                 input="nums = [5, 2, 3, 1, 5], target = 10",
                 expected_output="[0, 4]",
-                explanation="nums[0] + nums[4] = 5 + 5 = 10"
+                explanation="nums[0] + nums[4] = 5 + 5 = 10",
             ),
         ],
         solution="""
@@ -88,11 +89,10 @@ def two_sum(nums: List[int], target: int) -> List[int]:
         hints=[
             "Can you solve this in one pass through the array?",
             "Consider using a hash map to store values you've seen and their indices.",
-            "For each number, check if its complement (target - number) exists in the hash map."
+            "For each number, check if its complement (target - number) exists in the hash map.",
         ],
-        tags=["hash-table", "array"]
+        tags=["hash-table", "array"],
     ),
-    
     "valid_parentheses": InterviewProblem(
         id="valid_parentheses",
         title="Valid Parentheses",
@@ -134,27 +134,27 @@ def is_valid(s: str) -> bool:
             TestCase(
                 input='s = "()"',
                 expected_output="True",
-                explanation="The parentheses are correctly matched."
+                explanation="The parentheses are correctly matched.",
             ),
             TestCase(
                 input='s = "()[]{}"',
                 expected_output="True",
-                explanation="All brackets are correctly matched and closed in the correct order."
+                explanation="All brackets are correctly matched and closed in the correct order.",
             ),
             TestCase(
                 input='s = "(]"',
                 expected_output="False",
-                explanation="The closing bracket ] doesn't match the opening bracket (."
+                explanation="The closing bracket ] doesn't match the opening bracket (.",
             ),
             TestCase(
                 input='s = "([)]"',
                 expected_output="False",
-                explanation="The brackets must be closed in the correct order."
+                explanation="The brackets must be closed in the correct order.",
             ),
             TestCase(
                 input='s = "{[]}"',
                 expected_output="True",
-                explanation="The brackets are nested correctly."
+                explanation="The brackets are nested correctly.",
             ),
         ],
         solution="""
@@ -189,11 +189,10 @@ def is_valid(s: str) -> bool:
         hints=[
             "Consider using a stack data structure.",
             "Push opening brackets onto the stack.",
-            "When you encounter a closing bracket, check if it matches the most recent opening bracket."
+            "When you encounter a closing bracket, check if it matches the most recent opening bracket.",
         ],
-        tags=["stack", "string"]
+        tags=["stack", "string"],
     ),
-    
     "reverse_linked_list": InterviewProblem(
         id="reverse_linked_list",
         title="Reverse Linked List",
@@ -239,17 +238,17 @@ def reverse_list(head: ListNode) -> ListNode:
             TestCase(
                 input="head = create_linked_list([1, 2, 3, 4, 5])",
                 expected_output="[5, 4, 3, 2, 1]",
-                explanation="The list is reversed: 1->2->3->4->5 becomes 5->4->3->2->1"
+                explanation="The list is reversed: 1->2->3->4->5 becomes 5->4->3->2->1",
             ),
             TestCase(
                 input="head = create_linked_list([1, 2])",
                 expected_output="[2, 1]",
-                explanation="The list is reversed: 1->2 becomes 2->1"
+                explanation="The list is reversed: 1->2 becomes 2->1",
             ),
             TestCase(
                 input="head = create_linked_list([])",
                 expected_output="[]",
-                explanation="An empty list remains empty when reversed"
+                explanation="An empty list remains empty when reversed",
             ),
         ],
         solution="""
@@ -275,11 +274,10 @@ def reverse_list(head: ListNode) -> ListNode:
         hints=[
             "Try to visualize the linked list reversal on paper first.",
             "You'll need to track the previous, current, and next nodes during the reversal.",
-            "Be careful about edge cases like an empty list or a list with only one node."
+            "Be careful about edge cases like an empty list or a list with only one node.",
         ],
-        tags=["linked-list", "recursion"]
+        tags=["linked-list", "recursion"],
     ),
-    
     "maximum_subarray": InterviewProblem(
         id="maximum_subarray",
         title="Maximum Subarray",
@@ -318,27 +316,27 @@ def max_subarray(nums: List[int]) -> int:
             TestCase(
                 input="nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]",
                 expected_output="6",
-                explanation="The subarray [4, -1, 2, 1] has the largest sum: 6"
+                explanation="The subarray [4, -1, 2, 1] has the largest sum: 6",
             ),
             TestCase(
                 input="nums = [1]",
                 expected_output="1",
-                explanation="The array contains only one element, so the max subarray is the element itself"
+                explanation="The array contains only one element, so the max subarray is the element itself",
             ),
             TestCase(
                 input="nums = [5, 4, -1, 7, 8]",
                 expected_output="23",
-                explanation="The entire array has the largest sum: 23"
+                explanation="The entire array has the largest sum: 23",
             ),
             TestCase(
                 input="nums = [-1]",
                 expected_output="-1",
-                explanation="The array contains only one negative element"
+                explanation="The array contains only one negative element",
             ),
             TestCase(
                 input="nums = [-2, -1]",
                 expected_output="-1",
-                explanation="The subarray [-1] has the largest sum: -1"
+                explanation="The subarray [-1] has the largest sum: -1",
             ),
         ],
         solution="""
@@ -362,11 +360,10 @@ def max_subarray(nums: List[int]) -> int:
         hints=[
             "Consider using Kadane's algorithm for this problem.",
             "At each position, you have two choices: start a new subarray or extend the current one.",
-            "Keep track of the maximum sum you've seen so far."
+            "Keep track of the maximum sum you've seen so far.",
         ],
-        tags=["array", "dynamic-programming", "divide-and-conquer"]
+        tags=["array", "dynamic-programming", "divide-and-conquer"],
     ),
-    
     "merge_intervals": InterviewProblem(
         id="merge_intervals",
         title="Merge Intervals",
@@ -400,27 +397,27 @@ def merge(intervals: List[List[int]]) -> List[List[int]]:
             TestCase(
                 input="intervals = [[1, 3], [2, 6], [8, 10], [15, 18]]",
                 expected_output="[[1, 6], [8, 10], [15, 18]]",
-                explanation="Intervals [1, 3] and [2, 6] overlap and are merged into [1, 6]"
+                explanation="Intervals [1, 3] and [2, 6] overlap and are merged into [1, 6]",
             ),
             TestCase(
                 input="intervals = [[1, 4], [4, 5]]",
                 expected_output="[[1, 5]]",
-                explanation="Intervals [1, 4] and [4, 5] are considered overlapping and are merged"
+                explanation="Intervals [1, 4] and [4, 5] are considered overlapping and are merged",
             ),
             TestCase(
                 input="intervals = [[1, 4], [0, 4]]",
                 expected_output="[[0, 4]]",
-                explanation="Intervals [1, 4] and [0, 4] overlap and are merged into [0, 4]"
+                explanation="Intervals [1, 4] and [0, 4] overlap and are merged into [0, 4]",
             ),
             TestCase(
                 input="intervals = [[1, 4], [0, 1]]",
                 expected_output="[[0, 4]]",
-                explanation="Intervals [1, 4] and [0, 1] overlap and are merged into [0, 4]"
+                explanation="Intervals [1, 4] and [0, 1] overlap and are merged into [0, 4]",
             ),
             TestCase(
                 input="intervals = [[1, 4], [5, 6]]",
                 expected_output="[[1, 4], [5, 6]]",
-                explanation="Intervals [1, 4] and [5, 6] don't overlap and remain separate"
+                explanation="Intervals [1, 4] and [5, 6] don't overlap and remain separate",
             ),
         ],
         solution="""
@@ -444,11 +441,10 @@ def merge(intervals: List[List[int]]) -> List[List[int]]:
         hints=[
             "Sort the intervals by their start time to make overlaps easier to identify.",
             "After sorting, you can merge overlapping intervals in a single pass.",
-            "Consider edge cases like intervals that are fully contained within others."
+            "Consider edge cases like intervals that are fully contained within others.",
         ],
-        tags=["array", "sorting"]
+        tags=["array", "sorting"],
     ),
-    
     "binary_tree_level_order_traversal": InterviewProblem(
         id="binary_tree_level_order_traversal",
         title="Binary Tree Level Order Traversal",
@@ -501,17 +497,17 @@ def level_order(root: TreeNode) -> List[List[int]]:
             TestCase(
                 input="root = create_binary_tree([3, 9, 20, None, None, 15, 7])",
                 expected_output="[[3], [9, 20], [15, 7]]",
-                explanation="The tree nodes are traversed level by level from left to right"
+                explanation="The tree nodes are traversed level by level from left to right",
             ),
             TestCase(
                 input="root = create_binary_tree([1])",
                 expected_output="[[1]]",
-                explanation="A tree with a single node has one level"
+                explanation="A tree with a single node has one level",
             ),
             TestCase(
                 input="root = create_binary_tree([])",
                 expected_output="[]",
-                explanation="An empty tree has no levels"
+                explanation="An empty tree has no levels",
             ),
         ],
         solution="""
@@ -548,11 +544,10 @@ def level_order(root: TreeNode) -> List[List[int]]:
         hints=[
             "Use a queue data structure for a breadth-first search approach.",
             "Process the tree level by level, keeping track of all nodes at each level.",
-            "For each level, collect all node values before moving to the next level."
+            "For each level, collect all node values before moving to the next level.",
         ],
-        tags=["tree", "breadth-first-search", "binary-tree"]
+        tags=["tree", "breadth-first-search", "binary-tree"],
     ),
-    
     "climbing_stairs": InterviewProblem(
         id="climbing_stairs",
         title="Climbing Stairs",
@@ -596,27 +591,27 @@ def climb_stairs(n: int) -> int:
             TestCase(
                 input="n = 2",
                 expected_output="2",
-                explanation="There are two ways: 1+1 or 2"
+                explanation="There are two ways: 1+1 or 2",
             ),
             TestCase(
                 input="n = 3",
                 expected_output="3",
-                explanation="There are three ways: 1+1+1, 1+2, or 2+1"
+                explanation="There are three ways: 1+1+1, 1+2, or 2+1",
             ),
             TestCase(
                 input="n = 4",
                 expected_output="5",
-                explanation="There are five ways: 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, or 2+2"
+                explanation="There are five ways: 1+1+1+1, 1+1+2, 1+2+1, 2+1+1, or 2+2",
             ),
             TestCase(
                 input="n = 5",
                 expected_output="8",
-                explanation="There are eight ways to climb 5 stairs"
+                explanation="There are eight ways to climb 5 stairs",
             ),
             TestCase(
                 input="n = 1",
                 expected_output="1",
-                explanation="There is only one way to climb 1 stair: take 1 step"
+                explanation="There is only one way to climb 1 stair: take 1 step",
             ),
         ],
         solution="""
@@ -637,11 +632,10 @@ def climb_stairs(n: int) -> int:
         hints=[
             "Try to identify the recurrence relation. How many ways can you reach step n?",
             "The number of ways to reach step n is the sum of ways to reach step n-1 and step n-2.",
-            "This is a Fibonacci sequence problem. Can you optimize your solution to use O(1) space?"
+            "This is a Fibonacci sequence problem. Can you optimize your solution to use O(1) space?",
         ],
-        tags=["dynamic-programming", "math", "memoization"]
+        tags=["dynamic-programming", "math", "memoization"],
     ),
-    
     "word_search": InterviewProblem(
         id="word_search",
         title="Word Search",
@@ -696,17 +690,17 @@ def exist(board: List[List[str]], word: str) -> bool:
             TestCase(
                 input='board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"',
                 expected_output="True",
-                explanation="The word ABCCED can be constructed from the board"
+                explanation="The word ABCCED can be constructed from the board",
             ),
             TestCase(
                 input='board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "SEE"',
                 expected_output="True",
-                explanation="The word SEE can be constructed from the board"
+                explanation="The word SEE can be constructed from the board",
             ),
             TestCase(
                 input='board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCB"',
                 expected_output="False",
-                explanation="The word ABCB cannot be constructed from the board (can't reuse the same cell)"
+                explanation="The word ABCB cannot be constructed from the board (can't reuse the same cell)",
             ),
         ],
         solution="""
@@ -753,9 +747,9 @@ def exist(board: List[List[str]], word: str) -> bool:
         hints=[
             "Use depth-first search (DFS) or backtracking to explore all possible paths.",
             "Remember to mark visited cells to avoid using the same cell twice.",
-            "Consider starting the search from each cell in the board."
+            "Consider starting the search from each cell in the board.",
         ],
-        tags=["array", "backtracking", "matrix"]
+        tags=["array", "backtracking", "matrix"],
     ),
 }
 
@@ -763,10 +757,10 @@ def exist(board: List[List[str]], word: str) -> bool:
 def get_problem(problem_id: str) -> Optional[InterviewProblem]:
     """
     Get a specific interview problem by ID.
-    
+
     Args:
         problem_id: ID of the problem to retrieve
-        
+
     Returns:
         The InterviewProblem object, or None if not found
     """
@@ -776,7 +770,7 @@ def get_problem(problem_id: str) -> Optional[InterviewProblem]:
 def get_all_problems() -> List[InterviewProblem]:
     """
     Get all available interview problems.
-    
+
     Returns:
         List of all InterviewProblem objects
     """
@@ -786,10 +780,10 @@ def get_all_problems() -> List[InterviewProblem]:
 def get_problems_by_difficulty(difficulty: DifficultyLevel) -> List[InterviewProblem]:
     """
     Get problems filtered by difficulty.
-    
+
     Args:
         difficulty: Difficulty level to filter by
-        
+
     Returns:
         List of InterviewProblem objects at the specified difficulty
     """
@@ -799,10 +793,10 @@ def get_problems_by_difficulty(difficulty: DifficultyLevel) -> List[InterviewPro
 def get_problems_by_category(category: ProblemCategory) -> List[InterviewProblem]:
     """
     Get problems filtered by category.
-    
+
     Args:
         category: Category to filter by
-        
+
     Returns:
         List of InterviewProblem objects in the specified category
     """

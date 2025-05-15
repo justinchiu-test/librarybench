@@ -56,11 +56,11 @@ def test_wizard_layout_navigation():
     assert wz.prev() == "b"
 
 def test_enable_accessibility_mode():
-    # reset if needed
-    global ACCESSIBILITY_MODE
-    ACCESSIBILITY_MODE = False
-    enable_accessibility_mode()
-    assert ACCESSIBILITY_MODE is True
+    # reset the module flag
+    import product_manager.survey as mod
+    mod.ACCESSIBILITY_MODE = False
+    mod.enable_accessibility_mode()
+    assert mod.ACCESSIBILITY_MODE is True
 
 def test_audit_log_records():
     al = AuditLog()

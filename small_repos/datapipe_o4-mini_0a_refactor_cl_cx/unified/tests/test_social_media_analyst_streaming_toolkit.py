@@ -2,7 +2,7 @@ import pytest
 import logging
 import json
 import multiprocessing
-from social_media_analyst.streaming_toolkit import (
+from unified.social_media_analyst.streaming_toolkit import (
     tumbling_window, sliding_window, add_serializer,
     throttle_upstream, watermark_event_time,
     halt_on_error, skip_error, setup_logging,

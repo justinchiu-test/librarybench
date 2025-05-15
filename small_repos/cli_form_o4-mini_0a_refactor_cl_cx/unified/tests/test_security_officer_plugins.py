@@ -10,6 +10,6 @@ def test_plugin_registration_and_retrieval():
     assert p is DummyPlugin
 
 def test_plugin_duplicate():
-    import security_officer.incident_form.plugins as incident_form.plugins as mods
+    import security_officer.incident_form.plugins as mods
     with pytest.raises(ValueError):
         register_field_plugin("dummy", DummyPlugin)

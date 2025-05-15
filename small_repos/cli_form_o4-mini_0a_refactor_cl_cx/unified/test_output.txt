@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.2, pytest-8.3.5, pluggy-1.5.0
+rootdir: /Users/celine/Research/librarybench
+configfile: pyproject.toml
+plugins: anyio-4.9.0, json-report-1.5.0, timeout-2.4.0, metadata-3.1.1
+collected 62 items
+
+tests/test_clinical_researcher_accessibility.py .                        [  1%]
+tests/test_clinical_researcher_audit.py .                                [  3%]
+tests/test_clinical_researcher_errors.py ..                              [  6%]
+tests/test_clinical_researcher_exporter.py ....                          [ 12%]
+tests/test_clinical_researcher_fields.py ......                          [ 22%]
+tests/test_clinical_researcher_layout.py .                               [ 24%]
+tests/test_clinical_researcher_plugin.py ..                              [ 27%]
+tests/test_clinical_researcher_renderer.py ..                            [ 30%]
+tests/test_clinical_researcher_validation.py ...                         [ 35%]
+tests/test_product_manager_survey.py .............                       [ 56%]
+tests/test_security_officer_accessibility.py .                           [ 58%]
+tests/test_security_officer_audit.py .                                   [ 59%]
+tests/test_security_officer_datetime.py ...                              [ 64%]
+tests/test_security_officer_errors.py ..                                 [ 67%]
+tests/test_security_officer_export.py ....                               [ 74%]
+tests/test_security_officer_fields.py ....                               [ 80%]
+tests/test_security_officer_plugins.py ..                                [ 83%]
+tests/test_security_officer_renderer.py ..                               [ 87%]
+tests/test_security_officer_validation.py ......                         [ 96%]
+tests/test_security_officer_wizard.py ..                                 [100%]
+
+--------------------------------- JSON report ----------------------------------
+report saved to: report.json
+============================== 62 passed in 0.16s ==============================

@@ -4,7 +4,7 @@ import logging
 import sys
 from queue import Queue
 import argparse
-from compliance_officer.pipeline.compliance import (
+from unified.compliance_officer.pipeline.compliance import (
     tumbling_window, sliding_window, add_serializer, serializers,
     throttle_upstream, watermark_event_time, halt_on_error,
     skip_error, setup_logging, cli_manage, parallelize_stages,

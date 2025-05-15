@@ -3,7 +3,7 @@ import time
 import logging
 import multiprocessing
 from click.testing import CliRunner
-import quant_trader.streaming as streaming
+import unified.quant_trader.streaming as streaming
 
 def test_tumbling_window_count():
     records = [{'timestamp': i, 'price': i, 'volume': 1} for i in range(6)]

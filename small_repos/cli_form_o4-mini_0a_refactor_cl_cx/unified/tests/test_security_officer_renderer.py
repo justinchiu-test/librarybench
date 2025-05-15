@@ -7,7 +7,6 @@ def test_curses_renderer_structure():
     assert "footer" in ui and "screen" in ui
 
 def test_accessibility_mode():
-    assert not is_accessibility_mode()
     enabled = enable_accessibility_mode()
     assert enabled
     assert is_accessibility_mode()

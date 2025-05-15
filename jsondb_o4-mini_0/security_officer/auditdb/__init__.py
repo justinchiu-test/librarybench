@@ -1,1 +1,0 @@
-# auditdb package initialization

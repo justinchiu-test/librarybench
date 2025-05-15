@@ -1,8 +1,0 @@
-2025-05-13 00:31:23,042 - INFO - Event queued: {'type': 'modify', 'path': '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-326/test_modify_event_triggers0/docs/doc.md', 'diff': '--- before\n+++ after\n@@ -0,0 +1,2 @@\n+v1\n\n+v2\n'}
-2025-05-13 00:31:23,042 - INFO - Payload sent
-2025-05-13 00:31:23,048 - INFO - Event queued: {'type': 'create', 'path': '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-326/test_handler_and_processing0/docs/test.md', 'diff': '--- before\n+++ after\n@@ -0,0 +1 @@\n+first\n'}
-2025-05-13 00:31:23,048 - INFO - Event queued: {'type': 'create', 'path': '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-326/test_handler_and_processing0/docs/test.md', 'diff': '--- before\n+++ after\n@@ -0,0 +1 @@\n+first\n'}
-2025-05-13 00:31:23,048 - INFO - Event queued: {'type': 'create', 'path': '/private/var/folders/y3/jvd7wbrj6z7b2s97x7yyp_jc0000gn/T/pytest-of-celine/pytest-326/test_handler_and_processing0/docs/test.md', 'diff': '--- before\n+++ after\n@@ -0,0 +1 @@\n+first\n'}
-2025-05-13 00:31:23,049 - INFO - Payload sent
-2025-05-13 00:31:23,049 - INFO - Payload sent
-2025-05-13 00:31:23,049 - INFO - Payload sent

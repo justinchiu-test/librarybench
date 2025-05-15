@@ -1,6 +1,0 @@
-ImportError while loading conftest '/Users/celine/Research/librarybench/timeseriesdb_o4-mini_0/energy_engineer/conftest.py'.
-__init__.py:1: in <module>
-    from .platform import TSPlatform
-platform.py:1: in <module>
-    from energy_engineer.platform import TSPlatform
-E   ImportError: cannot import name 'TSPlatform' from partially initialized module 'energy_engineer.platform' (most likely due to a circular import) (/Users/celine/Research/librarybench/timeseriesdb_o4-mini_0/energy_engineer/platform.py)

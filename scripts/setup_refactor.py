@@ -210,6 +210,23 @@ def copy_persona_library(persona_dir, unified_dir, library_name):
     if has_nested_structure:
         print(f"Detected nested package structure for {package_name}")
     
+    # Check for root-level conftest.py in persona directory and copy it if it exists
+    root_conftest_path = persona_dir / "conftest.py"
+    if root_conftest_path.exists():
+        # Create the persona-specific test directory
+        persona_tests_dir = unified_dir / "tests" / persona_short_name
+        os.makedirs(persona_tests_dir, exist_ok=True)
+        
+        # Copy the root conftest.py to the persona-specific tests directory
+        with open(root_conftest_path, "r") as f:
+            conftest_content = f.read()
+        
+        # Write the modified content to the persona-specific tests directory
+        with open(persona_tests_dir / "conftest.py", "w") as f:
+            f.write(conftest_content)
+        
+        print(f"Copied root conftest.py from {persona_name} to {persona_tests_dir}/conftest.py")
+        
     # Copy tests to the unified tests directory
     tests_dir = persona_dir / "tests"
     if tests_dir.exists() and tests_dir.is_dir():
@@ -600,6 +617,10 @@ def create_pyproject_toml(unified_dir, library_name, package_names, merged_depen
                     elif isinstance(value, list):
                         value_str = str(value).replace("'", "\"")
                         pyproject_content += f'{key} = {value_str}\n'
+                    elif isinstance(value, bool):
+                        # Handle booleans as lowercase true/false in TOML
+                        value_str = str(value).lower()
+                        pyproject_content += f'{key} = {value_str}\n'
                     else:
                         value_str = str(value)
                         pyproject_content += f'{key} = {value_str}\n'
@@ -612,6 +633,10 @@ def create_pyproject_toml(unified_dir, library_name, package_names, merged_depen
                         pyproject_content += f'{subkey} = "{subvalue}"\n'
                     elif isinstance(subvalue, list):
                         subvalue_str = str(subvalue).replace("'", "\"")
+                        pyproject_content += f'{subkey} = {subvalue_str}\n'
+                    elif isinstance(subvalue, bool):
+                        # Handle booleans as lowercase true/false in TOML
+                        subvalue_str = str(subvalue).lower()
                         pyproject_content += f'{subkey} = {subvalue_str}\n'
                     else:
                         subvalue_str = str(subvalue)

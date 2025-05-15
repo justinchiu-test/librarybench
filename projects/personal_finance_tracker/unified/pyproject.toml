@@ -27,4 +27,4 @@ target-version = "py38"
 include = ["personal_finance_tracker"]
 exclude = ["**/__pycache__", "**/.pytest_cache"]
 typeCheckingMode = "strict"
-reportMissingTypeStubs = False
+reportMissingTypeStubs = false

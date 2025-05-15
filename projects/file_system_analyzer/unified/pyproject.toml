@@ -31,6 +31,6 @@ select = ["E", "F", "B", "I"]
 ignore = []
 
 [tool.pyright]
-reportMissingImports = True
-reportMissingTypeStubs = False
+reportMissingImports = true
+reportMissingTypeStubs = false
 pythonVersion = "3.8"

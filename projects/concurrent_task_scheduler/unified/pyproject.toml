@@ -14,7 +14,7 @@ test = ["pytest>=7.0.0", "pytest-cov>=4.0.0", "pytest-json-report>=1.5.0"]
 dev = ["black>=23.0.0", "ruff>=0.0.270", "pyright>=1.1.308"]
 
 [tool.setuptools]
-packages = ["common", "concurrent_task_scheduler", "render_farm_manager"]
+packages = ["common", "render_farm_manager", "concurrent_task_scheduler"]
 
 [tool.ruff]
 line-length = 88
@@ -34,5 +34,5 @@ python_functions = "test_*"
 [tool.pyright]
 typeCheckingMode = "basic"
 pythonVersion = "3.8"
-reportMissingImports = True
-reportMissingTypeStubs = False
+reportMissingImports = true
+reportMissingTypeStubs = false

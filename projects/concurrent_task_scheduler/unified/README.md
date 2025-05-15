@@ -20,7 +20,7 @@ Import the original packages directly:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import concurrent_task_scheduler # Example using first package
+import render_farm_manager # Example using first package
 
 # Import from common package (for shared functionality)
 from common import core

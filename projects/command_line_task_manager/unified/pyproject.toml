@@ -13,7 +13,7 @@ dependencies = ["pydantic>=2.0.0", "typing-extensions>=4.0.0", "pytest>=7.0.0", 
 dev = ["black", "isort", "mypy", "pyright", "ruff", "pytest>=7.0.0", "pytest-benchmark>=4.0.0", "pytest-json-report>=1.5.0"]
 
 [tool.setuptools]
-packages = ["common", "researchtrack", "securetask"]
+packages = ["common", "securetask", "researchtrack"]
 
 [tool.pytest]
 

@@ -39,151 +39,326 @@ We'll define common interfaces that each implementation can extend:
 
 ```
 common/
+├── __init__.py            # Package initialization
+├── README.md              # Package documentation
 ├── core/
 │   ├── __init__.py
 │   ├── models.py          # Shared data models
 │   ├── interfaces.py      # Abstract interfaces
 │   ├── utils.py           # Common utilities
 │   └── exceptions.py      # Custom exceptions
-├── scheduling/
-│   ├── __init__.py
-│   ├── priority.py        # Priority management
-│   └── scheduler.py       # Common scheduling logic
-├── resource_management/
-│   ├── __init__.py
-│   ├── allocator.py       # Resource allocation
-│   └── forecaster.py      # Resource forecasting
 ├── dependency_tracking/
 │   ├── __init__.py
 │   ├── graph.py           # Dependency graph
-│   └── tracker.py         # Dependency tracking
-└── failure_resilience/
+│   ├── tracker.py         # Dependency tracking
+│   └── workflow.py        # Workflow management
+├── failure_resilience/
+│   ├── __init__.py
+│   ├── checkpoint.py      # Checkpoint management
+│   ├── detector.py        # Failure detection
+│   └── recovery.py        # Recovery mechanism
+├── job_management/
+│   ├── __init__.py
+│   ├── queue.py           # Job queue management
+│   ├── scheduler.py       # Common scheduling logic
+│   └── prioritization.py  # Priority management
+└── resource_management/
     ├── __init__.py
-    ├── checkpoint.py      # Checkpoint management
-    └── resilience.py      # Failure detection/handling
+    ├── allocator.py       # Resource allocation
+    ├── forecaster.py      # Resource forecasting
+    └── partitioner.py     # Resource partitioning
 ```
 
 ### Base Model Hierarchy
 
 ```
 BaseModel (Pydantic)
-  ├── Resource
-  │    ├── ComputeResource
-  │    └── StorageResource
-  ├── Job
-  │    ├── RenderJob
-  │    └── SimulationJob
-  ├── Node
-  │    ├── RenderNode
-  │    └── ComputeNode
+  ├── BaseJob
+  │    ├── RenderJob        # render_farm_manager
+  │    ├── Simulation       # concurrent_task_scheduler
+  │    └── SimulationStage  # concurrent_task_scheduler
+  ├── BaseNode
+  │    ├── RenderNode       # render_farm_manager
+  │    └── ComputeNode      # concurrent_task_scheduler
   ├── Dependency
   │    ├── JobDependency
   │    └── StageDependency
-  └── Checkpoint
+  ├── Resource
+  │    ├── ComputeResource
+  │    └── StorageResource
+  ├── Checkpoint
+  │    ├── RenderCheckpoint  # render_farm_manager
+  │    └── SimulationCheckpoint  # concurrent_task_scheduler
+  ├── Result (Generic[T])    # Generic result wrapper with success/error
+  ├── TimeRange              # Common time range utility
+  └── AuditLogEntry          # Common audit logging model
 ```
+
+### Interface Hierarchy
+
+```
+Interface (ABC)
+  ├── SchedulerInterface
+  │    ├── DeadlineSchedulerInterface  # render_farm_manager
+  │    └── SimulationSchedulerInterface  # concurrent_task_scheduler
+  ├── ResourceManagerInterface
+  │    ├── ResourcePartitionerInterface  # render_farm_manager
+  │    └── ResourceForecastingInterface  # concurrent_task_scheduler
+  ├── DependencyTrackerInterface
+  │    ├── RenderDependencyInterface  # render_farm_manager
+  │    └── SimulationDependencyInterface  # concurrent_task_scheduler
+  ├── CheckpointManagerInterface
+  │    ├── RenderCheckpointInterface  # render_farm_manager
+  │    └── SimulationCheckpointInterface  # concurrent_task_scheduler
+  └── AuditLogInterface
+       ├── RenderAuditInterface  # render_farm_manager
+       └── SimulationAuditInterface  # concurrent_task_scheduler
+```
+
+### Key Enums
+
+```
+# Status Enums
+JobStatus: PENDING, QUEUED, RUNNING, PAUSED, COMPLETED, FAILED, CANCELLED
+NodeStatus: ONLINE, OFFLINE, MAINTENANCE, ERROR, STARTING, STOPPING
+
+# Priority Enums
+Priority: LOW, MEDIUM, HIGH, CRITICAL
+
+# Resource Types
+ResourceType: CPU, GPU, MEMORY, STORAGE, NETWORK, SPECIALIZED
+
+# Dependency Types
+DependencyType: SEQUENTIAL, DATA, RESOURCE, CONDITIONAL, TEMPORAL
+
+# Dependency States
+DependencyState: PENDING, SATISFIED, FAILED, BYPASSED
+
+# Checkpoint Types
+CheckpointType: FULL, INCREMENTAL, DELTA, METADATA
+
+# Log Levels
+LogLevel: DEBUG, INFO, WARNING, ERROR, CRITICAL
+```
+
+## Component Analysis and Migration
+
+### 1. Core Models and Utilities
+
+| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
+|------------------|---------------------|---------------------------|-------------------|
+| BaseJob | RenderJob | Simulation, SimulationStage | Extract common properties into BaseJob, have RenderJob and Simulation extend it |
+| BaseNode | RenderNode | ComputeNode | Extract common properties into BaseNode, have RenderNode and ComputeNode extend it |
+| Result | Used in various places | Used in various places | Define generic Result class in common.core.models |
+| TimeRange | Used for scheduling | Used for scheduling | Define common TimeRange in common.core.utils |
+| DateTimeEncoder | Used for serialization | Used for serialization | Move to common.core.utils |
+| generate_id | Used for ID generation | Used for ID generation | Move to common.core.utils |
+
+### 2. Dependency Tracking
+
+| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
+|------------------|---------------------|---------------------------|-------------------|
+| DependencyGraph | Internal dependency tracking | DependencyGraph in graph.py | Extract common graph functionality to common.dependency_tracking.graph |
+| DependencyTracker | JobDependencyManager | DependencyTracker | Create common interface in common.dependency_tracking.tracker |
+| DependencyType | Used for dependency types | Used for dependency types | Define common enum in common.core.models |
+| DependencyState | Used for tracking state | Used for tracking state | Define common enum in common.core.models |
+
+### 3. Resource Management
+
+| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
+|------------------|---------------------|---------------------------|-------------------|
+| ResourceManager | ResourcePartitioner | ResourceManager | Extract common functionality to common.resource_management.allocator |
+| ResourceForecaster | Not directly implemented | ResourceForecaster | Create common interface in common.resource_management.forecaster |
+| ResourceAllocation | Used for resource tracking | Used for resource tracking | Define common model in common.core.models |
+| ResourceRequirement | Used in job definitions | Used in simulation definitions | Define common model in common.core.models |
+
+### 4. Failure Resilience
+
+| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
+|------------------|---------------------|---------------------------|-------------------|
+| CheckpointManager | Limited checkpointing | CheckpointManager | Extract common functionality to common.failure_resilience.checkpoint |
+| FailureDetector | Error handling in RenderFarmManager | FailureDetector | Create common interface in common.failure_resilience.detector |
+| ResilienceCoordinator | Not directly implemented | ResilienceCoordinator | Create common interface in common.failure_resilience.recovery |
+| CheckpointType | Used for checkpoint types | Used for checkpoint types | Define common enum in common.core.models |
 
 ## Implementation Strategy
 
 ### Phase 1: Establish Core Models and Interfaces
 
 1. Create common models in `common/core/models.py` 
+   - BaseJob, BaseNode, Resource models
+   - Common enums for status, priority, etc.
+   - Result and TimeRange utilities
+   
 2. Define interfaces in `common/core/interfaces.py`
+   - SchedulerInterface
+   - ResourceManagerInterface
+   - DependencyTrackerInterface
+   - CheckpointManagerInterface
+   
 3. Implement shared utilities in `common/core/utils.py`
+   - DateTimeEncoder for serialization
+   - generate_id function
+   - Other common utilities
+   
+4. Define exceptions in `common/core/exceptions.py`
+   - TaskSchedulerError as base exception
+   - ResourceError, DependencyError, etc.
 
 ### Phase 2: Implement Shared Components
 
 1. Implement dependency tracking functionality
-2. Implement scheduling base classes
-3. Implement resource management and forecasting
-4. Implement checkpointing and failure resilience
+   - Graph-based dependency representation
+   - Cycle detection algorithms
+   - Dependency state tracking
+   
+2. Implement common resource management
+   - Resource allocation algorithms
+   - Resource requirement matching
+   - Resource usage tracking
+   
+3. Implement failure resilience components
+   - Checkpoint management
+   - Failure detection
+   - Recovery mechanisms
+   
+4. Implement job management components
+   - Job queue management
+   - Priority-based scheduling
+   - Deadline-aware scheduling
 
 ### Phase 3: Refactor Persona Implementations
 
 1. Modify `render_farm_manager` to use the common library
    - Update imports to use common models
-   - Extend common interfaces for specific render farm needs
+   - Extend common interfaces for render farm specific needs
    - Refactor implementations to leverage shared code
+   - Ensure backward compatibility with existing tests
 
 2. Modify `concurrent_task_scheduler` to use the common library
    - Update imports to use common models
-   - Extend common interfaces for simulation-specific needs
+   - Extend common interfaces for simulation specific needs
    - Refactor implementations to leverage shared code
+   - Ensure backward compatibility with existing tests
 
 ### Phase 4: Testing and Verification
 
 1. Ensure all tests pass for both implementations
+   - Run unit tests for render_farm_manager
+   - Run unit tests for concurrent_task_scheduler
+   - Fix any integration issues
+   
 2. Verify that all functionality is preserved
-3. Run performance tests to ensure no regressions
+   - Compare behavior before and after refactoring
+   - Check for any performance regressions
+   
+3. Generate test report using pytest-json-report
+   - Run comprehensive test suite
+   - Generate report.json file
+   - Verify all tests pass
 
-## Migration Approach
+## Migration Approach - Detailed Steps
 
-### For Both Implementations
+### Common Core Package
 
-1. Start with updating the imports to use common models and interfaces
-2. Replace core data structures with common implementations
-3. Adapt specific algorithms to extend common base classes
+1. Implement `common/core/models.py`
+   - Define all common models and enums
+   - Ensure backward compatibility with existing code
+   
+2. Implement `common/core/interfaces.py`
+   - Define abstract interfaces with clear contracts
+   - Include comprehensive docstrings
+   
+3. Implement `common/core/utils.py` and `common/core/exceptions.py`
+   - Extract common utilities and exceptions
+   - Ensure function signatures match existing code
 
 ### For render_farm_manager
 
-1. Adapt `RenderJob`, `RenderNode` to extend common base classes
-2. Refactor resource partitioning to use common resource management
-3. Refactor deadline scheduling to use common scheduling
-4. Migrate node specialization to common framework
-5. Adapt energy optimization to use common utilities
+1. Update imports to use common models and interfaces
+   - Replace `from render_farm_manager.core.models import X` with `from common.core.models import X`
+   - Replace custom utilities with common versions
+
+2. Extend base classes for render farm specific needs
+   - Make RenderJob extend BaseJob
+   - Make RenderNode extend BaseNode
+   
+3. Adapt to use common interfaces
+   - Implement SchedulerInterface for DeadlineScheduler
+   - Implement ResourceManagerInterface for ResourcePartitioner
 
 ### For concurrent_task_scheduler
 
-1. Adapt `Simulation`, `SimulationStage` to extend common base classes
-2. Refactor dependency tracking to use common graph implementation
-3. Migrate failure resilience to common checkpointing
-4. Update resource forecasting to use common framework
-5. Adapt scenario management to common priority management
+1. Update imports to use common models and interfaces
+   - Replace `from concurrent_task_scheduler.models import X` with `from common.core.models import X`
+   - Replace custom utilities with common versions
 
-## Backward Compatibility
+2. Extend base classes for scientific computing specific needs
+   - Make Simulation extend BaseJob
+   - Make SimulationStage extend BaseJob
+   
+3. Adapt to use common interfaces
+   - Implement DependencyTrackerInterface for dependency tracking
+   - Implement CheckpointManagerInterface for checkpoint management
+
+## Backward Compatibility Strategy
 
 To ensure backward compatibility, we will:
 
-1. Preserve all original APIs and method signatures
+1. Preserve all public APIs and method signatures
+   - Keep all public methods with the same parameters and return types
+   - Maintain backward compatibility with existing function calls
+
 2. Add compatibility layers where needed
-3. Use inheritance to extend common functionality without breaking existing code
+   - Create adapter classes if necessary
+   - Add compatibility methods to handle legacy code
+
+3. Use inheritance to extend common functionality
+   - Base classes provide common functionality
+   - Derived classes add domain-specific behavior
+
 4. Ensure all original tests pass without modification
+   - Run tests regularly during refactoring
+   - Fix compatibility issues as they arise
 
 ## Extension Points
 
 We'll design the common library with extension points for domain-specific functionality:
 
 1. Hooks for custom scheduling algorithms
+   - Allow custom priority calculations
+   - Support pluggable scheduling strategies
+
 2. Extension interfaces for specialized resource management
+   - Allow custom resource allocation policies
+   - Support specialized resource tracking
+
 3. Pluggable strategies for dependency resolution
+   - Support different dependency types
+   - Allow custom dependency validation
+
 4. Customizable checkpointing mechanisms
+   - Support different checkpoint storage backends
+   - Allow custom checkpoint frequency calculations
 
 ## Testing Strategy
 
 1. Run unit tests for the common library
+   - Verify base functionality works correctly
+   - Test edge cases and error handling
+
 2. Run unit tests for both persona implementations
+   - Verify domain-specific behavior is preserved
+   - Check for any regressions
+
 3. Run integration tests to ensure all components work together
+   - Test end-to-end workflows
+   - Verify cross-component interactions
+
 4. Verify that performance meets or exceeds original implementation
+   - Measure execution time before and after
+   - Check resource utilization
 
-## Timeline and Tasks
-
-1. **Phase 1**: Core Models and Interfaces
-   - Create base models for jobs, nodes, resources
-   - Define common interfaces for all components
-   - Implement shared utilities and helpers
-
-2. **Phase 2**: Implement Shared Components
-   - Create dependency tracking implementations
-   - Implement scheduler base classes
-   - Build resource management framework
-   - Create checkpoint management system
-
-3. **Phase 3**: Migrate Persona Implementations
-   - Update render_farm_manager imports and models
-   - Update concurrent_task_scheduler imports and models
-   - Refactor both implementations to use common components
-
-4. **Phase 4**: Testing and Documentation
-   - Run all tests to validate functionality
-   - Fix any issues that arise
-   - Generate final test report
-   - Complete documentation of unified library
+5. Generate comprehensive test report
+   - Use pytest-json-report to create report.json
+   - Verify all tests pass successfully

@@ -8,6 +8,10 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pandas as pd
 
+from common.core.interpreter import BaseInterpreter
+from common.core.query import BaseQuery, ExecutionContext
+from common.core.result import QueryResult as CommonQueryResult
+
 from privacy_query_interpreter.access_logging.logger import (
     AccessLogger, AccessOutcome, AccessType
 )
@@ -42,7 +46,122 @@ class QueryStatus(str, Enum):
     MODIFIED = "modified"
 
 
-class PrivacyQueryEngine:
+class PrivacyQuery(BaseQuery):
+    """Structured representation of a privacy query."""
+    
+    def __init__(
+        self,
+        query_type: str,
+        query_string: str,
+        parameters: Dict[str, Any] = None,
+        query_id: str = None,
+    ):
+        """Initialize a privacy query.
+
+        Args:
+            query_type: Type of query (e.g., SELECT, INSERT)
+            query_string: Original SQL query string
+            parameters: Query parameters
+            query_id: Unique identifier for the query
+        """
+        super().__init__(
+            query_type=query_type,
+            query_string=query_string,
+            parameters=parameters or {}
+        )
+        self.query_id = query_id or str(uuid.uuid4())
+        
+    def validate(self) -> bool:
+        """Validate query structure and parameters.
+
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        # Basic validation - check that query_type and query_string are present
+        if not self.query_type or not self.query_string:
+            return False
+            
+        # For privacy queries, we only support SELECT
+        if self.query_type.upper() != "SELECT":
+            return False
+            
+        return True
+
+
+class PrivacyQueryResult(CommonQueryResult):
+    """Result of a privacy query execution."""
+    
+    def __init__(
+        self,
+        query: BaseQuery,
+        data: List[Dict[str, Any]] = None,
+        success: bool = True,
+        error: str = None,
+        metadata: Dict[str, Any] = None,
+        status: str = QueryStatus.COMPLETED,
+        row_count: int = 0,
+        column_count: int = 0,
+        columns: List[str] = None,
+        minimized: bool = False,
+        anonymized: bool = False,
+        privacy_reason: str = None,
+    ):
+        """Initialize a privacy query result.
+
+        Args:
+            query: Query that produced this result
+            data: Result data rows
+            success: Whether the query was successful
+            error: Error message if query failed
+            metadata: Additional metadata
+            status: Query execution status
+            row_count: Number of rows in the result
+            column_count: Number of columns in the result
+            columns: Column names
+            minimized: Whether data minimization was applied
+            anonymized: Whether anonymization was applied
+            privacy_reason: Reason for privacy-related modifications
+        """
+        super().__init__(
+            query=query,
+            data=data or [],
+            success=success,
+            error=error,
+            metadata=metadata or {}
+        )
+        
+        self.status = status
+        self.row_count = row_count
+        self.column_count = column_count
+        self.columns = columns or []
+        self.minimized = minimized
+        self.anonymized = anonymized
+        self.privacy_reason = privacy_reason
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert result to dictionary.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation
+        """
+        result = super().to_dict()
+        result.update({
+            "query_id": self.query.query_id if hasattr(self.query, 'query_id') else None,
+            "status": self.status if isinstance(self.status, str) else self.status.value,
+            "row_count": self.row_count,
+            "column_count": self.column_count,
+            "columns": self.columns,
+            "minimized": self.minimized,
+            "anonymized": self.anonymized,
+        })
+        
+        if self.privacy_reason:
+            result["privacy_reason"] = self.privacy_reason
+            
+        return result
+
+
+class PrivacyQueryEngine(BaseInterpreter):
     """
     Execute and manage SQL queries with privacy controls.
     
@@ -71,6 +190,13 @@ class PrivacyQueryEngine:
             pii_detector: Detector for identifying PII
             data_sources: Dictionary mapping table names to DataFrames
         """
+        # Initialize base interpreter
+        config = {
+            "data_sources": data_sources or {}
+        }
+        super().__init__(config=config)
+        
+        # Store privacy-specific components
         self.access_logger = access_logger
         self.policy_enforcer = policy_enforcer
         self.data_minimizer = data_minimizer
@@ -96,6 +222,79 @@ class PrivacyQueryEngine:
                 PrivacyFunction.DIFFERENTIAL
             ]
         }
+        
+        # Register services
+        if access_logger:
+            self.register_service("access_logger", access_logger)
+        if policy_enforcer:
+            self.register_service("policy_enforcer", policy_enforcer)
+        if data_minimizer:
+            self.register_service("data_minimizer", data_minimizer)
+        if data_anonymizer:
+            self.register_service("data_anonymizer", data_anonymizer)
+        if pii_detector:
+            self.register_service("pii_detector", pii_detector)
+    
+    def parse(self, query_string: str) -> PrivacyQuery:
+        """Parse a query string into a structured query.
+        
+        Args:
+            query_string: SQL query string with privacy extensions
+            
+        Returns:
+            PrivacyQuery: Structured query object
+            
+        Raises:
+            ValueError: If the query string is invalid
+        """
+        # Parse the query using the SQL parser
+        parsed_query = self.query_parser.parse_query(query_string)
+        
+        # Create a PrivacyQuery object
+        query = PrivacyQuery(
+            query_type=parsed_query["query_type"],
+            query_string=query_string,
+            parameters=parsed_query,
+            query_id=str(uuid.uuid4())
+        )
+        
+        return query
+    
+    def execute(self, query: BaseQuery) -> PrivacyQueryResult:
+        """Execute a structured query and return results.
+
+        Args:
+            query: The query to execute
+
+        Returns:
+            PrivacyQueryResult: Query execution result
+        """
+        if not isinstance(query, PrivacyQuery):
+            raise ValueError(f"Expected PrivacyQuery, got {type(query)}")
+            
+        # Get user context from execution context
+        user_context = {}
+        if query.get_execution_context():
+            user_context["user_id"] = query.get_execution_context().user_id
+        
+        # Execute the query using the existing method
+        result_dict = self.execute_query(query.query_string, user_context)
+        
+        # Convert to PrivacyQueryResult
+        return PrivacyQueryResult(
+            query=query,
+            data=result_dict.get("data", []),
+            success=result_dict.get("status") != QueryStatus.FAILED.value,
+            error=result_dict.get("reason", None) or result_dict.get("error", None),
+            metadata={},
+            status=result_dict.get("status", QueryStatus.COMPLETED.value),
+            row_count=result_dict.get("row_count", 0),
+            column_count=result_dict.get("column_count", 0),
+            columns=result_dict.get("columns", []),
+            minimized=result_dict.get("minimized", False),
+            anonymized=result_dict.get("anonymized", False),
+            privacy_reason=result_dict.get("privacy_reason", None)
+        )
     
     def execute_query(
         self,

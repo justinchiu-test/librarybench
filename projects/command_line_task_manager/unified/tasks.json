@@ -1,0 +1,90 @@
+{
+  "8b402fd9-826e-4501-ac57-be7c7185a0d4": {
+    "id": "8b402fd9-826e-4501-ac57-be7c7185a0d4",
+    "created_at": "2025-05-15T23:33:14.047422",
+    "updated_at": "2025-05-15T23:33:16.380555",
+    "title": "Setup Development Environment",
+    "description": "Configure development tools and dependencies",
+    "status": "completed",
+    "priority": "medium",
+    "due_date": null,
+    "completed_at": "2025-05-15T23:33:16.380566",
+    "tags": [
+      "setup",
+      "tools",
+      "dev"
+    ],
+    "notes": [],
+    "parent_id": null,
+    "subtask_ids": [],
+    "custom_metadata": {
+      "task_type": "generic"
+    },
+    "estimated_hours": null,
+    "actual_hours": null,
+    "severity": null,
+    "affected_systems": [],
+    "discovered_by": null
+  },
+  "91ddb23c-115a-46d6-b749-477c2feb8bc5": {
+    "id": "91ddb23c-115a-46d6-b749-477c2feb8bc5",
+    "created_at": "2025-05-15T23:33:14.207247",
+    "updated_at": "2025-05-15T23:33:15.919925",
+    "title": "Literature Review",
+    "description": "Review papers on machine learning techniques",
+    "status": "planned",
+    "priority": "high",
+    "due_date": "2025-05-16T00:00:00",
+    "completed_at": null,
+    "tags": [
+      "ML",
+      "literature",
+      "research"
+    ],
+    "notes": [
+      "Found 5 relevant papers to review"
+    ],
+    "parent_id": null,
+    "subtask_ids": [
+      "b5cbf0f5-9177-42dc-b079-1659be196b77"
+    ],
+    "custom_metadata": {
+      "task_type": "research"
+    },
+    "estimated_hours": 8.0,
+    "actual_hours": null,
+    "severity": null,
+    "affected_systems": [],
+    "discovered_by": null
+  },
+  "eed39b5c-88e0-492c-87b5-1be51f5e0a46": {
+    "id": "eed39b5c-88e0-492c-87b5-1be51f5e0a46",
+    "created_at": "2025-05-15T23:33:14.525928",
+    "updated_at": "2025-05-15T23:33:16.227576",
+    "title": "SQL Injection Vulnerability",
+    "description": "Fix SQL injection vulnerability in login form",
+    "status": "planned",
+    "priority": "critical",
+    "due_date": null,
+    "completed_at": null,
+    "tags": [
+      "security",
+      "critical",
+      "urgent"
+    ],
+    "notes": [],
+    "parent_id": null,
+    "subtask_ids": [],
+    "custom_metadata": {
+      "task_type": "security"
+    },
+    "estimated_hours": null,
+    "actual_hours": null,
+    "severity": "Critical",
+    "affected_systems": [
+      "auth-service",
+      "user-api"
+    ],
+    "discovered_by": "Security Team"
+  }
+}

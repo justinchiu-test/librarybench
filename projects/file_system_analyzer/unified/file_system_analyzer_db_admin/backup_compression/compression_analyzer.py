@@ -23,6 +23,10 @@ from ..utils.types import (
     OptimizationPriority
 )
 
+# Import from common library
+from common.core.base import AnalysisEngine, ScanResult
+from common.utils.types import ScanOptions, ScanSummary
+
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +114,7 @@ class BackupCompressionAnalysisResult(AnalysisResult):
     efficiency_by_database_type: Dict[str, ComparisonResult]
 
 
-class BackupCompressionAnalyzer:
+class BackupCompressionAnalyzer(AnalysisEngine):
     """
     Analyzes backup compression efficiency and retention strategies.
     
@@ -137,11 +141,89 @@ class BackupCompressionAnalyzer:
             min_backups_for_trend: Minimum number of backups needed for trend analysis
             retention_policy_days: Default retention policy in days
         """
+        super().__init__()
         self.speed_weight = speed_weight
         self.space_weight = space_weight
         self.recovery_weight = recovery_weight
         self.min_backups_for_trend = min_backups_for_trend
         self.retention_policy_days = retention_policy_days
+        
+    def analyze(self, scan_results: List[ScanResult]) -> BackupCompressionAnalysisResult:
+        """
+        Analyze scan results for backup compression efficiency.
+        
+        Implements the AnalysisEngine interface method.
+        
+        Args:
+            scan_results: Scan results to analyze
+            
+        Returns:
+            Backup compression analysis result
+        """
+        # Extract backup information from scan results
+        backups = []
+        for result in scan_results:
+            if hasattr(result, 'detected_files'):
+                for file in getattr(result, 'detected_files', []):
+                    if file.category == FileCategory.BACKUP:
+                        # Create backup info from file
+                        backup_info = self._create_backup_info_from_file(file)
+                        if backup_info:
+                            backups.append(backup_info)
+        
+        # Analyze the backups
+        return self.analyze_backup_compression(backups)
+        
+    def _create_backup_info_from_file(self, file: DatabaseFile) -> Optional[BackupInfo]:
+        """
+        Create BackupInfo object from DatabaseFile.
+        
+        Args:
+            file: Database file object
+            
+        Returns:
+            BackupInfo object or None if file can't be converted
+        """
+        if file.category != FileCategory.BACKUP:
+            return None
+            
+        try:
+            # Determine compression algorithm from file extension
+            algorithm = CompressionAlgorithm.NONE
+            if file.path.endswith('.gz'):
+                algorithm = CompressionAlgorithm.GZIP
+            elif file.path.endswith('.bz2'):
+                algorithm = CompressionAlgorithm.BZIP2
+            elif file.path.endswith('.xz'):
+                algorithm = CompressionAlgorithm.XZ
+            elif file.path.endswith('.lz4'):
+                algorithm = CompressionAlgorithm.LZ4
+            elif file.path.endswith('.zst'):
+                algorithm = CompressionAlgorithm.ZSTD
+            
+            # Guess backup strategy based on filename
+            strategy = BackupStrategy.FULL
+            if 'incremental' in file.path.lower():
+                strategy = BackupStrategy.INCREMENTAL
+            elif 'differential' in file.path.lower():
+                strategy = BackupStrategy.DIFFERENTIAL
+            elif 'log' in file.path.lower() and not 'catalog' in file.path.lower():
+                strategy = BackupStrategy.TRANSACTION_LOG
+                
+            # Create backup info
+            return BackupInfo(
+                path=file.path,
+                engine=file.engine,
+                size_bytes=file.size_bytes,
+                compression_algorithm=algorithm,
+                backup_date=file.last_modified,
+                backup_strategy=strategy,
+                is_compressed=file.is_compressed,
+                databases=[],  # We don't know which databases are in the backup
+            )
+        except Exception as e:
+            logger.error(f"Error creating backup info from file {file.path}: {e}")
+            return None
 
     def calculate_compression_metrics(self, backup: BackupInfo) -> CompressionMetrics:
         """

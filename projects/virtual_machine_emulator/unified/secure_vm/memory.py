@@ -8,55 +8,24 @@ including memory permissions, boundary checking, and protection levels.
 from __future__ import annotations
 import random
 import struct
-from enum import Enum, Flag, auto
 from typing import Dict, List, Optional, Set, Tuple, Union, Any
 
+from common.core.memory import (
+    MemorySystem as BaseMemorySystem,
+    MemorySegment as BaseMemorySegment,
+    MemoryAccessType,
+    MemoryPermission,
+    MemoryProtectionLevel,
+    MemoryAccess
+)
+from common.core.exceptions import (
+    MemoryException, SegmentationFault, ProtectionFault, InvalidAddressException
+)
 
-class MemoryPermission(Flag):
-    """Memory access permissions flags."""
-    NONE = 0
-    READ = auto()
-    WRITE = auto()
-    EXECUTE = auto()
-    READ_WRITE = READ | WRITE
-    READ_EXECUTE = READ | EXECUTE
-    WRITE_EXECUTE = WRITE | EXECUTE
-    READ_WRITE_EXECUTE = READ | WRITE | EXECUTE
-    FULL = READ | WRITE | EXECUTE
 
-
-class MemoryProtectionLevel(Enum):
-    """Protection enforcement levels for memory operations."""
-    NONE = 0  # No protection, all operations permitted
-    MINIMAL = 1  # Basic boundary checking
-    STANDARD = 2  # Permission enforcement without additional protections
-    ENHANCED = 3  # Permission checks plus basic integrity protections
-    MAXIMUM = 4  # All protections enabled with strict enforcement
-
-    def __lt__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value < other.value
-        return NotImplemented
-
-    def __gt__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value > other.value
-        return NotImplemented
-
-    def __le__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value <= other.value
-        return NotImplemented
-
-    def __ge__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value >= other.value
-        return NotImplemented
-
-    def __eq__(self, other):
-        if self.__class__ is other.__class__:
-            return self.value == other.value
-        return NotImplemented
+# Re-export common types
+MemoryPermission = MemoryPermission
+MemoryProtectionLevel = MemoryProtectionLevel
 
 
 class ProtectionBypassAttempt:
@@ -89,8 +58,8 @@ class ProtectionBypassAttempt:
         )
 
 
-class MemorySegment:
-    """A contiguous segment of memory with specific protection attributes."""
+class MemorySegment(BaseMemorySegment):
+    """A specialized memory segment with security features."""
     
     def __init__(
         self,
@@ -99,35 +68,32 @@ class MemorySegment:
         permission: MemoryPermission = MemoryPermission.READ_WRITE,
         name: str = "unnamed",
     ):
-        self.base_address = base_address
-        self.size = size
-        self.end_address = base_address + size - 1
-        self.permission = permission
-        self.name = name
-        self.data = bytearray(size)
+        """
+        Initialize the memory segment.
         
-        # For memory integrity checks
+        Args:
+            base_address: Starting address of the segment
+            size: Size of the segment in bytes
+            permission: Access permissions for the segment
+            name: Name of the segment
+        """
+        super().__init__(base_address, size, permission, name)
+        
+        # Additional security features
         self._shadow_data: Optional[bytearray] = None
         self._canaries: Dict[int, bytes] = {}
     
-    def contains_address(self, address: int) -> bool:
-        """Check if this segment contains the given address."""
-        return self.base_address <= address <= self.end_address
-    
-    def relative_address(self, address: int) -> int:
-        """Convert an absolute address to an offset within this segment."""
-        if not self.contains_address(address):
-            raise ValueError(f"Address 0x{address:08x} is outside segment {self.name}")
-        return address - self.base_address
-    
-    def check_permission(self, address: int, required_permission: MemoryPermission) -> bool:
-        """Check if the segment has the required permission for the given address."""
-        if not self.contains_address(address):
-            return False
-        return (self.permission & required_permission) == required_permission
-    
     def place_canary(self, offset: int, value: Optional[bytes] = None) -> bytes:
-        """Place a canary value at the specified offset."""
+        """
+        Place a canary value at the specified offset.
+        
+        Args:
+            offset: Offset within the segment
+            value: Canary value to place, or None for random
+            
+        Returns:
+            The canary value that was placed
+        """
         if offset < 0 or offset >= self.size:
             raise ValueError(f"Offset {offset} is outside segment bounds")
         
@@ -144,7 +110,12 @@ class MemorySegment:
         return value
     
     def check_canaries(self) -> List[Tuple[int, bytes, bytes]]:
-        """Check all canaries and return a list of corrupted ones."""
+        """
+        Check all canaries and return a list of corrupted ones.
+        
+        Returns:
+            List of (offset, expected, actual) for corrupted canaries
+        """
         corrupted = []
         for offset, expected in self._canaries.items():
             actual = bytes(self.data[offset:offset + len(expected)])
@@ -157,7 +128,12 @@ class MemorySegment:
         self._shadow_data = bytearray(self.data)
     
     def check_shadow_memory(self) -> List[int]:
-        """Check for differences between shadow memory and actual memory."""
+        """
+        Check for differences between shadow memory and actual memory.
+        
+        Returns:
+            List of offsets where differences were found
+        """
         if self._shadow_data is None:
             return []
         
@@ -174,18 +150,28 @@ class MemorySegment:
             self._shadow_data = bytearray(self.data)
 
 
-class Memory:
-    """Memory subsystem with protection mechanisms and access controls."""
+class Memory(BaseMemorySystem):
+    """Memory subsystem with enhanced security features."""
     
     def __init__(
         self,
+        size: int = 65536,
         protection_level: MemoryProtectionLevel = MemoryProtectionLevel.STANDARD,
         enable_dep: bool = True,
         enable_aslr: bool = False,
         aslr_entropy: int = 8,  # bits of randomness for ASLR
     ):
-        self.segments: List[MemorySegment] = []
-        self.protection_level = protection_level
+        """
+        Initialize the memory system.
+        
+        Args:
+            size: Size of memory in bytes
+            protection_level: Level of memory protection
+            enable_dep: Whether to enable Data Execution Prevention
+            enable_aslr: Whether to enable Address Space Layout Randomization
+            aslr_entropy: Bits of randomness for ASLR
+        """
+        super().__init__(size, protection_level)
         self.enable_dep = enable_dep
         self.enable_aslr = enable_aslr
         self.aslr_entropy = aslr_entropy
@@ -197,13 +183,22 @@ class Memory:
         # Performance tracking
         self.access_count = 0
         self.protection_check_time = 0
-        
+    
     def add_segment(
         self,
         segment: MemorySegment,
         apply_aslr: bool = True
     ) -> MemorySegment:
-        """Add a memory segment with optional ASLR applied."""
+        """
+        Add a memory segment with optional ASLR applied.
+        
+        Args:
+            segment: The memory segment to add
+            apply_aslr: Whether to apply ASLR to the segment
+            
+        Returns:
+            The added segment
+        """
         # Apply ASLR if enabled and requested
         if self.enable_aslr and apply_aslr:
             # Get or create an ASLR offset for this segment type
@@ -215,121 +210,7 @@ class Memory:
             segment.base_address += offset
             segment.end_address += offset
         
-        self.segments.append(segment)
-        return segment
-    
-    def find_segment(self, address: int) -> Optional[MemorySegment]:
-        """Find the memory segment containing the given address."""
-        for segment in self.segments:
-            if segment.contains_address(address):
-                return segment
-        return None
-    
-    def read_byte(self, address: int, context: Dict[str, Any] = None) -> int:
-        """Read a single byte from memory, enforcing memory protections."""
-        self.access_count += 1
-        context = context or {}
-        
-        # Find the segment containing this address
-        segment = self.find_segment(address)
-        if segment is None:
-            self._record_protection_event(
-                address, "read", MemoryPermission.NONE, 
-                MemoryPermission.READ, context.get("instruction_pointer", 0), context
-            )
-            raise MemoryError(f"Segmentation fault: address 0x{address:08x} not mapped")
-        
-        # Check read permission if protection is enabled
-        if (self.protection_level != MemoryProtectionLevel.NONE and 
-                not segment.check_permission(address, MemoryPermission.READ)):
-            self._record_protection_event(
-                address, "read", segment.permission, 
-                MemoryPermission.READ, context.get("instruction_pointer", 0), context
-            )
-            if self.protection_level >= MemoryProtectionLevel.STANDARD:
-                raise MemoryError(f"Memory protection violation: cannot read from 0x{address:08x}")
-        
-        # Compute the offset within the segment
-        offset = segment.relative_address(address)
-        return segment.data[offset]
-    
-    def write_byte(self, address: int, value: int, context: Dict[str, Any] = None) -> None:
-        """Write a single byte to memory, enforcing memory protections."""
-        self.access_count += 1
-        context = context or {}
-        
-        # Find the segment containing this address
-        segment = self.find_segment(address)
-        if segment is None:
-            self._record_protection_event(
-                address, "write", MemoryPermission.NONE, 
-                MemoryPermission.WRITE, context.get("instruction_pointer", 0), context
-            )
-            raise MemoryError(f"Segmentation fault: address 0x{address:08x} not mapped")
-        
-        # Check write permission if protection is enabled
-        if (self.protection_level != MemoryProtectionLevel.NONE and 
-                not segment.check_permission(address, MemoryPermission.WRITE)):
-            self._record_protection_event(
-                address, "write", segment.permission, 
-                MemoryPermission.WRITE, context.get("instruction_pointer", 0), context
-            )
-            if self.protection_level >= MemoryProtectionLevel.STANDARD:
-                raise MemoryError(f"Memory protection violation: cannot write to 0x{address:08x}")
-        
-        # Compute the offset within the segment
-        offset = segment.relative_address(address)
-        segment.data[offset] = value & 0xFF
-    
-    def execute(self, address: int, context: Dict[str, Any] = None) -> int:
-        """Execute code at the given address, enforcing DEP and other protections."""
-        self.access_count += 1
-        context = context or {}
-        
-        # Find the segment containing this address
-        segment = self.find_segment(address)
-        if segment is None:
-            self._record_protection_event(
-                address, "execute", MemoryPermission.NONE, 
-                MemoryPermission.EXECUTE, context.get("instruction_pointer", 0), context
-            )
-            raise MemoryError(f"Segmentation fault: address 0x{address:08x} not mapped")
-        
-        # Check execute permission if DEP is enabled
-        if (self.enable_dep and self.protection_level != MemoryProtectionLevel.NONE and 
-                not segment.check_permission(address, MemoryPermission.EXECUTE)):
-            self._record_protection_event(
-                address, "execute", segment.permission, 
-                MemoryPermission.EXECUTE, context.get("instruction_pointer", 0), context
-            )
-            if self.protection_level >= MemoryProtectionLevel.STANDARD:
-                raise MemoryError(f"DEP violation: cannot execute code at 0x{address:08x}")
-        
-        # Read the instruction byte (assuming the simplest case of 1-byte instructions)
-        offset = segment.relative_address(address)
-        return segment.data[offset]
-    
-    def read_bytes(self, address: int, count: int, context: Dict[str, Any] = None) -> bytes:
-        """Read multiple bytes from memory, enforcing memory protections."""
-        result = bytearray(count)
-        for i in range(count):
-            result[i] = self.read_byte(address + i, context)
-        return bytes(result)
-    
-    def write_bytes(self, address: int, data: bytes, context: Dict[str, Any] = None) -> None:
-        """Write multiple bytes to memory, enforcing memory protections."""
-        for i, b in enumerate(data):
-            self.write_byte(address + i, b, context)
-    
-    def read_word(self, address: int, context: Dict[str, Any] = None) -> int:
-        """Read a 32-bit word from memory, enforcing memory protections."""
-        data = self.read_bytes(address, 4, context)
-        return struct.unpack("<I", data)[0]
-    
-    def write_word(self, address: int, value: int, context: Dict[str, Any] = None) -> None:
-        """Write a 32-bit word to memory, enforcing memory protections."""
-        data = struct.pack("<I", value)
-        self.write_bytes(address, data, context)
+        return super().add_segment(segment)
     
     def _record_protection_event(
         self,
@@ -340,7 +221,17 @@ class Memory:
         instruction_pointer: int,
         context: Dict[str, Any],
     ) -> None:
-        """Record an attempt to bypass memory protection."""
+        """
+        Record an attempt to bypass memory protection.
+        
+        Args:
+            address: The memory address
+            access_type: Type of access attempted
+            current_permission: Current permission of the memory
+            required_permission: Permission required for the access
+            instruction_pointer: Current instruction pointer
+            context: Additional context for the event
+        """
         event = ProtectionBypassAttempt(
             address=address,
             access_type=access_type,
@@ -351,8 +242,242 @@ class Memory:
         )
         self.protection_events.append(event)
     
+    def read_byte(self, address: int, context: Dict[str, Any] = None) -> int:
+        """
+        Read a single byte from memory, enforcing memory protections.
+        
+        Args:
+            address: The address to read from
+            context: Additional context for the read
+            
+        Returns:
+            The byte value at the address
+            
+        Raises:
+            SegmentationFault: If the address is not in any mapped segment
+            ProtectionFault: If the read violates memory permissions
+        """
+        self.access_count += 1
+        context = context or {}
+        
+        # Find the segment containing this address
+        segment = self.find_segment(address)
+        if segment is None:
+            self._record_protection_event(
+                address, "read", MemoryPermission.NONE, 
+                MemoryPermission.READ, context.get("instruction_pointer", 0), context
+            )
+            raise SegmentationFault(
+                f"Segmentation fault: address 0x{address:08x} not mapped",
+                address, context
+            )
+        
+        # Check read permission if protection is enabled
+        if (self.protection_level != MemoryProtectionLevel.NONE and 
+                not segment.check_permission(address, MemoryPermission.READ)):
+            self._record_protection_event(
+                address, "read", segment.permission, 
+                MemoryPermission.READ, context.get("instruction_pointer", 0), context
+            )
+            if self.protection_level >= MemoryProtectionLevel.STANDARD:
+                raise ProtectionFault(
+                    f"Memory protection violation: cannot read from 0x{address:08x}",
+                    address, "READ", segment.permission.name, context
+                )
+        
+        # Compute the offset within the segment
+        offset = segment.relative_address(address)
+        
+        # Create memory access record
+        if self.enable_access_logging:
+            access = MemoryAccess(
+                address=address,
+                access_type=MemoryAccessType.READ,
+                context=context
+            )
+            self._log_access(access)
+        
+        return segment.data[offset]
+    
+    def write_byte(self, address: int, value: int, context: Dict[str, Any] = None) -> None:
+        """
+        Write a single byte to memory, enforcing memory protections.
+        
+        Args:
+            address: The address to write to
+            value: The byte value to write
+            context: Additional context for the write
+            
+        Raises:
+            SegmentationFault: If the address is not in any mapped segment
+            ProtectionFault: If the write violates memory permissions
+        """
+        self.access_count += 1
+        context = context or {}
+        
+        # Find the segment containing this address
+        segment = self.find_segment(address)
+        if segment is None:
+            self._record_protection_event(
+                address, "write", MemoryPermission.NONE, 
+                MemoryPermission.WRITE, context.get("instruction_pointer", 0), context
+            )
+            raise SegmentationFault(
+                f"Segmentation fault: address 0x{address:08x} not mapped",
+                address, context
+            )
+        
+        # Check write permission if protection is enabled
+        if (self.protection_level != MemoryProtectionLevel.NONE and 
+                not segment.check_permission(address, MemoryPermission.WRITE)):
+            self._record_protection_event(
+                address, "write", segment.permission, 
+                MemoryPermission.WRITE, context.get("instruction_pointer", 0), context
+            )
+            if self.protection_level >= MemoryProtectionLevel.STANDARD:
+                raise ProtectionFault(
+                    f"Memory protection violation: cannot write to 0x{address:08x}",
+                    address, "WRITE", segment.permission.name, context
+                )
+        
+        # Compute the offset within the segment
+        offset = segment.relative_address(address)
+        
+        # Create memory access record
+        if self.enable_access_logging:
+            access = MemoryAccess(
+                address=address,
+                access_type=MemoryAccessType.WRITE,
+                value=value,
+                context=context
+            )
+            self._log_access(access)
+        
+        segment.data[offset] = value & 0xFF
+    
+    def execute(self, address: int, context: Dict[str, Any] = None) -> int:
+        """
+        Execute code at the given address, enforcing DEP and other protections.
+        
+        Args:
+            address: The address to execute from
+            context: Additional context for the execution
+            
+        Returns:
+            The instruction byte at the address
+            
+        Raises:
+            SegmentationFault: If the address is not in any mapped segment
+            ProtectionFault: If execution violates memory permissions
+        """
+        self.access_count += 1
+        context = context or {}
+        
+        # Find the segment containing this address
+        segment = self.find_segment(address)
+        if segment is None:
+            self._record_protection_event(
+                address, "execute", MemoryPermission.NONE, 
+                MemoryPermission.EXECUTE, context.get("instruction_pointer", 0), context
+            )
+            raise SegmentationFault(
+                f"Segmentation fault: address 0x{address:08x} not mapped",
+                address, context
+            )
+        
+        # Check execute permission if DEP is enabled
+        if (self.enable_dep and self.protection_level != MemoryProtectionLevel.NONE and 
+                not segment.check_permission(address, MemoryPermission.EXECUTE)):
+            self._record_protection_event(
+                address, "execute", segment.permission, 
+                MemoryPermission.EXECUTE, context.get("instruction_pointer", 0), context
+            )
+            if self.protection_level >= MemoryProtectionLevel.STANDARD:
+                raise ProtectionFault(
+                    f"DEP violation: cannot execute code at 0x{address:08x}",
+                    address, "EXECUTE", segment.permission.name, context
+                )
+        
+        # Compute the offset within the segment
+        offset = segment.relative_address(address)
+        
+        # Create memory access record
+        if self.enable_access_logging:
+            access = MemoryAccess(
+                address=address,
+                access_type=MemoryAccessType.EXECUTE,
+                context=context
+            )
+            self._log_access(access)
+        
+        return segment.data[offset]
+    
+    def read_bytes(self, address: int, count: int, context: Dict[str, Any] = None) -> bytes:
+        """
+        Read multiple bytes from memory, enforcing memory protections.
+        
+        Args:
+            address: The starting address
+            count: Number of bytes to read
+            context: Additional context for the read
+            
+        Returns:
+            The bytes at the specified address
+        """
+        result = bytearray(count)
+        for i in range(count):
+            result[i] = self.read_byte(address + i, context)
+        return bytes(result)
+    
+    def write_bytes(self, address: int, data: bytes, context: Dict[str, Any] = None) -> None:
+        """
+        Write multiple bytes to memory, enforcing memory protections.
+        
+        Args:
+            address: The starting address
+            data: The bytes to write
+            context: Additional context for the write
+        """
+        for i, b in enumerate(data):
+            self.write_byte(address + i, b, context)
+    
+    def read_word(self, address: int, context: Dict[str, Any] = None) -> int:
+        """
+        Read a 32-bit word from memory, enforcing memory protections.
+        
+        Args:
+            address: The address to read from
+            context: Additional context for the read
+            
+        Returns:
+            The 32-bit word at the address
+        """
+        data = self.read_bytes(address, 4, context)
+        return struct.unpack("<I", data)[0]
+    
+    def write_word(self, address: int, value: int, context: Dict[str, Any] = None) -> None:
+        """
+        Write a 32-bit word to memory, enforcing memory protections.
+        
+        Args:
+            address: The address to write to
+            value: The word value to write
+            context: Additional context for the write
+        """
+        data = struct.pack("<I", value)
+        self.write_bytes(address, data, context)
+    
     def place_stack_canaries(self, stack_segment: MemorySegment, interval: int = 64) -> List[Tuple[int, bytes]]:
-        """Place canaries at regular intervals in the stack segment."""
+        """
+        Place canaries at regular intervals in the stack segment.
+        
+        Args:
+            stack_segment: The stack segment
+            interval: Interval between canaries
+            
+        Returns:
+            List of (address, canary_value) tuples
+        """
         canaries = []
         for offset in range(0, stack_segment.size, interval):
             value = stack_segment.place_canary(offset)
@@ -360,19 +485,45 @@ class Memory:
         return canaries
     
     def check_segment_canaries(self, segment: MemorySegment) -> List[Tuple[int, bytes, bytes]]:
-        """Check canaries in the given segment and return corrupted ones."""
+        """
+        Check canaries in the given segment and return corrupted ones.
+        
+        Args:
+            segment: The memory segment to check
+            
+        Returns:
+            List of (offset, expected, actual) for corrupted canaries
+        """
         return segment.check_canaries()
     
     def enable_shadow_memory(self, segment: MemorySegment) -> None:
-        """Enable shadow memory for the given segment."""
+        """
+        Enable shadow memory for the given segment.
+        
+        Args:
+            segment: The memory segment
+        """
         segment.enable_shadow_memory()
     
     def check_shadow_memory(self, segment: MemorySegment) -> List[int]:
-        """Check for unexpected changes in the segment using shadow memory."""
+        """
+        Check for unexpected changes in the segment using shadow memory.
+        
+        Args:
+            segment: The memory segment to check
+            
+        Returns:
+            List of addresses where unexpected changes were found
+        """
         return segment.check_shadow_memory()
     
     def get_protection_stats(self) -> Dict[str, Any]:
-        """Get statistics about memory protection operations."""
+        """
+        Get statistics about memory protection operations.
+        
+        Returns:
+            Dictionary of memory protection statistics
+        """
         return {
             "access_count": self.access_count,
             "protection_check_time": self.protection_check_time,
@@ -380,61 +531,11 @@ class Memory:
             "memory_segments": len(self.segments),
         }
     
-    def get_memory_map(self) -> List[Dict[str, Any]]:
-        """Get a detailed map of memory segments and their properties."""
-        return [
-            {
-                "name": segment.name,
-                "base_address": segment.base_address,
-                "size": segment.size,
-                "end_address": segment.end_address,
-                "permission": segment.permission.name,
-            }
-            for segment in self.segments
-        ]
-
-
-class MemoryProtection:
-    """Configurable memory protection system with various security mechanisms."""
-    
-    def __init__(
-        self,
-        level: MemoryProtectionLevel = MemoryProtectionLevel.STANDARD,
-        dep_enabled: bool = True,
-        aslr_enabled: bool = False,
-        aslr_entropy: int = 8,
-        stack_canaries: bool = False,
-        shadow_memory: bool = False,
-    ):
-        self.level = level
-        self.dep_enabled = dep_enabled
-        self.aslr_enabled = aslr_enabled
-        self.aslr_entropy = aslr_entropy
-        self.stack_canaries = stack_canaries
-        self.shadow_memory = shadow_memory
-    
-    def apply_to_memory(self, memory: Memory) -> None:
-        """Apply these protection settings to a Memory instance."""
-        memory.protection_level = self.level
-        memory.enable_dep = self.dep_enabled
-        memory.enable_aslr = self.aslr_enabled
-        memory.aslr_entropy = self.aslr_entropy
-    
-    def apply_to_segment(self, segment: MemorySegment, memory: Memory) -> None:
-        """Apply segment-specific protections."""
-        if self.stack_canaries and segment.name == "stack":
-            memory.place_stack_canaries(segment)
+    def get_protection_events(self) -> List[ProtectionBypassAttempt]:
+        """
+        Get all recorded protection events.
         
-        if self.shadow_memory:
-            memory.enable_shadow_memory(segment)
-    
-    def get_protection_description(self) -> Dict[str, Any]:
-        """Get a description of the current protection configuration."""
-        return {
-            "protection_level": self.level.name,
-            "dep_enabled": self.dep_enabled,
-            "aslr_enabled": self.aslr_enabled,
-            "aslr_entropy": self.aslr_entropy,
-            "stack_canaries": self.stack_canaries,
-            "shadow_memory": self.shadow_memory,
-        }
+        Returns:
+            List of protection bypass attempts
+        """
+        return self.protection_events

@@ -11,6 +11,11 @@ import json
 from .interfaces.api import StorageOptimizerAPI
 from .utils.types import DatabaseEngine
 
+# Import from common library
+from common.core.base import ScanSession
+from common.utils.types import ScanOptions
+from common.core.scanner import DirectoryScanner
+
 
 # Configure logging
 logging.basicConfig(

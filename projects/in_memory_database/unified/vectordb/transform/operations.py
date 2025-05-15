@@ -10,8 +10,10 @@ import statistics
 from typing import Dict, List, Optional, Any, Union, Tuple, Callable
 import json
 
+from common.operations import Operation, Transformer
 
-class BaseOperation:
+
+class BaseOperation(Transformer[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]):
     """
     Base class for feature transformation operations.
     
@@ -26,13 +28,8 @@ class BaseOperation:
         Args:
             name: Optional name for this operation
         """
-        self._name = name or self.__class__.__name__
+        super().__init__(name or self.__class__.__name__)
         self._fitted = False
-    
-    @property
-    def name(self) -> str:
-        """Get the name of this operation."""
-        return self._name
     
     @property
     def fitted(self) -> bool:
@@ -113,12 +110,13 @@ class BaseOperation:
         Returns:
             Dictionary representation
         """
-        return {
-            "name": self._name,
-            "type": self.__class__.__name__,
+        # Extends the Transformer to_dict with fitted state and params
+        result = super().to_dict()
+        result.update({
             "fitted": self._fitted,
             "params": self.get_params()
-        }
+        })
+        return result
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'BaseOperation':
@@ -153,29 +151,6 @@ class BaseOperation:
         op._fitted = data["fitted"]
         
         return op
-    
-    def to_json(self) -> str:
-        """
-        Convert this operation to a JSON string.
-        
-        Returns:
-            JSON string representation
-        """
-        return json.dumps(self.to_dict())
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> 'BaseOperation':
-        """
-        Create an operation from a JSON string.
-        
-        Args:
-            json_str: JSON string representation
-            
-        Returns:
-            A new operation instance
-        """
-        data = json.loads(json_str)
-        return cls.from_dict(data)
 
 
 class Scaler(BaseOperation):

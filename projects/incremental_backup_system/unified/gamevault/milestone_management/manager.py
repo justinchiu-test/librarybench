@@ -216,10 +216,15 @@ class MilestoneManager:
                 with open(milestone_path, "r") as f:
                     milestone_data = json.load(f)
             else:
-                return False
+                # If no annotations file exists yet, create a new one
+                milestone_data = {
+                    "milestone_id": milestone_id,
+                    "annotations": {}
+                }
             
-            # Update annotations
-            milestone_data["annotations"].update(annotations)
+            # Update annotations - merge instead of completely replacing
+            for key, value in annotations.items():
+                milestone_data["annotations"][key] = value
             
             # Save updated annotations
             with open(milestone_path, "w") as f:

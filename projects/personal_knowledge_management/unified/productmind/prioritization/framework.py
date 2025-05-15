@@ -11,10 +11,11 @@ This module provides capabilities for:
 from collections import defaultdict
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Union
-import json
-import os
+from uuid import UUID
 import math
+import os
 
 import numpy as np
 
@@ -23,6 +24,8 @@ from productmind.models import (
     Priority,
     StrategicGoal
 )
+
+from common.core.storage import BaseStorage, LocalStorage
 
 
 class ScoringModel(str, Enum):
@@ -49,23 +52,29 @@ class PrioritizationFramework:
     def __init__(
         self,
         storage_dir: str = "./data",
+        storage: Optional[BaseStorage] = None,
         default_scoring_model: ScoringModel = ScoringModel.WEIGHTED
     ):
         """
         Initialize the prioritization framework.
         
         Args:
-            storage_dir: Directory to store data
+            storage_dir: Directory to store data (used if storage is not provided)
+            storage: Optional BaseStorage implementation to use
             default_scoring_model: Default scoring model for prioritization
         """
+        if storage is not None:
+            self.storage = storage
+        else:
+            # Create storage directories
+            os.makedirs(os.path.join(storage_dir, "features"), exist_ok=True)
+            os.makedirs(os.path.join(storage_dir, "strategic_goals"), exist_ok=True)
+            self.storage = LocalStorage(Path(storage_dir))
+            
         self.storage_dir = storage_dir
         self.default_scoring_model = default_scoring_model
         self._features_cache = {}
         self._goals_cache = {}
-        
-        # Create storage directories
-        os.makedirs(os.path.join(storage_dir, "features"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "strategic_goals"), exist_ok=True)
     
     def add_feature(self, feature: Union[Feature, List[Feature]]) -> List[str]:
         """
@@ -82,27 +91,11 @@ class PrioritizationFramework:
         
         feature_ids = []
         for item in feature:
-            self._store_feature(item)
+            self.storage.save(item)
+            self._features_cache[str(item.id)] = item
             feature_ids.append(str(item.id))
         
         return feature_ids
-    
-    def _store_feature(self, feature: Feature) -> None:
-        """
-        Store a feature in cache and on disk.
-        
-        Args:
-            feature: Feature to store
-        """
-        # Store in memory cache
-        self._features_cache[str(feature.id)] = feature
-        
-        # Store on disk
-        feature_path = os.path.join(
-            self.storage_dir, "features", f"{feature.id}.json"
-        )
-        with open(feature_path, "w") as f:
-            f.write(feature.model_dump_json())
     
     def add_strategic_goal(self, goal: Union[StrategicGoal, List[StrategicGoal]]) -> List[str]:
         """
@@ -119,27 +112,11 @@ class PrioritizationFramework:
         
         goal_ids = []
         for item in goal:
-            self._store_strategic_goal(item)
+            self.storage.save(item)
+            self._goals_cache[str(item.id)] = item
             goal_ids.append(str(item.id))
         
         return goal_ids
-    
-    def _store_strategic_goal(self, goal: StrategicGoal) -> None:
-        """
-        Store a strategic goal in cache and on disk.
-        
-        Args:
-            goal: Strategic goal to store
-        """
-        # Store in memory cache
-        self._goals_cache[str(goal.id)] = goal
-        
-        # Store on disk
-        goal_path = os.path.join(
-            self.storage_dir, "strategic_goals", f"{goal.id}.json"
-        )
-        with open(goal_path, "w") as f:
-            f.write(goal.model_dump_json())
     
     def get_feature(self, feature_id: str) -> Optional[Feature]:
         """
@@ -155,16 +132,15 @@ class PrioritizationFramework:
         if feature_id in self._features_cache:
             return self._features_cache[feature_id]
         
-        # Try to load from disk
-        feature_path = os.path.join(
-            self.storage_dir, "features", f"{feature_id}.json"
-        )
-        if os.path.exists(feature_path):
-            with open(feature_path, "r") as f:
-                feature_data = json.load(f)
-                feature = Feature.model_validate(feature_data)
+        # Try to get from storage
+        try:
+            feature = self.storage.get(Feature, UUID(feature_id))
+            if feature:
                 self._features_cache[feature_id] = feature
                 return feature
+        except ValueError:
+            # Handle invalid UUID format
+            pass
         
         return None
     
@@ -182,16 +158,15 @@ class PrioritizationFramework:
         if goal_id in self._goals_cache:
             return self._goals_cache[goal_id]
         
-        # Try to load from disk
-        goal_path = os.path.join(
-            self.storage_dir, "strategic_goals", f"{goal_id}.json"
-        )
-        if os.path.exists(goal_path):
-            with open(goal_path, "r") as f:
-                goal_data = json.load(f)
-                goal = StrategicGoal.model_validate(goal_data)
+        # Try to get from storage
+        try:
+            goal = self.storage.get(StrategicGoal, UUID(goal_id))
+            if goal:
                 self._goals_cache[goal_id] = goal
                 return goal
+        except ValueError:
+            # Handle invalid UUID format
+            pass
         
         return None
     
@@ -202,18 +177,11 @@ class PrioritizationFramework:
         Returns:
             List of all features
         """
-        features = []
-        features_dir = os.path.join(self.storage_dir, "features")
+        features = self.storage.list_all(Feature)
         
-        if not os.path.exists(features_dir):
-            return features
-        
-        for filename in os.listdir(features_dir):
-            if filename.endswith(".json"):
-                feature_id = filename.replace(".json", "")
-                feature = self.get_feature(feature_id)
-                if feature:
-                    features.append(feature)
+        # Update cache with retrieved features
+        for feature in features:
+            self._features_cache[str(feature.id)] = feature
         
         return features
     
@@ -224,18 +192,11 @@ class PrioritizationFramework:
         Returns:
             List of all strategic goals
         """
-        goals = []
-        goals_dir = os.path.join(self.storage_dir, "strategic_goals")
+        goals = self.storage.list_all(StrategicGoal)
         
-        if not os.path.exists(goals_dir):
-            return goals
-        
-        for filename in os.listdir(goals_dir):
-            if filename.endswith(".json"):
-                goal_id = filename.replace(".json", "")
-                goal = self.get_strategic_goal(goal_id)
-                if goal:
-                    goals.append(goal)
+        # Update cache with retrieved goals
+        for goal in goals:
+            self._goals_cache[str(goal.id)] = goal
         
         return goals
     
@@ -269,7 +230,8 @@ class PrioritizationFramework:
         feature.updated_at = datetime.now()
         
         # Save feature
-        self._store_feature(feature)
+        self.storage.save(feature)
+        self._features_cache[feature_id] = feature
         
         return feature
     
@@ -449,7 +411,8 @@ class PrioritizationFramework:
             # Update feature with calculated priority
             feature.priority = priority
             feature.updated_at = datetime.now()
-            self._store_feature(feature)
+            self.storage.save(feature)
+            self._features_cache[str(feature.id)] = feature
             
             result.append({
                 "feature_id": str(feature.id),

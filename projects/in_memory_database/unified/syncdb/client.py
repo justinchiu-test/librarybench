@@ -10,7 +10,8 @@ import uuid
 from dataclasses import dataclass
 
 from .db.schema import DatabaseSchema, TableSchema, Column
-from .db.database import Database, Table, Transaction
+from .db.table import Table
+from .db.database import Database, Transaction
 from .sync.change_tracker import ChangeTracker, VersionVector, ChangeRecord
 from .sync.sync_protocol import (
     SyncEngine, NetworkSimulator, SyncRequest, SyncResponse

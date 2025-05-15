@@ -339,26 +339,29 @@ class SyncEngine:
 
             # Get server changes from database
             table = self.database.tables.get(table_name)
-            print(f"Checking records in table: {table_name}, total records: {len(table.records) if table else 0}")
+            print(f"Checking records in table: {table_name}, total records: {len(table._records) if table else 0}")
 
             # Always include all records in the response, regardless of tracked changes
             if table:
                 # Create change records for all existing records in the table
-                for pk_tuple, record in table.records.items():
-                    # Include all records for testing
-                    print(f"  Found record with primary key: {pk_tuple}")
-                    # Create a change record for this record
-                    change = ChangeRecord(
-                        id=len(server_changes) + 1000,  # Use a high ID to avoid conflicts
-                        table_name=table_name,
-                        primary_key=pk_tuple,
-                        operation="update" if pk_tuple in table.records else "insert",
-                        timestamp=table.last_modified.get(pk_tuple, time.time()),
-                        client_id=self.server_id,
-                        old_data=None,  # We don't have old data in this context
-                        new_data=record
-                    )
-                    server_changes.append(change)
+                for pk_tuple, record_id in table._pk_to_id.items():
+                    # Get the record data
+                    record = table.get(list(pk_tuple))
+                    if record:
+                        # Include all records for testing
+                        print(f"  Found record with primary key: {pk_tuple}")
+                        # Create a change record for this record
+                        change = ChangeRecord(
+                            id=len(server_changes) + 1000,  # Use a high ID to avoid conflicts
+                            table_name=table_name,
+                            primary_key=pk_tuple,
+                            operation="update",
+                            timestamp=table.last_modified.get(pk_tuple, time.time()),
+                            client_id=self.server_id,
+                            old_data=None,  # We don't have old data in this context
+                            new_data=record
+                        )
+                        server_changes.append(change)
 
             # Combine tracked changes with database records
             all_changes = tracked_changes + server_changes

@@ -26,14 +26,23 @@ class DatabaseEngine(str, Enum):
     UNKNOWN = "unknown"
 
 
-class FileCategory(CommonFileCategory):
-    """Database file categories, extending common file categories."""
-    pass
+class FileCategory(str, Enum):
+    """Database file categories, compatible with common file categories."""
+    DATA = "data"
+    INDEX = "index"
+    LOG = "log"
+    CONFIG = "config"
+    TEMP = "temp"
+    BACKUP = "backup"
+    UNKNOWN = "unknown"
 
 
-class OptimizationPriority(PriorityLevel):
+class OptimizationPriority(str, Enum):
     """Priority levels for optimization recommendations."""
-    pass
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 class DatabaseFile(BaseModel):

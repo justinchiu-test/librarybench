@@ -10,8 +10,9 @@ This module provides capabilities for:
 """
 from collections import Counter, defaultdict
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Union
-import json
+from uuid import UUID
 import os
 import re
 
@@ -27,6 +28,8 @@ from productmind.models import (
     SourceType, 
     Theme
 )
+
+from common.core.storage import BaseStorage, LocalStorage
 
 
 class FeedbackAnalysisEngine:
@@ -44,6 +47,7 @@ class FeedbackAnalysisEngine:
     def __init__(
         self,
         storage_dir: str = "./data",
+        storage: Optional[BaseStorage] = None,
         vectorizer_max_features: int = 10000,
         min_cluster_size: int = 5,
         n_clusters: int = None,
@@ -53,12 +57,22 @@ class FeedbackAnalysisEngine:
         Initialize the feedback analysis engine.
         
         Args:
-            storage_dir: Directory to store feedback data
+            storage_dir: Directory to store feedback data (used if storage is not provided)
+            storage: Optional BaseStorage implementation to use
             vectorizer_max_features: Maximum features for TF-IDF vectorizer
             min_cluster_size: Minimum samples per cluster for DBSCAN
             n_clusters: Number of clusters for KMeans (if None, auto-determined)
             max_themes: Maximum number of themes to extract
         """
+        if storage is not None:
+            self.storage = storage
+        else:
+            # Create storage directory if it doesn't exist
+            os.makedirs(os.path.join(storage_dir, "feedback"), exist_ok=True)
+            os.makedirs(os.path.join(storage_dir, "clusters"), exist_ok=True)
+            os.makedirs(os.path.join(storage_dir, "themes"), exist_ok=True)
+            self.storage = LocalStorage(Path(storage_dir))
+            
         self.storage_dir = storage_dir
         self.vectorizer = TfidfVectorizer(
             max_features=vectorizer_max_features,
@@ -72,11 +86,6 @@ class FeedbackAnalysisEngine:
         self._feedback_cache = {}
         self._clusters = {}
         self._themes = {}
-        
-        # Create storage directory if it doesn't exist
-        os.makedirs(os.path.join(storage_dir, "feedback"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "clusters"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "themes"), exist_ok=True)
     
     def add_feedback(self, feedback: Union[Feedback, List[Feedback]]) -> List[str]:
         """
@@ -93,28 +102,15 @@ class FeedbackAnalysisEngine:
         
         feedback_ids = []
         for item in feedback:
-            # Store feedback in cache and on disk
-            self._store_feedback(item)
+            # Store feedback using common storage
+            self.storage.save(item)
+            
+            # Keep in cache for quick access
+            self._feedback_cache[str(item.id)] = item
+            
             feedback_ids.append(str(item.id))
         
         return feedback_ids
-    
-    def _store_feedback(self, feedback: Feedback) -> None:
-        """
-        Store feedback in cache and on disk.
-        
-        Args:
-            feedback: Feedback item to store
-        """
-        # Store in memory cache
-        self._feedback_cache[str(feedback.id)] = feedback
-        
-        # Store on disk
-        feedback_path = os.path.join(
-            self.storage_dir, "feedback", f"{feedback.id}.json"
-        )
-        with open(feedback_path, "w") as f:
-            f.write(feedback.model_dump_json())
     
     def get_feedback(self, feedback_id: str) -> Optional[Feedback]:
         """
@@ -130,14 +126,15 @@ class FeedbackAnalysisEngine:
         if feedback_id in self._feedback_cache:
             return self._feedback_cache[feedback_id]
         
-        # Try to load from disk
-        feedback_path = os.path.join(self.storage_dir, "feedback", f"{feedback_id}.json")
-        if os.path.exists(feedback_path):
-            with open(feedback_path, "r") as f:
-                feedback_data = json.load(f)
-                feedback = Feedback.model_validate(feedback_data)
+        # Try to get from storage
+        try:
+            feedback = self.storage.get(Feedback, UUID(feedback_id))
+            if feedback:
                 self._feedback_cache[feedback_id] = feedback
                 return feedback
+        except ValueError:
+            # Handle invalid UUID format
+            pass
         
         return None
     
@@ -148,18 +145,11 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all feedback items
         """
-        feedback_list = []
-        feedback_dir = os.path.join(self.storage_dir, "feedback")
+        feedback_list = self.storage.list_all(Feedback)
         
-        if not os.path.exists(feedback_dir):
-            return feedback_list
-        
-        for filename in os.listdir(feedback_dir):
-            if filename.endswith(".json"):
-                feedback_id = filename.replace(".json", "")
-                feedback = self.get_feedback(feedback_id)
-                if feedback:
-                    feedback_list.append(feedback)
+        # Update cache with retrieved feedback
+        for feedback in feedback_list:
+            self._feedback_cache[str(feedback.id)] = feedback
         
         return feedback_list
     
@@ -210,7 +200,8 @@ class FeedbackAnalysisEngine:
             
             # Update the feedback item with the sentiment
             item.sentiment = sentiment
-            self._store_feedback(item)
+            self.storage.save(item)
+            self._feedback_cache[str(item.id)] = item
             
             results[str(item.id)] = sentiment
         
@@ -347,17 +338,15 @@ class FeedbackAnalysisEngine:
             )
             
             # Store cluster
-            cluster_path = os.path.join(self.storage_dir, "clusters", f"{cluster.id}.json")
-            with open(cluster_path, "w") as f:
-                f.write(cluster.model_dump_json())
-            
+            self.storage.save(cluster)
             self._clusters[cluster.id] = cluster
             clusters.append(cluster)
             
             # Update feedback items with cluster ID
             for item in items:
                 item.cluster_id = label
-                self._store_feedback(item)
+                self.storage.save(item)
+                self._feedback_cache[str(item.id)] = item
         
         return clusters
     
@@ -469,10 +458,7 @@ class FeedbackAnalysisEngine:
             )
             
             # Store theme
-            theme_path = os.path.join(self.storage_dir, "themes", f"{theme.id}.json")
-            with open(theme_path, "w") as f:
-                f.write(theme.model_dump_json())
-            
+            self.storage.save(theme)
             self._themes[str(theme.id)] = theme
             themes.append(theme)
             
@@ -481,7 +467,8 @@ class FeedbackAnalysisEngine:
                 feedback = feedback_items[i]
                 if term.title() not in feedback.themes:
                     feedback.themes.append(term.title())
-                    self._store_feedback(feedback)
+                    self.storage.save(feedback)
+                    self._feedback_cache[str(feedback.id)] = feedback
             
             theme_counter += 1
         
@@ -581,14 +568,18 @@ class FeedbackAnalysisEngine:
         if cluster_id in self._clusters:
             return self._clusters[cluster_id]
         
-        # Try to load from disk
-        cluster_path = os.path.join(self.storage_dir, "clusters", f"{cluster_id}.json")
-        if os.path.exists(cluster_path):
-            with open(cluster_path, "r") as f:
-                cluster_data = json.load(f)
-                cluster = FeedbackCluster.model_validate(cluster_data)
-                self._clusters[cluster_id] = cluster
-                return cluster
+        # Try to get from storage
+        try:
+            # Need to use the class-specific ID since our storage requires UUID
+            # In a real implementation, we'd use a more robust approach
+            clusters = self.storage.list_all(FeedbackCluster)
+            for cluster in clusters:
+                if cluster.id == cluster_id:
+                    self._clusters[cluster_id] = cluster
+                    return cluster
+        except Exception:
+            # Handle any errors in retrieval
+            pass
         
         return None
     
@@ -606,14 +597,15 @@ class FeedbackAnalysisEngine:
         if theme_id in self._themes:
             return self._themes[theme_id]
         
-        # Try to load from disk
-        theme_path = os.path.join(self.storage_dir, "themes", f"{theme_id}.json")
-        if os.path.exists(theme_path):
-            with open(theme_path, "r") as f:
-                theme_data = json.load(f)
-                theme = Theme.model_validate(theme_data)
+        # Try to get from storage
+        try:
+            theme = self.storage.get(Theme, UUID(theme_id))
+            if theme:
                 self._themes[theme_id] = theme
                 return theme
+        except ValueError:
+            # Handle invalid UUID format
+            pass
         
         return None
     
@@ -624,18 +616,11 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all clusters
         """
-        clusters = []
-        clusters_dir = os.path.join(self.storage_dir, "clusters")
+        clusters = self.storage.list_all(FeedbackCluster)
         
-        if not os.path.exists(clusters_dir):
-            return clusters
-        
-        for filename in os.listdir(clusters_dir):
-            if filename.endswith(".json"):
-                cluster_id = int(filename.replace(".json", ""))
-                cluster = self.get_cluster(cluster_id)
-                if cluster:
-                    clusters.append(cluster)
+        # Update cache
+        for cluster in clusters:
+            self._clusters[cluster.id] = cluster
         
         return clusters
     
@@ -646,18 +631,11 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all themes
         """
-        themes = []
-        themes_dir = os.path.join(self.storage_dir, "themes")
+        themes = self.storage.list_all(Theme)
         
-        if not os.path.exists(themes_dir):
-            return themes
-        
-        for filename in os.listdir(themes_dir):
-            if filename.endswith(".json"):
-                theme_id = filename.replace(".json", "")
-                theme = self.get_theme(theme_id)
-                if theme:
-                    themes.append(theme)
+        # Update cache
+        for theme in themes:
+            self._themes[str(theme.id)] = theme
         
         return themes
     
@@ -672,17 +650,8 @@ class FeedbackAnalysisEngine:
         Returns:
             List of matching feedback items
         """
-        all_feedback = self.get_all_feedback()
-        results = []
-        
-        query = query.lower()
-        for feedback in all_feedback:
-            if query in feedback.content.lower():
-                results.append(feedback)
-                if len(results) >= limit:
-                    break
-        
-        return results
+        # Use the storage search functionality
+        return self.storage.search_text(Feedback, query, ["content", "title"])[:limit]
     
     def get_feedback_by_theme(self, theme_name: str) -> List[Feedback]:
         """
@@ -713,6 +682,7 @@ class FeedbackAnalysisEngine:
         Returns:
             List of feedback items in the cluster
         """
+        # Use the query functionality
         all_feedback = self.get_all_feedback()
         results = []
         

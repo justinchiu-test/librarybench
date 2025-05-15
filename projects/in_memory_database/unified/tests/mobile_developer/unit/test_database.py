@@ -6,6 +6,7 @@ import time
 from typing import Dict, List, Any
 
 from syncdb.db.schema import DatabaseSchema, TableSchema, Column
+from syncdb.db.table import Table
 from syncdb.db.database import Database, Transaction
 
 

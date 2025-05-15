@@ -9,8 +9,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Union, Any, TypeVar, Generic, Callable
 from uuid import UUID
 
-from common.core.models import BaseEntity, BaseTask
-from common.core.storage import BaseStorageInterface, BaseTaskStorageInterface
+from unified.common.core.models import BaseEntity, BaseTask
+from unified.common.core.storage import BaseStorageInterface, BaseTaskStorageInterface
 
 
 # Generic type for entities (must be a subclass of BaseEntity)

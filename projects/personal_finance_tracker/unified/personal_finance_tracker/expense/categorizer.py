@@ -3,11 +3,12 @@
 import re
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
 from uuid import UUID
 
-import pandas as pd
-from pydantic import BaseModel
+from common.core.categorization.categorizer import BaseCategorizer, CategorizationResult as CommonResult
+from common.core.categorization.transaction_categorizer import TransactionCategorizer
+from common.core.categorization.transaction_categorizer import MixedUseItem as CommonMixedUseItem
 
 from personal_finance_tracker.models.common import (
     ExpenseCategory,
@@ -23,6 +24,8 @@ from personal_finance_tracker.expense.models import (
     AuditRecord,
 )
 
+from personal_finance_tracker.expense.rules import ExpenseRule
+
 
 class ExpenseCategorizer:
     """
@@ -34,10 +37,15 @@ class ExpenseCategorizer:
 
     def __init__(self):
         """Initialize the expense categorizer."""
-        self.rules = []
+        self._categorizer = TransactionCategorizer()
         self.mixed_use_items = []
         self.audit_trail = []
         self._categorization_cache = {}
+        
+    @property
+    def rules(self) -> List[CategorizationRule]:
+        """Get all categorization rules."""
+        return self._categorizer.rules
 
     def add_categorization_rule(self, rule: CategorizationRule) -> CategorizationRule:
         """
@@ -49,19 +57,12 @@ class ExpenseCategorizer:
         Returns:
             The added rule
         """
-        # Check for duplicate rule ID
-        if any(r.id == rule.id for r in self.rules):
-            raise ValueError(f"Rule with ID {rule.id} already exists")
-
-        # Add the rule
-        self.rules.append(rule)
-
-        # Sort rules by priority (highest first)
-        self.rules.sort(key=lambda r: r.priority, reverse=True)
-
-        # Clear cache since rules have changed
+        # Add the rule to the underlying categorizer
+        self._categorizer.add_rule(rule)
+        
+        # Clear our cache since rules have changed
         self._categorization_cache = {}
-
+        
         return rule
 
     def update_categorization_rule(
@@ -76,22 +77,13 @@ class ExpenseCategorizer:
         Returns:
             The updated rule
         """
-        # Find the rule to update
-        for i, existing_rule in enumerate(self.rules):
-            if existing_rule.id == rule.id:
-                # Update the rule
-                rule.updated_at = datetime.now()
-                self.rules[i] = rule
-
-                # Sort rules by priority (highest first)
-                self.rules.sort(key=lambda r: r.priority, reverse=True)
-
-                # Clear cache since rules have changed
-                self._categorization_cache = {}
-
-                return rule
-
-        raise ValueError(f"Rule with ID {rule.id} not found")
+        # Update the rule in the underlying categorizer
+        updated_rule = self._categorizer.update_rule(rule)
+        
+        # Clear our cache since rules have changed
+        self._categorization_cache = {}
+        
+        return updated_rule
 
     def remove_categorization_rule(self, rule_id: UUID) -> bool:
         """
@@ -103,18 +95,14 @@ class ExpenseCategorizer:
         Returns:
             True if the rule was removed, False otherwise
         """
-        # Find the rule to remove
-        for i, rule in enumerate(self.rules):
-            if rule.id == rule_id:
-                # Remove the rule
-                del self.rules[i]
-
-                # Clear cache since rules have changed
-                self._categorization_cache = {}
-
-                return True
-
-        return False
+        # Remove the rule from the underlying categorizer
+        result = self._categorizer.remove_rule(rule_id)
+        
+        # Clear our cache since rules have changed
+        if result:
+            self._categorization_cache = {}
+            
+        return result
 
     def add_mixed_use_item(self, item: MixedUseItem) -> MixedUseItem:
         """
@@ -130,9 +118,19 @@ class ExpenseCategorizer:
         if any(i.id == item.id for i in self.mixed_use_items):
             raise ValueError(f"Mixed-use item with ID {item.id} already exists")
 
-        # Add the item
+        # Add to our list
         self.mixed_use_items.append(item)
-
+        
+        # Add to the underlying categorizer
+        common_item = CommonMixedUseItem(
+            id=item.id,
+            name=item.name,
+            category=item.category,
+            business_use_percentage=item.business_use_percentage,
+            description=item.description,
+        )
+        self._categorizer.add_mixed_use_item(common_item)
+        
         # Clear cache
         self._categorization_cache = {}
 
@@ -169,7 +167,7 @@ class ExpenseCategorizer:
 
         # Skip if already categorized and not forced to recategorize
         if not recategorize and transaction.category is not None:
-            return CategorizationResult(
+            result = CategorizationResult(
                 transaction_id=transaction.id,
                 original_transaction=transaction,
                 assigned_category=transaction.category,
@@ -177,74 +175,34 @@ class ExpenseCategorizer:
                 confidence_score=1.0,  # Already categorized, so high confidence
                 notes="Transaction was already categorized",
             )
+            return result
 
-        # Check if this matches a known mixed-use item
-        mixed_use_match = None
-        for item in self.mixed_use_items:
-            if item.name.lower() in transaction.description.lower():
-                mixed_use_match = item
-                break
-
-        # Apply categorization rules
-        matched_rule = None
-        for rule in self.rules:
-            if rule.matches(transaction):
-                matched_rule = rule
-                break
-
-        # Determine category and business use percentage
-        if mixed_use_match:
-            category = mixed_use_match.category
-            business_percentage = mixed_use_match.business_use_percentage
-            is_mixed_use = True
-            confidence = 0.9
-            notes = f"Matched mixed-use item: {mixed_use_match.name}"
-        elif matched_rule:
-            category = matched_rule.category
-            business_percentage = matched_rule.business_use_percentage
-            is_mixed_use = business_percentage < 100 and business_percentage > 0
-            confidence = 0.8
-            notes = f"Matched rule: {matched_rule.name}"
-        else:
-            # Default to personal if no rules match
-            category = ExpenseCategory.PERSONAL
-            business_percentage = 0.0
-            is_mixed_use = False
-            confidence = 0.5
-            notes = "No matching rules, defaulted to personal expense"
-
-        # Create result
+        # Use the underlying categorizer
+        common_result = self._categorizer.categorize(transaction, recategorize)
+        
+        # Create our specific result
         result = CategorizationResult(
             transaction_id=transaction.id,
             original_transaction=transaction,
-            matched_rule=matched_rule,
-            assigned_category=category,
-            business_use_percentage=business_percentage,
-            confidence_score=confidence,
-            is_mixed_use=is_mixed_use,
-            notes=notes,
+            matched_rule=common_result.matched_rule,
+            assigned_category=common_result.assigned_category,
+            business_use_percentage=common_result.metadata.get("business_use_percentage"),
+            confidence_score=common_result.confidence_score,
+            is_mixed_use=common_result.metadata.get("is_mixed_use", False),
+            notes=common_result.notes,
         )
-
-        # Record audit trail
-        audit_record = AuditRecord(
-            transaction_id=transaction.id,
-            action="categorize",
-            previous_state={
-                "category": transaction.category,
-                "business_use_percentage": transaction.business_use_percentage,
-            },
-            new_state={
-                "category": category,
-                "business_use_percentage": business_percentage,
-            },
-        )
-        self.audit_trail.append(audit_record)
-
+        
+        # Copy audit records to our audit trail
+        for record in self._categorizer.audit_trail:
+            if record.item_id == transaction.id:
+                # Convert to our AuditRecord type
+                our_record = AuditRecord.from_common_audit(record)
+                # Only add if not already there
+                if not any(r.id == our_record.id for r in self.audit_trail):
+                    self.audit_trail.append(our_record)
+        
         # Update cache
         self._categorization_cache[cache_key] = result
-
-        # Performance metrics
-        elapsed_time = time.time() - start_time
 
         return result
 
@@ -269,9 +227,6 @@ class ExpenseCategorizer:
         for transaction in transactions:
             result = self.categorize_transaction(transaction, recategorize)
             results.append(result)
-
-        # Performance metrics
-        elapsed_time = time.time() - start_time
 
         return results
 

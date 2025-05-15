@@ -8,12 +8,21 @@ the memory, CPU, and security components.
 from __future__ import annotations
 import random
 import time
-from typing import Dict, List, Optional, Set, Tuple, Union, Any, BinaryIO
+import uuid
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, BinaryIO, Callable
+
+from common.core.vm import VirtualMachine as BaseVirtualMachine, ExecutionEvent, Thread
+from common.core.memory import MemorySystem, MemoryAccessType, MemoryPermission
+from common.core.processor import Processor, ProcessorState, PrivilegeLevel
+from common.core.instruction import Instruction, InstructionType
+from common.core.exceptions import (
+    VMException, MemoryException, ProcessorException, ExecutionLimitException
+)
 
 from secure_vm.memory import (
     Memory, MemorySegment, MemoryPermission, MemoryProtectionLevel, MemoryProtection
 )
-from secure_vm.cpu import CPU, PrivilegeLevel, CPUException
+from secure_vm.cpu import CPU, ControlFlowRecord
 
 
 class ExecutionResult:
@@ -137,7 +146,7 @@ class ForensicLog:
             raise ValueError(f"Unsupported export format: {format_type}")
 
 
-class VirtualMachine:
+class VirtualMachine(BaseVirtualMachine):
     """Virtual machine emulator for security research."""
     
     def __init__(
@@ -146,7 +155,16 @@ class VirtualMachine:
         protection: Optional[MemoryProtection] = None,
         enable_forensics: bool = True,
         detailed_logging: bool = False,
+        random_seed: Optional[int] = None,
     ):
+        # Initialize base VM with security-specific settings
+        super().__init__(
+            num_processors=1,  # Secure VM uses a single CPU
+            memory_size=memory_size,
+            random_seed=random_seed,
+            enable_tracing=True  # Always enable tracing for security monitoring
+        )
+        
         # Default memory protection if none provided
         if protection is None:
             protection = MemoryProtection(
@@ -157,15 +175,8 @@ class VirtualMachine:
                 shadow_memory=False,
             )
         
-        # Initialize memory with protection settings
-        self.memory = Memory(
-            protection_level=protection.level,
-            enable_dep=protection.dep_enabled,
-            enable_aslr=protection.aslr_enabled,
-        )
-        
-        # Initialize CPU
-        self.cpu = CPU(self.memory)
+        # Store protection settings
+        self.protection = protection
         
         # Initialize forensic logging
         self.forensic_log = ForensicLog(
@@ -178,12 +189,41 @@ class VirtualMachine:
         self.program_name = ""
         self.program_entry_point = 0
         
-        # Standard memory layout with configurable size
+        # Set up memory layout 
         self._setup_memory_layout(memory_size)
         
-        # Apply additional memory protections
-        self.protection = protection
+        # Apply memory protections
         self._apply_memory_protections()
+    
+    def _create_memory_system(self, memory_size: int) -> MemorySystem:
+        """
+        Create the memory system for this VM.
+        
+        Args:
+            memory_size: Size of memory in words
+            
+        Returns:
+            The memory system instance
+        """
+        # Initialize memory with protection settings
+        return Memory(
+            protection_level=self.protection.level if hasattr(self, 'protection') else MemoryProtectionLevel.STANDARD,
+            enable_dep=self.protection.dep_enabled if hasattr(self, 'protection') else True,
+            enable_aslr=self.protection.aslr_enabled if hasattr(self, 'protection') else False,
+        )
+    
+    def _create_processors(self, num_processors: int) -> List[Processor]:
+        """
+        Create the processors for this VM.
+        
+        Args:
+            num_processors: Number of processors to create
+            
+        Returns:
+            List of processor instances
+        """
+        # Secure VM uses a single CPU
+        return [CPU(self.memory)]
     
     def _setup_memory_layout(self, memory_size: int) -> None:
         """Set up the standard memory layout for the VM."""
@@ -231,8 +271,8 @@ class VirtualMachine:
         )
         
         # Initialize stack pointer to top of stack
-        self.cpu.registers.sp = self.stack_segment.base_address + self.stack_segment.size - 4
-        self.cpu.registers.bp = self.cpu.registers.sp
+        self.processors[0].registers.sp = self.stack_segment.base_address + self.stack_segment.size - 4
+        self.processors[0].registers.bp = self.processors[0].registers.sp
     
     def _apply_memory_protections(self) -> None:
         """Apply configured memory protections."""
@@ -252,6 +292,135 @@ class VirtualMachine:
             "memory_map",
             {"segments": self.memory.get_memory_map()}
         )
+    
+    @property
+    def cpu(self) -> CPU:
+        """Get the CPU for convenience (Secure VM only has one processor)."""
+        return self.processors[0]
+    
+    def get_instruction(self, address: int) -> Optional[Instruction]:
+        """
+        Get the instruction at the given address.
+        
+        Args:
+            address: The memory address
+            
+        Returns:
+            The instruction at the address, or None if not found
+        """
+        try:
+            # Get the opcode from memory
+            opcode = self.memory.execute(address, {"instruction_fetch": True})
+            
+            # Decode the instruction using the CPU's decoder
+            name, instr_type, operand_count, required_privilege = self.cpu.decode_instruction(opcode)
+            
+            # Create and return an instruction object
+            return Instruction(
+                opcode=name,
+                type=instr_type,
+                operands=[f"R{i}" for i in range(operand_count)],
+                privileged=(required_privilege is not None and 
+                            required_privilege.value > PrivilegeLevel.USER.value)
+            )
+        except Exception:
+            return None
+    
+    def schedule_threads(self) -> None:
+        """
+        Schedule threads to processors. Security VM has a simple scheduler
+        since it only has one processor.
+        """
+        # If the CPU is idle and we have ready threads, assign the first one
+        if not self.processors[0].is_busy() and self.ready_queue:
+            thread_id = self.ready_queue.pop(0)
+            if thread_id in self.threads:
+                thread = self.threads[thread_id]
+                self.processors[0].assign_thread(thread_id, thread.pc)
+                thread.state = ProcessorState.RUNNING
+                thread.processor_id = 0
+                
+                # Record thread scheduling
+                event = ExecutionEvent(
+                    event_type="thread_scheduled",
+                    timestamp=self.global_clock,
+                    thread_id=thread_id,
+                    processor_id=0
+                )
+                self.add_execution_trace(event)
+    
+    def handle_side_effects(
+        self,
+        processor: Processor,
+        thread: Thread,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> None:
+        """
+        Handle side effects from instruction execution, with security monitoring.
+        
+        Args:
+            processor: The processor that executed the instruction
+            thread: The thread that executed the instruction
+            instruction: The instruction that was executed
+            side_effects: Side effects from instruction execution
+        """
+        # Handle privilege changes
+        if "privilege_change" in side_effects:
+            change = side_effects["privilege_change"]
+            self.forensic_log.log_system_event(
+                "privilege_change",
+                {
+                    "thread_id": thread.thread_id,
+                    "previous_level": change["previous_level"],
+                    "new_level": change["new_level"],
+                }
+            )
+        
+        # Handle syscalls
+        if "syscall_executed" in side_effects:
+            syscall = side_effects["syscall_executed"]
+            self.forensic_log.log_system_event(
+                "syscall",
+                {
+                    "thread_id": thread.thread_id,
+                    "number": syscall["number"],
+                    "result": syscall["result"],
+                }
+            )
+        
+        # Handle control flow events (call/ret)
+        if "call" in side_effects:
+            call = side_effects["call"]
+            self.forensic_log.log_system_event(
+                "call",
+                {
+                    "thread_id": thread.thread_id,
+                    "target": call["target"],
+                    "return_addr": call["return_addr"],
+                }
+            )
+        
+        if "ret" in side_effects:
+            ret = side_effects["ret"]
+            self.forensic_log.log_system_event(
+                "ret",
+                {
+                    "thread_id": thread.thread_id,
+                    "return_addr": ret["return_addr"],
+                    "shadow_valid": ret["shadow_valid"],
+                }
+            )
+        
+        # Handle halting
+        if "halt" in side_effects:
+            self.forensic_log.log_system_event(
+                "halt",
+                {
+                    "thread_id": thread.thread_id,
+                    "instruction_pointer": processor.registers.get_ip(),
+                }
+            )
     
     def load_program(self, program: List[int], entry_point: Optional[int] = None) -> None:
         """Load a program (instruction bytes) into the code segment."""
@@ -282,13 +451,17 @@ class VirtualMachine:
 
         # Set instruction pointer to entry point
         self.cpu.registers.ip = entry_point
-
+        
+        # Create a main thread at the entry point
+        main_thread_id = self.create_thread(entry_point)
+        
         # Log program load
         self.forensic_log.log_system_event(
             "program_load",
             {
                 "size": len(program),
                 "entry_point": entry_point,
+                "main_thread_id": main_thread_id,
             }
         )
     
@@ -341,12 +514,13 @@ class VirtualMachine:
             }
         )
         
-        # Run the CPU
+        # Run the VM
         try:
-            instructions_executed = self.cpu.run(max_instructions)
+            # Use the base VM's run method
+            cycles_executed = super().run(max_instructions)
             success = True
         except Exception as e:
-            instructions_executed = self.cpu.cycles
+            cycles_executed = self.global_clock
             success = False
             # Log the exception
             self.forensic_log.log_system_event(
@@ -362,7 +536,7 @@ class VirtualMachine:
         self.forensic_log.log_system_event(
             "execution_end",
             {
-                "cycles": self.cpu.cycles,
+                "cycles": cycles_executed,
                 "success": success,
                 "halted": self.cpu.halted,
             }
@@ -404,8 +578,8 @@ class VirtualMachine:
         # Create execution result
         result = ExecutionResult(
             success=success,
-            cycles=self.cpu.cycles,
-            execution_time=self.cpu.execution_time,
+            cycles=cycles_executed,
+            execution_time=self.end_time - self.start_time if self.end_time > 0 else 0,
             cpu_state=self.cpu.registers.dump_registers(),
             control_flow_events=control_flow_events,
             protection_events=protection_events,
@@ -520,24 +694,25 @@ class VirtualMachine:
     
     def reset(self) -> None:
         """Reset the VM state while preserving configuration."""
-        # Reset CPU
-        self.cpu.reset()
+        # Reset base VM
+        super().reset()
         
-        # Reset memory segments (clear data but preserve structure)
-        for segment in self.memory.segments:
-            segment.data = bytearray(segment.size)
+        # Recreate memory with the same settings
+        self.memory = self._create_memory_system(self.memory.size)
         
-        # Reset memory protection events
-        self.memory.protection_events = []
+        # Reset CPU with new memory
+        self.processors = [CPU(self.memory)]
         
         # Reset program state
         self.program_loaded = False
         self.program_name = ""
         self.program_entry_point = 0
         
-        # Reset stack pointer
-        self.cpu.registers.sp = self.stack_segment.base_address + self.stack_segment.size - 4
-        self.cpu.registers.bp = self.cpu.registers.sp
+        # Set up memory layout again
+        self._setup_memory_layout(self.memory.size)
+        
+        # Apply memory protections
+        self._apply_memory_protections()
         
         # Log reset
         self.forensic_log.log_system_event("reset", {})

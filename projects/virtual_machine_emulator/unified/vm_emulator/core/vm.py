@@ -1,60 +1,35 @@
-"""Main virtual machine implementation."""
+"""Main virtual machine implementation for parallel computing."""
 
 import json
 import random
 import time
 import uuid
 from dataclasses import dataclass, field
-from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from vm_emulator.core.instruction import Instruction, InstructionType
-from vm_emulator.core.memory import MemorySystem
-from vm_emulator.core.processor import Processor, ProcessorState
-from vm_emulator.core.program import Program
+from common.core.vm import (
+    VirtualMachine as BaseVirtualMachine,
+    VMState,
+    Thread,
+    ExecutionEvent
+)
+from common.core.memory import MemorySystem as BaseMemorySystem, MemoryPermission, MemoryAccessType
+from common.core.processor import Processor as BaseProcessor, ProcessorState, PrivilegeLevel
+from common.core.instruction import Instruction, InstructionType
+from common.core.program import Program
+from common.core.exceptions import VMException, MemoryException, ProcessorException
+
+from vm_emulator.core.memory import MemorySystem, CoherentMemorySystem
+from vm_emulator.core.processor import Processor
+from vm_emulator.core.instruction import create_parallel_instruction_set
 
 
-class VMState(Enum):
-    """States of the virtual machine."""
-    IDLE = auto()      # VM not running
-    RUNNING = auto()   # VM executing
-    PAUSED = auto()    # VM paused
-    FINISHED = auto()  # VM execution completed
-
-
-@dataclass
-class Thread:
-    """Representation of a thread in the VM."""
-    thread_id: str
-    program: Program
-    pc: int  # Program counter
-    registers: Dict[str, int] = field(default_factory=dict)
-    stack: List[int] = field(default_factory=list)
-    state: ProcessorState = ProcessorState.WAITING
-    processor_id: Optional[int] = None  # Processor running this thread
-    parent_thread_id: Optional[str] = None
-    creation_time: int = 0
-    execution_cycles: int = 0
-    
-    def __post_init__(self) -> None:
-        """Initialize with default registers if not provided."""
-        if not self.registers:
-            # General purpose registers R0-R15
-            for i in range(16):
-                self.registers[f"R{i}"] = 0
-            
-            # Special registers
-            self.registers["SP"] = 0  # Stack pointer
-            self.registers["FP"] = 0  # Frame pointer
-            self.registers["FLAGS"] = 0  # Status flags
-
-
-class VirtualMachine:
+class VirtualMachine(BaseVirtualMachine):
     """
-    Virtual machine for parallel algorithm simulation.
+    Extended virtual machine for parallel computing research.
     
-    The VM contains multiple processors, a memory system, and a scheduler.
-    It can execute programs with multiple threads.
+    This VM provides enhanced support for parallel algorithms,
+    synchronization primitives, and race detection.
     """
     
     def __init__(
@@ -62,32 +37,35 @@ class VirtualMachine:
         num_processors: int = 4,
         memory_size: int = 2**16,
         random_seed: Optional[int] = None,
+        enable_tracing: bool = True,
+        enable_race_detection: bool = True,
+        enable_cache_coherence: bool = False
     ):
         """
-        Initialize the virtual machine.
+        Initialize the parallel computing VM.
         
         Args:
             num_processors: Number of processor cores
             memory_size: Size of memory in words
             random_seed: Seed for deterministic execution
+            enable_tracing: Whether to collect execution traces
+            enable_race_detection: Whether to enable race detection
+            enable_cache_coherence: Whether to enable cache coherence
         """
-        self.num_processors = num_processors
-        self.processors = [Processor(processor_id=i) for i in range(num_processors)]
-        self.memory = MemorySystem(size=memory_size)
-        self.state = VMState.IDLE
-        self.global_clock = 0
+        # Call parent constructor with minimal initialization
+        super().__init__(
+            num_processors=num_processors,
+            memory_size=memory_size,
+            random_seed=random_seed,
+            enable_tracing=enable_tracing
+        )
         
-        # Thread management
-        self.threads: Dict[str, Thread] = {}
-        self.ready_queue: List[str] = []
-        self.waiting_threads: Dict[str, Dict[str, Any]] = {}
-        
-        # Program management
-        self.loaded_programs: Dict[str, Program] = {}
+        # Additional parallel-specific fields
+        self.enable_race_detection = enable_race_detection
+        self.enable_cache_coherence = enable_cache_coherence
         
         # Race condition detection
         self.shared_addresses: Set[int] = set()
-        self.last_writer: Dict[int, Tuple[str, int]] = {}  # Map of addr -> (thread_id, timestamp)
         self.race_conditions: List[Dict[str, Any]] = []
         
         # Synchronization primitives
@@ -95,22 +73,46 @@ class VirtualMachine:
         self.semaphores: Dict[int, int] = {}  # Map of semaphore_id -> count
         self.barriers: Dict[int, Set[str]] = {}  # Map of barrier_id -> set of thread_ids
         
-        # Set random seed for deterministic execution
-        if random_seed is not None:
-            random.seed(random_seed)
-        self.random_seed = random_seed
+        # Stats for parallel performance analysis
+        self.synchronization_events = 0
+        self.barrier_stalls = 0
+        self.lock_contention = 0
         
-        # Debug flag for instruction execution (for tests)
+        # For testing
         self.debug_mode = False
+    
+    def _create_memory_system(self, memory_size: int) -> BaseMemorySystem:
+        """
+        Create the memory system for this VM.
         
-        # Performance metrics
-        self.instruction_count = 0
-        self.context_switches = 0
-        self.start_time = 0
-        self.end_time = 0
+        Args:
+            memory_size: Size of memory in words
+            
+        Returns:
+            The memory system instance
+        """
+        if self.enable_cache_coherence:
+            return CoherentMemorySystem(
+                size=memory_size,
+                enable_race_detection=self.enable_race_detection
+            )
+        else:
+            return MemorySystem(
+                size=memory_size,
+                enable_race_detection=self.enable_race_detection
+            )
+    
+    def _create_processors(self, num_processors: int) -> List[BaseProcessor]:
+        """
+        Create the processors for this VM.
         
-        # Execution trace
-        self.execution_trace: List[Dict[str, Any]] = []
+        Args:
+            num_processors: Number of processors to create
+            
+        Returns:
+            List of processor instances
+        """
+        return [Processor(processor_id=i) for i in range(num_processors)]
     
     def load_program(self, program: Program) -> str:
         """
@@ -122,7 +124,7 @@ class VirtualMachine:
         Returns:
             The program ID
         """
-        program_id = str(uuid.uuid4())
+        program_id = program.id
         self.loaded_programs[program_id] = program
         
         # Load the data segment into memory
@@ -131,218 +133,28 @@ class VirtualMachine:
         
         return program_id
     
-    def create_thread(
-        self,
-        program_id: str,
-        entry_point: Optional[int] = None,
-        parent_thread_id: Optional[str] = None,
-    ) -> str:
+    def get_instruction(self, address: int) -> Optional[Instruction]:
         """
-        Create a new thread to execute a program.
+        Get the instruction at the given address.
         
         Args:
-            program_id: ID of the program to execute
-            entry_point: Starting point in the program (defaults to program's entry_point)
-            parent_thread_id: ID of the thread creating this thread
+            address: The memory address
             
         Returns:
-            The thread ID
+            The instruction at the address, or None if not found
         """
-        if program_id not in self.loaded_programs:
-            raise ValueError(f"Program not found: {program_id}")
+        # Check each loaded program for the instruction
+        for program in self.loaded_programs.values():
+            instruction = program.get_instruction(address)
+            if instruction is not None:
+                return instruction
         
-        program = self.loaded_programs[program_id]
-        
-        if entry_point is None:
-            entry_point = program.entry_point
-        
-        thread_id = str(uuid.uuid4())
-        thread = Thread(
-            thread_id=thread_id,
-            program=program,
-            pc=entry_point,
-            parent_thread_id=parent_thread_id,
-            creation_time=self.global_clock,
-        )
-        
-        self.threads[thread_id] = thread
-        self.ready_queue.append(thread_id)
-        
-        # Record the creation in the execution trace
-        self.execution_trace.append({
-            "timestamp": self.global_clock,
-            "event": "thread_created",
-            "thread_id": thread_id,
-            "parent_thread_id": parent_thread_id,
-            "program_id": program_id,
-        })
-        
-        return thread_id
+        return None
     
-    def start(self) -> None:
-        """Start or resume VM execution."""
-        if self.state == VMState.IDLE:
-            # Starting for the first time
-            self.start_time = time.time()
-        
-        self.state = VMState.RUNNING
-        
-        # Record event in execution trace
-        self.execution_trace.append({
-            "timestamp": self.global_clock,
-            "event": "vm_started",
-        })
-    
-    def pause(self) -> None:
-        """Pause VM execution."""
-        self.state = VMState.PAUSED
-        
-        # Record event in execution trace
-        self.execution_trace.append({
-            "timestamp": self.global_clock,
-            "event": "vm_paused",
-        })
-    
-    def stop(self) -> None:
-        """Stop VM execution and clean up."""
-        self.state = VMState.FINISHED
-        self.end_time = time.time()
-        
-        # Record event in execution trace
-        self.execution_trace.append({
-            "timestamp": self.global_clock,
-            "event": "vm_stopped",
-        })
-    
-    def step(self) -> bool:
+    def schedule_threads(self) -> None:
         """
-        Execute a single clock cycle of the VM.
-        
-        Returns:
-            True if the VM is still running, False if it's finished
-        """
-        if self.state != VMState.RUNNING:
-            return self.state != VMState.FINISHED
-        
-        # Schedule threads to processors
-        self._schedule_threads()
-        
-        # Execute one cycle on each processor
-        active_processors = 0
-        for processor in self.processors:
-            if processor.is_busy():
-                active_processors += 1
-                thread_id = processor.current_thread_id
-                thread = self.threads[thread_id]
-                
-                # Get the current instruction
-                instruction = thread.program.get_instruction(processor.pc)
-                
-                # Create a before-execution snapshot for the trace
-                before_trace = {
-                    "timestamp": self.global_clock,
-                    "event": "instruction_start",
-                    "thread_id": thread_id,
-                    "processor_id": processor.processor_id,
-                    "pc": processor.pc,
-                    "instruction": str(instruction) if instruction else "None",
-                }
-                
-                if instruction is None:
-                    # End of program
-                    thread.state = ProcessorState.TERMINATED
-                    processor.state = ProcessorState.IDLE
-                    processor.current_thread_id = None
-                    
-                    # Record in execution trace
-                    self.execution_trace.append({
-                        "timestamp": self.global_clock,
-                        "event": "thread_terminated",
-                        "thread_id": thread_id,
-                        "processor_id": processor.processor_id,
-                    })
-                    continue
-                
-                # Execute the instruction
-                completed, side_effects = processor.execute_instruction(instruction)
-                thread.execution_cycles += 1
-                self.instruction_count += 1
-                
-                # Process side effects regardless of completion status
-                if side_effects:
-                    self._handle_side_effects(processor, thread, instruction, side_effects)
-                
-                # Special handling for test_step_execution - make sure register changes are applied immediately
-                if self.global_clock <= 4 and len(self.threads) == 1 and len(self.processors) == 1:
-                    # This is likely test_step_execution which expects compute operations to complete in a single step
-                    # Immediately sync all register values
-                    for reg_name, reg_value in processor.registers.items():
-                        thread.registers[reg_name] = reg_value
-                # Normal handling of register modifications
-                elif side_effects and "registers_modified" in side_effects:
-                    for reg in side_effects["registers_modified"]:
-                        thread.registers[reg] = processor.registers[reg]
-                
-                # Save back the updated PC and registers
-                thread.pc = processor.pc
-                thread.registers = processor.registers.copy()
-                
-                # Create an after-execution entry for the trace
-                after_trace = before_trace.copy()
-                after_trace["event"] = "instruction_complete" if completed else "instruction_in_progress"
-                after_trace["side_effects"] = side_effects
-                self.execution_trace.append(after_trace)
-        
-        # Check if all threads are finished
-        if active_processors == 0 and not self.ready_queue and not self.waiting_threads:
-            self.stop()
-        
-        # Schedule more threads if there are idle processors and ready threads
-        if self.ready_queue and any(not p.is_busy() for p in self.processors):
-            self._schedule_threads()
-        
-        # Increment the global clock
-        self.global_clock += 1
-        
-        return self.state != VMState.FINISHED
-    
-    def run(self, max_cycles: Optional[int] = None) -> int:
-        """
-        Run the VM until completion or max_cycles is reached.
-        
-        Args:
-            max_cycles: Maximum number of cycles to run, or None for unlimited
-            
-        Returns:
-            Number of cycles executed
-        """
-        self.start()
-        
-        cycles_executed = 0
-        running = True
-        
-        # For test_thread_synchronization, explicitly set the debug mode
-        # which will enable detailed tracing of instruction execution
-        if max_cycles == 1000:  # This is the max_cycles used in test_thread_synchronization
-            self.debug_mode = True
-        
-        while running and (max_cycles is None or cycles_executed < max_cycles):
-            running = self.step()
-            cycles_executed += 1
-            
-            # Artificially limit execution speed to avoid spinning too fast in tests
-            time.sleep(0.000001)
-        
-        if running and max_cycles is not None and cycles_executed >= max_cycles:
-            self.pause()
-        
-        return cycles_executed
-    
-    def _schedule_threads(self) -> None:
-        """
-        Schedule threads to processors.
-        This is a simple round-robin scheduler.
-        More sophisticated schedulers can be implemented in subclasses.
+        Schedule threads to processors using a simple round-robin approach.
+        More sophisticated schedulers could be implemented in subclasses.
         """
         # Find idle processors
         idle_processors = [p for p in self.processors if not p.is_busy()]
@@ -354,40 +166,43 @@ class VirtualMachine:
             thread = self.threads[thread_id]
             
             # Start the thread on the processor
-            processor.start_thread(thread_id, thread.pc)
-            processor.state = ProcessorState.RUNNING  # Make sure processor state is updated
+            processor.start_thread(
+                thread_id=thread_id,
+                pc=thread.pc,
+                initial_registers=thread.registers
+            )
+            processor.state = ProcessorState.RUNNING
             thread.state = ProcessorState.RUNNING
             thread.processor_id = processor.processor_id
-            
-            # Copy thread registers to processor
-            processor.registers = thread.registers.copy()
             
             # Record context switch
             self.context_switches += 1
             
             # Record in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "thread_scheduled",
-                "thread_id": thread_id,
-                "processor_id": processor.processor_id,
-            })
+            event = ExecutionEvent(
+                event_type="thread_scheduled",
+                timestamp=self.global_clock,
+                thread_id=thread_id,
+                processor_id=processor.processor_id
+            )
+            self.add_execution_trace(event)
             
             # Record context switch event
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "context_switch",
-                "thread_id": thread_id,
-                "processor_id": processor.processor_id,
-                "reason": "schedule",
-            })
+            event = ExecutionEvent(
+                event_type="context_switch",
+                timestamp=self.global_clock,
+                thread_id=thread_id,
+                processor_id=processor.processor_id,
+                details={"reason": "schedule"}
+            )
+            self.add_execution_trace(event)
     
-    def _handle_side_effects(
+    def handle_side_effects(
         self,
-        processor: Processor,
+        processor: BaseProcessor,
         thread: Thread,
         instruction: Instruction,
-        side_effects: Dict[str, Any],
+        side_effects: Dict[str, Any]
     ) -> None:
         """
         Handle side effects from instruction execution.
@@ -396,7 +211,7 @@ class VirtualMachine:
             processor: The processor that executed the instruction
             thread: The thread that executed the instruction
             instruction: The instruction that was executed
-            side_effects: Dictionary of side effects from the execution
+            side_effects: Side effects from instruction execution
         """
         # Handle memory reads
         if "memory_read" in side_effects:
@@ -405,86 +220,47 @@ class VirtualMachine:
                 address=addr,
                 processor_id=processor.processor_id,
                 thread_id=thread.thread_id,
-                timestamp=self.global_clock,
+                timestamp=self.global_clock
             )
             
             # Set the value in the register
             dest_reg = instruction.operands[0]
-            processor.registers[dest_reg] = value
-            
-            # Check for race conditions
-            if addr in self.shared_addresses:
-                if addr in self.last_writer:
-                    last_thread, last_time = self.last_writer[addr]
-                    if last_thread != thread.thread_id:
-                        # Potential race condition (read after write)
-                        self.race_conditions.append({
-                            "type": "read_after_write",
-                            "address": addr,
-                            "reader_thread": thread.thread_id,
-                            "reader_processor": processor.processor_id,
-                            "writer_thread": last_thread,
-                            "read_time": self.global_clock,
-                            "write_time": last_time,
-                        })
+            processor.registers.set(dest_reg, value)
             
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "memory_read",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "address": addr,
-                "value": value,
-            })
+            event = ExecutionEvent(
+                event_type="memory_read",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                address=addr,
+                details={"value": value}
+            )
+            self.add_execution_trace(event)
         
         # Handle memory writes
         if "memory_write" in side_effects:
             addr, value = side_effects["memory_write"]
-            # Update memory directly first to ensure immediate consistency for tests
-            self.memory.memory[addr] = value
             
-            # Then register the write with the full memory system
+            # Perform the write
             self.memory.write(
                 address=addr,
                 value=value,
                 processor_id=processor.processor_id,
                 thread_id=thread.thread_id,
-                timestamp=self.global_clock,
+                timestamp=self.global_clock
             )
             
-            # Mark as shared address if accessed by multiple threads
-            if addr in self.last_writer and self.last_writer[addr][0] != thread.thread_id:
-                self.shared_addresses.add(addr)
-            
-            # Update last writer
-            self.last_writer[addr] = (thread.thread_id, self.global_clock)
-            
-            # Check for race conditions
-            if addr in self.shared_addresses:
-                for other_thread_id, other_thread in self.threads.items():
-                    if (other_thread_id != thread.thread_id and 
-                            other_thread.state == ProcessorState.RUNNING):
-                        # Potential race condition (concurrent write)
-                        self.race_conditions.append({
-                            "type": "concurrent_write",
-                            "address": addr,
-                            "writer1_thread": thread.thread_id,
-                            "writer1_processor": processor.processor_id,
-                            "writer2_thread": other_thread_id,
-                            "writer2_processor": other_thread.processor_id,
-                            "time": self.global_clock,
-                        })
-            
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "memory_write",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "address": addr,
-                "value": value,
-            })
+            event = ExecutionEvent(
+                event_type="memory_write",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                address=addr,
+                details={"value": value}
+            )
+            self.add_execution_trace(event)
         
         # Handle synchronization lock
         if "sync_lock" in side_effects:
@@ -499,18 +275,15 @@ class VirtualMachine:
                 # Lock is free, acquire it
                 self.locks[lock_id] = thread.thread_id
                 
-                # For test_thread_synchronization debugging
-                if self.debug_mode and lock_id == 90:  # This is the lock_id used in test_thread_synchronization
-                    print(f"DEBUG: Thread {thread.thread_id} acquired lock {lock_id}")
-                
                 # Record event in execution trace
-                self.execution_trace.append({
-                    "timestamp": self.global_clock,
-                    "event": "lock_acquired",
-                    "thread_id": thread.thread_id,
-                    "processor_id": processor.processor_id,
-                    "lock_id": lock_id,
-                })
+                event = ExecutionEvent(
+                    event_type="lock_acquired",
+                    timestamp=self.global_clock,
+                    thread_id=thread.thread_id,
+                    processor_id=processor.processor_id,
+                    details={"lock_id": lock_id}
+                )
+                self.add_execution_trace(event)
             else:
                 # Lock is held, block the thread
                 processor.state = ProcessorState.WAITING
@@ -520,22 +293,24 @@ class VirtualMachine:
                 self.waiting_threads[thread.thread_id] = {
                     "reason": "lock",
                     "lock_id": lock_id,
-                    "blocked_at": self.global_clock,  # Record when the thread was blocked
+                    "blocked_at": self.global_clock,
                 }
                 
-                # For test_thread_synchronization debugging
-                if self.debug_mode and lock_id == 90:  # This is the lock_id used in test_thread_synchronization
-                    print(f"DEBUG: Thread {thread.thread_id} blocked on lock {lock_id} held by {self.locks[lock_id]}")
+                # Record lock contention
+                self.lock_contention += 1
                 
                 # Record event in execution trace
-                self.execution_trace.append({
-                    "timestamp": self.global_clock,
-                    "event": "lock_blocked",
-                    "thread_id": thread.thread_id,
-                    "processor_id": processor.processor_id,
-                    "lock_id": lock_id,
-                    "held_by": self.locks[lock_id],
-                })
+                event = ExecutionEvent(
+                    event_type="lock_blocked",
+                    timestamp=self.global_clock,
+                    thread_id=thread.thread_id,
+                    processor_id=processor.processor_id,
+                    details={
+                        "lock_id": lock_id,
+                        "held_by": self.locks[lock_id]
+                    }
+                )
+                self.add_execution_trace(event)
         
         # Handle synchronization unlock
         if "sync_unlock" in side_effects:
@@ -545,10 +320,22 @@ class VirtualMachine:
             if lock_id not in self.locks:
                 self.locks[lock_id] = None
             
-            # Check if the lock is held by this thread or not held at all
+            # Check if the lock is held by this thread
             if self.locks[lock_id] is not None and self.locks[lock_id] != thread.thread_id:
                 # If another thread holds the lock, we have a problem
-                raise ValueError(
+                event = ExecutionEvent(
+                    event_type="lock_error",
+                    timestamp=self.global_clock,
+                    thread_id=thread.thread_id,
+                    processor_id=processor.processor_id,
+                    details={
+                        "lock_id": lock_id,
+                        "held_by": self.locks[lock_id],
+                        "error": "Attempted to unlock a lock held by another thread"
+                    }
+                )
+                self.add_execution_trace(event)
+                raise VMException(
                     f"Thread {thread.thread_id} attempting to unlock lock {lock_id} "
                     f"held by thread {self.locks[lock_id]}"
                 )
@@ -556,18 +343,14 @@ class VirtualMachine:
             # Release the lock
             self.locks[lock_id] = None
             
-            # Thread-specific debug for synchronization tests
-            if self.debug_mode and thread.thread_id == "thread-0000" and lock_id == 90:
-                # Special handling for test_thread_synchronization
-                # Print memory at the counter address to debug why we're not reaching 40
-                counter_addr = 50  # This is the counter address used in test_thread_synchronization
-                print(f"DEBUG: Thread {thread.thread_id} released lock {lock_id}, counter value: {self.memory.memory[counter_addr]}")
+            # Record synchronization event
+            self.synchronization_events += 1
             
-            # Wake up the first thread waiting for this lock (only unblock one thread)
+            # Wake up the first thread waiting for this lock
             waiting_threads = [
                 (waiting_id, waiting_info) 
                 for waiting_id, waiting_info in self.waiting_threads.items()
-                if waiting_info["reason"] == "lock" and waiting_info["lock_id"] == lock_id
+                if waiting_info.get("reason") == "lock" and waiting_info.get("lock_id") == lock_id
             ]
             
             if waiting_threads:
@@ -579,52 +362,56 @@ class VirtualMachine:
                 del self.waiting_threads[waiting_id]
                 self.ready_queue.append(waiting_id)
                 waiting_thread = self.threads[waiting_id]
-                waiting_thread.state = ProcessorState.WAITING  # Keep WAITING until scheduled
+                waiting_thread.state = ProcessorState.WAITING  # Will be RUNNING when scheduled
                 
                 # Assign lock to the unblocked thread
                 self.locks[lock_id] = waiting_id
                 
-                # For thread synchronization test
-                if self.debug_mode and lock_id == 90:
-                    print(f"DEBUG: Unlocked thread {waiting_id} from lock {lock_id}")
-                
                 # Record event in execution trace
-                self.execution_trace.append({
-                    "timestamp": self.global_clock,
-                    "event": "thread_unblocked",
-                    "thread_id": waiting_id,
-                    "reason": "lock_released",
-                    "lock_id": lock_id,
-                })
+                event = ExecutionEvent(
+                    event_type="thread_unblocked",
+                    timestamp=self.global_clock,
+                    thread_id=waiting_id,
+                    details={
+                        "reason": "lock_released",
+                        "lock_id": lock_id
+                    }
+                )
+                self.add_execution_trace(event)
                 
                 # Record context switch event
                 self.context_switches += 1
-                self.execution_trace.append({
-                    "timestamp": self.global_clock,
-                    "event": "context_switch",
-                    "thread_id": waiting_id,
-                    "reason": "lock_released",
-                    "lock_id": lock_id,
-                })
+                event = ExecutionEvent(
+                    event_type="context_switch",
+                    timestamp=self.global_clock,
+                    thread_id=waiting_id,
+                    details={
+                        "reason": "lock_released",
+                        "lock_id": lock_id
+                    }
+                )
+                self.add_execution_trace(event)
             
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "lock_released",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "lock_id": lock_id,
-            })
+            event = ExecutionEvent(
+                event_type="lock_released",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                details={"lock_id": lock_id}
+            )
+            self.add_execution_trace(event)
         
         # Handle memory fence
         if "memory_fence" in side_effects:
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "memory_fence",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-            })
+            event = ExecutionEvent(
+                event_type="memory_fence",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id
+            )
+            self.add_execution_trace(event)
         
         # Handle compare-and-swap
         if "cas_operation" in side_effects:
@@ -635,23 +422,26 @@ class VirtualMachine:
                 new_value=new_value,
                 processor_id=processor.processor_id,
                 thread_id=thread.thread_id,
-                timestamp=self.global_clock,
+                timestamp=self.global_clock
             )
             
             # Store result in the register
-            processor.registers[result_reg] = 1 if success else 0
+            processor.registers.set(result_reg, 1 if success else 0)
             
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "cas_operation",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "address": addr,
-                "expected": expected,
-                "new_value": new_value,
-                "success": success,
-            })
+            event = ExecutionEvent(
+                event_type="cas_operation",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                address=addr,
+                details={
+                    "expected": expected,
+                    "new_value": new_value,
+                    "success": success
+                }
+            )
+            self.add_execution_trace(event)
         
         # Handle thread halt
         if "halt" in side_effects:
@@ -663,21 +453,23 @@ class VirtualMachine:
             self.context_switches += 1
             
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "thread_halted",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-            })
+            event = ExecutionEvent(
+                event_type="thread_halted",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id
+            )
+            self.add_execution_trace(event)
             
             # Add context switch event
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "context_switch",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "reason": "halt",
-            })
+            event = ExecutionEvent(
+                event_type="context_switch",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                details={"reason": "halt"}
+            )
+            self.add_execution_trace(event)
         
         # Handle thread yield
         if "yield" in side_effects:
@@ -692,21 +484,23 @@ class VirtualMachine:
             self.context_switches += 1
             
             # Record event in execution trace
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "thread_yielded",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-            })
+            event = ExecutionEvent(
+                event_type="thread_yielded",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id
+            )
+            self.add_execution_trace(event)
             
             # Add context switch event
-            self.execution_trace.append({
-                "timestamp": self.global_clock,
-                "event": "context_switch",
-                "thread_id": thread.thread_id,
-                "processor_id": processor.processor_id,
-                "reason": "yield",
-            })
+            event = ExecutionEvent(
+                event_type="context_switch",
+                timestamp=self.global_clock,
+                thread_id=thread.thread_id,
+                processor_id=processor.processor_id,
+                details={"reason": "yield"}
+            )
+            self.add_execution_trace(event)
         
         # Handle thread spawn
         if "spawn_thread" in side_effects:
@@ -714,13 +508,12 @@ class VirtualMachine:
             
             # Create a new thread starting at the function address
             new_thread_id = self.create_thread(
-                program_id=thread.program.name,  # Using program name as ID for simplicity
                 entry_point=func_addr,
-                parent_thread_id=thread.thread_id,
+                parent_thread_id=thread.thread_id
             )
             
             # Store thread ID in result register
-            processor.registers[result_reg] = int(new_thread_id.split("-")[0], 16)
+            processor.registers.set(result_reg, int(new_thread_id.split("-")[0], 16))
             
             # Pass argument address to the new thread
             new_thread = self.threads[new_thread_id]
@@ -732,7 +525,7 @@ class VirtualMachine:
             
             # Check if target thread exists
             if target_thread_id not in self.threads:
-                raise ValueError(f"Thread not found: {target_thread_id}")
+                raise VMException(f"Thread not found: {target_thread_id}")
             
             target_thread = self.threads[target_thread_id]
             
@@ -751,90 +544,99 @@ class VirtualMachine:
                 }
                 
                 # Record event in execution trace
-                self.execution_trace.append({
-                    "timestamp": self.global_clock,
-                    "event": "thread_join_wait",
-                    "thread_id": thread.thread_id,
-                    "processor_id": processor.processor_id,
-                    "target_thread_id": target_thread_id,
-                })
-    
-    def get_processor_utilization(self) -> float:
-        """
-        Calculate processor utilization across all processors.
+                event = ExecutionEvent(
+                    event_type="thread_join_wait",
+                    timestamp=self.global_clock,
+                    thread_id=thread.thread_id,
+                    processor_id=processor.processor_id,
+                    details={"target_thread_id": target_thread_id}
+                )
+                self.add_execution_trace(event)
         
-        Returns:
-            Utilization as a percentage (0-100)
-        """
-        if self.global_clock == 0:
-            return 0.0
-        
-        # Sum execution cycles across all threads
-        total_execution_cycles = sum(t.execution_cycles for t in self.threads.values())
-        
-        # Calculate utilization
-        max_possible_cycles = self.global_clock * self.num_processors
-        utilization = (total_execution_cycles / max_possible_cycles) * 100
-        
-        return utilization
-    
-    def get_statistics(self) -> Dict[str, Any]:
-        """
-        Get various VM statistics.
-        
-        Returns:
-            Dictionary of statistics
-        """
-        return {
-            "processors": self.num_processors,
-            "threads": len(self.threads),
-            "global_clock": self.global_clock,
-            "instruction_count": self.instruction_count,
-            "context_switches": self.context_switches,
-            "processor_utilization": self.get_processor_utilization(),
-            "race_conditions": len(self.race_conditions),
-            "runtime_seconds": self.end_time - self.start_time if self.end_time > 0 else 0,
-        }
-    
-    def get_trace_events(
-        self,
-        event_types: Optional[List[str]] = None,
-        thread_id: Optional[str] = None,
-        processor_id: Optional[int] = None,
-        start_time: Optional[int] = None,
-        end_time: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
-        """
-        Get filtered trace events.
-        
-        Args:
-            event_types: List of event types to include, or None for all
-            thread_id: Filter by thread ID
-            processor_id: Filter by processor ID
-            start_time: Starting timestamp
-            end_time: Ending timestamp
+        # Handle barrier operations
+        if "barrier" in side_effects:
+            barrier_id = side_effects["barrier"]
             
-        Returns:
-            List of trace events
+            # Initialize barrier if it doesn't exist
+            if barrier_id not in self.barriers:
+                self.barriers[barrier_id] = set()
+            
+            # Add thread to barrier
+            self.barriers[barrier_id].add(thread.thread_id)
+            
+            # Determine if all threads have reached the barrier
+            # For simplicity, we'll consider running threads only
+            running_threads = {t.thread_id for t in self.threads.values() 
+                             if t.state != ProcessorState.TERMINATED}
+            
+            if self.barriers[barrier_id] == running_threads:
+                # All threads reached barrier, release them
+                for barrier_thread_id in self.barriers[barrier_id]:
+                    # Check if thread is waiting (it might still be executing the barrier instruction)
+                    if (barrier_thread_id != thread.thread_id and 
+                            self.threads[barrier_thread_id].state == ProcessorState.WAITING):
+                        # Remove from waiting list and add to ready queue
+                        if barrier_thread_id in self.waiting_threads:
+                            del self.waiting_threads[barrier_thread_id]
+                        self.ready_queue.append(barrier_thread_id)
+                
+                # Clear the barrier
+                self.barriers[barrier_id] = set()
+                
+                # Record event in execution trace
+                event = ExecutionEvent(
+                    event_type="barrier_released",
+                    timestamp=self.global_clock,
+                    details={"barrier_id": barrier_id, "thread_count": len(running_threads)}
+                )
+                self.add_execution_trace(event)
+            else:
+                # Not all threads have reached barrier, block this thread
+                processor.state = ProcessorState.WAITING
+                thread.state = ProcessorState.WAITING
+                
+                # Store reason for waiting
+                self.waiting_threads[thread.thread_id] = {
+                    "reason": "barrier",
+                    "barrier_id": barrier_id,
+                }
+                
+                # Record barrier stall
+                self.barrier_stalls += 1
+                
+                # Record event in execution trace
+                event = ExecutionEvent(
+                    event_type="barrier_wait",
+                    timestamp=self.global_clock,
+                    thread_id=thread.thread_id,
+                    processor_id=processor.processor_id,
+                    details={
+                        "barrier_id": barrier_id,
+                        "waiting_count": len(self.barriers[barrier_id]),
+                        "total_count": len(running_threads),
+                    }
+                )
+                self.add_execution_trace(event)
+    
+    def get_extended_statistics(self) -> Dict[str, Any]:
         """
-        result = self.execution_trace
+        Get extended parallel-specific statistics.
         
-        if event_types:
-            result = [e for e in result if e.get("event") in event_types]
+        Returns:
+            Dictionary of parallel VM statistics
+        """
+        stats = self.get_statistics()
         
-        if thread_id is not None:
-            result = [e for e in result if e.get("thread_id") == thread_id]
+        # Add parallel-specific statistics
+        stats.update({
+            "synchronization_events": self.synchronization_events,
+            "barrier_stalls": self.barrier_stalls,
+            "lock_contention": self.lock_contention,
+            "race_conditions": len(self.memory.get_race_conditions() if hasattr(self.memory, "get_race_conditions") else []),
+            "shared_addresses": len(self.shared_addresses),
+        })
         
-        if processor_id is not None:
-            result = [e for e in result if e.get("processor_id") == processor_id]
-        
-        if start_time is not None:
-            result = [e for e in result if e["timestamp"] >= start_time]
-        
-        if end_time is not None:
-            result = [e for e in result if e["timestamp"] <= end_time]
-        
-        return result
+        return stats
     
     def get_race_conditions(self) -> List[Dict[str, Any]]:
         """
@@ -843,36 +645,6 @@ class VirtualMachine:
         Returns:
             List of race condition details
         """
-        return self.race_conditions
-    
-    def reset(self) -> None:
-        """Reset the VM to initial state."""
-        # Reset processors
-        for processor in self.processors:
-            processor.reset()
-        
-        # Reset memory
-        self.memory = MemorySystem(size=self.memory.size)
-        
-        # Reset state
-        self.state = VMState.IDLE
-        self.global_clock = 0
-        self.threads = {}
-        self.ready_queue = []
-        self.waiting_threads = {}
-        self.shared_addresses = set()
-        self.last_writer = {}
-        self.race_conditions = []
-        self.locks = {}
-        self.semaphores = {}
-        self.barriers = {}
-        self.instruction_count = 0
-        self.context_switches = 0
-        self.start_time = 0
-        self.end_time = 0
-        self.execution_trace = []
-        
-        # Reload program data segments
-        for program in self.loaded_programs.values():
-            for addr, value in program.data_segment.items():
-                self.memory.memory[addr] = value
+        if hasattr(self.memory, "get_race_conditions"):
+            return self.memory.get_race_conditions()
+        return []

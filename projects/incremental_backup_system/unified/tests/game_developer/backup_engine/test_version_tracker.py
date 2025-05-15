@@ -75,8 +75,8 @@ def test_create_version(version_tracker, sample_files):
     # Verify the version is stored in metadata
     versions = version_tracker.list_versions()
     assert len(versions) == 1
-    assert versions[0]["id"] == version.id
-    assert versions[0]["name"] == "test version"
+    assert versions[0].id == version.id
+    assert versions[0].name == "test version"
     
     # Verify this is now the latest version
     latest = version_tracker.get_latest_version()
@@ -140,7 +140,7 @@ def test_list_versions(version_tracker, sample_files):
     
     # Verify all versions are listed
     assert len(versions) == 3
-    assert {v["id"] for v in versions} == {v1.id, v2.id, v3.id}
+    assert {v.id for v in versions} == {v1.id, v2.id, v3.id}
 
 
 def test_get_version_history(version_tracker, sample_files):
@@ -253,7 +253,7 @@ def test_delete_version(version_tracker, sample_files):
     # Verify the version was deleted
     versions = version_tracker.list_versions()
     assert len(versions) == 1
-    assert versions[0]["id"] == v2.id
+    assert versions[0].id == v2.id
     
     # Try to get the deleted version
     with pytest.raises(FileNotFoundError):

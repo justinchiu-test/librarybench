@@ -77,6 +77,27 @@ class VersionTracker(ABC):
             List of VersionInfo objects matching the criteria
         """
         pass
+        
+    def get_milestones(self) -> List[VersionInfo]:
+        """Get all milestone versions.
+        
+        Returns:
+            List of VersionInfo objects that are marked as milestones
+        """
+        # Default implementation filters list_versions results
+        return self.list_versions({"is_milestone": True})
+        
+    def delete_version(self, version_id: str) -> bool:
+        """Delete a version.
+        
+        Args:
+            version_id: ID of the version to delete
+            
+        Returns:
+            bool: True if the version was deleted successfully
+        """
+        # Default implementation raises NotImplementedError
+        raise NotImplementedError("delete_version method not implemented")
 
 
 class FileSystemVersionTracker(VersionTracker):
@@ -301,3 +322,43 @@ class FileSystemVersionTracker(VersionTracker):
         versions.sort(key=lambda v: v.timestamp, reverse=True)
         
         return versions
+        
+    def delete_version(self, version_id: str) -> bool:
+        """Delete a version.
+        
+        Args:
+            version_id: ID of the version to delete
+            
+        Returns:
+            bool: True if the version was deleted successfully, False if the version wasn't found
+        """
+        version_path = self.versions_dir / f"{version_id}.json"
+        
+        if not version_path.exists():
+            return False
+        
+        try:
+            # Delete the version file
+            os.remove(version_path)
+            
+            # Update the latest version pointer if needed
+            latest_file = self.versions_dir / "latest.txt"
+            if latest_file.exists():
+                with open(latest_file, "r") as f:
+                    latest_id = f.read().strip()
+                
+                if latest_id == version_id:
+                    # Find a new latest version
+                    versions = self.list_versions()
+                    if versions:
+                        # Write the new latest version ID
+                        with open(latest_file, "w") as f:
+                            f.write(versions[0].id)
+                    else:
+                        # No more versions, remove the latest pointer
+                        os.remove(latest_file)
+            
+            return True
+        except Exception as e:
+            print(f"Error deleting version {version_id}: {e}")
+            return False

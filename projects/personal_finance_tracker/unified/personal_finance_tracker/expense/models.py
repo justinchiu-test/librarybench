@@ -4,89 +4,18 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Pattern, Set, Union
 from uuid import UUID, uuid4
-import re
 
 from pydantic import BaseModel, Field, validator
+
+from common.core.categorization.categorizer import AuditRecord as CommonAuditRecord
+from common.core.categorization.categorizer import CategorizationResult as CommonCategorizationResult
+from common.core.models.transaction import BaseTransaction
 
 from personal_finance_tracker.models.common import ExpenseCategory, Transaction
 
 
-class CategorizationRule(BaseModel):
-    """Rule for expense categorization."""
-
-    id: UUID = Field(default_factory=uuid4)
-    name: str
-    category: ExpenseCategory
-    description: Optional[str] = None
-
-    # Rule conditions (at least one must be provided)
-    keyword_patterns: List[str] = Field(default_factory=list)
-    merchant_patterns: List[str] = Field(default_factory=list)
-    amount_min: Optional[float] = None
-    amount_max: Optional[float] = None
-
-    # Business use percentage
-    business_use_percentage: float = 100.0
-
-    # Rule priority (higher has precedence)
-    priority: int = 0
-
-    # Rule activation
-    is_active: bool = True
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: Optional[datetime] = None
-
-    @validator("business_use_percentage")
-    def validate_percentage(cls, v):
-        """Validate business use percentage is between 0 and 100."""
-        if v < 0 or v > 100:
-            raise ValueError("Business use percentage must be between 0 and 100")
-        return v
-
-    def matches(self, transaction: Transaction) -> bool:
-        """Check if transaction matches this rule."""
-        # Skip if rule is inactive
-        if not self.is_active:
-            return False
-
-        # Check amount range if specified
-        if self.amount_min is not None and transaction.amount < self.amount_min:
-            return False
-
-        if self.amount_max is not None and transaction.amount > self.amount_max:
-            return False
-
-        # Check description against keyword patterns
-        description_match = False
-        if not self.keyword_patterns:
-            description_match = True  # No patterns means automatic match
-        else:
-            for pattern in self.keyword_patterns:
-                if re.search(pattern, transaction.description, re.IGNORECASE):
-                    description_match = True
-                    break
-
-        if not description_match:
-            return False
-
-        # Check merchant name if available (assumed to be in tags)
-        merchant_match = False
-        if not self.merchant_patterns:
-            merchant_match = True  # No patterns means automatic match
-        else:
-            for tag in transaction.tags:
-                for pattern in self.merchant_patterns:
-                    if re.search(pattern, tag, re.IGNORECASE):
-                        merchant_match = True
-                        break
-                if merchant_match:
-                    break
-
-        if not merchant_match:
-            return False
-
-        # All conditions matched
-        return True
+# For backwards compatibility with existing code
+CategorizationRule = None  # Will be imported from rules.py
 
 
 class MixedUseItem(BaseModel):
@@ -134,6 +63,29 @@ class CategorizationResult(BaseModel):
             raise ValueError("Business use percentage must be between 0 and 100")
         return v
 
+    @classmethod
+    def from_common_result(cls, result: CommonCategorizationResult, transaction_id: UUID = None) -> "CategorizationResult":
+        """
+        Convert a common CategorizationResult to our specialized version.
+        
+        Args:
+            result: The common result to convert
+            transaction_id: Optional transaction ID override
+            
+        Returns:
+            Our specialized CategorizationResult
+        """
+        return cls(
+            transaction_id=transaction_id or result.item_id,
+            original_transaction=result.original_item,
+            matched_rule=result.matched_rule,
+            assigned_category=result.assigned_category,
+            business_use_percentage=result.metadata.get("business_use_percentage"),
+            confidence_score=result.confidence_score,
+            is_mixed_use=result.metadata.get("is_mixed_use", False),
+            notes=result.notes,
+        )
+
 
 class ExpenseSummary(BaseModel):
     """Summary of expenses by category."""
@@ -158,3 +110,29 @@ class AuditRecord(BaseModel):
     new_state: Dict
     user_id: Optional[str] = None
     notes: Optional[str] = None
+    
+    @classmethod
+    def from_common_audit(cls, record: CommonAuditRecord) -> "AuditRecord":
+        """
+        Convert a common AuditRecord to our specialized version.
+        
+        Args:
+            record: The common audit record to convert
+            
+        Returns:
+            Our specialized AuditRecord
+        """
+        return cls(
+            id=record.id,
+            transaction_id=record.item_id,
+            timestamp=record.timestamp,
+            action=record.action,
+            previous_state=record.previous_state,
+            new_state=record.new_state,
+            user_id=record.user_id,
+            notes=record.notes,
+        )
+
+
+# Import after defining to avoid circular import issues
+from personal_finance_tracker.expense.rules import ExpenseRule as CategorizationRule

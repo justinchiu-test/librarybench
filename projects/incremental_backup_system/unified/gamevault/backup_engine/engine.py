@@ -14,7 +14,7 @@ from common.core.versioning import VersionTracker, FileSystemVersionTracker
 from common.core.models import VersionInfo
 
 from gamevault.config import get_config
-from gamevault.models import GameVersionType, ProjectVersion
+from gamevault.models import FileInfo, GameVersionType, ProjectVersion
 
 
 class BackupEngine:

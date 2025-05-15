@@ -13,6 +13,11 @@ from ..utils.types import DatabaseEngine, FileCategory, DatabaseFile, ScanStatus
 from ..utils.file_utils import find_files, get_file_stats
 from .file_patterns import COMPILED_DB_PATTERNS, COMPILED_DIR_PATTERNS
 
+# Import from common library
+from common.core.base import FileSystemScanner, PatternMatcher, ScanSession
+from common.core.patterns import FilePattern, FilePatternMatch, RegexPatternMatcher, FilePatternRegistry
+from common.utils.types import FileMetadata, ScanOptions, ScanResult
+
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +34,7 @@ class DatabaseFileAnalysisResult(AnalysisResult):
     detected_files: List[DatabaseFile]
 
 
-class DatabaseFileDetector:
+class DatabaseFileDetector(FileSystemScanner[DatabaseFileAnalysisResult]):
     """
     Detects and categorizes database files across multiple database engines.
     
@@ -40,7 +45,7 @@ class DatabaseFileDetector:
 
     def __init__(
         self,
-        ignore_extensions: Optional[Set[str]] = None,
+        options: Optional[ScanOptions] = None,
         content_sampling_size: int = 8192,
         max_workers: int = 10,
     ):
@@ -48,19 +53,32 @@ class DatabaseFileDetector:
         Initialize the database file detector.
 
         Args:
-            ignore_extensions: Set of file extensions to ignore
+            options: Scanner configuration options
             content_sampling_size: Number of bytes to read for content-based detection
             max_workers: Maximum number of worker threads for parallel processing
         """
-        self.ignore_extensions = ignore_extensions or {
-            '.exe', '.dll', '.so', '.pyc', '.pyo', '.class', '.jar',
-            '.zip', '.tar', '.gz', '.7z', '.rar', '.bz2',
-            '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico',
-            '.mp3', '.mp4', '.avi', '.mov', '.pdf', '.doc', '.docx',
-            '.xls', '.xlsx', '.ppt', '.pptx',
-        }
+        # Define default options if none provided
+        if options is None:
+            options = ScanOptions(
+                ignore_extensions={
+                    '.exe', '.dll', '.so', '.pyc', '.pyo', '.class', '.jar',
+                    '.zip', '.tar', '.gz', '.7z', '.rar', '.bz2',
+                    '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.ico',
+                    '.mp3', '.mp4', '.avi', '.mov', '.pdf', '.doc', '.docx',
+                    '.xls', '.xlsx', '.ppt', '.pptx',
+                }
+            )
+            
+        super().__init__(options)
         self.content_sampling_size = content_sampling_size
         self.max_workers = max_workers
+        
+        # Initialize pattern matcher for database files
+        self.pattern_matcher = RegexPatternMatcher()
+        
+        # For backward compatibility with tests
+        self.ignore_extensions = self.options.ignore_extensions
+        # Patterns are already registered with the registry in file_patterns.py
 
     def detect_engine_from_path(self, file_path: Path) -> Optional[DatabaseEngine]:
         """
@@ -88,6 +106,35 @@ class DatabaseFileDetector:
                     if pattern.search(path_str):
                         return engine
                         
+        return None
+        
+    def detect_engine_from_matches(self, matches: List[FilePatternMatch]) -> Optional[DatabaseEngine]:
+        """
+        Detect database engine based on pattern matches.
+
+        Args:
+            matches: List of pattern matches
+
+        Returns:
+            Detected database engine, or None if not detected
+        """
+        if not matches:
+            return None
+            
+        # Count matches by engine
+        engine_counts = Counter()
+        
+        for match in matches:
+            # Extract engine from pattern name (e.g., "mysql_data_0")
+            for engine in DatabaseEngine:
+                if engine.value in match.pattern_name:
+                    engine_counts[engine] += 1
+                    break
+        
+        # Return the engine with the most matches, if any
+        if engine_counts:
+            return engine_counts.most_common(1)[0][0]
+            
         return None
 
     def detect_category_from_path(
@@ -185,7 +232,7 @@ class DatabaseFileDetector:
         """
         try:
             # Skip files with ignored extensions
-            if file_path.suffix.lower() in self.ignore_extensions:
+            if file_path.suffix.lower() in self.options.ignore_extensions:
                 return None
                 
             # Get file stats
@@ -200,11 +247,19 @@ class DatabaseFileDetector:
             
             # If we couldn't detect from path and file is not too large, sample content
             if (not engine or engine == DatabaseEngine.UNKNOWN) and stats.get("size_bytes", 0) < 10_000_000:
-                content = self.sample_file_content(file_path)
-                if content:
-                    content_engine = self.detect_engine_from_content(content)
-                    if content_engine:
-                        engine = content_engine
+                # Use pattern matcher to look for database-specific patterns
+                matches = self.pattern_matcher.match_file(file_path, max_size=self.content_sampling_size)
+                if matches:
+                    engine_from_matches = self.detect_engine_from_matches(matches)
+                    if engine_from_matches:
+                        engine = engine_from_matches
+                else:
+                    # Fall back to content-based detection if no patterns matched
+                    content = self.sample_file_content(file_path)
+                    if content:
+                        content_engine = self.detect_engine_from_content(content)
+                        if content_engine:
+                            engine = content_engine
             
             # If still no engine detected, skip this file
             if not engine:
@@ -229,6 +284,167 @@ class DatabaseFileDetector:
             logger.error(f"Error analyzing file {file_path}: {e}")
             return None
 
+    def scan_file(self, file_path: Union[str, Path]) -> DatabaseFileAnalysisResult:
+        """
+        Scan a single file for database characteristics.
+
+        Args:
+            file_path: Path to the file to scan
+
+        Returns:
+            Analysis result for the file
+        """
+        try:
+            # Analyze the file using the analyze_file method
+            db_file = self.analyze_file(Path(file_path))
+            
+            if db_file:
+                # Create a result with a single file
+                return DatabaseFileAnalysisResult(
+                    analysis_duration_seconds=0.0,  # Set when summarized
+                    scan_status=ScanStatus.COMPLETED,
+                    total_files_scanned=1,
+                    total_size_bytes=db_file.size_bytes,
+                    files_by_engine={db_file.engine: 1},
+                    size_by_engine={db_file.engine: db_file.size_bytes},
+                    files_by_category={db_file.category: 1},
+                    size_by_category={db_file.category: db_file.size_bytes},
+                    detected_files=[db_file],
+                )
+            else:
+                # File not a database file
+                return DatabaseFileAnalysisResult(
+                    analysis_duration_seconds=0.0,
+                    scan_status=ScanStatus.COMPLETED,
+                    total_files_scanned=1,
+                    total_size_bytes=0,
+                    files_by_engine={},
+                    size_by_engine={},
+                    files_by_category={},
+                    size_by_category={},
+                    detected_files=[],
+                )
+                
+        except Exception as e:
+            logger.error(f"Error scanning file {file_path}: {e}")
+            return DatabaseFileAnalysisResult(
+                analysis_duration_seconds=0.0,
+                scan_status=ScanStatus.FAILED,
+                error_message=str(e),
+                total_files_scanned=1,
+                total_size_bytes=0,
+                files_by_engine={},
+                size_by_engine={},
+                files_by_category={},
+                size_by_category={},
+                detected_files=[],
+            )
+    
+    def summarize_scan(self, results: List[DatabaseFileAnalysisResult]) -> DatabaseFileAnalysisResult:
+        """
+        Create a summary of scan results.
+
+        Args:
+            results: List of scan results to summarize
+
+        Returns:
+            Summary of scan results
+        """
+        start_time = datetime.now()
+        
+        # Combine all detected files
+        all_detected_files = []
+        for result in results:
+            all_detected_files.extend(result.detected_files)
+        
+        # Compute statistics
+        total_files_scanned = sum(r.total_files_scanned for r in results)
+        total_size_bytes = sum(f.size_bytes for f in all_detected_files)
+        
+        files_by_engine = Counter()
+        size_by_engine = Counter()
+        files_by_category = Counter()
+        size_by_category = Counter()
+        
+        for file in all_detected_files:
+            files_by_engine[file.engine] += 1
+            size_by_engine[file.engine] += file.size_bytes
+            files_by_category[file.category] += 1
+            size_by_category[file.category] += file.size_bytes
+        
+        # Determine overall status
+        status = ScanStatus.COMPLETED
+        error_message = None
+        for result in results:
+            if result.scan_status == ScanStatus.FAILED:
+                status = ScanStatus.FAILED
+                error_message = result.error_message
+                break
+        
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        return DatabaseFileAnalysisResult(
+            analysis_duration_seconds=duration,
+            scan_status=status,
+            error_message=error_message,
+            total_files_scanned=total_files_scanned,
+            total_size_bytes=total_size_bytes,
+            files_by_engine=dict(files_by_engine),
+            size_by_engine=dict(size_by_engine),
+            files_by_category=dict(files_by_category),
+            size_by_category=dict(size_by_category),
+            detected_files=all_detected_files,
+        )
+        
+    def scan_directory_with_session(
+        self,
+        root_path: Union[str, Path],
+        recursive: bool = True,
+        follow_symlinks: bool = False,
+        max_depth: Optional[int] = None,
+        max_files: Optional[int] = None,
+    ) -> DatabaseFileAnalysisResult:
+        """
+        Scan a directory for database files using a scan session.
+        Maintains compatibility with the original API.
+
+        Args:
+            root_path: Starting directory for search
+            recursive: Whether to search recursively
+            follow_symlinks: Whether to follow symbolic links
+            max_depth: Maximum directory depth to search
+            max_files: Maximum number of files to process
+
+        Returns:
+            Analysis result containing detected database files and statistics
+        """
+        # Update options
+        self.options.recursive = recursive
+        self.options.follow_symlinks = follow_symlinks
+        self.options.max_depth = max_depth
+        self.options.max_files = max_files
+        
+        # Create and use scan session
+        session = ScanSession(scanner=self)
+        try:
+            return session.scan_directory(root_path)
+        except Exception as e:
+            logger.error(f"Error in scan session: {e}")
+            return DatabaseFileAnalysisResult(
+                analysis_duration_seconds=0.0,
+                scan_status=ScanStatus.FAILED,
+                error_message=str(e),
+                total_files_scanned=0,
+                total_size_bytes=0,
+                files_by_engine={},
+                size_by_engine={},
+                files_by_category={},
+                size_by_category={},
+                detected_files=[],
+            )
+            
+    # Original method reimplemented for backward compatibility with tests
     def scan_directory(
         self,
         root_path: Union[str, Path],
@@ -239,6 +455,8 @@ class DatabaseFileDetector:
     ) -> DatabaseFileAnalysisResult:
         """
         Scan a directory for database files.
+        
+        Original method reimplemented for backward compatibility with tests.
 
         Args:
             root_path: Starting directory for search
@@ -255,7 +473,7 @@ class DatabaseFileDetector:
         
         if not root.exists() or not root.is_dir():
             return DatabaseFileAnalysisResult(
-                analysis_duration_seconds=0,
+                analysis_duration_seconds=0.0,
                 scan_status=ScanStatus.FAILED,
                 error_message=f"Root path {root_path} does not exist or is not a directory",
                 total_files_scanned=0,
@@ -266,7 +484,7 @@ class DatabaseFileDetector:
                 size_by_category={},
                 detected_files=[],
             )
-        
+            
         try:
             # Find all files matching criteria
             all_files = list(find_files(
@@ -277,7 +495,7 @@ class DatabaseFileDetector:
                 recursive=recursive,
                 max_files=max_files,
             ))
-            
+                
             total_files = len(all_files)
             logger.info(f"Found {total_files} files to analyze in {root_path}")
             

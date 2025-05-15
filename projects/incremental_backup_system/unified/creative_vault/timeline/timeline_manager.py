@@ -73,8 +73,19 @@ class CreativeTimelineManager(TimelineManager):
         Raises:
             ValueError: If the snapshot does not exist
         """
+        # First check in the snapshots directory (original implementation)
         snapshot_path = self.snapshots_path / snapshot_id
-        if not snapshot_path.exists():
+        
+        # If not found, check in the versions directory (common library implementation)
+        versions_path = self.repository_path / "versions"
+        version_path = versions_path / f"{snapshot_id}.json"
+        
+        # Also try with the modified snapshot ID format (removing snapshot- prefix)
+        if not snapshot_path.exists() and not version_path.exists() and snapshot_id.startswith("snapshot-"):
+            version_id = snapshot_id[9:]  # Remove "snapshot-" prefix
+            version_path = versions_path / f"version-creative_vault-{version_id}.json"
+        
+        if not snapshot_path.exists() and not version_path.exists():
             raise ValueError(f"Snapshot {snapshot_id} does not exist")
         
         # Create a unique version ID

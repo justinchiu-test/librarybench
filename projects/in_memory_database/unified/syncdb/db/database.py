@@ -6,157 +6,7 @@ import copy
 import time
 import uuid
 from .schema import DatabaseSchema, TableSchema
-
-
-class Table:
-    """
-    A database table that stores records in memory.
-    """
-    def __init__(self, schema: TableSchema):
-        self.schema = schema
-        self.records: Dict[Tuple, Dict[str, Any]] = {}
-        self.last_modified: Dict[Tuple, float] = {}
-        self.change_log: List[Dict[str, Any]] = []
-        self.index_counter = 0  # Used for assigning sequential IDs to changes
-    
-    def _get_primary_key_tuple(self, record: Dict[str, Any]) -> Tuple:
-        """Extract primary key values as a tuple for indexing."""
-        return tuple(record[pk] for pk in self.schema.primary_keys)
-    
-    def _validate_record(self, record: Dict[str, Any]) -> None:
-        """Validate a record against the schema and raise exception if invalid."""
-        errors = self.schema.validate_record(record)
-        if errors:
-            raise ValueError(f"Invalid record: {', '.join(errors)}")
-    
-    def insert(self, record: Dict[str, Any], client_id: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Insert a new record into the table.
-        Returns the inserted record.
-        """
-        self._validate_record(record)
-        pk_tuple = self._get_primary_key_tuple(record)
-
-        if pk_tuple in self.records:
-            raise ValueError(f"Record with primary key {pk_tuple} already exists")
-
-        # Create a copy to avoid modifying the original
-        stored_record = copy.deepcopy(record)
-
-        # Apply default values for missing fields
-        for column in self.schema.columns:
-            if column.name not in stored_record and column.default is not None:
-                stored_record[column.name] = column.default() if callable(column.default) else column.default
-
-        self.records[pk_tuple] = stored_record
-        current_time = time.time()
-        self.last_modified[pk_tuple] = current_time
-
-        # Record the change in the log
-        self._record_change("insert", pk_tuple, None, stored_record, client_id)
-
-        return stored_record
-    
-    def update(self, record: Dict[str, Any], client_id: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Update an existing record in the table.
-        Returns the updated record.
-        """
-        self._validate_record(record)
-        pk_tuple = self._get_primary_key_tuple(record)
-        
-        if pk_tuple not in self.records:
-            raise ValueError(f"Record with primary key {pk_tuple} does not exist")
-        
-        # Get the old record before updating
-        old_record = copy.deepcopy(self.records[pk_tuple])
-        
-        # Create a copy to avoid modifying the original
-        stored_record = copy.deepcopy(record)
-        self.records[pk_tuple] = stored_record
-        current_time = time.time()
-        self.last_modified[pk_tuple] = current_time
-        
-        # Record the change in the log
-        self._record_change("update", pk_tuple, old_record, stored_record, client_id)
-        
-        return stored_record
-    
-    def delete(self, primary_key_values: List[Any], client_id: Optional[str] = None) -> None:
-        """Delete a record from the table by its primary key values."""
-        pk_tuple = tuple(primary_key_values)
-        
-        if pk_tuple not in self.records:
-            raise ValueError(f"Record with primary key {pk_tuple} does not exist")
-        
-        # Get the record before deleting
-        old_record = copy.deepcopy(self.records[pk_tuple])
-        
-        # Remove the record
-        del self.records[pk_tuple]
-        
-        # Record the change in the log
-        self._record_change("delete", pk_tuple, old_record, None, client_id)
-    
-    def get(self, primary_key_values: List[Any]) -> Optional[Dict[str, Any]]:
-        """Get a record by its primary key values."""
-        pk_tuple = tuple(primary_key_values)
-        record = self.records.get(pk_tuple)
-        return copy.deepcopy(record) if record else None
-    
-    def query(self, 
-              conditions: Optional[Dict[str, Any]] = None, 
-              limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """
-        Query records that match the given conditions.
-        
-        Args:
-            conditions: Dictionary of column name to value that records must match
-            limit: Maximum number of records to return
-            
-        Returns:
-            List of matching records
-        """
-        result = []
-        
-        for record in self.records.values():
-            if conditions is None or self._matches_conditions(record, conditions):
-                result.append(copy.deepcopy(record))
-            
-            if limit is not None and len(result) >= limit:
-                break
-                
-        return result
-    
-    def _matches_conditions(self, record: Dict[str, Any], conditions: Dict[str, Any]) -> bool:
-        """Check if a record matches all the given conditions."""
-        for col_name, expected_value in conditions.items():
-            if col_name not in record or record[col_name] != expected_value:
-                return False
-        return True
-    
-    def _record_change(self, 
-                      operation: str, 
-                      pk_tuple: Tuple, 
-                      old_record: Optional[Dict[str, Any]], 
-                      new_record: Optional[Dict[str, Any]],
-                      client_id: Optional[str] = None) -> None:
-        """Record a change in the change log."""
-        self.index_counter += 1
-        change = {
-            "id": self.index_counter,
-            "operation": operation,
-            "primary_key": pk_tuple,
-            "timestamp": time.time(),
-            "old_record": old_record,
-            "new_record": new_record,
-            "client_id": client_id or "server"
-        }
-        self.change_log.append(change)
-    
-    def get_changes_since(self, index: int) -> List[Dict[str, Any]]:
-        """Get all changes that occurred after the given index."""
-        return [change for change in self.change_log if change["id"] > index]
+from .table import Table
 
 
 class Transaction:
@@ -173,7 +23,12 @@ class Transaction:
     def __enter__(self):
         """Begin the transaction by creating snapshots of tables."""
         for table_name, table in self.database.tables.items():
-            self.tables_snapshot[table_name] = copy.deepcopy(table.records)
+            # Create a snapshot of the table's state
+            self.tables_snapshot[table_name] = {}
+            for pk_tuple, record_id in table._pk_to_id.items():
+                table_record = table._records.get(record_id)
+                if table_record:
+                    self.tables_snapshot[table_name][pk_tuple] = copy.deepcopy(table_record.data)
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -234,18 +89,21 @@ class Transaction:
                     if pk_values:
                         pk_tuple = tuple(pk_values)
                         # Remove the record that was inserted
-                        if pk_tuple in table.records:
-                            del table.records[pk_tuple]
-                            # Also remove from last_modified
-                            if pk_tuple in table.last_modified:
-                                del table.last_modified[pk_tuple]
+                        if pk_tuple in table._pk_to_id:
+                            record_id = table._pk_to_id[pk_tuple]
+                            table.delete(pk_values, client_id="transaction_rollback")
 
         # Step 2: Restore previous state for updated records
         for table_name, records_snapshot in self.tables_snapshot.items():
             table = self.database.tables[table_name]
             # Restore all records from the snapshot
             for pk_tuple, record in records_snapshot.items():
-                table.records[pk_tuple] = copy.deepcopy(record)
+                if pk_tuple in table._pk_to_id:
+                    # Update to the original state
+                    table.update(record, client_id="transaction_rollback")
+                else:
+                    # Record was deleted, reinsert it
+                    table.insert(record, client_id="transaction_rollback")
 
         # Step 3: Remove transaction changes from change logs
         for table_name in self.database.tables:
@@ -254,7 +112,7 @@ class Transaction:
             original_length = len(table.change_log)
             table.change_log = [
                 change for change in table.change_log
-                if change.get("client_id") != "transaction"
+                if change.get("client_id") not in ["transaction", "transaction_rollback"]
             ]
             # If we removed changes, reset the index counter
             if len(table.change_log) < original_length:

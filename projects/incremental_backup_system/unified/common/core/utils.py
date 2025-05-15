@@ -329,11 +329,24 @@ def _json_serializer(obj: Any) -> Any:
         return obj.isoformat()
     if isinstance(obj, np.ndarray):
         return obj.tolist()
+    if isinstance(obj, set):
+        return list(obj)
     if hasattr(obj, "model_dump"):
         return obj.model_dump()
     if hasattr(obj, "dict"):
         return obj.dict()
     if hasattr(obj, "__dict__"):
-        return obj.__dict__
+        # Convert __dict__ to a serializable dictionary
+        safe_dict = {}
+        for k, v in obj.__dict__.items():
+            if not k.startswith('_'):
+                try:
+                    # Try to ensure the value is serializable
+                    json.dumps(v, default=_json_serializer)
+                    safe_dict[k] = v
+                except TypeError:
+                    # Skip unserializable values
+                    continue
+        return safe_dict
     
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")

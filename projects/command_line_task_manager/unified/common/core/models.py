@@ -10,7 +10,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 
 
 class TaskStatusEnum(str, Enum):

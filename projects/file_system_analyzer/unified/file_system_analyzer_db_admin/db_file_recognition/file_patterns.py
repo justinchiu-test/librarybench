@@ -5,6 +5,8 @@ import re
 from enum import Enum
 
 from ..utils.types import DatabaseEngine, FileCategory
+from common.core.patterns import FilePattern, FilePatternRegistry
+from common.utils.types import SensitivityLevel
 
 
 # MySQL file patterns
@@ -238,3 +240,44 @@ COMPILED_DIR_PATTERNS = {
     engine: [re.compile(pattern) for pattern in patterns] 
     for engine, patterns in DIR_ENGINE_PATTERNS.items()
 }
+
+
+# Register patterns with the common library pattern registry
+def register_db_patterns():
+    """
+    Register database file patterns with the common library pattern registry.
+    """
+    # Register engine-specific patterns
+    for engine, categories in ALL_DB_PATTERNS.items():
+        engine_name = engine.value
+        
+        for category, patterns in categories.items():
+            category_name = category.value
+            
+            for pattern in patterns:
+                file_pattern = FilePattern(
+                    name=f"{engine_name}_{category_name}_{patterns.index(pattern)}",
+                    description=f"{engine_name} {category_name} file pattern",
+                    pattern=pattern,
+                    category=category_name,
+                    sensitivity=SensitivityLevel.MEDIUM
+                )
+                FilePatternRegistry.register_pattern(file_pattern, f"db_{engine_name}")
+    
+    # Register directory patterns
+    for engine, patterns in DIR_ENGINE_PATTERNS.items():
+        engine_name = engine.value
+        
+        for pattern in patterns:
+            file_pattern = FilePattern(
+                name=f"{engine_name}_dir_{patterns.index(pattern)}",
+                description=f"{engine_name} directory pattern",
+                pattern=pattern,
+                category="directory",
+                sensitivity=SensitivityLevel.LOW
+            )
+            FilePatternRegistry.register_pattern(file_pattern, f"db_dir_{engine_name}")
+
+
+# Register patterns with the common library
+register_db_patterns()

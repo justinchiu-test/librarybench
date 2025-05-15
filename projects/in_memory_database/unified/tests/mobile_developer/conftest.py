@@ -6,6 +6,7 @@ import time
 from typing import Dict, List, Any, Optional
 
 from syncdb.db.schema import DatabaseSchema, TableSchema, Column
+from syncdb.db.table import Table
 from syncdb.db.database import Database
 from syncdb.sync.change_tracker import ChangeTracker
 from syncdb.sync.sync_protocol import SyncEngine, NetworkSimulator

@@ -173,18 +173,30 @@ class IncrementalBackupEngine(BaseBackupEngine):
             # Update repository path
             self._repository_path = root_path
             
-            # Create directory structure
+            # Create directory structure with paths for both implementations
+            # Common paths
             os.makedirs(root_path / "versions", exist_ok=True)
             os.makedirs(root_path / "files", exist_ok=True)
             os.makedirs(root_path / "chunks", exist_ok=True)
             os.makedirs(root_path / "metadata", exist_ok=True)
             
+            # Creative Vault paths
+            os.makedirs(root_path / "snapshots", exist_ok=True)
+            os.makedirs(root_path / "objects", exist_ok=True)
+            
             # Create repository metadata
+            config_dict = {}
+            if hasattr(self.config, "model_dump"):
+                config_dict = self.config.model_dump()
+            elif hasattr(self.config, "__dict__"):
+                config_dict = {k: v for k, v in self.config.__dict__.items() 
+                              if not k.startswith('_') and not isinstance(v, (set, type))}
+            
             repo_metadata = {
                 "version": "1.0.0",
                 "created_at": generate_timestamp(),
                 "project_name": self.project_name,
-                "config": self.config.model_dump() if hasattr(self.config, "model_dump") else self.config.__dict__
+                "config": config_dict
             }
             
             save_json(repo_metadata, root_path / "repository.json")

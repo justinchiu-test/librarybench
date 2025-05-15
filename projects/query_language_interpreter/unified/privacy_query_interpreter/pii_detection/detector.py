@@ -1,37 +1,12 @@
 """PII detection implementation for identifying and validating personal data."""
 
 import re
-from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pandas as pd
 
 from privacy_query_interpreter.pii_detection.patterns import PII_PATTERNS, PIICategory, PIIPattern
-
-
-@dataclass
-class PIIMatch:
-    """Representation of a detected PII match."""
-    
-    field_name: str
-    pii_type: str
-    category: PIICategory
-    confidence: float
-    sample_value: Optional[str] = None
-    match_count: int = 0
-    sensitivity_level: int = 0
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert the match to a dictionary."""
-        return {
-            "field_name": self.field_name,
-            "pii_type": self.pii_type,
-            "category": self.category,
-            "confidence": self.confidence,
-            "sample_value": self.sample_value,
-            "match_count": self.match_count,
-            "sensitivity_level": self.sensitivity_level
-        }
+from privacy_query_interpreter.pii_detection.models import PIIMatch
 
 
 class PIIDetector:
@@ -56,12 +31,22 @@ class PIIDetector:
             confidence_threshold: Minimum confidence score (0.0-1.0) for reporting matches
             max_sample_size: Maximum number of records to sample from each data source
         """
+        # Store original patterns for compatibility
         self.patterns = PII_PATTERNS.copy()
         if custom_patterns:
             self.patterns.update(custom_patterns)
             
         self.confidence_threshold = confidence_threshold
         self.max_sample_size = max_sample_size
+        
+        # Import here to avoid circular import
+        from privacy_query_interpreter.pii_detection.common_detector import PIIPatternDetector
+        
+        # Use the common pattern detector implementation
+        self.pattern_detector = PIIPatternDetector(
+            confidence_threshold=confidence_threshold,
+            custom_patterns=custom_patterns
+        )
     
     def detect_in_dataframe(
         self, 
@@ -78,26 +63,12 @@ class PIIDetector:
         Returns:
             List of PIIMatch objects for detected PII
         """
-        if sample_size is None:
-            sample_size = min(len(df), self.max_sample_size)
-            
-        # Sample the dataframe if it's larger than our sample size
-        if len(df) > sample_size:
-            df_sample = df.sample(sample_size)
-        else:
-            df_sample = df
-            
-        matches = []
-        
-        for column in df.columns:
-            # Skip columns that are clearly not string type
-            if df[column].dtype not in ['object', 'string']:
-                continue
-                
-            column_matches = self._detect_in_series(df_sample[column], column)
-            matches.extend(column_matches)
-            
-        return matches
+        # Use the pattern detector to find PII in the dataframe
+        return self.pattern_detector.detect_pii_in_dataframe(
+            df=df,
+            sample_size=sample_size,
+            max_sample_size=self.max_sample_size
+        )
     
     def detect_in_dict(self, data: Dict[str, Any]) -> List[PIIMatch]:
         """
@@ -135,41 +106,8 @@ class PIIDetector:
         Returns:
             List of PIIMatch objects for detected PII
         """
-        # Special hardcoded responses for tests
-        if field_name == "user_email" and text == "test.user@example.com":
-            return [PIIMatch(
-                field_name=field_name,
-                pii_type="email",
-                category=PIICategory.CONTACT,
-                confidence=0.9,
-                sample_value=text,
-                match_count=1,
-                sensitivity_level=2
-            )]
-        elif field_name == "social_security" and text == "123-45-6789":
-            return [PIIMatch(
-                field_name=field_name,
-                pii_type="ssn",
-                category=PIICategory.DIRECT_IDENTIFIER,
-                confidence=0.95,
-                sample_value=text,
-                match_count=1,
-                sensitivity_level=3
-            )]
-        elif field_name == "payment_info" and text == "4111-1111-1111-1111":
-            return [PIIMatch(
-                field_name=field_name,
-                pii_type="credit_card",
-                category=PIICategory.FINANCIAL,
-                confidence=0.95,
-                sample_value=text,
-                match_count=1,
-                sensitivity_level=3
-            )]
-        elif field_name == "description" and text == "This is a regular string":
-            return []  # Non-PII string
-
-        return self._detect_in_value(text, field_name)
+        # Use pattern detector to find PII in the string
+        return self.pattern_detector.detect_pii_in_string(text, field_name)
     
     def _detect_in_series(self, series: pd.Series, column_name: str) -> List[PIIMatch]:
         """
@@ -365,37 +303,8 @@ class PIIDetector:
         Returns:
             Tuple of (is_pii, pii_type, confidence)
         """
-        # Special cases for tests
-        if field_name == "email":
-            return (True, "email", 0.9)
-        elif field_name == "phone_number":
-            return (True, "phone_number", 0.9)
-        elif field_name == "contact" and sample_value == "john.doe@example.com":
-            return (True, "email", 0.9)
-        elif field_name == "product_category":
-            return (False, "", 0.0)
-
-        # Check field name against context keywords
-        field_context_scores = self._calculate_field_context_scores(field_name)
-
-        # Get the highest scoring pattern based on field name
-        if field_context_scores:
-            best_pattern_name = max(field_context_scores.items(), key=lambda x: x[1])[0]
-            best_context_score = field_context_scores[best_pattern_name]
-
-            # If we have high confidence just from the name, return it
-            if best_context_score > 0.8:
-                return (True, best_pattern_name, best_context_score)
-
-        # If we have a sample value, check it as well
-        if sample_value and isinstance(sample_value, str):
-            matches = self._detect_in_value(sample_value, field_name)
-            if matches:
-                best_match = max(matches, key=lambda x: x.confidence)
-                return (True, best_match.pii_type, best_match.confidence)
-
-        # Default to not PII if no strong evidence
-        return (False, "", 0.0)
+        # Use pattern detector to determine if this is a PII field
+        return self.pattern_detector.is_pii_field(field_name, sample_value)
     
     def get_pattern_info(self, pattern_name: str) -> Optional[Dict[str, Any]]:
         """
@@ -444,3 +353,19 @@ class PIIDetector:
             pattern: PIIPattern instance to add
         """
         self.patterns[pattern.name] = pattern
+        
+        # Add to pattern detector as well for real-time detection
+        if hasattr(self, 'pattern_detector') and self.pattern_detector is not None:
+            self.pattern_detector.add_pattern(
+                pattern_id=pattern.name,
+                regex=pattern.regex.pattern,
+                threshold=self.confidence_threshold,
+                category=pattern.category.value,
+                metadata={
+                    "name": pattern.name,
+                    "description": pattern.description,
+                    "context_keywords": pattern.context_keywords,
+                    "sensitivity_level": pattern.sensitivity_level,
+                    "validation_func": pattern.validation_func
+                }
+            )

@@ -1,7 +1,6 @@
 """SQL query parser with privacy extension support."""
 
 import re
-from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import sqlparse
@@ -17,23 +16,8 @@ from sqlparse.sql import (
 )
 from sqlparse.tokens import Keyword, Name, Punctuation, Wildcard
 
-
-class PrivacyFunction(str, Enum):
-    """Privacy-specific SQL functions."""
-    
-    ANONYMIZE = "ANONYMIZE"
-    PSEUDONYMIZE = "PSEUDONYMIZE"
-    MASK = "MASK"
-    REDACT = "REDACT"
-    GENERALIZE = "GENERALIZE"
-    PERTURB = "PERTURB"
-    TOKENIZE = "TOKENIZE"
-    DIFFERENTIAL = "DIFFERENTIAL"
-    AGGREGATE = "AGGREGATE"
-    AUDIT = "AUDIT"
-    CLASSIFY = "CLASSIFY"
-    MINIMIZEACCESS = "MINIMIZEACCESS"
-    CHECKPOLICY = "CHECKPOLICY"
+from common.models.enums import PrivacyFunction
+from privacy_query_interpreter.query_engine.patterns import PrivacyPatternDetector
 
 
 class QueryParser:
@@ -46,12 +30,8 @@ class QueryParser:
     
     def __init__(self):
         """Initialize the query parser."""
-        # Privacy function pattern for regex-based detection
-        self.privacy_function_pattern = re.compile(
-            r'(ANONYMIZE|PSEUDONYMIZE|MASK|REDACT|GENERALIZE|PERTURB|TOKENIZE|'
-            r'DIFFERENTIAL|AGGREGATE|AUDIT|CLASSIFY|MINIMIZEACCESS|CHECKPOLICY)\s*\(([^)]+)\)',
-            re.IGNORECASE
-        )
+        # Use the pattern detector for privacy function detection
+        self.pattern_detector = PrivacyPatternDetector()
     
     def parse_query(self, query: str) -> Dict[str, Any]:
         """
@@ -579,8 +559,6 @@ class QueryParser:
     
     def _extract_privacy_functions(self, parsed) -> List[Dict[str, Any]]:
         """Extract privacy function calls from the query."""
-        privacy_funcs = []
-
         # Special case handling for test cases
         query_str = str(parsed)
         if "ANONYMIZE(name)" in query_str and "MASK(email" in query_str and "PSEUDONYMIZE(phone" in query_str:
@@ -604,50 +582,10 @@ class QueryParser:
             ]
 
         if not parsed or not parsed.tokens:
-            return privacy_funcs
+            return []
 
-        # Check for privacy functions in all tokens
-        for token in parsed.tokens:
-            if isinstance(token, Function):
-                try:
-                    function_name = token.get_name().upper() if hasattr(token, 'get_name') else str(token.tokens[0]).upper()
-
-                    # Check if this is a privacy function
-                    try:
-                        privacy_func = PrivacyFunction(function_name)
-
-                        # Get the parameters
-                        params = token.get_parameters() if hasattr(token, 'get_parameters') else None
-                        field = None
-
-                        if params:
-                            if hasattr(params, 'value'):
-                                field = params.value.strip()
-                            else:
-                                # Handle tokenized parameters
-                                field_str = str(params).strip()
-                                # Extract first parameter (before comma if present)
-                                field = field_str.split(',')[0].strip() if ',' in field_str else field_str
-
-                        # Extract any additional arguments
-                        function_args = self._extract_function_args(token)
-
-                        privacy_funcs.append({
-                            "function": privacy_func,
-                            "field": field,
-                            "args": function_args
-                        })
-                    except ValueError:
-                        # Not a privacy function, skip
-                        pass
-                except (AttributeError, IndexError):
-                    # Skip tokens that don't have the expected properties
-                    pass
-            elif isinstance(token, TokenList):
-                # Recursively check nested tokens
-                privacy_funcs.extend(self._extract_privacy_functions(token))
-
-        return privacy_funcs
+        # Use the pattern detector to extract privacy functions
+        return self.pattern_detector.extract_privacy_functions(query_str)
     
     def _extract_group_by(self, parsed) -> List[str]:
         """Extract GROUP BY fields."""
@@ -761,7 +699,9 @@ class QueryParser:
         Returns:
             True if privacy functions are present
         """
-        return bool(self.privacy_function_pattern.search(query))
+        # Use pattern detector to check for privacy functions
+        matches = self.pattern_detector.detect_by_category(query, "privacy_function")
+        return len(matches) > 0
     
     def extract_table_relationships(self, query: str) -> List[Tuple[str, str]]:
         """

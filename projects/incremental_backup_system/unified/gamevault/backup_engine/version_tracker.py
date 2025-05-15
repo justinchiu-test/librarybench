@@ -222,6 +222,55 @@ class VersionTracker(BaseVersionTracker):
         
         return all_versions
     
+    def delete_version(self, version_id: str) -> bool:
+        """
+        Delete a version.
+        
+        Args:
+            version_id: ID of the version to delete
+            
+        Returns:
+            bool: True if the version was deleted successfully, False if the version wasn't found
+        """
+        # First check if the version exists
+        try:
+            self.get_version(version_id)
+        except FileNotFoundError:
+            return False
+        
+        # Delete the version file
+        version_path = self._get_version_path(version_id)
+        if version_path.exists():
+            try:
+                os.remove(version_path)
+            except Exception as e:
+                print(f"Error deleting version file: {e}")
+                return False
+        
+        # Update metadata
+        self.metadata["versions"] = [v for v in self.metadata["versions"] if v["id"] != version_id]
+        
+        # Update latest version ID if needed
+        if self.metadata["latest_version_id"] == version_id:
+            newest_version = None
+            max_timestamp = 0
+            
+            for version_meta in self.metadata["versions"]:
+                if version_meta["timestamp"] > max_timestamp:
+                    max_timestamp = version_meta["timestamp"]
+                    newest_version = version_meta["id"]
+            
+            self.metadata["latest_version_id"] = newest_version
+        
+        # Save the updated metadata
+        self._save_metadata()
+        
+        # Remove from cache
+        if version_id in self.versions:
+            del self.versions[version_id]
+        
+        return True
+    
     def create_version(
         self, 
         name: str,

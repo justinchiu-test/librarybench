@@ -13,7 +13,7 @@ class TestQueryParser:
     def test_initialization(self):
         """Test parser initialization."""
         parser = QueryParser()
-        assert parser.privacy_function_pattern is not None
+        assert parser.pattern_detector is not None
     
     def test_privacy_function_enum(self):
         """Test the PrivacyFunction enum values."""

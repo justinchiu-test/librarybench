@@ -6,22 +6,29 @@ and support for different privilege levels and security isolation.
 """
 
 from __future__ import annotations
-from enum import Enum, auto
 from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
 import struct
 import time
 
+from common.core.processor import (
+    Processor as BaseProcessor,
+    ProcessorState,
+    PrivilegeLevel,
+    RegisterSet
+)
+from common.core.instruction import Instruction, InstructionType
+from common.core.exceptions import (
+    ProcessorException, InvalidInstructionException, PrivilegeViolationException
+)
+
 from secure_vm.memory import Memory, MemoryPermission
 
 
-class PrivilegeLevel(Enum):
-    """CPU privilege levels, from least to most privileged."""
-    USER = 0       # Unprivileged user code
-    SUPERVISOR = 1 # Limited system operations
-    KERNEL = 2     # Full system access
+# Re-export common types
+PrivilegeLevel = PrivilegeLevel
 
 
-class CPUException(Exception):
+class CPUException(ProcessorException):
     """Base class for CPU execution exceptions."""
     pass
 
@@ -36,11 +43,6 @@ class ProtectionFault(CPUException):
     pass
 
 
-class PrivilegeViolation(CPUException):
-    """Raised when an operation violates privilege rules."""
-    pass
-
-
 class InvalidInstruction(CPUException):
     """Raised when attempting to execute an invalid instruction."""
     pass
@@ -48,78 +50,11 @@ class InvalidInstruction(CPUException):
 
 class InstructionType(Enum):
     """Categories of instruction types for the VM."""
-    ARITHMETIC = auto()  # Arithmetic operations (add, sub, etc.)
-    MEMORY = auto()      # Memory operations (load, store)
-    CONTROL = auto()     # Control flow (jump, call, ret)
-    SYSTEM = auto()      # System operations (privileged)
-    SPECIAL = auto()     # Special operations
-
-
-class Instruction:
-    """Representation of a CPU instruction."""
-    
-    def __init__(
-        self,
-        opcode: int,
-        name: str,
-        instr_type: InstructionType,
-        operands: int = 0,
-        required_privilege: PrivilegeLevel = PrivilegeLevel.USER,
-        handler: Optional[Callable] = None,
-    ):
-        self.opcode = opcode
-        self.name = name
-        self.type = instr_type
-        self.operands = operands
-        self.required_privilege = required_privilege
-        self.handler = handler
-    
-    def __str__(self) -> str:
-        return f"{self.name} (0x{self.opcode:02x})"
-
-
-class CPURegisters:
-    """CPU register state."""
-    
-    def __init__(self, register_count: int = 8):
-        # General purpose registers R0-R7
-        self.registers = [0] * register_count
-        
-        # Special registers
-        self.ip = 0       # Instruction pointer
-        self.sp = 0       # Stack pointer
-        self.bp = 0       # Base pointer
-        self.flags = 0    # Flags register
-        
-        # Protection and privilege registers
-        self.privilege_level = PrivilegeLevel.USER
-        self.protection_key = 0
-    
-    def get_register(self, reg_num: int) -> int:
-        """Get the value of a general-purpose register."""
-        if 0 <= reg_num < len(self.registers):
-            return self.registers[reg_num]
-        raise ValueError(f"Invalid register number: {reg_num}")
-    
-    def set_register(self, reg_num: int, value: int) -> None:
-        """Set the value of a general-purpose register."""
-        if 0 <= reg_num < len(self.registers):
-            self.registers[reg_num] = value & 0xFFFFFFFF  # 32-bit registers
-        else:
-            raise ValueError(f"Invalid register number: {reg_num}")
-    
-    def dump_registers(self) -> Dict[str, int]:
-        """Get a snapshot of all register values."""
-        result = {f"R{i}": reg for i, reg in enumerate(self.registers)}
-        result.update({
-            "IP": self.ip,
-            "SP": self.sp,
-            "BP": self.bp,
-            "FLAGS": self.flags,
-            "PRIV": self.privilege_level.value,
-            "PKEY": self.protection_key,
-        })
-        return result
+    ARITHMETIC = InstructionType.COMPUTE
+    MEMORY = InstructionType.MEMORY
+    CONTROL = InstructionType.BRANCH
+    SYSTEM = InstructionType.SYSTEM
+    SPECIAL = InstructionType.SPECIAL
 
 
 class ControlFlowRecord:
@@ -150,483 +85,619 @@ class ControlFlowRecord:
         )
 
 
-class CPU:
-    """CPU implementation with privilege levels and execution support."""
+class CPURegisters(RegisterSet):
+    """CPU register state with security-specific extensions."""
+    
+    def __init__(self, register_count: int = 8):
+        """
+        Initialize the register set.
+        
+        Args:
+            register_count: Number of general purpose registers
+        """
+        super().__init__(register_count)
+        
+        # Aliases for common registers to match secure VM's naming convention
+        self.ip = 0       # Instruction pointer
+        self.sp = 0       # Stack pointer
+        self.bp = 0       # Base pointer
+        self.flags = 0    # Flags register
+        
+        # Protection and privilege registers
+        self.privilege_level = PrivilegeLevel.USER
+        self.protection_key = 0
+    
+    def set_ip(self, value: int) -> None:
+        """Set the instruction pointer value."""
+        self.ip = value & 0xFFFFFFFF
+        self.registers["PC"] = self.ip  # Update PC for compatibility
+    
+    def get_ip(self) -> int:
+        """Get the instruction pointer value."""
+        return self.ip
+    
+    def set_sp(self, value: int) -> None:
+        """Set the stack pointer value."""
+        self.sp = value & 0xFFFFFFFF
+        self.registers["SP"] = self.sp  # Update SP for compatibility
+    
+    def get_sp(self) -> int:
+        """Get the stack pointer value."""
+        return self.sp
+    
+    def set_bp(self, value: int) -> None:
+        """Set the base pointer value."""
+        self.bp = value & 0xFFFFFFFF
+        self.registers["FP"] = self.bp  # Update FP for compatibility
+    
+    def get_bp(self) -> int:
+        """Get the base pointer value."""
+        return self.bp
+    
+    def set_flags(self, value: int) -> None:
+        """Set the flags register value."""
+        self.flags = value & 0xFFFFFFFF
+        self.registers["FLAGS"] = self.flags  # Update FLAGS for compatibility
+    
+    def get_flags(self) -> int:
+        """Get the flags register value."""
+        return self.flags
+    
+    def dump_registers(self) -> Dict[str, int]:
+        """Get a snapshot of all register values."""
+        result = {f"R{i}": self.get_register(i) for i in range(8)}
+        result.update({
+            "IP": self.ip,
+            "SP": self.sp,
+            "BP": self.bp,
+            "FLAGS": self.flags,
+            "PRIV": self.privilege_level.value,
+            "PKEY": self.protection_key,
+        })
+        return result
+    
+    def reset(self) -> None:
+        """Reset all registers to their initial values."""
+        super().reset()
+        self.ip = 0
+        self.sp = 0
+        self.bp = 0
+        self.flags = 0
+        self.privilege_level = PrivilegeLevel.USER
+        self.protection_key = 0
+
+
+class CPU(BaseProcessor):
+    """
+    CPU implementation with security-focused features.
+    
+    This CPU extends the base processor with security features like
+    control flow integrity and privilege level enforcement.
+    """
     
     # Instruction set definition
     INSTRUCTIONS = {
         # Arithmetic instructions
-        0x01: Instruction(0x01, "ADD", InstructionType.ARITHMETIC, 2),
-        0x02: Instruction(0x02, "SUB", InstructionType.ARITHMETIC, 2),
-        0x03: Instruction(0x03, "MUL", InstructionType.ARITHMETIC, 2),
-        0x04: Instruction(0x04, "DIV", InstructionType.ARITHMETIC, 2),
+        0x01: ("ADD", InstructionType.ARITHMETIC, 2),
+        0x02: ("SUB", InstructionType.ARITHMETIC, 2),
+        0x03: ("MUL", InstructionType.ARITHMETIC, 2),
+        0x04: ("DIV", InstructionType.ARITHMETIC, 2),
         
         # Memory instructions
-        0x10: Instruction(0x10, "MOV", InstructionType.MEMORY, 2),
-        0x11: Instruction(0x11, "LOAD", InstructionType.MEMORY, 2),
-        0x12: Instruction(0x12, "STORE", InstructionType.MEMORY, 2),
-        0x13: Instruction(0x13, "PUSH", InstructionType.MEMORY, 1),
-        0x14: Instruction(0x14, "POP", InstructionType.MEMORY, 1),
+        0x10: ("MOV", InstructionType.MEMORY, 2),
+        0x11: ("LOAD", InstructionType.MEMORY, 2),
+        0x12: ("STORE", InstructionType.MEMORY, 2),
+        0x13: ("PUSH", InstructionType.MEMORY, 1),
+        0x14: ("POP", InstructionType.MEMORY, 1),
         
         # Control flow instructions
-        0x20: Instruction(0x20, "JMP", InstructionType.CONTROL, 1),
-        0x21: Instruction(0x21, "JZ", InstructionType.CONTROL, 1),
-        0x22: Instruction(0x22, "JNZ", InstructionType.CONTROL, 1),
-        0x23: Instruction(0x23, "CALL", InstructionType.CONTROL, 1),
-        0x24: Instruction(0x24, "RET", InstructionType.CONTROL, 0),
+        0x20: ("JMP", InstructionType.CONTROL, 1),
+        0x21: ("JZ", InstructionType.CONTROL, 1),
+        0x22: ("JNZ", InstructionType.CONTROL, 1),
+        0x23: ("CALL", InstructionType.CONTROL, 1),
+        0x24: ("RET", InstructionType.CONTROL, 0),
         
-        # System instructions (privileged)
-        0x30: Instruction(0x30, "SYSCALL", InstructionType.SYSTEM, 1),
-        0x31: Instruction(0x31, "SYSRET", InstructionType.SYSTEM, 0),
-        0x32: Instruction(0x32, "ELEVATE", InstructionType.SYSTEM, 1, PrivilegeLevel.KERNEL),
-        0x33: Instruction(0x33, "LOWER", InstructionType.SYSTEM, 1),
+        # System instructions
+        0x30: ("SYSCALL", InstructionType.SYSTEM, 1, PrivilegeLevel.USER),  # Can be called from any level
+        0x31: ("SYSRET", InstructionType.SYSTEM, 0, PrivilegeLevel.SUPERVISOR),
+        0x32: ("ELEVATE", InstructionType.SYSTEM, 1, PrivilegeLevel.KERNEL),
+        0x33: ("LOWER", InstructionType.SYSTEM, 1, PrivilegeLevel.USER),  # Can be called from any level
         
         # Special instructions
-        0xF0: Instruction(0xF0, "NOP", InstructionType.SPECIAL, 0),
-        0xF1: Instruction(0xF1, "HALT", InstructionType.SPECIAL, 0),
-        0xF2: Instruction(0xF2, "INT", InstructionType.SPECIAL, 1),
+        0xF0: ("NOP", InstructionType.SPECIAL, 0),
+        0xF1: ("HALT", InstructionType.SPECIAL, 0),
+        0xF2: ("INT", InstructionType.SPECIAL, 1),
     }
     
     def __init__(self, memory: Memory):
-        self.registers = CPURegisters()
+        """
+        Initialize the CPU.
+        
+        Args:
+            memory: The memory system to use
+        """
+        super().__init__(
+            processor_id=0,              # Single CPU for security VM
+            register_count=8,            # 8 registers for security VM
+            privilege_enforcement=True,  # Enable privilege enforcement for security
+        )
+        
+        # Replace standard register set with security-focused one
+        self.registers = CPURegisters(8)
+        
+        # Memory system
         self.memory = memory
-        self.running = False
-        self.halted = False
-        self.cycles = 0
-        self.control_flow_records: List[ControlFlowRecord] = []
         
         # Security and protection state
-        self.protection_keys: Dict[int, Set[MemoryPermission]] = {}
-        self.shadow_stack: List[int] = []  # For control flow integrity
-        self.syscall_table: Dict[int, Callable] = {}
-        
-        # Performance tracking
+        self.halted = False
+        self.running = False
         self.execution_start_time = 0
         self.execution_time = 0
+        
+        # Control flow integrity
+        self.control_flow_records: List[ControlFlowRecord] = []
+        self.shadow_stack: List[int] = []  # For control flow integrity
+        
+        # Syscall handling
+        self.syscall_table: Dict[int, Callable] = {}
+        
+        # Register instruction handlers
+        self._register_instruction_handlers()
+    
+    def _register_instruction_handlers(self) -> None:
+        """Register instruction handlers for security-specific instructions."""
+        # System calls
+        self.register_instruction_handler("SYSCALL", self._handle_syscall)
+        self.register_instruction_handler("SYSRET", self._handle_sysret)
+        self.register_instruction_handler("ELEVATE", self._handle_elevate)
+        self.register_instruction_handler("LOWER", self._handle_lower)
+        
+        # Control flow integrity
+        self.register_instruction_handler("CALL", self._handle_call)
+        self.register_instruction_handler("RET", self._handle_ret)
     
     def reset(self) -> None:
         """Reset the CPU state."""
-        self.registers = CPURegisters()
-        self.running = False
-        self.halted = False
-        self.cycles = 0
+        super().reset()
         self.control_flow_records = []
         self.shadow_stack = []
+        self.running = False
+        self.halted = False
         self.execution_start_time = 0
         self.execution_time = 0
     
     def fetch(self) -> int:
-        """Fetch the next instruction byte from memory."""
+        """
+        Fetch the next instruction byte from memory.
+        
+        Returns:
+            The instruction byte
+            
+        Raises:
+            SegmentationFault: If the fetch address is invalid
+        """
         try:
-            # We use execute here to enforce DEP
+            # Try to execute code at this address (enforces DEP)
             instr_byte = self.memory.execute(
-                self.registers.ip,
-                {"instruction_pointer": self.registers.ip}
+                self.registers.get_ip(),
+                {"instruction_pointer": self.registers.get_ip()}
             )
-            self.registers.ip += 1
+            self.registers.set_ip(self.registers.get_ip() + 1)
             return instr_byte
-        except MemoryError as e:
-            # Check if this is due to a non-executable segment
-            segment = self.memory.find_segment(self.registers.ip)
-            if segment and not segment.check_permission(self.registers.ip, MemoryPermission.EXECUTE):
-                raise SegmentationFault(f"Cannot execute code from non-executable memory at 0x{self.registers.ip:x}")
-            else:
-                raise SegmentationFault(f"Failed to fetch instruction: {str(e)}")
+        except Exception as e:
+            # Convert memory exceptions to CPU exceptions
+            raise SegmentationFault(f"Failed to fetch instruction: {str(e)}")
     
     def fetch_word(self) -> int:
-        """Fetch a 32-bit word from memory at the instruction pointer."""
+        """
+        Fetch a 32-bit word from memory at the instruction pointer.
+        
+        Returns:
+            The 32-bit word
+            
+        Raises:
+            SegmentationFault: If the fetch address is invalid
+        """
         try:
-            # For operands we use read_word since they don't need to be executable
+            # Read a word from memory
             word = self.memory.read_word(
-                self.registers.ip,
-                {"instruction_pointer": self.registers.ip}
+                self.registers.get_ip(),
+                {"instruction_pointer": self.registers.get_ip()}
             )
-            self.registers.ip += 4
+            self.registers.set_ip(self.registers.get_ip() + 4)
             return word
-        except MemoryError as e:
+        except Exception as e:
+            # Convert memory exceptions to CPU exceptions
             raise SegmentationFault(f"Failed to fetch word: {str(e)}")
     
     def push(self, value: int) -> None:
-        """Push a value onto the stack."""
-        self.registers.sp -= 4
+        """
+        Push a value onto the stack.
+        
+        Args:
+            value: The value to push
+            
+        Raises:
+            SegmentationFault: If the stack operation fails
+        """
         try:
+            # Adjust stack pointer and write value
+            self.registers.set_sp(self.registers.get_sp() - 4)
             self.memory.write_word(
-                self.registers.sp,
+                self.registers.get_sp(),
                 value,
-                {"instruction_pointer": self.registers.ip}
+                {"instruction_pointer": self.registers.get_ip()}
             )
-        except MemoryError as e:
+        except Exception as e:
             # Restore SP if push failed
-            self.registers.sp += 4
+            self.registers.set_sp(self.registers.get_sp() + 4)
             raise SegmentationFault(f"Failed to push value: {str(e)}")
     
     def pop(self) -> int:
-        """Pop a value from the stack."""
+        """
+        Pop a value from the stack.
+        
+        Returns:
+            The popped value
+            
+        Raises:
+            SegmentationFault: If the stack operation fails
+        """
         try:
+            # Read value and adjust stack pointer
             value = self.memory.read_word(
-                self.registers.sp,
-                {"instruction_pointer": self.registers.ip}
+                self.registers.get_sp(),
+                {"instruction_pointer": self.registers.get_ip()}
             )
-            self.registers.sp += 4
+            self.registers.set_sp(self.registers.get_sp() + 4)
             return value
-        except MemoryError as e:
+        except Exception as e:
+            # Convert memory exceptions to CPU exceptions
             raise SegmentationFault(f"Failed to pop value: {str(e)}")
     
-    def execute_instruction(self, opcode: int) -> bool:
-        """Execute a single instruction with the given opcode."""
-        if opcode not in self.INSTRUCTIONS:
-            raise InvalidInstruction(f"Invalid opcode: 0x{opcode:02x}")
+    def _handle_syscall(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a system call instruction.
         
-        instruction = self.INSTRUCTIONS[opcode]
-        
-        # Check privilege level
-        if self.registers.privilege_level.value < instruction.required_privilege.value:
-            self.record_control_flow_event(
-                self.registers.ip - 1,  # Previous IP value where opcode was fetched
-                self.registers.ip,      # Current IP value
-                "privilege-violation",
-                instruction.name,
-                False
-            )
-            raise PrivilegeViolation(
-                f"Insufficient privilege for instruction {instruction.name}: "
-                f"required {instruction.required_privilege.name}, "
-                f"current {self.registers.privilege_level.name}"
-            )
-        
-        # Decode and execute the instruction based on type
-        if instruction.type == InstructionType.ARITHMETIC:
-            self._execute_arithmetic(instruction)
-        elif instruction.type == InstructionType.MEMORY:
-            self._execute_memory(instruction)
-        elif instruction.type == InstructionType.CONTROL:
-            self._execute_control(instruction)
-        elif instruction.type == InstructionType.SYSTEM:
-            self._execute_system(instruction)
-        elif instruction.type == InstructionType.SPECIAL:
-            return self._execute_special(instruction)
-        
-        self.cycles += 1
-        return True  # Continue execution unless HALT or similar
-    
-    def _execute_arithmetic(self, instruction: Instruction) -> None:
-        """Execute an arithmetic instruction."""
-        if instruction.operands == 2:
-            # For simplicity, we'll assume reg-reg operations
-            dest_reg = self.fetch()
-            src_reg = self.fetch()
-            dest_val = self.registers.get_register(dest_reg)
-            src_val = self.registers.get_register(src_reg)
+        Args:
+            instruction: The syscall instruction
+            side_effects: Dictionary to store side effects
             
-            result = 0
-            if instruction.name == "ADD":
-                result = (dest_val + src_val) & 0xFFFFFFFF
-            elif instruction.name == "SUB":
-                result = (dest_val - src_val) & 0xFFFFFFFF
-            elif instruction.name == "MUL":
-                result = (dest_val * src_val) & 0xFFFFFFFF
-            elif instruction.name == "DIV":
-                if src_val == 0:
-                    raise CPUException("Division by zero")
-                result = (dest_val // src_val) & 0xFFFFFFFF
-            
-            self.registers.set_register(dest_reg, result)
-            
-            # Update flags (zero flag example)
-            if result == 0:
-                self.registers.flags |= 0x01  # Set zero flag
-            else:
-                self.registers.flags &= ~0x01  # Clear zero flag
-    
-    def _execute_memory(self, instruction: Instruction) -> None:
-        """Execute a memory instruction."""
-        if instruction.name == "MOV":
-            dest_reg = self.fetch()
-            src_type = self.fetch()  # 0x01 for immediate, 0x02 for register
-
-            if src_type == 0x01:  # Immediate value
-                # Fetch a 32-bit immediate value
-                value = self.fetch_word()
-                self.registers.set_register(dest_reg, value)
-            elif src_type == 0x02:  # Register value
-                src_reg = self.fetch()
-                value = self.registers.get_register(src_reg)
-                self.registers.set_register(dest_reg, value)
-            else:
-                src_reg = src_type  # Backward compatibility
-                value = self.registers.get_register(src_reg)
-                self.registers.set_register(dest_reg, value)
-
-        elif instruction.name == "LOAD":
-            dest_reg = self.fetch()
-            addr_reg = self.fetch()
-            addr = self.registers.get_register(addr_reg)
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        # Get syscall number from register R0
+        syscall_num = self.registers.get(0)
+        
+        # Record control flow event
+        self._record_control_flow(
+            self.registers.get_ip() - 1,
+            self.registers.get_ip(),
+            "syscall",
+            f"SYSCALL {syscall_num}",
+            True,
+            {"syscall_num": syscall_num}
+        )
+        
+        # Store original privilege level
+        original_level = self.registers.privilege_level
+        
+        # Temporarily elevate privilege to execute syscall
+        # Syscalls typically run at SUPERVISOR level
+        if original_level.value < PrivilegeLevel.SUPERVISOR.value:
+            self.registers.privilege_level = PrivilegeLevel.SUPERVISOR
+        
+        # Execute the syscall if registered
+        result = 0
+        if syscall_num in self.syscall_table:
             try:
-                value = self.memory.read_word(
-                    addr,
-                    {"instruction_pointer": self.registers.ip - 2}
+                result = self.syscall_table[syscall_num](self)
+            except Exception as e:
+                # Record syscall error
+                self._record_control_flow(
+                    self.registers.get_ip() - 1,
+                    self.registers.get_ip(),
+                    "syscall_error",
+                    f"SYSCALL {syscall_num}",
+                    True,
+                    {"error": str(e)}
                 )
-                self.registers.set_register(dest_reg, value)
-            except MemoryError as e:
-                raise SegmentationFault(f"LOAD failed: {str(e)}")
-
-        elif instruction.name == "STORE":
-            addr_reg = self.fetch()
-            src_reg = self.fetch()
-            addr = self.registers.get_register(addr_reg)
-            value = self.registers.get_register(src_reg)
-            try:
-                self.memory.write_word(
-                    addr,
-                    value,
-                    {"instruction_pointer": self.registers.ip - 2}
-                )
-            except MemoryError as e:
-                raise SegmentationFault(f"STORE failed: {str(e)}")
-
-        elif instruction.name == "PUSH":
-            reg = self.fetch()
-            value = self.registers.get_register(reg)
-            self.push(value)
-
-        elif instruction.name == "POP":
-            reg = self.fetch()
-            value = self.pop()
-            self.registers.set_register(reg, value)
+                result = -1
+        
+        # Store result in R0
+        self.registers.set(0, result)
+        
+        # Add side effect for VM to handle
+        side_effects["syscall_executed"] = {
+            "number": syscall_num,
+            "result": result
+        }
+        
+        return True, side_effects
     
-    def _execute_control(self, instruction: Instruction) -> None:
-        """Execute a control flow instruction."""
-        if instruction.name == "JMP":
-            target_reg = self.fetch()
-            target = self.registers.get_register(target_reg)
+    def _handle_sysret(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a system return instruction.
+        
+        Args:
+            instruction: The sysret instruction
+            side_effects: Dictionary to store side effects
             
-            # Record the control flow event
-            self.record_control_flow_event(
-                self.registers.ip - 1,  # Where opcode was fetched
-                target,
-                "jump",
-                instruction.name,
-                True  # Assumed legitimate for now - CFI would validate this
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        prev_privilege = self.registers.privilege_level
+        
+        # Record control flow event
+        self._record_control_flow(
+            self.registers.get_ip() - 1,
+            self.registers.get_ip(),
+            "sysret",
+            "SYSRET",
+            True,
+            {"previous_privilege": prev_privilege.name}
+        )
+        
+        # Only lower privilege on return, never elevate
+        if prev_privilege.value > PrivilegeLevel.USER.value:
+            # Always return to user mode
+            self.registers.privilege_level = PrivilegeLevel.USER
+        
+        # Add side effect for VM to handle
+        side_effects["sysret"] = {
+            "previous_level": prev_privilege.name,
+            "new_level": self.registers.privilege_level.name
+        }
+        
+        return True, side_effects
+    
+    def _handle_elevate(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a privilege elevation instruction.
+        
+        Args:
+            instruction: The elevate instruction
+            side_effects: Dictionary to store side effects
+            
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        # Get target privilege level from register R0
+        target_level = self.registers.get(0)
+        
+        # Check if target level is valid
+        if 0 <= target_level <= 2:
+            prev_level = self.registers.privilege_level
+            self.registers.privilege_level = PrivilegeLevel(target_level)
+            
+            # Record control flow event
+            self._record_control_flow(
+                self.registers.get_ip() - 1,
+                self.registers.get_ip(),
+                "privilege_change",
+                "ELEVATE",
+                True,
+                {
+                    "previous_level": prev_level.name,
+                    "new_level": self.registers.privilege_level.name
+                }
             )
             
-            self.registers.ip = target
+            # Add side effect for VM to handle
+            side_effects["privilege_change"] = {
+                "previous_level": prev_level.name,
+                "new_level": self.registers.privilege_level.name
+            }
+        else:
+            # Invalid privilege level
+            raise CPUException(f"Invalid privilege level: {target_level}")
         
-        elif instruction.name == "JZ":
-            target_reg = self.fetch()
-            target = self.registers.get_register(target_reg)
-            
-            # Only jump if zero flag is set
-            if self.registers.flags & 0x01:
-                # Record the control flow event
-                self.record_control_flow_event(
-                    self.registers.ip - 1,
-                    target,
-                    "conditional-jump",
-                    instruction.name,
-                    True
-                )
-                self.registers.ip = target
+        return True, side_effects
+    
+    def _handle_lower(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a privilege lowering instruction.
         
-        elif instruction.name == "JNZ":
-            target_reg = self.fetch()
-            target = self.registers.get_register(target_reg)
+        Args:
+            instruction: The lower instruction
+            side_effects: Dictionary to store side effects
             
-            # Only jump if zero flag is not set
-            if not (self.registers.flags & 0x01):
-                # Record the control flow event
-                self.record_control_flow_event(
-                    self.registers.ip - 1,
-                    target,
-                    "conditional-jump",
-                    instruction.name,
-                    True
-                )
-                self.registers.ip = target
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        # Get target privilege level from register R0
+        target_level = self.registers.get(0)
+        current_level = self.registers.privilege_level.value
         
-        elif instruction.name == "CALL":
-            target_reg = self.fetch()
-            target = self.registers.get_register(target_reg)
-            return_addr = self.registers.ip
+        # Can only lower privilege, not elevate
+        if 0 <= target_level < current_level:
+            prev_level = self.registers.privilege_level
+            self.registers.privilege_level = PrivilegeLevel(target_level)
             
-            # Record return address in shadow stack for control flow integrity
-            self.shadow_stack.append(return_addr)
-            
-            # Push return address onto the stack
-            self.push(return_addr)
-            
-            # Record the control flow event
-            self.record_control_flow_event(
-                self.registers.ip - 1,
-                target,
-                "call",
-                instruction.name,
-                True
+            # Record control flow event
+            self._record_control_flow(
+                self.registers.get_ip() - 1,
+                self.registers.get_ip(),
+                "privilege_change",
+                "LOWER",
+                True,
+                {
+                    "previous_level": prev_level.name,
+                    "new_level": self.registers.privilege_level.name
+                }
             )
             
-            self.registers.ip = target
+            # Add side effect for VM to handle
+            side_effects["privilege_change"] = {
+                "previous_level": prev_level.name,
+                "new_level": self.registers.privilege_level.name
+            }
+        else:
+            # Invalid privilege level change
+            raise PrivilegeViolationException(
+                f"Cannot elevate privilege from {current_level} to {target_level}",
+                "LOWER",
+                str(current_level)
+            )
         
-        elif instruction.name == "RET":
-            # Pop return address from stack
-            return_addr = self.pop()
+        return True, side_effects
+    
+    def _handle_call(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a call instruction with control flow integrity.
+        
+        Args:
+            instruction: The call instruction
+            side_effects: Dictionary to store side effects
             
-            # Control flow integrity check using shadow stack
-            shadow_valid = True
-            if self.shadow_stack:
-                expected_return = self.shadow_stack.pop()
-                if expected_return != return_addr:
-                    shadow_valid = False
-                    # We record this but don't stop execution to allow exploits
-                    self.record_control_flow_event(
-                        self.registers.ip - 1,
-                        return_addr,
-                        "return",
-                        instruction.name,
-                        False
-                    )
-            else:
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        # Get target address from register R0
+        target_reg = 0  # First register contains target
+        target = self.registers.get(target_reg)
+        return_addr = self.registers.get_ip()
+        
+        # Record return address in shadow stack for control flow integrity
+        self.shadow_stack.append(return_addr)
+        
+        # Push return address onto the stack
+        self.push(return_addr)
+        
+        # Record the control flow event
+        self._record_control_flow(
+            self.registers.get_ip() - 1,
+            target,
+            "call",
+            "CALL",
+            True
+        )
+        
+        # Set the new PC
+        self.registers.set_ip(target)
+        
+        # Add side effect for VM to handle
+        side_effects["call"] = {
+            "target": target,
+            "return_addr": return_addr
+        }
+        
+        # Don't increment PC
+        return False, side_effects
+    
+    def _handle_ret(
+        self,
+        instruction: Instruction,
+        side_effects: Dict[str, Any]
+    ) -> Tuple[bool, Dict[str, Any]]:
+        """
+        Handle a return instruction with control flow integrity.
+        
+        Args:
+            instruction: The ret instruction
+            side_effects: Dictionary to store side effects
+            
+        Returns:
+            (increment_pc, side_effects) tuple
+        """
+        # Pop return address from stack
+        return_addr = self.pop()
+        
+        # Control flow integrity check using shadow stack
+        shadow_valid = True
+        expected_return = None
+        
+        if self.shadow_stack:
+            expected_return = self.shadow_stack.pop()
+            if expected_return != return_addr:
                 shadow_valid = False
-                self.record_control_flow_event(
-                    self.registers.ip - 1,
+                # Record control flow violation
+                self._record_control_flow(
+                    self.registers.get_ip() - 1,
                     return_addr,
                     "return",
-                    instruction.name,
-                    False
+                    "RET",
+                    False,
+                    {
+                        "expected": expected_return,
+                        "actual": return_addr
+                    }
                 )
-            
-            if shadow_valid:
-                self.record_control_flow_event(
-                    self.registers.ip - 1,
-                    return_addr,
-                    "return",
-                    instruction.name,
-                    True
-                )
-            
-            self.registers.ip = return_addr
-    
-    def _execute_system(self, instruction: Instruction) -> None:
-        """Execute a system instruction."""
-        if instruction.name == "SYSCALL":
-            syscall_num = self.fetch()
-            
-            # Record system call for forensic purposes
-            context = {"registers": self.registers.dump_registers()}
-            self.record_control_flow_event(
-                self.registers.ip - 1,
-                self.registers.ip,
-                "syscall",
-                f"{instruction.name} {syscall_num}",
-                True,
-                context
-            )
-            
-            # Execute the system call if registered
-            if syscall_num in self.syscall_table:
-                self.syscall_table[syscall_num](self)
-        
-        elif instruction.name == "SYSRET":
-            # Return from system call - typically adjusts privilege
-            prev_privilege = self.registers.privilege_level
-            
-            # Only lower privilege on return, never elevate
-            if prev_privilege != PrivilegeLevel.USER:
-                self.registers.privilege_level = PrivilegeLevel.USER
-            
-            self.record_control_flow_event(
-                self.registers.ip - 1,
-                self.registers.ip,
-                "sysret",
-                instruction.name,
-                True,
-                {"previous_privilege": prev_privilege.name}
+        else:
+            shadow_valid = False
+            # Record control flow violation - shadow stack empty
+            self._record_control_flow(
+                self.registers.get_ip() - 1,
+                return_addr,
+                "return",
+                "RET",
+                False,
+                {"error": "Shadow stack empty"}
             )
         
-        elif instruction.name == "ELEVATE":
-            # Elevate privilege level (requires KERNEL privilege to use)
-            target_level = self.fetch()
-            
-            # Must be called from kernel mode for security
-            # This is checked at the beginning of execute_instruction
-            
-            if 0 <= target_level <= 2:
-                self.registers.privilege_level = PrivilegeLevel(target_level)
-                self.record_control_flow_event(
-                    self.registers.ip - 2,
-                    self.registers.ip,
-                    "privilege-change",
-                    instruction.name,
-                    True,
-                    {"new_level": self.registers.privilege_level.name}
-                )
-            else:
-                raise CPUException(f"Invalid privilege level: {target_level}")
-        
-        elif instruction.name == "LOWER":
-            # Voluntarily lower privilege level
-            target_level = self.fetch()
-            current_level = self.registers.privilege_level.value
-            
-            # Can only lower privilege, not elevate
-            if 0 <= target_level < current_level:
-                self.registers.privilege_level = PrivilegeLevel(target_level)
-                self.record_control_flow_event(
-                    self.registers.ip - 2,
-                    self.registers.ip,
-                    "privilege-change",
-                    instruction.name,
-                    True,
-                    {"new_level": self.registers.privilege_level.name}
-                )
-            else:
-                raise PrivilegeViolation(
-                    f"Cannot elevate privilege from {current_level} to {target_level}"
-                )
-    
-    def _execute_special(self, instruction: Instruction) -> bool:
-        """Execute a special instruction. Returns False if execution should stop."""
-        if instruction.name == "NOP":
-            # No operation, just proceed
-            pass
-        
-        elif instruction.name == "HALT":
-            # Stop execution
-            self.halted = True
-            self.running = False
-            return False
-        
-        elif instruction.name == "INT":
-            # Software interrupt
-            interrupt_num = self.fetch()
-            
-            # Record for forensic purposes
-            self.record_control_flow_event(
-                self.registers.ip - 2,
-                self.registers.ip,
-                "interrupt",
-                f"{instruction.name} {interrupt_num}",
+        if shadow_valid:
+            # Record legitimate control flow
+            self._record_control_flow(
+                self.registers.get_ip() - 1,
+                return_addr,
+                "return",
+                "RET",
                 True
             )
-            
-            # Handle the interrupt based on number
-            # This would call an interrupt handler if implemented
-            pass
         
-        return True  # Continue execution
+        # Set the new PC
+        self.registers.set_ip(return_addr)
+        
+        # Add side effect for VM to handle
+        side_effects["ret"] = {
+            "return_addr": return_addr,
+            "shadow_valid": shadow_valid,
+            "expected_return": expected_return
+        }
+        
+        # Don't increment PC
+        return False, side_effects
     
-    def register_syscall(self, syscall_num: int, handler: Callable) -> None:
-        """Register a system call handler."""
-        self.syscall_table[syscall_num] = handler
-    
-    def record_control_flow_event(
+    def _record_control_flow(
         self,
         from_address: int,
         to_address: int,
         event_type: str,
         instruction: str,
         legitimate: bool = True,
-        context: Dict[str, Any] = None,
+        context: Optional[Dict[str, Any]] = None
     ) -> None:
-        """Record a control flow event for integrity monitoring."""
+        """
+        Record a control flow event for integrity monitoring.
+        
+        Args:
+            from_address: Source address
+            to_address: Destination address
+            event_type: Type of control flow event
+            instruction: Instruction that caused the event
+            legitimate: Whether the control flow is legitimate
+            context: Additional context for the event
+        """
         record = ControlFlowRecord(
             from_address=from_address,
             to_address=to_address,
@@ -637,8 +708,55 @@ class CPU:
         )
         self.control_flow_records.append(record)
     
+    def register_syscall(self, syscall_num: int, handler: Callable) -> None:
+        """
+        Register a system call handler.
+        
+        Args:
+            syscall_num: The syscall number
+            handler: Function to handle the syscall
+        """
+        self.syscall_table[syscall_num] = handler
+    
+    def decode_instruction(self, opcode: int) -> Tuple[str, InstructionType, int, Optional[PrivilegeLevel]]:
+        """
+        Decode an instruction opcode.
+        
+        Args:
+            opcode: The instruction opcode
+            
+        Returns:
+            Tuple of (name, type, operand_count, required_privilege)
+            
+        Raises:
+            InvalidInstruction: If the opcode is invalid
+        """
+        if opcode not in self.INSTRUCTIONS:
+            raise InvalidInstruction(f"Invalid opcode: 0x{opcode:02x}")
+        
+        instruction_info = self.INSTRUCTIONS[opcode]
+        
+        name = instruction_info[0]
+        instr_type = instruction_info[1]
+        operand_count = instruction_info[2]
+        
+        # Get required privilege if specified
+        required_privilege = None
+        if len(instruction_info) > 3:
+            required_privilege = instruction_info[3]
+        
+        return name, instr_type, operand_count, required_privilege
+    
     def run(self, max_instructions: int = 10000) -> int:
-        """Run the CPU for up to max_instructions instructions."""
+        """
+        Run the CPU for up to max_instructions.
+        
+        Args:
+            max_instructions: Maximum number of instructions to execute
+            
+        Returns:
+            Number of instructions executed
+        """
         if self.halted:
             return 0
         
@@ -651,18 +769,60 @@ class CPU:
                 # Fetch instruction
                 opcode = self.fetch()
                 
-                # Execute instruction
-                continue_execution = self.execute_instruction(opcode)
-                if not continue_execution:
+                # Get instruction info
+                name, instr_type, operand_count, required_privilege = self.decode_instruction(opcode)
+                
+                # Check privilege if required
+                if (required_privilege is not None and 
+                        self.registers.privilege_level.value < required_privilege.value):
+                    # Record privilege violation
+                    self._record_control_flow(
+                        self.registers.get_ip() - 1,
+                        self.registers.get_ip(),
+                        "privilege_violation",
+                        name,
+                        False,
+                        {
+                            "required": required_privilege.name,
+                            "current": self.registers.privilege_level.name
+                        }
+                    )
+                    raise PrivilegeViolationException(
+                        f"Insufficient privilege for instruction {name}",
+                        required_privilege.name,
+                        self.registers.privilege_level.name
+                    )
+                
+                # Create instruction object from decoded info
+                instruction = Instruction(
+                    opcode=name,
+                    type=instr_type,
+                    operands=[f"R{i}" for i in range(operand_count)],
+                    privileged=(required_privilege is not None and 
+                               required_privilege.value > PrivilegeLevel.USER.value)
+                )
+                
+                # Execute instruction with control flow recording
+                completed, side_effects = self.execute_instruction(instruction)
+                
+                # Process side effects from execution
+                if not completed:
+                    # Skip handling side effects until instruction completes
+                    pass
+                
+                # Handle special instructions like HALT
+                if "halt" in side_effects:
+                    self.halted = True
+                    self.running = False
                     break
                 
                 instructions_executed += 1
         
-        except (CPUException, SegmentationFault, ProtectionFault) as e:
+        except Exception as e:
             self.running = False
-            # Record the exception but don't re-raise it to allow exploit demonstration
-            self.record_control_flow_event(
-                self.registers.ip,
+            # Record the exception
+            self._record_control_flow(
+                self.registers.get_ip(),
                 0,
                 "exception",
                 str(e),
@@ -675,14 +835,24 @@ class CPU:
         return instructions_executed
     
     def get_control_flow_trace(self) -> List[ControlFlowRecord]:
-        """Get the control flow trace for visualization."""
+        """
+        Get the control flow trace for visualization.
+        
+        Returns:
+            List of control flow records
+        """
         return self.control_flow_records
     
     def get_performance_stats(self) -> Dict[str, Any]:
-        """Get performance statistics for the CPU."""
+        """
+        Get performance statistics for the CPU.
+        
+        Returns:
+            Dictionary of performance statistics
+        """
         return {
-            "cycles": self.cycles,
+            "cycles": self.cycle_count,
             "execution_time": self.execution_time,
-            "instructions_per_second": self.cycles / max(self.execution_time, 0.001),
+            "instructions_per_second": self.cycle_count / max(self.execution_time, 0.001),
             "control_flow_events": len(self.control_flow_records),
         }

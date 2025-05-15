@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, validator
 
+from common.core.analysis.time_series import TimeSeriesGranularity
 from personal_finance_tracker.models.common import Transaction
 
 
@@ -32,6 +33,7 @@ class SmoothingConfig(BaseModel):
     target_monthly_income: Optional[float] = None  # Override calculated smoothed income
     emergency_buffer_months: float = 2.0  # Buffer for lean months
     confidence_interval: float = 0.8  # For prediction intervals
+    granularity: TimeSeriesGranularity = TimeSeriesGranularity.MONTHLY  # Time series granularity
 
     @validator("window_size")
     def validate_window_size(cls, v):

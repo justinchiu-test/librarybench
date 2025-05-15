@@ -19,9 +19,18 @@ echo "Starting refactoring for $directory..."
 # Push into the directory
 pushd "$directory"
 
+uv venv
+source .venv/bin/activate
+
+pip install -e .
+
 echo "Following the instructions in $(pwd)/REFACTOR.md..."
 # Run Claude Code and tell it to follow instructions
-time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md"
+time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md"
+time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
+time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
+
+deactivate
 
 # Pop back to the original directory
 popd

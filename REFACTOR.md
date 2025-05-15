@@ -15,7 +15,7 @@ Your task is to create a shared unified library that can be used by all persona 
 ### What You Can Modify
 - **Unified Library (`common/`)**: You can create, modify, or delete any files in this directory.
 - **Persona packages**: You can modify the persona implementation files to use the unified library `common`.
-- **PLAN.md**: Please put your plan for refactoring here.
+- **PLAN.md**: Please put your plan for refactoring here. This should include both the new `common` library as well as migrating the perona packages to use `common`.
 - **README.md**: Please update the README as you go.
 
 ### What You Cannot Modify
@@ -115,6 +115,8 @@ YOU MUST RUN THE TESTS AND RECORD THE OUTPUT.
 4. **Incremental Testing**: Test continuously as you refactor to catch issues early.
 
 5. **Document Design Decisions**: Keep thorough notes in PLAN.md about architectural decisions.
+
+COMPLETE THE `common` LIBRARY AND FULLY MIGRATE THE PERSONA PACKAGES.
 
 ## Evaluation Criteria
 

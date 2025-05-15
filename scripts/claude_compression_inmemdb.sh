@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to prepare and refactor in_memory_database implementations
+# Script to prepare directory structure for unified in-memory database library
 
 set -e
 
@@ -73,42 +73,22 @@ EOF
     echo "Unified directory structure created."
 fi
 
-# Install unified library in development mode in both projects
-echo "Installing unified library in ML Engineer environment..."
-if [ -d "$directory/in_memory_database_ml_engineer/.venv" ]; then
-    pushd "$directory/unified"
-    "$directory/in_memory_database_ml_engineer/.venv/bin/pip" install -e .
-    popd
-    echo "Unified library installed in ML Engineer environment."
-else
-    echo "ML Engineer virtual environment not found. Library not installed."
-fi
-
-echo "Installing unified library in Mobile Developer environment..."
-if [ -d "$directory/in_memory_database_mobile_developer/.venv" ]; then
-    pushd "$directory/unified"
-    "$directory/in_memory_database_mobile_developer/.venv/bin/pip" install -e .
-    popd
-    echo "Unified library installed in Mobile Developer environment."
-else
-    echo "Mobile Developer virtual environment not found. Library not installed."
-fi
-
 # Run Claude Code and tell it to follow instructions in REFACTOR.md
 echo "Running Claude Code to implement the unified library..."
-claude --dangerously-skip-permissions -p "I've created the structure for a unified library at:
+claude --dangerously-skip-permissions -p "I've created the initial structure for a unified in-memory database library at:
 /home/justinchiu_cohere_com/librarybench/projects/in_memory_database/unified/
 
 Your task is to implement this unified library following the instructions in /home/justinchiu_cohere_com/librarybench/REFACTOR.md.
 
 Please:
-1. First, read the REFACTOR.md file to understand the task
+1. Read the REFACTOR.md file to understand the task
 2. Analyze both the ML Engineer (VectorDB) and Mobile Developer (SyncDB) implementations
 3. Create a unified library in unified/src/ with common core and specialized components
 4. Document your architecture in unified/PLAN.md
-5. Make both implementations import and use the unified library
-6. Ensure all tests from both projects pass
+5. Update both implementations to import from the unified library
+6. Install the unified library in both environments as needed
+7. Ensure all tests from both projects pass
 
-The library should be structured to be imported by both implementations. You should not modify any code outside the unified/ directory except for import paths. All functionality must be preserved for both use cases."
+The unified library should provide all functionality needed by both implementations while eliminating code duplication. You should not modify any code outside the unified/ directory except for import paths. All functionality must be preserved for both use cases."
 
 echo "Done!"

@@ -180,7 +180,7 @@ To set up the development environment:
 5. Run tests with:
    ```
    pip install pytest-json-report
-   pytest --json-report --json-report-file=pytest_results.json
+   pytest --json-report --json-report-file=pytest_results.json --continue-on-collection-errors
    ```
 
 CRITICAL REMINDER: Generating and providing the pytest_results.json file is a MANDATORY requirement for project completion.

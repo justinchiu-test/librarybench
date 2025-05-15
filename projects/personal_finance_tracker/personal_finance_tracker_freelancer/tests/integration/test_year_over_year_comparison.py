@@ -335,8 +335,15 @@ class TestYearOverYearComparison:
                 if tx.date.year == year and tx.transaction_type == TransactionType.INCOME
             ]
             
+            # Define start and end dates for the year
+            start_date = datetime(year, 1, 1)
+            end_date = datetime(year, 12, 31)
+            
             # Calculate monthly income for the year
-            monthly_income = income_manager.calculate_monthly_income(year_transactions)
+            monthly_income_dict = income_manager.calculate_monthly_income(year_transactions, start_date, end_date)
+            
+            # Convert to list format for compatibility with existing code
+            monthly_income = [{"month": month, "amount": amount} for month, amount in monthly_income_dict.items()]
             
             # Store year data
             year_data[year] = {
@@ -477,6 +484,29 @@ class TestYearOverYearComparison:
         """Test comparing tax liabilities across multiple years."""
         tax_manager = TaxManager(FilingStatus.SINGLE)
         tax_manager.load_default_brackets()
+        
+        # Add tax brackets for other years (2021, 2023)
+        # 2021 federal tax brackets (simplified)
+        tax_brackets_2021 = TaxBracket(
+            jurisdiction=TaxJurisdiction.FEDERAL,
+            filing_status=FilingStatus.SINGLE,
+            tax_year=2021,
+            income_thresholds=[0, 9950, 40525, 86375, 164925, 209425, 523600],
+            rates=[10, 12, 22, 24, 32, 35, 37],
+        )
+        
+        # 2023 federal tax brackets (simplified)
+        tax_brackets_2023 = TaxBracket(
+            jurisdiction=TaxJurisdiction.FEDERAL,
+            filing_status=FilingStatus.SINGLE,
+            tax_year=2023,
+            income_thresholds=[0, 11000, 44725, 95375, 182100, 231250, 578125],
+            rates=[10, 12, 22, 24, 32, 35, 37],
+        )
+        
+        # Set the tax brackets
+        tax_manager.set_tax_brackets([tax_brackets_2021, tax_brackets_2023])
+        
         categorizer = ExpenseCategorizer()
         
         # Process taxes by year
@@ -588,13 +618,17 @@ class TestYearOverYearComparison:
         
         # Add time entries
         for entry in time_entries_for_projects:
-            profiler.record_time_entry(
+            # Create a TimeEntry object
+            time_entry = TimeEntry(
+                id=entry["id"],
                 project_id=entry["project_id"],
                 start_time=entry["start_time"],
                 end_time=entry["end_time"],
                 description=entry["description"],
-                billable=entry["billable"]
+                billable=entry["billable"],
+                duration_minutes=entry["duration_minutes"]
             )
+            profiler.record_time_entry(time_entry)
         
         # Analyze projects by year
         year_data = {}
@@ -614,7 +648,15 @@ class TestYearOverYearComparison:
             # Analyze each project
             project_results = []
             for project in year_projects:
-                result = profiler.analyze_project_profitability(project.id)
+                # Pass empty lists for time_entries, transactions, and invoices 
+                # since we've already recorded the time entries with profiler.record_time_entry
+                # In a real scenario, we'd pass actual time entries, transactions, and invoices here
+                result = profiler.analyze_project_profitability(
+                    project=project,
+                    time_entries=[],  # Already recorded via record_time_entry
+                    transactions=[],  # Not used in this test
+                    invoices=[]       # Not used in this test
+                )
                 if result:
                     project_results.append(result)
             

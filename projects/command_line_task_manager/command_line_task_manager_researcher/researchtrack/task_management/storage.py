@@ -281,11 +281,16 @@ class InMemoryTaskStorage(TaskStorageInterface):
         
         # If parent_question_id is set to None, return top-level questions (those with no parent)
         # Otherwise, return questions with the specified parent
-        questions = [
-            q for q in questions if q.parent_question_id == parent_question_id
-        ]
+        filtered_questions = []
+        for q in questions:
+            # For parent_question_id=None, include questions with no parent
+            if parent_question_id is None and q.parent_question_id is None:
+                filtered_questions.append(q)
+            # For specific parent_id, include questions with that parent
+            elif q.parent_question_id == parent_question_id:
+                filtered_questions.append(q)
         
-        return questions
+        return filtered_questions
     
     def get_tasks_by_research_question(self, question_id: UUID) -> List[ResearchTask]:
         return [

@@ -484,9 +484,15 @@ class PriorityManager:
             allocation_changes[donor_id] = (old_allocation, new_allocation)
             
             # Record the change
-            self.resource_allocation_history[donor_id].append(
-                ResourceAllocation(new_allocation)
+            # Create a proper ResourceAllocation instance
+            resource_alloc = ResourceAllocation(
+                allocation_id=f"{donor_id}-{datetime.now().timestamp()}",
+                allocation_time=datetime.now(),
+                scenario_allocations={donor_id: 1.0},  # Full allocation to this scenario
+                total_resources=new_allocation,
+                allocation_reason={donor_id: "Priority-based reallocation"}
             )
+            self.resource_allocation_history[donor_id].append(resource_alloc)
             
             logger.info(
                 f"Reduced resources for scenario {donor_id} by "
@@ -533,9 +539,15 @@ class PriorityManager:
             allocation_changes[recipient_id] = (old_allocation, new_allocation)
             
             # Record the change
-            self.resource_allocation_history[recipient_id].append(
-                ResourceAllocation(new_allocation)
+            # Create a proper ResourceAllocation instance
+            resource_alloc = ResourceAllocation(
+                allocation_id=f"{recipient_id}-{datetime.now().timestamp()}",
+                allocation_time=datetime.now(),
+                scenario_allocations={recipient_id: 1.0},  # Full allocation to this scenario
+                total_resources=new_allocation,
+                allocation_reason={recipient_id: "Priority-based reallocation"}
             )
+            self.resource_allocation_history[recipient_id].append(resource_alloc)
             
             logger.info(
                 f"Increased resources for scenario {recipient_id} by "

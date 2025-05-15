@@ -1337,7 +1337,7 @@ class TaskService:
         """
         # Handle both experiment objects and UUIDs
         experiment_id = experiment_or_id
-        if hasattr(experiment_or_id, 'id'):
+        if hasattr(experiment_or_id, 'id') and not isinstance(experiment_or_id, UUID):
             experiment_id = experiment_or_id.id
             # Register the experiment object for lookup
             self._experiments[experiment_id] = experiment_or_id

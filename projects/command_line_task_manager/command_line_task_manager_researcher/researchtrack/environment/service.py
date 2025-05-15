@@ -132,7 +132,7 @@ class EnvironmentService:
         )
         
         # Save the snapshot
-        self._storage.create_snapshot(snapshot)
+        self._storage.create_environment(snapshot)
         
         return snapshot
     
@@ -146,7 +146,7 @@ class EnvironmentService:
         Returns:
             Optional[EnvironmentSnapshot]: The snapshot if found, None otherwise
         """
-        return self._storage.get_snapshot(snapshot_id)
+        return self._storage.get_environment(snapshot_id)
         
     def get_environment(self, environment_id: UUID) -> Optional[EnvironmentSnapshot]:
         """
@@ -208,7 +208,7 @@ class EnvironmentService:
         Raises:
             ValueError: If snapshot doesn't exist
         """
-        snapshot = self._storage.get_snapshot(snapshot_id)
+        snapshot = self._storage.get_environment(snapshot_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {snapshot_id} does not exist")
         
@@ -249,7 +249,7 @@ class EnvironmentService:
             update_data["git_branch"] = git_branch
         
         snapshot.update(**update_data)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
         
     def update_environment(
         self,
@@ -387,7 +387,7 @@ class EnvironmentService:
             update_data["git_branch"] = git_branch
         
         snapshot.update(**update_data)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def delete_snapshot(self, snapshot_id: UUID) -> bool:
         """
@@ -399,7 +399,7 @@ class EnvironmentService:
         Returns:
             bool: True if deletion successful, False otherwise
         """
-        return self._storage.delete_snapshot(snapshot_id)
+        return self._storage.delete_environment(snapshot_id)
         
     def delete_environment(self, environment_id: UUID) -> bool:
         """
@@ -429,7 +429,7 @@ class EnvironmentService:
         if isinstance(environment_type, EnvironmentType):
             environment_type = environment_type.value
             
-        return self._storage.list_snapshots(environment_type, tags)
+        return self._storage.list_environments(environment_type, tags)
         
     def list_environments(
         self, type: Optional[Union[EnvironmentType, str]] = None, tags: Optional[Set[str]] = None
@@ -742,7 +742,7 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
@@ -768,7 +768,7 @@ class EnvironmentService:
             else:
                 raise ValueError("Either a package or name and version must be provided")
         
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def remove_package(
         self, env_id: UUID, package_name: str, manager: Union[PackageManagerType, str] = PackageManagerType.PIP
@@ -787,7 +787,7 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
@@ -797,7 +797,7 @@ class EnvironmentService:
         
         result = snapshot.remove_package(package_name, manager)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
     
     def add_compute_resource(
@@ -826,7 +826,7 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
@@ -854,7 +854,7 @@ class EnvironmentService:
             )
             snapshot.add_compute_resource(new_resource)
         
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def remove_compute_resource(self, env_id: UUID, resource_index: int) -> bool:
         """
@@ -870,7 +870,7 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
@@ -880,7 +880,7 @@ class EnvironmentService:
         
         result = snapshot.remove_compute_resource(resource_index)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
     
     def add_environment_variable(self, env_id: UUID, key: str, value: str) -> bool:
@@ -898,12 +898,12 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         snapshot.add_environment_variable(key, value)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def remove_environment_variable(self, env_id: UUID, key: str) -> bool:
         """
@@ -919,13 +919,13 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         result = snapshot.remove_environment_variable(key)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
     
     def add_config_file(self, env_id: UUID, file_path: str, content: str) -> bool:
@@ -943,12 +943,12 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         snapshot.add_config_file(file_path, content)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def remove_config_file(self, env_id: UUID, file_path: str) -> bool:
         """
@@ -964,13 +964,13 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         result = snapshot.remove_config_file(file_path)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
     
     def add_tag(self, env_id: UUID, tag: str) -> bool:
@@ -987,12 +987,12 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         snapshot.add_tag(tag)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def add_environment_tag(self, environment_id: UUID, tag: str) -> bool:
         """
@@ -1024,13 +1024,13 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         result = snapshot.remove_tag(tag)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
         
     def remove_environment_tag(self, environment_id: UUID, tag: str) -> bool:
@@ -1066,12 +1066,12 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         snapshot.update_custom_metadata(key, value)
-        return self._storage.update_snapshot(snapshot)
+        return self._storage.update_environment(snapshot)
     
     def remove_custom_metadata(self, env_id: UUID, key: str) -> bool:
         """
@@ -1087,13 +1087,13 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(env_id)
+        snapshot = self._storage.get_environment(env_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {env_id} does not exist")
         
         result = snapshot.remove_custom_metadata(key)
         if result:
-            return self._storage.update_snapshot(snapshot)
+            return self._storage.update_environment(snapshot)
         return False
     
     # Task-Environment link operations
@@ -1120,12 +1120,12 @@ class EnvironmentService:
         Raises:
             ValueError: If environment doesn't exist
         """
-        snapshot = self._storage.get_snapshot(environment_id)
+        snapshot = self._storage.get_environment(environment_id)
         if not snapshot:
             raise ValueError(f"Environment snapshot with ID {environment_id} does not exist")
         
         # Check if link already exists
-        existing_snapshots = self._storage.get_snapshots_for_task(task_id)
+        existing_snapshots = self._storage.get_environments_by_task(task_id)
         for s in existing_snapshots:
             if s.id == environment_id:
                 # Link already exists
@@ -1189,7 +1189,7 @@ class EnvironmentService:
         Returns:
             List[EnvironmentSnapshot]: List of associated snapshots
         """
-        return self._storage.get_snapshots_for_task(task_id)
+        return self._storage.get_environments_by_task(task_id)
         
     def get_environments_by_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
         """
@@ -1213,7 +1213,7 @@ class EnvironmentService:
         Returns:
             List[UUID]: List of associated task IDs
         """
-        return self._storage.get_tasks_for_snapshot(env_id)
+        return self._storage.get_tasks_by_environment(env_id)
         
     def get_tasks_by_environment(self, environment_id: UUID) -> List[UUID]:
         """
@@ -1344,11 +1344,11 @@ class EnvironmentService:
         Raises:
             ValueError: If snapshots don't exist
         """
-        snapshot1 = self._storage.get_snapshot(snapshot_id1)
+        snapshot1 = self._storage.get_environment(snapshot_id1)
         if not snapshot1:
             raise ValueError(f"Environment snapshot with ID {snapshot_id1} does not exist")
         
-        snapshot2 = self._storage.get_snapshot(snapshot_id2)
+        snapshot2 = self._storage.get_environment(snapshot_id2)
         if not snapshot2:
             raise ValueError(f"Environment snapshot with ID {snapshot_id2} does not exist")
         

@@ -15,6 +15,33 @@ class JobPriority(str, Enum):
     CRITICAL = "critical"
 
 
+class ServiceTier(str, Enum):
+    """Service tiers for clients."""
+    
+    BASIC = "basic"
+    STANDARD = "standard"
+    PREMIUM = "premium"
+
+
+class NodeType(str, Enum):
+    """Types of render nodes."""
+    
+    CPU = "cpu"
+    GPU = "gpu"
+    HYBRID = "hybrid"
+    SPECIALIZED = "specialized"
+
+
+class LogLevel(str, Enum):
+    """Log levels for the audit logger."""
+    
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
+
+
 class RenderJobStatus(str, Enum):
     """Status values for render jobs."""
     
@@ -125,6 +152,16 @@ class Client(BaseModel):
     sla_tier: str  # premium, standard, basic
     guaranteed_resources: int = Field(..., ge=0)  # Percentage of resources guaranteed
     max_resources: int = Field(..., ge=0)  # Maximum percentage of resources allowed
+
+
+class RenderClient(BaseModel):
+    """A client organization that submits render jobs to the farm."""
+    
+    client_id: str
+    name: str
+    service_tier: ServiceTier
+    guaranteed_resources: int = Field(default=0, ge=0)  # Percentage of resources guaranteed
+    max_resources: int = Field(default=100, ge=0)  # Maximum percentage of resources allowed
 
 
 class ProgressiveOutputConfig(BaseModel):

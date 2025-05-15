@@ -17,6 +17,19 @@ class ExperimentStorageInterface(ABC):
     """Abstract interface for experiment tracking storage implementations."""
     
     @abstractmethod
+    def get_experiment_by_name(self, name: str) -> Optional[Experiment]:
+        """
+        Retrieve an experiment by name.
+        
+        Args:
+            name: The name of the experiment to retrieve
+            
+        Returns:
+            Optional[Experiment]: The experiment if found, None otherwise
+        """
+        pass
+    
+    @abstractmethod
     def create_experiment(self, experiment: Experiment) -> UUID:
         """
         Create a new experiment.
@@ -43,7 +56,7 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def update_experiment(self, experiment: Experiment) -> bool:
+    def update_experiment(self, experiment: Experiment) -> Optional[Experiment]:
         """
         Update an existing experiment.
         
@@ -51,7 +64,7 @@ class ExperimentStorageInterface(ABC):
             experiment: The experiment with updated fields
             
         Returns:
-            bool: True if update successful, False otherwise
+            Optional[Experiment]: The updated experiment if successful, None otherwise
         """
         pass
     
@@ -85,15 +98,16 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def create_run(self, run: ExperimentRun) -> UUID:
+    def create_run(self, experiment_id: UUID, run: ExperimentRun) -> Optional[ExperimentRun]:
         """
         Create a new experiment run.
         
         Args:
+            experiment_id: The ID of the experiment this run belongs to
             run: The experiment run to create
             
         Returns:
-            UUID: The ID of the created run
+            Optional[ExperimentRun]: The created run, or None if experiment not found
         """
         pass
     
@@ -111,7 +125,7 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def update_run(self, run: ExperimentRun) -> bool:
+    def update_run(self, run: ExperimentRun) -> Optional[ExperimentRun]:
         """
         Update an existing experiment run.
         
@@ -119,7 +133,7 @@ class ExperimentStorageInterface(ABC):
             run: The run with updated fields
             
         Returns:
-            bool: True if update successful, False otherwise
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         pass
     
@@ -179,7 +193,7 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def update_comparison(self, comparison: ExperimentComparison) -> bool:
+    def update_comparison(self, comparison: ExperimentComparison) -> Optional[ExperimentComparison]:
         """
         Update an existing experiment comparison.
         
@@ -187,7 +201,7 @@ class ExperimentStorageInterface(ABC):
             comparison: The comparison with updated fields
             
         Returns:
-            bool: True if update successful, False otherwise
+            Optional[ExperimentComparison]: The updated comparison if successful, None otherwise
         """
         pass
     
@@ -222,6 +236,21 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
         self._experiments: Dict[UUID, Experiment] = {}
         self._runs: Dict[UUID, ExperimentRun] = {}
         self._comparisons: Dict[UUID, ExperimentComparison] = {}
+        
+    def get_experiment_by_name(self, name: str) -> Optional[Experiment]:
+        """
+        Retrieve an experiment by name.
+        
+        Args:
+            name: The name of the experiment to retrieve
+            
+        Returns:
+            Optional[Experiment]: The experiment if found, None otherwise
+        """
+        for experiment in self._experiments.values():
+            if experiment.name == name:
+                return experiment
+        return None
     
     def create_experiment(self, experiment: Experiment) -> UUID:
         self._experiments[experiment.id] = experiment
@@ -230,9 +259,9 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
     def get_experiment(self, experiment_id: UUID) -> Optional[Experiment]:
         return self._experiments.get(experiment_id)
     
-    def update_experiment(self, experiment: Experiment) -> bool:
+    def update_experiment(self, experiment: Experiment) -> Optional[Experiment]:
         if experiment.id not in self._experiments:
-            return False
+            return None
         
         # Update experiment
         self._experiments[experiment.id] = experiment
@@ -241,7 +270,7 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
         for run in experiment.runs:
             self._runs[run.id] = run
         
-        return True
+        return experiment
     
     def delete_experiment(self, experiment_id: UUID) -> bool:
         if experiment_id not in self._experiments:
@@ -279,24 +308,30 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
         
         return experiments
     
-    def create_run(self, run: ExperimentRun) -> UUID:
+    def create_run(self, experiment_id: UUID, run: ExperimentRun) -> Optional[ExperimentRun]:
+        # Check if experiment exists
+        experiment = self._experiments.get(experiment_id)
+        if not experiment:
+            return None
+            
+        # Set experiment ID on the run
+        run.experiment_id = experiment_id
+            
         # Store run
         self._runs[run.id] = run
         
         # Add run to experiment
-        experiment = self._experiments.get(run.experiment_id)
-        if experiment:
-            if run not in experiment.runs:
-                experiment.runs.append(run)
+        if run not in experiment.runs:
+            experiment.runs.append(run)
         
-        return run.id
+        return run
     
     def get_run(self, run_id: UUID) -> Optional[ExperimentRun]:
         return self._runs.get(run_id)
     
-    def update_run(self, run: ExperimentRun) -> bool:
+    def update_run(self, run: ExperimentRun) -> Optional[ExperimentRun]:
         if run.id not in self._runs:
-            return False
+            return None
         
         # Update run
         self._runs[run.id] = run
@@ -310,7 +345,7 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
                     experiment.runs[i] = run
                     break
         
-        return True
+        return run
     
     def delete_run(self, run_id: UUID) -> bool:
         if run_id not in self._runs:
@@ -357,11 +392,11 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
     def get_comparison(self, comparison_id: UUID) -> Optional[ExperimentComparison]:
         return self._comparisons.get(comparison_id)
     
-    def update_comparison(self, comparison: ExperimentComparison) -> bool:
+    def update_comparison(self, comparison: ExperimentComparison) -> Optional[ExperimentComparison]:
         if comparison.id not in self._comparisons:
-            return False
+            return None
         self._comparisons[comparison.id] = comparison
-        return True
+        return comparison
     
     def delete_comparison(self, comparison_id: UUID) -> bool:
         if comparison_id not in self._comparisons:

@@ -9,27 +9,57 @@ from render_farm_manager.core.models import (
     ResourceAllocation,
     ServiceTier,
     NodeType,
+    NodeCapabilities,
+    JobPriority,
+    NodeStatus,
 )
 from render_farm_manager.resource_management.resource_partitioner import ResourcePartitioner
 
 
 @pytest.fixture
 def audit_logger():
-    return MagicMock()
+    """Creates a mock audit logger with all necessary methods."""
+    mock = MagicMock()
+    # Add specific methods that might be called during testing
+    mock.log_client_added = MagicMock()
+    mock.log_resource_allocation = MagicMock()
+    return mock
 
 
 @pytest.fixture
-def performance_metrics():
-    return MagicMock()
+def performance_monitor():
+    """Creates a mock performance monitor with all necessary methods."""
+    mock = MagicMock()
+    # Add specific methods that might be called during testing
+    mock.update_client_resource_metrics = MagicMock()
+    return mock
 
 
 @pytest.fixture
 def clients():
     """Creates test clients with different service tiers."""
     return [
-        RenderClient(client_id="premium", name="Premium Client", service_tier=ServiceTier.PREMIUM),
-        RenderClient(client_id="standard", name="Standard Client", service_tier=ServiceTier.STANDARD),
-        RenderClient(client_id="basic", name="Basic Client", service_tier=ServiceTier.BASIC),
+        RenderClient(
+            client_id="premium", 
+            name="Premium Client", 
+            service_tier=ServiceTier.PREMIUM,
+            guaranteed_resources=50,
+            max_resources=80
+        ),
+        RenderClient(
+            client_id="standard", 
+            name="Standard Client", 
+            service_tier=ServiceTier.STANDARD,
+            guaranteed_resources=30,
+            max_resources=60
+        ),
+        RenderClient(
+            client_id="basic", 
+            name="Basic Client", 
+            service_tier=ServiceTier.BASIC,
+            guaranteed_resources=10,
+            max_resources=40
+        ),
     ]
 
 
@@ -38,12 +68,21 @@ def render_nodes():
     """Creates test render nodes of different types."""
     return [
         RenderNode(
-            node_id=f"node{i}",
+            id=f"node{i}",
             name=f"Node {i}",
-            node_type=NodeType.GPU if i % 3 == 0 else (NodeType.CPU if i % 3 == 1 else NodeType.MEMORY),
-            cpu_cores=16,
-            memory_gb=64,
-            gpu_count=2 if i % 3 == 0 else 0,
+            status=NodeStatus.ONLINE,
+            capabilities=NodeCapabilities(
+                cpu_cores=16,
+                memory_gb=64,
+                gpu_model="NVIDIA RTX A6000" if i % 3 == 0 else None,
+                gpu_count=2 if i % 3 == 0 else 0,
+                gpu_memory_gb=48.0 if i % 3 == 0 else 0.0,
+                gpu_compute_capability=8.6 if i % 3 == 0 else 0.0,
+                storage_gb=512 if i % 3 != 2 else 1024,
+                specialized_for=["rendering", "compositing"] if i % 3 == 0 else 
+                              (["simulation", "procedural"] if i % 3 == 1 else ["simulation", "fluid"])
+            ),
+            power_efficiency_rating=75.0 if i % 3 == 0 else (85.0 if i % 3 == 1 else 80.0),
         )
         for i in range(1, 11)  # 10 nodes total
     ]
@@ -56,62 +95,86 @@ def render_jobs():
     return [
         # Premium client jobs - high demand
         RenderJob(
-            job_id="premium_job1",
+            id="premium_job1",
             client_id="premium",
             name="Premium Job 1",
-            priority=100,
-            cpu_requirements=8,
-            memory_requirements=32,
-            gpu_requirements=1,
-            estimated_duration_hours=2.0,
+            status=RenderJobStatus.PENDING,
+            job_type="animation",
+            priority=JobPriority.HIGH,
+            submission_time=now,
             deadline=now + timedelta(hours=4),
+            estimated_duration_hours=2.0,
+            progress=0.0,
+            requires_gpu=True,
+            memory_requirements_gb=32,
+            cpu_requirements=8,
+            scene_complexity=7,
+            output_path="/renders/premium/job1/",
         ),
         RenderJob(
-            job_id="premium_job2",
+            id="premium_job2",
             client_id="premium",
             name="Premium Job 2",
-            priority=90,
-            cpu_requirements=8,
-            memory_requirements=32,
-            gpu_requirements=1,
-            estimated_duration_hours=1.0,
+            status=RenderJobStatus.PENDING,
+            job_type="vfx",
+            priority=JobPriority.HIGH,
+            submission_time=now,
             deadline=now + timedelta(hours=6),
+            estimated_duration_hours=1.0,
+            progress=0.0,
+            requires_gpu=True,
+            memory_requirements_gb=32,
+            cpu_requirements=8,
+            scene_complexity=6,
+            output_path="/renders/premium/job2/",
         ),
         
         # Standard client jobs - medium demand
         RenderJob(
-            job_id="standard_job1",
+            id="standard_job1",
             client_id="standard",
             name="Standard Job 1",
-            priority=70,
-            cpu_requirements=8,
-            memory_requirements=32,
-            gpu_requirements=0,
-            estimated_duration_hours=3.0,
+            status=RenderJobStatus.PENDING,
+            job_type="lighting",
+            priority=JobPriority.MEDIUM,
+            submission_time=now,
             deadline=now + timedelta(hours=8),
+            estimated_duration_hours=3.0,
+            progress=0.0,
+            requires_gpu=False,
+            memory_requirements_gb=32,
+            cpu_requirements=8,
+            scene_complexity=5,
+            output_path="/renders/standard/job1/",
         ),
         
         # Basic client jobs - low demand initially, then increases
         RenderJob(
-            job_id="basic_job1",
+            id="basic_job1",
             client_id="basic",
             name="Basic Job 1",
-            priority=30,
-            cpu_requirements=4,
-            memory_requirements=16,
-            gpu_requirements=0,
-            estimated_duration_hours=1.0,
+            status=RenderJobStatus.PENDING,
+            job_type="simulation",
+            priority=JobPriority.LOW,
+            submission_time=now,
             deadline=now + timedelta(hours=12),
+            estimated_duration_hours=1.0,
+            progress=0.0,
+            requires_gpu=False,
+            memory_requirements_gb=16,
+            cpu_requirements=4,
+            scene_complexity=4,
+            output_path="/renders/basic/job1/",
         ),
     ]
 
 
-def test_client_resource_borrowing(audit_logger, performance_metrics, clients, render_nodes, render_jobs):
+def test_client_resource_borrowing(audit_logger, performance_monitor, clients, render_nodes, render_jobs):
     """Test resource borrowing between clients based on demand and SLA tiers."""
     # Create resource partitioner with borrowing enabled
     resource_partitioner = ResourcePartitioner(
         audit_logger=audit_logger,
-        performance_metrics=performance_metrics,
+        performance_monitor=performance_monitor,
         allow_borrowing=True,
         borrowing_limit_percentage=20.0  # Allow up to 20% borrowed resources
     )
@@ -131,9 +194,9 @@ def test_client_resource_borrowing(audit_logger, performance_metrics, clients, r
     standard_allocation = allocations["standard"]
     basic_allocation = allocations["basic"]
     
-    assert premium_allocation.percentage >= 50.0  # Premium gets at least 50%
-    assert standard_allocation.percentage >= 30.0  # Standard gets at least 30%
-    assert basic_allocation.percentage >= 10.0  # Basic gets at least 10%
+    assert premium_allocation.allocated_percentage >= 50.0  # Premium gets at least 50%
+    assert standard_allocation.allocated_percentage >= 30.0  # Standard gets at least 30%
+    assert basic_allocation.allocated_percentage >= 10.0  # Basic gets at least 10%
     
     # Now simulate active jobs for each client
     client_job_counts = {"premium": 2, "standard": 1, "basic": 1}
@@ -179,15 +242,21 @@ def test_client_resource_borrowing(audit_logger, performance_metrics, clients, r
     # Add more basic jobs
     basic_jobs = [
         RenderJob(
-            job_id=f"basic_job{i}",
+            id=f"basic_job{i}",
             client_id="basic",
             name=f"Basic Job {i}",
-            priority=30,
-            cpu_requirements=4,
-            memory_requirements=16,
-            gpu_requirements=0,
-            estimated_duration_hours=1.0,
+            status=RenderJobStatus.PENDING,
+            job_type="simulation",
+            priority=JobPriority.LOW,
+            submission_time=datetime.now(),
             deadline=datetime.now() + timedelta(hours=12),
+            estimated_duration_hours=1.0,
+            progress=0.0,
+            requires_gpu=False,
+            memory_requirements_gb=16,
+            cpu_requirements=4,
+            scene_complexity=4,
+            output_path=f"/renders/basic/job{i}/",
         )
         for i in range(2, 6)  # Adding 4 more basic jobs
     ]
@@ -215,7 +284,7 @@ def test_client_resource_borrowing(audit_logger, performance_metrics, clients, r
     assert "basic" not in resource_partitioner.get_borrowed_from("premium")
     
     # Verify basic client now gets more resources due to higher demand
-    assert new_allocations["basic"].percentage > basic_allocation.percentage
+    assert new_allocations["basic"].allocated_percentage > basic_allocation.allocated_percentage
     
     # Test with borrowing disabled
     resource_partitioner.allow_borrowing = False
@@ -232,29 +301,29 @@ def test_client_resource_borrowing(audit_logger, performance_metrics, clients, r
     assert audit_logger.log_resource_allocation.call_count > 0
     
     # Verify performance metrics were updated
-    assert performance_metrics.update_client_resource_metrics.call_count > 0
+    assert performance_monitor.update_client_resource_metrics.call_count > 0
 
 
-def test_borrowing_limit_variations(audit_logger, performance_metrics, clients, render_nodes):
+def test_borrowing_limit_variations(audit_logger, performance_monitor, clients, render_nodes):
     """Test different borrowing limit percentages and their effect on resource allocation."""
     # Create three resource partitioners with different borrowing limits
     partitioner_low = ResourcePartitioner(
         audit_logger=audit_logger,
-        performance_metrics=performance_metrics,
+        performance_monitor=performance_monitor,
         allow_borrowing=True,
         borrowing_limit_percentage=5.0  # Very low borrowing limit
     )
     
     partitioner_med = ResourcePartitioner(
         audit_logger=audit_logger,
-        performance_metrics=performance_metrics,
+        performance_monitor=performance_monitor,
         allow_borrowing=True,
         borrowing_limit_percentage=25.0  # Medium borrowing limit
     )
     
     partitioner_high = ResourcePartitioner(
         audit_logger=audit_logger,
-        performance_metrics=performance_metrics,
+        performance_monitor=performance_monitor,
         allow_borrowing=True,
         borrowing_limit_percentage=50.0  # High borrowing limit
     )
@@ -292,5 +361,5 @@ def test_borrowing_limit_variations(audit_logger, performance_metrics, clients, 
     
     # Verify higher borrowing limits result in more resources for premium client
     # (which has the highest demand)
-    assert allocations_low["premium"].percentage < allocations_med["premium"].percentage
-    assert allocations_med["premium"].percentage < allocations_high["premium"].percentage
+    assert allocations_low["premium"].allocated_percentage < allocations_med["premium"].allocated_percentage
+    assert allocations_med["premium"].allocated_percentage < allocations_high["premium"].allocated_percentage

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 from pydantic import BaseModel, Field
 
@@ -87,6 +87,7 @@ class Scenario(BaseModel):
     researcher_ids: List[str] = Field(default_factory=list)
     related_scenarios: Set[str] = Field(default_factory=set)
     research_objectives: List[str] = Field(default_factory=list)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
     
     def calculate_priority_score(self) -> float:
         """Calculate the overall priority score based on scientific metrics."""
@@ -106,9 +107,19 @@ class Scenario(BaseModel):
         score = weighted_sum / total_weight
         return max(0.0, min(1.0, score))
     
-    def update_priority(self) -> None:
-        """Update the priority score based on current metrics."""
-        self.priority_score = self.calculate_priority_score()
+    def update_priority(self, new_priority: Optional[float] = None) -> None:
+        """
+        Update the priority score based on current metrics or a provided value.
+        
+        Args:
+            new_priority: If provided, directly set this as the new priority score.
+                          Otherwise, calculate priority from metrics.
+        """
+        if new_priority is not None:
+            self.priority_score = max(0.0, min(1.0, new_priority))  # Ensure between 0 and 1
+        else:
+            self.priority_score = self.calculate_priority_score()
+        
         self.last_updated = datetime.now()
     
     def get_simulation_status_counts(self) -> Dict[str, int]:

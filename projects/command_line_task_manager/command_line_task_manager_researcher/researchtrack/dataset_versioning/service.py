@@ -1000,7 +1000,7 @@ class DatasetVersioningService:
             raise ValueError(f"Dataset version with ID {dataset_version_id} does not exist")
         
         # Check if link already exists
-        existing_versions = self._storage.get_dataset_versions_for_task(task_id)
+        existing_versions = self._storage.get_dataset_versions_by_task(task_id)
         for v in existing_versions:
             if v.id == dataset_version_id:
                 # Link already exists
@@ -1081,7 +1081,7 @@ class DatasetVersioningService:
         Returns:
             List[DatasetVersion]: List of associated dataset versions
         """
-        return self._storage.get_dataset_versions_for_task(task_id)
+        return self._storage.get_dataset_versions_by_task(task_id)
     
     def get_tasks_by_dataset_version(self, version_id: UUID) -> List[UUID]:
         """
@@ -1093,7 +1093,7 @@ class DatasetVersioningService:
         Returns:
             List[UUID]: List of associated task IDs
         """
-        return self._storage.get_tasks_for_dataset_version(version_id)
+        return self._storage.get_tasks_by_dataset_version(version_id)
     
     def get_links_by_task(self, task_id: UUID) -> List[TaskDatasetLink]:
         """

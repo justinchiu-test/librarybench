@@ -81,47 +81,17 @@ class ExperimentService:
     
     def update_experiment(
         self,
-        experiment_id: UUID,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        task_id: Optional[UUID] = None,
-        dataset_id: Optional[UUID] = None,
-        environment_id: Optional[UUID] = None,
-    ) -> bool:
+        experiment: Experiment,
+    ) -> Optional[Experiment]:
         """
         Update an existing experiment.
         
         Args:
-            experiment_id: The ID of the experiment to update
-            name: New experiment name
-            description: New experiment description
-            task_id: New associated research task ID
-            dataset_id: New associated dataset ID
-            environment_id: New associated environment snapshot ID
+            experiment: The experiment with updated fields
             
         Returns:
-            bool: True if update successful, False otherwise
-            
-        Raises:
-            ValueError: If experiment doesn't exist
+            Optional[Experiment]: The updated experiment if successful, None otherwise
         """
-        experiment = self._storage.get_experiment(experiment_id)
-        if not experiment:
-            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
-        
-        if name is not None:
-            experiment.name = name
-        if description is not None:
-            experiment.description = description
-        if task_id is not None:
-            experiment.task_id = task_id
-        if dataset_id is not None:
-            experiment.dataset_id = dataset_id
-        if environment_id is not None:
-            experiment.environment_id = environment_id
-        
-        experiment.updated_at = datetime.now()
-        
         return self._storage.update_experiment(experiment)
     
     def delete_experiment(self, experiment_id: UUID) -> bool:
@@ -291,7 +261,7 @@ class ExperimentService:
     
     def create_experiment_run(
         self, experiment_id: UUID, parameters: List[Parameter]
-    ) -> ExperimentRun:
+    ) -> Optional[ExperimentRun]:
         """
         Create a new run for an experiment.
         
@@ -300,14 +270,11 @@ class ExperimentService:
             parameters: List of parameters for this run
             
         Returns:
-            ExperimentRun: The created run
-            
-        Raises:
-            ValueError: If experiment doesn't exist
+            Optional[ExperimentRun]: The created run, or None if experiment not found
         """
         experiment = self._storage.get_experiment(experiment_id)
         if not experiment:
-            raise ValueError(f"Experiment with ID {experiment_id} does not exist")
+            return None
         
         # Determine run number
         run_number = len(experiment.runs) + 1
@@ -320,9 +287,7 @@ class ExperimentService:
         )
         
         # Save run
-        self._storage.create_run(run)
-        
-        return run
+        return self._storage.create_run(experiment_id, run)
     
     def get_run(self, run_id: UUID) -> Optional[ExperimentRun]:
         """
@@ -336,7 +301,7 @@ class ExperimentService:
         """
         return self._storage.get_run(run_id)
     
-    def start_run(self, run_id: UUID) -> bool:
+    def start_run(self, run_id: UUID) -> Optional[ExperimentRun]:
         """
         Mark an experiment run as started.
         
@@ -344,21 +309,18 @@ class ExperimentService:
             run_id: The ID of the run to start
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         run.status = ExperimentStatus.RUNNING
         run.start_time = datetime.now()
         
         return self._storage.update_run(run)
     
-    def complete_run(self, run_id: UUID) -> bool:
+    def complete_run(self, run_id: UUID) -> Optional[ExperimentRun]:
         """
         Mark an experiment run as completed.
         
@@ -366,21 +328,18 @@ class ExperimentService:
             run_id: The ID of the run to complete
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         run.status = ExperimentStatus.COMPLETED
         run.end_time = datetime.now()
         
         return self._storage.update_run(run)
     
-    def fail_run(self, run_id: UUID, notes: Optional[str] = None) -> bool:
+    def fail_run(self, run_id: UUID, notes: Optional[str] = None) -> Optional[ExperimentRun]:
         """
         Mark an experiment run as failed.
         
@@ -389,14 +348,11 @@ class ExperimentService:
             notes: Notes about the failure
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         run.status = ExperimentStatus.FAILED
         run.end_time = datetime.now()
@@ -405,7 +361,7 @@ class ExperimentService:
         
         return self._storage.update_run(run)
     
-    def abort_run(self, run_id: UUID, notes: Optional[str] = None) -> bool:
+    def abort_run(self, run_id: UUID, notes: Optional[str] = None) -> Optional[ExperimentRun]:
         """
         Mark an experiment run as aborted.
         
@@ -414,14 +370,11 @@ class ExperimentService:
             notes: Notes about the abortion
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         run.status = ExperimentStatus.ABORTED
         run.end_time = datetime.now()
@@ -437,7 +390,7 @@ class ExperimentService:
         type: Union[MetricType, str],
         value: float,
         description: Optional[str] = None,
-    ) -> bool:
+    ) -> Optional[ExperimentRun]:
         """
         Add a metric to an experiment run.
         
@@ -449,14 +402,11 @@ class ExperimentService:
             description: Metric description
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         # Convert string enum to enum value if needed
         if isinstance(type, str):
@@ -475,7 +425,7 @@ class ExperimentService:
         
         return self._storage.update_run(run)
     
-    def add_run_artifact(self, run_id: UUID, name: str, path: str) -> bool:
+    def add_run_artifact(self, run_id: UUID, name: str, path: str) -> Optional[ExperimentRun]:
         """
         Add an artifact to an experiment run.
         
@@ -485,43 +435,34 @@ class ExperimentService:
             path: Path to the artifact
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
         # Add artifact to run
         run.artifacts[name] = path
         
         return self._storage.update_run(run)
     
-    def add_run_note(self, run_id: UUID, note: str) -> bool:
+    def update_run_notes(self, run_id: UUID, note: str) -> Optional[ExperimentRun]:
         """
-        Add a note to an experiment run.
+        Update or add notes to an experiment run.
         
         Args:
             run_id: The ID of the run
             note: The note to add
             
         Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If run doesn't exist
+            Optional[ExperimentRun]: The updated run if successful, None otherwise
         """
         run = self._storage.get_run(run_id)
         if not run:
-            raise ValueError(f"Experiment run with ID {run_id} does not exist")
+            return None
         
-        # Add note to run
-        if run.notes:
-            run.notes += f"\n{note}"
-        else:
-            run.notes = note
+        # Update notes
+        run.notes = note
         
         return self._storage.update_run(run)
     

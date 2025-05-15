@@ -10,6 +10,7 @@ from render_farm_manager.core.models import (
     JobPriority,
     NodeCapabilities,
     EnergyMode,
+    NodeStatus,
 )
 from render_farm_manager.core.manager import RenderFarmManager
 
@@ -52,7 +53,7 @@ def render_nodes():
         RenderNode(
             id="eff1",
             name="High Efficiency Node",
-            status="online",
+            status=NodeStatus.ONLINE,
             capabilities=NodeCapabilities(
                 cpu_cores=16,
                 memory_gb=64,
@@ -72,7 +73,7 @@ def render_nodes():
         RenderNode(
             id="eff2",
             name="Medium Efficiency Node",
-            status="online",
+            status=NodeStatus.ONLINE,
             capabilities=NodeCapabilities(
                 cpu_cores=16,
                 memory_gb=64,
@@ -92,7 +93,7 @@ def render_nodes():
         RenderNode(
             id="eff3",
             name="Low Efficiency Node",
-            status="online",
+            status=NodeStatus.ONLINE,
             capabilities=NodeCapabilities(
                 cpu_cores=32,
                 memory_gb=128,
@@ -112,7 +113,7 @@ def render_nodes():
         RenderNode(
             id="eff4",
             name="Very Low Efficiency Node",
-            status="online",
+            status=NodeStatus.ONLINE,
             capabilities=NodeCapabilities(
                 cpu_cores=32,
                 memory_gb=128,

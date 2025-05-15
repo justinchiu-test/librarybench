@@ -62,13 +62,14 @@ class DatasetStorageInterface(ABC):
     
     @abstractmethod
     def list_datasets(
-        self, format: Optional[str] = None, tags: Optional[Set[str]] = None
+        self, format: Optional[str] = None, storage_type: Optional[str] = None, tags: Optional[Set[str]] = None
     ) -> List[Dataset]:
         """
         List datasets with optional filtering.
         
         Args:
             format: Filter by dataset format
+            storage_type: Filter by storage type
             tags: Filter by tags (datasets must have all specified tags)
             
         Returns:
@@ -210,6 +211,26 @@ class DatasetStorageInterface(ABC):
             List[DataTransformation]: List of data transformations
         """
         pass
+        
+    @abstractmethod
+    def list_data_transformations(
+        self,
+        input_dataset_version_id: Optional[UUID] = None,
+        output_dataset_version_id: Optional[UUID] = None,
+        transformation_type: Optional[str] = None
+    ) -> List[DataTransformation]:
+        """
+        List data transformations with optional filtering.
+        
+        Args:
+            input_dataset_version_id: Filter by input dataset version ID
+            output_dataset_version_id: Filter by output dataset version ID
+            transformation_type: Filter by transformation type
+            
+        Returns:
+            List[DataTransformation]: List of transformations matching the criteria
+        """
+        pass
     
     @abstractmethod
     def get_transformation_lineage(
@@ -305,7 +326,7 @@ class DatasetStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def get_dataset_versions_for_task(self, task_id: UUID) -> List[DatasetVersion]:
+    def get_dataset_versions_by_task(self, task_id: UUID) -> List[DatasetVersion]:
         """
         Get all dataset versions associated with a task.
         
@@ -318,7 +339,7 @@ class DatasetStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def get_tasks_for_dataset_version(self, version_id: UUID) -> List[UUID]:
+    def get_tasks_by_dataset_version(self, version_id: UUID) -> List[UUID]:
         """
         Get all task IDs associated with a dataset version.
         
@@ -384,12 +405,15 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         return True
     
     def list_datasets(
-        self, format: Optional[str] = None, tags: Optional[Set[str]] = None
+        self, format: Optional[str] = None, storage_type: Optional[str] = None, tags: Optional[Set[str]] = None
     ) -> List[Dataset]:
         datasets = list(self._datasets.values())
         
         if format:
             datasets = [ds for ds in datasets if ds.format == format]
+            
+        if storage_type:
+            datasets = [ds for ds in datasets if ds.storage_type == storage_type]
         
         if tags:
             datasets = [
@@ -415,6 +439,9 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         if version_id not in self._versions:
             return False
         
+        # Get the version before deleting
+        version = self._versions[version_id]
+        
         # Delete the version
         del self._versions[version_id]
         
@@ -434,6 +461,12 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         ]
         for link_id in links_to_delete:
             self.delete_task_dataset_link(link_id)
+            
+        # Update parent references in children versions to maintain lineage integrity
+        for child_version in self._versions.values():
+            if child_version.parent_version_id == version_id:
+                # Set parent_version_id to None when deleting a version in the chain
+                child_version.parent_version_id = None
         
         return True
     
@@ -506,7 +539,116 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
             if (t.input_dataset_version_id in version_ids or 
                 t.output_dataset_version_id in version_ids)
         ]
+        
+    def list_data_transformations(
+        self,
+        input_dataset_version_id: Optional[UUID] = None,
+        output_dataset_version_id: Optional[UUID] = None,
+        transformation_type: Optional[str] = None
+    ) -> List[DataTransformation]:
+        """
+        List data transformations with optional filtering.
+        
+        Args:
+            input_dataset_version_id: Filter by input dataset version ID
+            output_dataset_version_id: Filter by output dataset version ID
+            transformation_type: Filter by transformation type
+            
+        Returns:
+            List[DataTransformation]: List of transformations matching the criteria
+        """
+        transformations = list(self._transformations.values())
+        
+        if input_dataset_version_id:
+            transformations = [
+                t for t in transformations 
+                if t.input_dataset_version_id == input_dataset_version_id
+            ]
+            
+        if output_dataset_version_id:
+            transformations = [
+                t for t in transformations 
+                if t.output_dataset_version_id == output_dataset_version_id
+            ]
+            
+        if transformation_type:
+            transformations = [
+                t for t in transformations 
+                if t.type == transformation_type
+            ]
+            
+        return transformations
     
+    def get_latest_dataset_version(self, dataset_id: UUID) -> Optional[DatasetVersion]:
+        """
+        Get the latest version of a dataset based on creation timestamp.
+        
+        Args:
+            dataset_id: The ID of the dataset
+            
+        Returns:
+            Optional[DatasetVersion]: The latest version, or None if no versions exist
+        """
+        versions = self.list_dataset_versions(dataset_id)
+        if not versions:
+            return None
+        return max(versions, key=lambda v: v.created_at)
+    
+    def get_lineage(self, version_id: UUID) -> Dict[str, Dict]:
+        """
+        Get the full lineage information for a dataset version.
+        
+        Args:
+            version_id: The ID of the dataset version
+            
+        Returns:
+            Dict[str, Dict]: A dictionary with version IDs as keys and lineage info as values
+        """
+        version = self.get_dataset_version(version_id)
+        if not version:
+            return {}
+        
+        # Build a map of all versions in the lineage
+        lineage = {}
+        versions_to_process = [version_id]
+        processed_versions = set()
+        
+        while versions_to_process:
+            current_version_id = versions_to_process.pop(0)
+            if current_version_id in processed_versions:
+                continue
+                
+            processed_versions.add(current_version_id)
+            current_version = self.get_dataset_version(current_version_id)
+            if not current_version:
+                continue
+                
+            # Find transformations with this version as input or output
+            input_transformations = self.find_transformations_by_output_version(current_version_id)
+            output_transformations = self.find_transformations_by_input_version(current_version_id)
+            
+            # Add to lineage
+            lineage[str(current_version_id)] = {
+                "version": current_version,
+                "input_transformations": input_transformations,
+                "output_transformations": output_transformations
+            }
+            
+            # Add parent version to process queue if it exists
+            if current_version.parent_version_id:
+                versions_to_process.append(current_version.parent_version_id)
+                
+            # Add versions linked via transformations
+            for trans in input_transformations:
+                if trans.input_dataset_version_id:
+                    versions_to_process.append(trans.input_dataset_version_id)
+                    
+            for trans in output_transformations:
+                if trans.output_dataset_version_id:
+                    versions_to_process.append(trans.output_dataset_version_id)
+        
+        return lineage
+        
     def get_transformation_lineage(
         self, version_id: UUID
     ) -> List[DataTransformation]:
@@ -592,7 +734,7 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         del self._task_dataset_links[link_id]
         return True
     
-    def get_dataset_versions_for_task(self, task_id: UUID) -> List[DatasetVersion]:
+    def get_dataset_versions_by_task(self, task_id: UUID) -> List[DatasetVersion]:
         # Get all links for this task
         links = [
             link for link in self._task_dataset_links.values()
@@ -608,7 +750,7 @@ class InMemoryDatasetStorage(DatasetStorageInterface):
         
         return versions
     
-    def get_tasks_for_dataset_version(self, version_id: UUID) -> List[UUID]:
+    def get_tasks_by_dataset_version(self, version_id: UUID) -> List[UUID]:
         # Get all links for this dataset version
         links = [
             link for link in self._task_dataset_links.values()

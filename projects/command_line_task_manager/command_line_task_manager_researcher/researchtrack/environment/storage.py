@@ -14,38 +14,38 @@ class EnvironmentStorageInterface(ABC):
     """Abstract interface for environment snapshot storage implementations."""
     
     @abstractmethod
-    def create_snapshot(self, snapshot: EnvironmentSnapshot) -> UUID:
+    def create_environment(self, environment: EnvironmentSnapshot) -> UUID:
         """
         Create a new environment snapshot.
         
         Args:
-            snapshot: The snapshot to create
+            environment: The environment to create
             
         Returns:
-            UUID: The ID of the created snapshot
+            UUID: The ID of the created environment
         """
         pass
     
     @abstractmethod
-    def get_snapshot(self, snapshot_id: UUID) -> Optional[EnvironmentSnapshot]:
+    def get_environment(self, environment_id: UUID) -> Optional[EnvironmentSnapshot]:
         """
-        Retrieve a snapshot by ID.
+        Retrieve an environment by ID.
         
         Args:
-            snapshot_id: The ID of the snapshot to retrieve
+            environment_id: The ID of the environment to retrieve
             
         Returns:
-            Optional[EnvironmentSnapshot]: The snapshot if found, None otherwise
+            Optional[EnvironmentSnapshot]: The environment if found, None otherwise
         """
         pass
     
     @abstractmethod
-    def update_snapshot(self, snapshot: EnvironmentSnapshot) -> bool:
+    def update_environment(self, environment: EnvironmentSnapshot) -> bool:
         """
-        Update an existing snapshot.
+        Update an existing environment.
         
         Args:
-            snapshot: The snapshot with updated fields
+            environment: The environment with updated fields
             
         Returns:
             bool: True if update successful, False otherwise
@@ -53,12 +53,12 @@ class EnvironmentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def delete_snapshot(self, snapshot_id: UUID) -> bool:
+    def delete_environment(self, environment_id: UUID) -> bool:
         """
-        Delete a snapshot by ID.
+        Delete an environment by ID.
         
         Args:
-            snapshot_id: The ID of the snapshot to delete
+            environment_id: The ID of the environment to delete
             
         Returns:
             bool: True if deletion successful, False otherwise
@@ -66,18 +66,18 @@ class EnvironmentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def list_snapshots(
-        self, environment_type: Optional[str] = None, tags: Optional[Set[str]] = None
+    def list_environments(
+        self, type: Optional[str] = None, tags: Optional[Set[str]] = None
     ) -> List[EnvironmentSnapshot]:
         """
-        List snapshots with optional filtering.
+        List environments with optional filtering.
         
         Args:
-            environment_type: Filter by environment type
-            tags: Filter by tags (snapshots must have all specified tags)
+            type: Filter by environment type
+            tags: Filter by tags (environments must have all specified tags)
             
         Returns:
-            List[EnvironmentSnapshot]: List of snapshots matching the criteria
+            List[EnvironmentSnapshot]: List of environments matching the criteria
         """
         pass
     
@@ -134,7 +134,7 @@ class EnvironmentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def get_snapshots_for_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
+    def get_environments_by_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
         """
         Get all environment snapshots associated with a task.
         
@@ -142,20 +142,33 @@ class EnvironmentStorageInterface(ABC):
             task_id: The ID of the task
             
         Returns:
-            List[EnvironmentSnapshot]: List of associated snapshots
+            List[EnvironmentSnapshot]: List of associated environments
         """
         pass
     
     @abstractmethod
-    def get_tasks_for_snapshot(self, snapshot_id: UUID) -> List[UUID]:
+    def get_tasks_by_environment(self, environment_id: UUID) -> List[UUID]:
         """
-        Get all task IDs associated with an environment snapshot.
+        Get all task IDs associated with an environment.
         
         Args:
-            snapshot_id: The ID of the snapshot
+            environment_id: The ID of the environment
             
         Returns:
             List[UUID]: List of associated task IDs
+        """
+        pass
+        
+    @abstractmethod
+    def get_links_by_task(self, task_id: UUID) -> List[TaskEnvironmentLink]:
+        """
+        Get all environment links for a specific task.
+        
+        Args:
+            task_id: The ID of the task
+            
+        Returns:
+            List[TaskEnvironmentLink]: List of task-environment links for this task
         """
         pass
 
@@ -164,56 +177,56 @@ class InMemoryEnvironmentStorage(EnvironmentStorageInterface):
     """In-memory implementation of environment snapshot storage."""
     
     def __init__(self):
-        self._snapshots: Dict[UUID, EnvironmentSnapshot] = {}
+        self._environments: Dict[UUID, EnvironmentSnapshot] = {}
         self._task_environment_links: Dict[UUID, TaskEnvironmentLink] = {}
     
-    def create_snapshot(self, snapshot: EnvironmentSnapshot) -> UUID:
-        self._snapshots[snapshot.id] = snapshot
-        return snapshot.id
+    def create_environment(self, environment: EnvironmentSnapshot) -> UUID:
+        self._environments[environment.id] = environment
+        return environment.id
     
-    def get_snapshot(self, snapshot_id: UUID) -> Optional[EnvironmentSnapshot]:
-        return self._snapshots.get(snapshot_id)
+    def get_environment(self, environment_id: UUID) -> Optional[EnvironmentSnapshot]:
+        return self._environments.get(environment_id)
     
-    def update_snapshot(self, snapshot: EnvironmentSnapshot) -> bool:
-        if snapshot.id not in self._snapshots:
+    def update_environment(self, environment: EnvironmentSnapshot) -> bool:
+        if environment.id not in self._environments:
             return False
-        self._snapshots[snapshot.id] = snapshot
+        self._environments[environment.id] = environment
         return True
     
-    def delete_snapshot(self, snapshot_id: UUID) -> bool:
-        if snapshot_id not in self._snapshots:
+    def delete_environment(self, environment_id: UUID) -> bool:
+        if environment_id not in self._environments:
             return False
         
-        # Delete the snapshot
-        del self._snapshots[snapshot_id]
+        # Delete the environment
+        del self._environments[environment_id]
         
-        # Delete any links that reference this snapshot
+        # Delete any links that reference this environment
         links_to_delete = [
             link_id for link_id, link in self._task_environment_links.items()
-            if link.environment_id == snapshot_id
+            if link.environment_id == environment_id
         ]
         for link_id in links_to_delete:
             self.delete_task_environment_link(link_id)
         
         return True
     
-    def list_snapshots(
-        self, environment_type: Optional[str] = None, tags: Optional[Set[str]] = None
+    def list_environments(
+        self, type: Optional[str] = None, tags: Optional[Set[str]] = None
     ) -> List[EnvironmentSnapshot]:
-        snapshots = list(self._snapshots.values())
+        environments = list(self._environments.values())
         
-        if environment_type:
-            snapshots = [
-                snap for snap in snapshots if snap.type == environment_type
+        if type:
+            environments = [
+                env for env in environments if env.type == type
             ]
         
         if tags:
-            snapshots = [
-                snap for snap in snapshots
-                if all(tag in snap.tags for tag in tags)
+            environments = [
+                env for env in environments
+                if all(tag in env.tags for tag in tags)
             ]
         
-        return snapshots
+        return environments
     
     def create_task_environment_link(self, link: TaskEnvironmentLink) -> UUID:
         self._task_environment_links[link.id] = link
@@ -234,28 +247,35 @@ class InMemoryEnvironmentStorage(EnvironmentStorageInterface):
         del self._task_environment_links[link_id]
         return True
     
-    def get_snapshots_for_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
+    def get_environments_by_task(self, task_id: UUID) -> List[EnvironmentSnapshot]:
         # Get all links for this task
         links = [
             link for link in self._task_environment_links.values()
             if link.task_id == task_id
         ]
         
-        # Get all associated snapshots
-        snapshots = []
+        # Get all associated environments
+        environments = []
         for link in links:
-            snapshot = self.get_snapshot(link.environment_id)
-            if snapshot:
-                snapshots.append(snapshot)
+            environment = self.get_environment(link.environment_id)
+            if environment:
+                environments.append(environment)
         
-        return snapshots
+        return environments
     
-    def get_tasks_for_snapshot(self, snapshot_id: UUID) -> List[UUID]:
-        # Get all links for this snapshot
+    def get_tasks_by_environment(self, environment_id: UUID) -> List[UUID]:
+        # Get all links for this environment
         links = [
             link for link in self._task_environment_links.values()
-            if link.environment_id == snapshot_id
+            if link.environment_id == environment_id
         ]
         
         # Return task IDs
         return [link.task_id for link in links]
+        
+    def get_links_by_task(self, task_id: UUID) -> List[TaskEnvironmentLink]:
+        # Get all links for this task
+        return [
+            link for link in self._task_environment_links.values()
+            if link.task_id == task_id
+        ]

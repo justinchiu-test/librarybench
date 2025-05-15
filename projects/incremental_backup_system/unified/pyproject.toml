@@ -9,4 +9,4 @@ description = "Unified libraries for incremental_backup_system with original pac
 requires-python = ">=3.8"
 
 [tool.setuptools]
-packages = ["common", "creative_vault", "gamevault"]
+packages = ["common", "gamevault", "creative_vault"]

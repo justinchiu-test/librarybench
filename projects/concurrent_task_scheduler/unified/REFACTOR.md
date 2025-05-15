@@ -86,6 +86,7 @@ For each persona implementation:
 2. Refactor the existing code to use the new `common` library
 3. Utilize the common library components where possible
 4. Ensure backward compatibility with existing tests
+YOU MUST REFACTOR THE PERSONA LIBRARIES TO USE `common`
 
 ### 5. Integration and Testing
 
@@ -100,6 +101,8 @@ Test the unified and persona libraries using pytest:
 pytest tests/ --json-report --json-report-file=report.json --continue-on-collection-errors
 ```
 Note that this will run all persona tests, as they are in `tests/{persona}`.
+
+YOU MUST RUN THE TESTS AND RECORD THE OUTPUT.
 
 ## Tips for Success
 

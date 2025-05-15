@@ -20,7 +20,7 @@ Import the original packages directly:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import file_system_analyzer # Example using first package
+import file_system_analyzer_db_admin # Example using first package
 
 # Import from common package (for shared functionality)
 from common import core

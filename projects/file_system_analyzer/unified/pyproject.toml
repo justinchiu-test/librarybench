@@ -13,7 +13,7 @@ dependencies = ["pydantic>=2.0.0", "cryptography>=40.0.0", "xxhash>=3.0.0", "pyt
 dev = ["pytest>=7.0.0", "pytest-cov>=4.0.0", "pytest-json-report>=1.5.0", "ruff>=0.0.240", "pyright>=1.1.300"]
 
 [tool.setuptools]
-packages = ["common", "file_system_analyzer", "file_system_analyzer_db_admin"]
+packages = ["common", "file_system_analyzer_db_admin", "file_system_analyzer"]
 
 [tool.pytest]
 

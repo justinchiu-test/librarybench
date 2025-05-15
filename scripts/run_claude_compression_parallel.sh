@@ -27,7 +27,7 @@ for unified_dir in $unified_dirs; do
     # Run claude_compression.sh for this unified directory in background
     (
         echo "Starting compression for $project_name/unified at $(date)" > "$LOG_DIR/$project_name.log"
-        "$SCRIPT_DIR/claude_compression.sh" "$unified_dir" >> "$LOG_DIR/$project_name.log" 2>&1
+        bash "$SCRIPT_DIR/claude_compression.sh" "$unified_dir" >> "$LOG_DIR/$project_name.log" 2>&1
         echo "Completed compression for $project_name/unified at $(date)" >> "$LOG_DIR/$project_name.log"
         echo "Completed: $project_name/unified"
     ) &

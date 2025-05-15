@@ -26,9 +26,9 @@ pip install -e .
 
 echo "Following the instructions in $(pwd)/REFACTOR.md..."
 # Run Claude Code and tell it to follow instructions
-time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md"
-time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
-time claude -r "$directory" --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
+time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md"
+time claude --continue --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
+time claude --continue --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md. Be sure to complete the migrations."
 
 deactivate
 

@@ -197,6 +197,42 @@ class CheckpointManager:
         # Check if checkpoint should be created
         return manager.should_create_checkpoint(datetime.now(), current_progress)
     
+    def register_checkpoint(self, checkpoint: Checkpoint) -> Result[bool]:
+        """Register an existing checkpoint."""
+        if checkpoint.metadata.simulation_id not in self.checkpoints:
+            self.checkpoints[checkpoint.metadata.simulation_id] = {}
+            
+        # Store the checkpoint
+        self.checkpoints[checkpoint.metadata.simulation_id][checkpoint.id] = checkpoint
+        
+        # Update simulation manager
+        if checkpoint.metadata.simulation_id not in self.simulation_managers:
+            # Create a new manager if needed
+            simulation_storage_path = os.path.join(self.base_storage_path, checkpoint.metadata.simulation_id)
+            os.makedirs(simulation_storage_path, exist_ok=True)
+            
+            manager = CheckpointManagerModel(
+                simulation_id=checkpoint.metadata.simulation_id,
+                checkpoint_policy=self.get_default_policy(),
+                base_storage_path=simulation_storage_path,
+            )
+            
+            self.simulation_managers[checkpoint.metadata.simulation_id] = manager
+            self.checkpoints[checkpoint.metadata.simulation_id] = {}
+            
+        # Add to manager
+        manager = self.simulation_managers[checkpoint.metadata.simulation_id]
+        if checkpoint not in manager.checkpoints:
+            manager.checkpoints.append(checkpoint)
+        
+        # Update latest checkpoint ID if this is newer
+        if (manager.latest_checkpoint_id is None or
+            (checkpoint.metadata.checkpoint_time > 
+             self.checkpoints[checkpoint.metadata.simulation_id][manager.latest_checkpoint_id].metadata.checkpoint_time)):
+            manager.latest_checkpoint_id = checkpoint.id
+            
+        return Result.ok(True)
+            
     def create_checkpoint(
         self,
         simulation: Simulation,
@@ -476,6 +512,10 @@ class CheckpointManager:
             ]
         
         return manager.checkpoints.copy()
+        
+    def get_checkpoints_for_simulation(self, simulation_id: str) -> List[Checkpoint]:
+        """Get all checkpoints for a simulation. Alias for get_all_checkpoints."""
+        return self.get_all_checkpoints(simulation_id)
     
     def restore_from_checkpoint(
         self,

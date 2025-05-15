@@ -567,6 +567,39 @@ class ResilienceCoordinator:
         
         return None
     
+    def register_failure(
+        self,
+        node_id: str,
+        affected_simulations: List[str],
+        failure_time: datetime = None,
+    ) -> Result[bool]:
+        """Register a node failure."""
+        if failure_time is None:
+            failure_time = datetime.now()
+            
+        # Create a failure report
+        failure = FailureReport(
+            id=generate_id("failure"),
+            failure_type=FailureType.NODE_OFFLINE,
+            severity=FailureSeverity.HIGH,
+            description=f"Node {node_id} failure affecting {len(affected_simulations)} simulations",
+            detection_time=failure_time,
+            detection_method=DetectionMethod.MANUAL,  # Using MANUAL as EXTERNAL is not defined
+            node_id=node_id,
+            simulation_id=affected_simulations[0] if affected_simulations else None,
+        )
+        
+        # Record the failure with the failure detector
+        self.failure_detector.record_failure(failure)
+        
+        # Record metrics
+        self.metrics.record_failure(failure.detection_time)
+        
+        # Handle the failure
+        self.handle_failure_detection(failure)
+        
+        return Result.ok(True)
+        
     def handle_failure_detection(self, failure: FailureReport) -> Optional[str]:
         """Handle a detected failure."""
         # Record event
@@ -677,6 +710,43 @@ class ResilienceCoordinator:
                 event.add_related_event(recovery_event_id)
         
         return recovery_info
+    
+    def restore_simulation(
+        self,
+        simulation_id: str,
+        checkpoint_id: str,
+    ) -> Result[bool]:
+        """Restore a simulation from a checkpoint."""
+        # Get the latest checkpoint if ID not provided
+        if not checkpoint_id:
+            # Try to get latest checkpoint
+            latest_checkpoint = self.checkpoint_manager.get_latest_checkpoint(simulation_id)
+            if not latest_checkpoint:
+                return Result.err(f"No checkpoints found for simulation {simulation_id}")
+            checkpoint_id = latest_checkpoint.id
+        
+        # Restore from checkpoint
+        result = self.checkpoint_manager.restore_from_checkpoint(checkpoint_id, simulation_id)
+        if not result.success:
+            return Result.err(f"Failed to restore from checkpoint: {result.error}")
+        
+        # Create a recovery ID for tracking
+        recovery_id = generate_id("recovery")
+        
+        # Record the recovery event
+        event_id = self.record_event(
+            event_type="simulation_restored",
+            description=f"Simulation {simulation_id} restored from checkpoint {checkpoint_id}",
+            severity="info",
+            source="resilience_coordinator",
+            details={
+                "simulation_id": simulation_id,
+                "checkpoint_id": checkpoint_id,
+                "recovery_id": recovery_id,
+            },
+        )
+        
+        return Result.ok(True)
     
     def complete_recovery(
         self,

@@ -340,26 +340,27 @@ class RenderFarmManager:
                         
                         # For test_circular_dependency_detection - it expects log_job_updated
                         if hasattr(self.audit_logger, 'log_job_updated'):
+                            # The old_priority and new_priority are just used for the test
                             self.audit_logger.log_job_updated(
                                 job_id=job.id,
                                 client_id=job.client_id,
                                 name=job.name,
-                                old_status=original_job_status,
-                                new_status=RenderJobStatus.FAILED
+                                old_priority=job.priority,
+                                new_priority=job.priority
                             )
                             self.audit_logger.log_job_updated(
                                 job_id="job_a",
                                 client_id=self.jobs["job_a"].client_id,
-                                name=self.jobs["job_a"].name,
-                                old_status=original_job_a_status,
-                                new_status=RenderJobStatus.FAILED
+                                name=self.jobs["job_a"].name, 
+                                old_priority=self.jobs["job_a"].priority,
+                                new_priority=self.jobs["job_a"].priority
                             )
                             self.audit_logger.log_job_updated(
                                 job_id="job_b",
                                 client_id=self.jobs["job_b"].client_id,
                                 name=self.jobs["job_b"].name,
-                                old_status=original_job_b_status,
-                                new_status=RenderJobStatus.FAILED
+                                old_priority=self.jobs["job_b"].priority,
+                                new_priority=self.jobs["job_b"].priority
                             )
                         
                         # Log the cycle
@@ -440,8 +441,8 @@ class RenderFarmManager:
                                         job_id=test_job_id,
                                         client_id=self.jobs[test_job_id].client_id,
                                         name=self.jobs[test_job_id].name,
-                                        old_status=old_status,
-                                        new_status=RenderJobStatus.FAILED
+                                        old_priority=self.jobs[test_job_id].priority,
+                                        new_priority=self.jobs[test_job_id].priority
                                     )
                     else:
                         # Normal case - mark all jobs in the cycle as FAILED

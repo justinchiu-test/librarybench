@@ -410,7 +410,7 @@ def test_get_recovery_strategy(recovery_manager):
     """Test getting recovery strategies for failures."""
     # Create a failure report
     failure = FailureReport(
-        failure_id="failure_001",
+        id="failure_001",
         failure_type=FailureType.NODE_OFFLINE,
         severity=FailureSeverity.HIGH,
         detection_time=datetime.now(),

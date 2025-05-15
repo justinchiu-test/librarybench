@@ -845,7 +845,7 @@ class TestResilienceCoordinator:
         """Test handling detected failures."""
         # Create a failure report
         failure = FailureReport(
-            failure_id="failure-123",
+            id="failure-123",
             failure_type=FailureType.MEMORY_EXHAUSTION,
             severity=FailureSeverity.HIGH,
             detection_time=datetime.now(),

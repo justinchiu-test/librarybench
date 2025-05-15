@@ -66,7 +66,7 @@ class FailureReport:
 
     def __init__(
         self,
-        failure_id: str,
+        id: str,
         failure_type: FailureType,
         severity: FailureSeverity,
         detection_time: datetime,
@@ -77,7 +77,7 @@ class FailureReport:
         description: Optional[str] = None,
         details: Optional[Dict[str, str]] = None,
     ):
-        self.id = failure_id
+        self.id = id
         self.failure_type = failure_type
         self.severity = severity
         self.detection_time = detection_time
@@ -378,7 +378,7 @@ class FailureDetector:
                 failure_type = self._determine_failure_type(error)
                 
                 failure = FailureReport(
-                    failure_id=generate_id("failure"),
+                    id=generate_id("failure"),
                     failure_type=failure_type,
                     severity=FailureSeverity.HIGH,
                     detection_time=datetime.now(),
@@ -416,7 +416,7 @@ class FailureDetector:
                 failure_type = self._determine_failure_type(warning)
                 
                 failure = FailureReport(
-                    failure_id=generate_id("failure"),
+                    id=generate_id("failure"),
                     failure_type=failure_type,
                     severity=FailureSeverity.MEDIUM,
                     detection_time=datetime.now(),
@@ -443,7 +443,7 @@ class FailureDetector:
                         # If running for 2x the estimated time with < 50% progress, consider it stalled
                         if time_running > 2 * estimated_time and stage.progress < 0.5:
                             failure = FailureReport(
-                                failure_id=generate_id("failure"),
+                                id=generate_id("failure"),
                                 failure_type=FailureType.TIMEOUT,
                                 severity=FailureSeverity.MEDIUM,
                                 detection_time=datetime.now(),
@@ -458,6 +458,19 @@ class FailureDetector:
         
         return failures
     
+    def record_failure(self, failure: FailureReport) -> None:
+        """Record an existing failure report."""
+        self.failure_reports[failure.id] = failure
+        
+        # Update failure counts
+        if failure.node_id:
+            count = self.node_failure_counts.get(failure.node_id, 0) + 1
+            self.node_failure_counts[failure.node_id] = count
+        
+        if failure.simulation_id:
+            count = self.simulation_failure_counts.get(failure.simulation_id, 0) + 1
+            self.simulation_failure_counts[failure.simulation_id] = count
+    
     def report_failure(
         self,
         failure_type: FailureType,
@@ -470,7 +483,7 @@ class FailureDetector:
     ) -> FailureReport:
         """Manually report a failure."""
         failure = FailureReport(
-            failure_id=generate_id("failure"),
+            id=generate_id("failure"),
             failure_type=failure_type,
             severity=severity,
             detection_time=datetime.now(),

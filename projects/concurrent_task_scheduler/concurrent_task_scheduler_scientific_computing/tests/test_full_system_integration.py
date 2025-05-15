@@ -399,7 +399,7 @@ class TestEndToEndWorkflow:
         # Restore the simulation
         restore_result = resilience_coordinator.restore_simulation(
             simulation_id=atm_sim.id,
-            checkpoint_id=latest_checkpoint.checkpoint_id
+            checkpoint_id=latest_checkpoint.id
         )
         
         # Verify restoration succeeded

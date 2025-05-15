@@ -177,6 +177,72 @@ class DatasetVersioningService:
         """
         return self._storage.delete_dataset(dataset_id)
     
+    def add_derivation(
+        self,
+        derived_dataset_id: UUID,
+        source_dataset_id: UUID,
+        transformation: str
+    ) -> UUID:
+        """
+        Create a relationship between a derived dataset and its source.
+        
+        Args:
+            derived_dataset_id: The ID of the derived dataset
+            source_dataset_id: The ID of the source dataset
+            transformation: Description of the transformation
+            
+        Returns:
+            UUID: The ID of the created transformation record
+            
+        Raises:
+            ValueError: If either dataset doesn't exist
+        """
+        # Check if both datasets exist
+        derived_dataset = self._storage.get_dataset(derived_dataset_id)
+        if not derived_dataset:
+            raise ValueError(f"Derived dataset with ID {derived_dataset_id} does not exist")
+            
+        source_dataset = self._storage.get_dataset(source_dataset_id)
+        if not source_dataset:
+            raise ValueError(f"Source dataset with ID {source_dataset_id} does not exist")
+        
+        # Create a transformation record
+        # For simplicity, we'll use the latest version of each dataset if available
+        # or create a dummy version if none exists
+        source_versions = self._storage.list_dataset_versions(source_dataset_id)
+        derived_versions = self._storage.list_dataset_versions(derived_dataset_id)
+        
+        source_version_id = source_versions[0].id if source_versions else None
+        derived_version_id = derived_versions[0].id if derived_versions else None
+        
+        # If no versions exist, we can't create a proper transformation record
+        if not source_version_id or not derived_version_id:
+            # Create a simple "dummy" relationship by using custom metadata
+            if not source_version_id:
+                source_version_id = self.create_dataset_version(
+                    dataset_id=source_dataset_id,
+                    version_number="1.0",
+                    description="Initial version"
+                )
+                
+            if not derived_version_id:
+                derived_version_id = self.create_dataset_version(
+                    dataset_id=derived_dataset_id,
+                    version_number="1.0",
+                    description="Initial version"
+                )
+        
+        # Now create the transformation record
+        transformation_id = self.create_data_transformation(
+            input_dataset_version_id=source_version_id,
+            output_dataset_version_id=derived_version_id,
+            transformation_type=DataTransformationType.OTHER,  # Use OTHER since there's no CUSTOM type
+            name="Dataset Derivation",
+            description=transformation
+        )
+        
+        return transformation_id
+    
     def list_datasets(
         self, 
         format: Optional[Union[DatasetFormat, str]] = None, 

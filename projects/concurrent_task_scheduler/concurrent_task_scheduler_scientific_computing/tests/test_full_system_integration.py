@@ -24,17 +24,17 @@ from concurrent_task_scheduler.models.simulation import (
 from concurrent_task_scheduler.models.checkpoint import (
     Checkpoint,
     CheckpointPolicy,
-    CheckpointValidationResult,
 )
+from concurrent_task_scheduler.failure_resilience.checkpoint_manager import ValidationResult as CheckpointValidationResult
 from concurrent_task_scheduler.models.resource_forecast import (
     ResourceForecast,
     ResourceType,
     ResourceUsagePattern,
 )
 
-from concurrent_task_scheduler.job_management.scheduler import Scheduler
+from concurrent_task_scheduler.job_management.scheduler import JobScheduler as Scheduler
 from concurrent_task_scheduler.job_management.queue import JobQueue
-from concurrent_task_scheduler.job_management.reservation import ResourceReservation
+from concurrent_task_scheduler.job_management.scheduler import ResourceReservation
 
 from concurrent_task_scheduler.dependency_tracking.graph import DependencyGraph
 from concurrent_task_scheduler.dependency_tracking.tracker import DependencyTracker

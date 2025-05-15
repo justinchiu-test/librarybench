@@ -15,6 +15,7 @@ from concurrent_task_scheduler.models.resource_forecast import (
     ForecastPeriod,
     ResourceForecast,
     ResourceProjection,
+    ResourceUsagePattern,
     ResourceUtilizationHistory,
     UtilizationDataPoint,
 )
@@ -66,6 +67,7 @@ __all__ = [
     "ForecastPeriod",
     "ResourceForecast",
     "ResourceProjection",
+    "ResourceUsagePattern",
     "ResourceUtilizationHistory",
     "UtilizationDataPoint",
     

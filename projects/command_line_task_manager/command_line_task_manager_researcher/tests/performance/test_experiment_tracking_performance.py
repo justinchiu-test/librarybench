@@ -88,8 +88,15 @@ def create_experiment_with_runs(service, num_runs=10, params_per_run=5, metrics_
             (MetricType.CUSTOM, "inference_time", lambda: random.uniform(10.0, 500.0)),
         ]
         
-        for _ in range(metrics_per_run):
-            metric_type, name, value_func = random.choice(metric_types)
+        # Add exactly metrics_per_run metrics, repeating with numbered suffixes if needed
+        for j in range(metrics_per_run):
+            metric_idx = j % len(metric_types)  # Wrap around if needed
+            metric_type, base_name, value_func = metric_types[metric_idx]
+            
+            # If we need more metrics than types, add a suffix
+            suffix = f"_{j//len(metric_types) + 1}" if j >= len(metric_types) else ""
+            name = f"{base_name}{suffix}"
+                    
             service.add_run_metric(
                 run_id=run.id,
                 name=name,

@@ -254,8 +254,10 @@ def test_format_comparison_table(visualizer):
     
     table = visualizer.format_comparison_table(comparison_data)
     
-    # Check for table header and all metrics
-    assert "| Run/Experiment | accuracy | f1 | loss | precision |" in table.replace(" ", "")
+    # Check for table header and all metrics (ignore whitespace, considering both cases)
+    replaced = table.replace(" ", "")
+    # Fix for comparison - both of these pattern formats should be acceptable
+    assert "|Run/Experiment|accuracy|f1|loss|precision|" in replaced or "|Run/Experiment|accuracy|f1|loss|precision|" in replaced
     
     # Check for data rows (order might vary for metrics, so we check more loosely)
     assert "| Experiment A:Run 1 |" in table

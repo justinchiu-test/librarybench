@@ -1552,3 +1552,55 @@ class EnvironmentService:
             ValueError: If environments don't exist
         """
         return self.compare_snapshots(env_id1, env_id2)
+        
+    def clone_snapshot(self, source_id: UUID, name: str, description: Optional[str] = None) -> EnvironmentSnapshot:
+        """
+        Clone an existing environment snapshot with a new name and description.
+        
+        Args:
+            source_id: The ID of the source snapshot to clone
+            name: Name for the new snapshot
+            description: Description for the new snapshot
+            
+        Returns:
+            EnvironmentSnapshot: The newly created snapshot
+            
+        Raises:
+            ValueError: If source snapshot doesn't exist
+        """
+        # Get the source snapshot
+        source = self._storage.get_environment(source_id)
+        if not source:
+            raise ValueError(f"Environment snapshot with ID {source_id} does not exist")
+        
+        # Create a new snapshot with the same properties but a different ID
+        snapshot = EnvironmentSnapshot(
+            name=name,
+            description=description or f"Clone of {source.name}",
+            type=source.type,
+            python_version=source.python_version,
+            os_type=source.os_type,
+            os_version=source.os_version,
+            architecture=source.architecture,
+            kernel_version=source.kernel_version,
+            environment_variables=source.environment_variables.copy(),
+            packages=source.packages.copy() if hasattr(source.packages, 'copy') else source.packages,
+            compute_resources=source.compute_resources.copy() if hasattr(source.compute_resources, 'copy') else source.compute_resources,
+            config_files=source.config_files.copy(),
+            container_image=source.container_image,
+            container_tag=source.container_tag,
+            container_digest=source.container_digest,
+            cloud_provider=source.cloud_provider,
+            cloud_region=source.cloud_region,
+            instance_type=source.instance_type,
+            git_commit=source.git_commit,
+            git_repository=source.git_repository,
+            git_branch=source.git_branch,
+            tags=source.tags.copy(),
+            custom_metadata=source.custom_metadata.copy(),
+        )
+        
+        # Save the new snapshot
+        self._storage.create_environment(snapshot)
+        
+        return snapshot

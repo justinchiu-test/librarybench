@@ -1,7 +1,6 @@
 """Long-running job management system for scientific simulations."""
 
 from concurrent_task_scheduler.job_management.queue import (
-    ConflictResolution,
     FairnessMetric,
     JobQueue,
     PreemptionAction,
@@ -12,6 +11,7 @@ from concurrent_task_scheduler.job_management.queue import (
     QueueStats,
 )
 from concurrent_task_scheduler.job_management.reservation import (
+    ConflictResolution,
     MaintenanceWindow,
     Reservation,
     ReservationConflict,
@@ -30,7 +30,6 @@ from concurrent_task_scheduler.job_management.scheduler import (
 
 __all__ = [
     # Queue Management
-    "ConflictResolution",
     "FairnessMetric",
     "JobQueue",
     "PreemptionAction",
@@ -41,6 +40,7 @@ __all__ = [
     "QueueStats",
     
     # Reservation System
+    "ConflictResolution",
     "MaintenanceWindow",
     "Reservation",
     "ReservationConflict",

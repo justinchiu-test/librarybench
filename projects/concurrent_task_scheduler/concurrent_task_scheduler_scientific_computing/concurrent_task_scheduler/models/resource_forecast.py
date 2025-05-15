@@ -12,6 +12,19 @@ from pydantic import BaseModel, Field
 from concurrent_task_scheduler.models.simulation import ResourceType
 
 
+class ResourceUsagePattern(str, Enum):
+    """Patterns of resource usage over time."""
+    
+    CONSTANT = "constant"  # Consistent usage
+    INCREASING = "increasing"  # Gradually increasing usage
+    DECREASING = "decreasing"  # Gradually decreasing usage
+    SPIKY = "spiky"  # Usage with periodic spikes
+    CYCLICAL = "cyclical"  # Predictable cycles of usage
+    WAVE = "wave"  # Smooth sine-wave-like pattern
+    BURST = "burst"  # Low baseline with occasional bursts
+    RANDOM = "random"  # Unpredictable usage patterns
+
+
 class ForecastPeriod(str, Enum):
     """Time periods for resource forecasts."""
 

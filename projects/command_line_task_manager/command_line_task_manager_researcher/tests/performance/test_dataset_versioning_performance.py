@@ -301,8 +301,12 @@ class TestDatasetVersioningPerformance:
             links = self.service.get_links_by_task(task_id)
             query_times.append(time.time() - start_time)
         
-        for i in range(20):  # Test with 20 random versions
-            version_id = version_ids[i * 10]
+        # Test with available versions (up to 20)
+        num_test_versions = min(20, len(version_ids))
+        for i in range(num_test_versions):
+            # Calculate index to avoid going out of bounds
+            idx = (i * len(version_ids) // num_test_versions) if num_test_versions > 1 else 0
+            version_id = version_ids[idx]
             
             start_time = time.time()
             tasks = self.service.get_tasks_by_dataset_version(version_id)

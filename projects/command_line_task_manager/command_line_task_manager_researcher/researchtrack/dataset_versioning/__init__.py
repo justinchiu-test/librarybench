@@ -169,4 +169,28 @@ class DatasetService:
         """
         return self._versioning_service.list_dataset_versions(dataset_id)
     
+    def add_derivation(
+        self,
+        derived_dataset_id: UUID,
+        source_dataset_id: UUID,
+        transformation: str
+    ) -> UUID:
+        """
+        Create a relationship between a derived dataset and its source.
+        
+        Args:
+            derived_dataset_id: The ID of the derived dataset
+            source_dataset_id: The ID of the source dataset
+            transformation: Description of the transformation
+            
+        Returns:
+            UUID: The ID of the created transformation record
+        """
+        # Delegate to the versioning service
+        return self._versioning_service.add_derivation(
+            derived_dataset_id=derived_dataset_id,
+            source_dataset_id=source_dataset_id,
+            transformation=transformation
+        )
+        
     # Add any other methods needed for integration tests

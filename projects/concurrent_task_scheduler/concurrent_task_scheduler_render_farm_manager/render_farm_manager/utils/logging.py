@@ -29,6 +29,9 @@ class AuditLogger(AuditInterface):
         Returns:
             The created audit log entry
         """
+        # Get the log level from details, defaulting to INFO
+        log_level = details.get("log_level", "info")
+        
         entry = AuditLogEntry(
             timestamp=datetime.now(),
             event_type=event_type,
@@ -40,12 +43,45 @@ class AuditLogger(AuditInterface):
         )
         
         self.logs.append(entry)
-        self.logger.info(
-            f"{entry.timestamp} - {event_type}: {description} "
-            f"(job_id={entry.job_id}, node_id={entry.node_id}, client_id={entry.client_id})"
-        )
+        
+        # Log at the appropriate level
+        if log_level == "error":
+            self.logger.error(
+                f"{entry.timestamp} - {event_type}: {description} "
+                f"(job_id={entry.job_id}, node_id={entry.node_id}, client_id={entry.client_id})"
+            )
+        elif log_level == "warning":
+            self.logger.warning(
+                f"{entry.timestamp} - {event_type}: {description} "
+                f"(job_id={entry.job_id}, node_id={entry.node_id}, client_id={entry.client_id})"
+            )
+        else:  # default to info
+            self.logger.info(
+                f"{entry.timestamp} - {event_type}: {description} "
+                f"(job_id={entry.job_id}, node_id={entry.node_id}, client_id={entry.client_id})"
+            )
         
         return entry
+        
+    def log_error(self, message: str, source: str, severity: str) -> AuditLogEntry:
+        """
+        Log an error event.
+        
+        Args:
+            message: Error message
+            source: Source of the error
+            severity: Severity level
+            
+        Returns:
+            The created audit log entry
+        """
+        return self.log_event(
+            "error",
+            message,
+            source=source,
+            log_level="error",
+            severity=severity
+        )
     
     def get_job_history(self, job_id: str) -> List[AuditLogEntry]:
         """
@@ -125,6 +161,9 @@ class PerformanceMonitor:
         self.audit_logger = audit_logger
         self.operation_times: Dict[str, List[float]] = {}
         self.client_metrics: Dict[str, Dict[str, float]] = {}
+        self.node_metrics: Dict[str, Dict[str, float]] = {}
+        self.job_metrics: Dict[str, Dict[str, float]] = {}
+        self.failure_count: int = 0
         
     def time_operation(self, operation_name: str) -> 'TimedOperation':
         """
@@ -201,6 +240,106 @@ class PerformanceMonitor:
             f"Energy cost savings recorded: {amount:.2f} in {mode} mode",
             amount=amount,
             mode=mode,
+        )
+    
+    def update_scheduling_cycle_time(self, duration_ms: float, jobs_scheduled: int) -> None:
+        """
+        Update the time taken for a scheduling cycle.
+        
+        Args:
+            duration_ms: Duration of the scheduling cycle in milliseconds
+            jobs_scheduled: Number of jobs scheduled in this cycle
+        """
+        self.record_operation_time("scheduling_cycle", duration_ms)
+        
+        self.audit_logger.log_event(
+            "scheduling_cycle_metrics",
+            f"Scheduling cycle completed in {duration_ms:.2f}ms with {jobs_scheduled} jobs scheduled",
+            duration_ms=duration_ms,
+            jobs_scheduled=jobs_scheduled,
+        )
+    
+    def update_job_turnaround_time(self, job_id: str, turnaround_hours: float, client_id: str) -> None:
+        """
+        Update the turnaround time for a completed job.
+        
+        Args:
+            job_id: ID of the job
+            turnaround_hours: Time from submission to completion in hours
+            client_id: ID of the client that submitted the job
+        """
+        if job_id not in self.job_metrics:
+            self.job_metrics[job_id] = {}
+            
+        self.job_metrics[job_id]["turnaround_hours"] = turnaround_hours
+        
+        self.audit_logger.log_event(
+            "job_turnaround_time",
+            f"Job {job_id} completed with turnaround time of {turnaround_hours:.2f} hours",
+            job_id=job_id,
+            turnaround_hours=turnaround_hours,
+            client_id=client_id,
+        )
+    
+    def update_node_utilization(self, node_id: str, utilization_percentage: float) -> None:
+        """
+        Update the utilization percentage for a node.
+        
+        Args:
+            node_id: ID of the node
+            utilization_percentage: Percentage of time the node is utilized
+        """
+        if node_id not in self.node_metrics:
+            self.node_metrics[node_id] = {}
+            
+        self.node_metrics[node_id]["utilization_percentage"] = utilization_percentage
+        
+        self.audit_logger.log_event(
+            "node_utilization",
+            f"Node {node_id} utilization updated to {utilization_percentage:.2f}%",
+            node_id=node_id,
+            utilization_percentage=utilization_percentage,
+        )
+    
+    def update_client_job_count(self, client_id: str, job_count: int) -> None:
+        """
+        Update the number of jobs for a client.
+        
+        Args:
+            client_id: ID of the client
+            job_count: Current number of jobs for the client
+        """
+        if client_id not in self.client_metrics:
+            self.client_metrics[client_id] = {}
+            
+        self.client_metrics[client_id]["job_count"] = job_count
+        
+        self.audit_logger.log_event(
+            "client_job_count",
+            f"Client {client_id} job count updated to {job_count}",
+            client_id=client_id,
+            job_count=job_count,
+        )
+    
+    def update_node_failure_count(self, node_id: str = None) -> None:
+        """
+        Increment the node failure count.
+        
+        Args:
+            node_id: Optional ID of the node that failed
+        """
+        self.failure_count += 1
+        
+        log_details = {"failure_count": self.failure_count}
+        if node_id:
+            log_details["node_id"] = node_id
+            
+        self.audit_logger.log_event(
+            "node_failure_count",
+            f"Node failure count incremented to {self.failure_count}" + 
+            (f" (node: {node_id})" if node_id else ""),
+            **log_details,
+            log_level="warning",
         )
     
     def get_average_operation_time(self, operation_name: str) -> Optional[float]:

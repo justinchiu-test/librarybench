@@ -174,12 +174,20 @@ def test_large_research_project_performance(services):
             # Create parameters
             parameters = []
             for k in range(10):
+                # Choose a type first
+                param_type = random.choice(["float", "integer", "string"])
+                # Then pick an appropriate value for that type
+                if param_type == "float":
+                    param_value = random.random() * 100
+                elif param_type == "integer":
+                    param_value = random.randint(1, 100)
+                else:  # string
+                    param_value = random_string(5)
+                
                 param = services["experiment"].add_parameter(
                     name=f"param{k+1}",
-                    type=random.choice(["float", "integer", "string"]),
-                    value=random.random() if k % 3 == 0 else (
-                        random.randint(1, 100) if k % 3 == 1 else random_string(5)
-                    )
+                    type=param_type,
+                    value=param_value
                 )
                 parameters.append(param)
             

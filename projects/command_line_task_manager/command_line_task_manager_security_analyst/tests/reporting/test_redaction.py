@@ -200,12 +200,10 @@ def test_redaction_engine_comprehensive():
     assert "192.168.1.100" not in json.dumps(medium_redacted)  # IP redacted at MEDIUM
     assert "10.0.0.15" not in json.dumps(medium_redacted)  # IP in array redacted
     
-    # Field-specific redaction levels
+    # Field-specific redaction levels - use flattened structure
     field_levels = {
         "customer": RedactionLevel.HIGH,
-        "technical_details": {
-            "ip_address": RedactionLevel.NONE  # Override to not redact IP
-        }
+        "technical_details.ip_address": RedactionLevel.NONE  # Override to not redact IP using dot notation
     }
     
     custom_redacted = engine.redact_dict(test_data, RedactionLevel.MEDIUM, field_levels)

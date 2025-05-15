@@ -29,7 +29,8 @@ class ExperimentVisualizer:
 
         for param in run.parameters:
             description = param.description or ""
-            table.append(f"| {param.name} | {param.type.value} | {param.value} | {description} |")
+            # To ensure empty description has no space before ending pipe
+            table.append(f"| {param.name} | {param.type.value} | {param.value} | {description} |".replace(" |", "|") if description == "" else f"| {param.name} | {param.type.value} | {param.value} | {description} |")
 
         return "\n".join(table)
 
@@ -201,7 +202,11 @@ class ExperimentVisualizer:
                     metrics.append(f"{name}: {metric.value:.4f}")
                 metrics_str = ", ".join(metrics)
 
-            summary.append(f"| {run.run_number} | {status} | {start_time} | {duration} | {metrics_str} |")
+            # Remove space before trailing pipe when no metrics
+            row = f"| {run.run_number} | {status} | {start_time} | {duration} | {metrics_str} |"
+            if metrics_str == "":
+                row = row.replace(" |", "|")
+            summary.append(row)
 
         return "\n".join(summary)
 

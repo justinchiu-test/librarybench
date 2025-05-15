@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID
 
@@ -30,7 +31,7 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def create_experiment(self, experiment: Experiment) -> UUID:
+    def create_experiment(self, experiment: Experiment) -> Experiment:
         """
         Create a new experiment.
         
@@ -38,7 +39,7 @@ class ExperimentStorageInterface(ABC):
             experiment: The experiment to create
             
         Returns:
-            UUID: The ID of the created experiment
+            Experiment: The created experiment (with ID)
         """
         pass
     
@@ -167,7 +168,7 @@ class ExperimentStorageInterface(ABC):
         pass
     
     @abstractmethod
-    def create_comparison(self, comparison: ExperimentComparison) -> UUID:
+    def create_comparison(self, comparison: ExperimentComparison) -> ExperimentComparison:
         """
         Create a new experiment comparison.
         
@@ -175,7 +176,7 @@ class ExperimentStorageInterface(ABC):
             comparison: The experiment comparison to create
             
         Returns:
-            UUID: The ID of the created comparison
+            ExperimentComparison: The created comparison (with ID)
         """
         pass
     
@@ -252,9 +253,18 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
                 return experiment
         return None
     
-    def create_experiment(self, experiment: Experiment) -> UUID:
+    def create_experiment(self, experiment: Experiment) -> Experiment:
+        """
+        Create a new experiment.
+        
+        Args:
+            experiment: The experiment to create
+            
+        Returns:
+            Experiment: The created experiment (with ID)
+        """
         self._experiments[experiment.id] = experiment
-        return experiment.id
+        return experiment
     
     def get_experiment(self, experiment_id: UUID) -> Optional[Experiment]:
         return self._experiments.get(experiment_id)
@@ -343,6 +353,8 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
             for i, existing_run in enumerate(experiment.runs):
                 if existing_run.id == run.id:
                     experiment.runs[i] = run
+                    # Update experiment last modified time
+                    experiment.updated_at = datetime.now()
                     break
         
         return run
@@ -385,9 +397,18 @@ class InMemoryExperimentStorage(ExperimentStorageInterface):
         
         return runs
     
-    def create_comparison(self, comparison: ExperimentComparison) -> UUID:
+    def create_comparison(self, comparison: ExperimentComparison) -> ExperimentComparison:
+        """
+        Create a new experiment comparison.
+        
+        Args:
+            comparison: The comparison to create
+            
+        Returns:
+            ExperimentComparison: The created comparison (with ID)
+        """
         self._comparisons[comparison.id] = comparison
-        return comparison.id
+        return comparison
     
     def get_comparison(self, comparison_id: UUID) -> Optional[ExperimentComparison]:
         return self._comparisons.get(comparison_id)

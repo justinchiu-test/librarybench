@@ -132,8 +132,10 @@ class RenderJob(BaseModel):
     error_count: int = Field(default=0, ge=0)
     can_be_preempted: bool = True
     supports_progressive_output: bool = False
+    supports_checkpoint: bool = False
     last_checkpoint_time: Optional[datetime] = None
     last_progressive_output_time: Optional[datetime] = None
+    energy_intensive: bool = False
     
     def model_copy(self, **kwargs):
         """Create a copy of the model."""
@@ -162,6 +164,24 @@ class RenderClient(BaseModel):
     service_tier: ServiceTier
     guaranteed_resources: int = Field(default=0, ge=0)  # Percentage of resources guaranteed
     max_resources: int = Field(default=100, ge=0)  # Maximum percentage of resources allowed
+    
+    @property
+    def id(self) -> str:
+        """Get the client ID (alias for client_id for compatibility)."""
+        return self.client_id
+    
+    @property
+    def sla_tier(self) -> str:
+        """Get the SLA tier (alias for service_tier for compatibility)."""
+        return self.service_tier
+    
+    def model_copy(self, **kwargs):
+        """Create a copy of the model."""
+        return self.__class__(**{**self.model_dump(), **kwargs})
+    
+    def copy(self, **kwargs):
+        """Deprecated copy method."""
+        return self.model_copy(**kwargs)
 
 
 class ProgressiveOutputConfig(BaseModel):

@@ -3,7 +3,7 @@
 import logging
 import math
 from collections import defaultdict
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Any
 
 from render_farm_manager.core.interfaces import ResourceManagerInterface
 from render_farm_manager.core.models import (
@@ -46,25 +46,150 @@ class ResourcePartitioner(ResourceManagerInterface):
         self.allow_borrowing = allow_borrowing
         self.borrowing_limit_percentage = borrowing_limit_percentage
         self.logger = logging.getLogger("render_farm.resource_partitioner")
+        
+        # Added to maintain state for tests
+        self.clients: Dict[str, Client] = {}
+        self.nodes: Dict[str, RenderNode] = {}
+        self.client_demand: Dict[str, float] = {}
+        self.current_allocations: Dict[str, ResourceAllocation] = {}
     
-    def allocate_resources(self, clients: List[Client], nodes: List[RenderNode]) -> Dict[str, ResourceAllocation]:
+    def add_client(self, client: Client) -> None:
+        """
+        Add a client to the resource partitioner.
+        
+        Args:
+            client: The client to add
+        """
+        self.clients[client.id] = client
+        self.client_demand[client.id] = 0.0
+        
+        self.audit_logger.log_event(
+            "client_added_to_partitioner",
+            f"Client {client.id} ({client.name}) added to resource partitioner",
+            client_id=client.id,
+            client_name=client.name,
+            sla_tier=client.sla_tier,
+            guaranteed_resources=client.guaranteed_resources,
+            max_resources=client.max_resources,
+        )
+    
+    def add_node(self, node: RenderNode) -> None:
+        """
+        Add a node to the resource partitioner.
+        
+        Args:
+            node: The node to add
+        """
+        self.nodes[node.id] = node
+        
+        self.audit_logger.log_event(
+            "node_added_to_partitioner",
+            f"Node {node.id} ({node.name}) added to resource partitioner",
+            node_id=node.id,
+            node_name=node.name,
+            node_status=node.status,
+        )
+    
+    def update_client_demand(self, client_id: str, demand_percentage: float) -> None:
+        """
+        Update the demand percentage for a client.
+        
+        Args:
+            client_id: ID of the client
+            demand_percentage: The new demand percentage (0-100)
+        """
+        if client_id in self.client_demand:
+            # When the demand changes, we need to reset the resource allocations
+            self.current_allocations = {}
+            
+            # Update the demand
+            self.client_demand[client_id] = max(0.0, min(100.0, demand_percentage))
+            
+            self.audit_logger.log_event(
+                "client_demand_updated",
+                f"Client {client_id} demand updated to {self.client_demand[client_id]:.2f}%",
+                client_id=client_id,
+                demand_percentage=self.client_demand[client_id],
+            )
+    
+    def get_borrowed_percentage(self, client_id: str) -> float:
+        """
+        Get the percentage of resources borrowed by a client.
+        
+        Args:
+            client_id: ID of the client
+            
+        Returns:
+            Percentage of resources borrowed
+        """
+        if client_id in self.current_allocations:
+            return self.current_allocations[client_id].borrowed_percentage
+        return 0.0
+    
+    def get_lent_percentage(self, client_id: str) -> float:
+        """
+        Get the percentage of resources lent by a client.
+        
+        Args:
+            client_id: ID of the client
+            
+        Returns:
+            Percentage of resources lent
+        """
+        if client_id in self.current_allocations:
+            return self.current_allocations[client_id].lent_percentage
+        return 0.0
+    
+    def get_borrowed_from(self, client_id: str) -> Dict[str, float]:
+        """
+        Get the clients that this client is borrowing resources from.
+        
+        Args:
+            client_id: ID of the client
+            
+        Returns:
+            Dictionary mapping client IDs to borrowed percentages
+        """
+        if client_id in self.current_allocations:
+            return self.current_allocations[client_id].borrowed_from
+        return {}
+    
+    def get_lent_to(self, client_id: str) -> Dict[str, float]:
+        """
+        Get the clients that this client is lending resources to.
+        
+        Args:
+            client_id: ID of the client
+            
+        Returns:
+            Dictionary mapping client IDs to lent percentages
+        """
+        if client_id in self.current_allocations:
+            return self.current_allocations[client_id].lent_to
+        return {}
+    
+    def allocate_resources(self, clients: Optional[List[Client]] = None, nodes: Optional[List[RenderNode]] = None) -> Dict[str, ResourceAllocation]:
         """
         Allocate resources to clients based on SLAs and current demands.
         
         Args:
-            clients: List of clients
-            nodes: List of available render nodes
+            clients: List of clients (if None, use stored clients)
+            nodes: List of available render nodes (if None, use stored nodes)
             
         Returns:
             Dictionary mapping client IDs to their resource allocations
         """
         with self.performance_monitor.time_operation("allocate_resources"):
+            # Use provided clients/nodes or fall back to stored ones
+            clients_list = clients if clients is not None else list(self.clients.values())
+            nodes_list = nodes if nodes is not None else list(self.nodes.values())
+            
             # Calculate total available resources (number of nodes)
-            total_nodes = len(nodes)
+            total_nodes = len(nodes_list)
             
             # Calculate guaranteed resources for each client
             guaranteed_allocations: Dict[str, int] = {}
-            for client in clients:
+            for client in clients_list:
                 # Calculate how many nodes the client is guaranteed
                 guaranteed_nodes = math.floor(total_nodes * client.guaranteed_resources / 100)
                 guaranteed_allocations[client.id] = guaranteed_nodes
@@ -93,7 +218,7 @@ class ResourcePartitioner(ResourceManagerInterface):
             
             # Prepare resource allocations
             allocations: Dict[str, ResourceAllocation] = {}
-            for client in clients:
+            for client in clients_list:
                 allocations[client.id] = ResourceAllocation(
                     client_id=client.id,
                     allocated_percentage=(guaranteed_allocations[client.id] / total_nodes) * 100 if total_nodes > 0 else 0,
@@ -105,9 +230,9 @@ class ResourcePartitioner(ResourceManagerInterface):
                 )
             
             # Allocate guaranteed nodes to clients
-            available_nodes = list(nodes)  # Make a copy to track available nodes
+            available_nodes = list(nodes_list)  # Make a copy to track available nodes
             
-            for client in clients:
+            for client in clients_list:
                 # Get nodes for this client's guaranteed allocation
                 client_nodes = self._select_nodes_for_client(
                     client, 
@@ -126,17 +251,32 @@ class ResourcePartitioner(ResourceManagerInterface):
             # If resource borrowing is enabled, handle overflow allocation
             if self.allow_borrowing and unallocated_nodes > 0:
                 # Calculate demand for each client (based on pending jobs)
-                client_demand = self._calculate_client_demand(clients, nodes, allocations)
+                client_demand = self.client_demand
+                if not client_demand:
+                    client_demand = self._calculate_client_demand(clients_list, nodes_list, allocations)
                 
                 # Allocate overflow resources based on demand and max allocation limits
                 overflow_allocations = self._allocate_overflow_resources(
-                    clients, available_nodes, client_demand
+                    clients_list, available_nodes, client_demand
                 )
                 
                 # Update allocations with overflow
                 for client_id, overflow_nodes in overflow_allocations.items():
                     # Calculate borrowed percentage
                     borrowed_percentage = (len(overflow_nodes) / total_nodes) * 100
+                    
+                    # Make sure borrowed percentage doesn't exceed the limit for borrowing client
+                    client_obj = next((c for c in clients_list if c.id == client_id), None)
+                    if client_obj and self.borrowing_limit_percentage > 0:
+                        # Calculate maximum borrowable percentage based on client's guaranteed resources
+                        max_borrowable = self.borrowing_limit_percentage
+                        if borrowed_percentage > max_borrowable:
+                            # Adjust overflow nodes to respect the limit
+                            nodes_to_use = math.floor((max_borrowable / 100.0) * total_nodes)
+                            # Make sure we always get at least one node if there are any
+                            nodes_to_use = max(1, nodes_to_use) if overflow_nodes else 0
+                            overflow_nodes = overflow_nodes[:nodes_to_use]
+                            borrowed_percentage = (len(overflow_nodes) / total_nodes) * 100
                     
                     # Add overflow nodes to allocation
                     allocations[client_id].allocated_nodes.extend(overflow_nodes)
@@ -146,9 +286,9 @@ class ResourcePartitioner(ResourceManagerInterface):
                     # Track which clients the resources were borrowed from
                     # (simplified - in a real system, you would track specific borrowing relationships)
                     borrowed_from = {}
-                    for other_client in clients:
+                    for other_client in clients_list:
                         if other_client.id != client_id:
-                            borrowed_from[other_client.id] = borrowed_percentage / (len(clients) - 1)
+                            borrowed_from[other_client.id] = borrowed_percentage / (len(clients_list) - 1)
                     
                     allocations[client_id].borrowed_from = borrowed_from
                     
@@ -174,6 +314,18 @@ class ResourcePartitioner(ResourceManagerInterface):
                     borrowed_percentage=allocation.borrowed_percentage,
                     lent_percentage=allocation.lent_percentage,
                     total_nodes=total_nodes,
+                )
+            
+            # Update our internal state
+            self.current_allocations = allocations
+            
+            # Update performance metrics
+            for client_id, allocation in allocations.items():
+                self.performance_monitor.update_client_resource_metrics(
+                    client_id=client_id,
+                    allocated_percentage=allocation.allocated_percentage,
+                    borrowed_percentage=allocation.borrowed_percentage,
+                    lent_percentage=allocation.lent_percentage,
                 )
             
             return allocations

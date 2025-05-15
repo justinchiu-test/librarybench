@@ -124,6 +124,7 @@ class PerformanceMonitor:
         """
         self.audit_logger = audit_logger
         self.operation_times: Dict[str, List[float]] = {}
+        self.client_metrics: Dict[str, Dict[str, float]] = {}
         
     def time_operation(self, operation_name: str) -> 'TimedOperation':
         """
@@ -155,6 +156,51 @@ class PerformanceMonitor:
             f"Operation '{operation_name}' completed in {duration_ms:.2f}ms",
             operation_name=operation_name,
             duration_ms=duration_ms,
+        )
+    
+    def update_client_resource_metrics(self, client_id: str, allocated_percentage: float, 
+                                      borrowed_percentage: float = 0.0, lent_percentage: float = 0.0) -> None:
+        """
+        Update resource metrics for a client.
+        
+        Args:
+            client_id: ID of the client
+            allocated_percentage: Percentage of resources allocated to the client
+            borrowed_percentage: Percentage of resources borrowed from other clients
+            lent_percentage: Percentage of resources lent to other clients
+        """
+        if client_id not in self.client_metrics:
+            self.client_metrics[client_id] = {}
+            
+        self.client_metrics[client_id].update({
+            "allocated_percentage": allocated_percentage,
+            "borrowed_percentage": borrowed_percentage,
+            "lent_percentage": lent_percentage,
+        })
+        
+        self.audit_logger.log_event(
+            "client_resource_metrics_updated",
+            f"Client {client_id} resource metrics updated: allocated={allocated_percentage:.2f}%, "
+            f"borrowed={borrowed_percentage:.2f}%, lent={lent_percentage:.2f}%",
+            client_id=client_id,
+            allocated_percentage=allocated_percentage,
+            borrowed_percentage=borrowed_percentage,
+            lent_percentage=lent_percentage,
+        )
+    
+    def update_energy_cost_saved(self, amount: float, mode: str) -> None:
+        """
+        Update the amount of energy cost saved.
+        
+        Args:
+            amount: Amount of cost saved
+            mode: Energy mode that enabled the savings
+        """
+        self.audit_logger.log_event(
+            "energy_cost_savings",
+            f"Energy cost savings recorded: {amount:.2f} in {mode} mode",
+            amount=amount,
+            mode=mode,
         )
     
     def get_average_operation_time(self, operation_name: str) -> Optional[float]:
@@ -202,9 +248,22 @@ class PerformanceMonitor:
         
         return min(self.operation_times[operation_name])
     
+    def get_client_metrics(self, client_id: str) -> Dict[str, float]:
+        """
+        Get resource metrics for a client.
+        
+        Args:
+            client_id: ID of the client
+            
+        Returns:
+            Dictionary of resource metrics for the client
+        """
+        return self.client_metrics.get(client_id, {})
+    
     def reset_metrics(self) -> None:
         """Reset all performance metrics."""
         self.operation_times = {}
+        self.client_metrics = {}
 
 
 class TimedOperation:

@@ -68,7 +68,7 @@ def security_assessment_environment():
         }
 
 
-@pytest.mark.skip("Integration test needs full environment setup")
+# Full integration test
 def test_complete_security_assessment_workflow(security_assessment_environment):
     """
     Test the complete security assessment workflow from finding creation to final report.

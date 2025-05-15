@@ -162,27 +162,37 @@ def create_random_finding(index: int, created_days_ago: Optional[int] = None) ->
     if random.random() > 0.2:  # 80% chance to have a remediation plan
         remediation_plan = generate_lorem_ipsum(paragraphs=1, sentences_per_paragraph=random.randint(2, 5))
     
-    return Finding(
-        id=str(uuid.uuid4()),
-        title=title,
-        description=description,
-        affected_systems=affected_systems,
-        discovered_date=discovered_date,
-        discovered_by=random.choice(["security_analyst", "penetration_tester", "security_scanner", "developer", "auditor"]),
-        status=random.choice(statuses),
-        severity=random.choice(severities),
-        cvss_vector=f"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",  # Simplified for tests
-        cvss_score=cvss_score,
-        cvss_severity=cvss_severity,
-        remediation_plan=remediation_plan,
-        remediation_details=remediation_details,
-        remediation_date=remediation_date,
-        tags=[random.choice(["web", "api", "database", "network", "authentication", "authorization", "input-validation"]) 
-              for _ in range(random.randint(1, 5))]
-    )
+    # Build the finding with valid fields
+    finding_data = {
+        "id": str(uuid.uuid4()),
+        "title": title,
+        "description": description,
+        "affected_systems": affected_systems,
+        "discovered_date": discovered_date,
+        "discovered_by": random.choice(["security_analyst", "penetration_tester", "security_scanner", "developer", "auditor"]),
+        "status": random.choice(statuses),
+        "severity": random.choice(severities),
+        "cvss_vector": f"CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",  # Simplified for tests
+        "cvss_score": cvss_score,
+        "cvss_severity": cvss_severity,
+        "remediation_plan": remediation_plan,
+        "tags": [random.choice(["web", "api", "database", "network", "authentication", "authorization", "input-validation"]) 
+                for _ in range(random.randint(1, 5))],
+        "references": [],
+        "notes": [],
+        "evidence_ids": [],
+        "compliance_controls": []
+    }
+    
+    # Add optional fields if they have values
+    if remediation_date:
+        finding_data["remediation_date"] = remediation_date
+        finding_data["remediated_by"] = "remediation_engineer"
+        
+    return Finding(**finding_data)
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_large_findings_repository(stress_test_env):
     """Test repository performance with a large number of findings."""
     env = stress_test_env
@@ -244,7 +254,7 @@ def test_large_findings_repository(stress_test_env):
     assert pagination_time / 5 < 1.0, f"Average pagination took {pagination_time/5:.2f}s, should be <1s"
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_large_evidence_vault(stress_test_env):
     """Test the performance of the evidence vault with many large files."""
     env = stress_test_env
@@ -295,7 +305,7 @@ def test_large_evidence_vault(stress_test_env):
     start_time = time.time()
     for _ in range(20):  # Retrieve 20 random evidence items
         evidence_id = random.choice(evidence_ids)
-        _ = env["evidence_vault"].get(evidence_id)
+        _ = env["evidence_vault"].get_metadata(evidence_id)
     
     retrieve_time = time.time() - start_time
     print(f"Retrieved 20 random evidence items in {retrieve_time:.2f} seconds ({20/retrieve_time:.2f} items/second)")
@@ -309,7 +319,7 @@ def test_large_evidence_vault(stress_test_env):
     # Measure filtered list performance
     start_time = time.time()
     filtered_evidence = env["evidence_vault"].list(
-        filters={"evidence_type": EvidenceType.SCAN_RESULT.value}
+        filters={"type": EvidenceType.NETWORK_CAPTURE.value}
     )
     filter_time = time.time() - start_time
     print(f"Listed {len(filtered_evidence)} filtered evidence items in {filter_time:.2f} seconds")
@@ -321,7 +331,7 @@ def test_large_evidence_vault(stress_test_env):
     assert filter_time < 1.0, f"Filtering {len(evidence_files)} evidence items took {filter_time:.2f}s, should be <1s"
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_large_remediation_tracking(stress_test_env):
     """Test remediation tracking with a large number of tasks and updates."""
     env = stress_test_env
@@ -359,11 +369,22 @@ def test_large_remediation_tracking(stress_test_env):
                 assigned_to=f"developer_{random.randint(1, 10)}"
             )
             
-            # Update task state if not "pending"
-            if state != RemediationState.PENDING:
+            # Update task state if not "open" (initial state)
+            if state != RemediationState.OPEN:
                 task.state = state
-                task.progress_percentage = random.randint(10, 100) if state != RemediationState.CANCELLED else 0
-                task.notes = generate_lorem_ipsum(paragraphs=1, sentences_per_paragraph=2) if random.random() > 0.5 else None
+                # Set progress based on state
+                if state in [RemediationState.CLOSED, RemediationState.FALSE_POSITIVE, RemediationState.DUPLICATE]:
+                    task.progress_percentage = 0
+                else:
+                    task.progress_percentage = random.randint(10, 100)
+                # Notes should be a list of dicts, not a string
+                if random.random() > 0.5:
+                    task.notes = [{
+                        "id": str(uuid.uuid4()),
+                        "timestamp": datetime.now(),
+                        "author": "stress_tester",
+                        "content": generate_lorem_ipsum(paragraphs=1, sentences_per_paragraph=2)
+                    }]
                 task = env["remediation_tracker"].update_task(task)
             
             tasks.append(task)
@@ -389,14 +410,15 @@ def test_large_remediation_tracking(stress_test_env):
     start_time = time.time()
     for _ in range(20):  # Get tasks for 20 random findings
         finding_id = random.choice(finding_ids)
-        _ = env["remediation_tracker"].get_tasks_by_finding(finding_id)
+        # Use list_tasks with a filter instead of get_tasks_by_finding
+        _ = env["remediation_tracker"].list_tasks(filters={"finding_id": finding_id})
     
     list_by_finding_time = time.time() - start_time
     print(f"Listed tasks for 20 random findings in {list_by_finding_time:.2f} seconds ({20/list_by_finding_time:.2f} findings/second)")
     
     # Measure filtering tasks
     start_time = time.time()
-    high_priority_tasks = env["remediation_tracker"].get_tasks(
+    high_priority_tasks = env["remediation_tracker"].list_tasks(
         filters={"priority": RemediationPriority.HIGH.value}
     )
     filter_time = time.time() - start_time
@@ -409,7 +431,7 @@ def test_large_remediation_tracking(stress_test_env):
     assert filter_time < 1.0, f"Filtering {len(tasks)} tasks took {filter_time:.2f}s, should be <1s"
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_large_compliance_framework(stress_test_env):
     """Test compliance framework with many controls, frameworks, and mappings."""
     env = stress_test_env
@@ -516,7 +538,7 @@ def test_large_compliance_framework(stress_test_env):
     
     # Get 10 random frameworks
     for _ in range(10):
-        framework_id = random.choice([f["id"] for f in all_frameworks])
+        framework_id = random.choice([f.id for f in all_frameworks])
         _ = env["compliance_repo"].get_framework(framework_id)
     
     # Get 20 random controls
@@ -527,7 +549,7 @@ def test_large_compliance_framework(stress_test_env):
     # Get findings for 20 random controls
     for _ in range(20):
         framework_id, control_id = random.choice(all_controls)
-        _ = env["compliance_repo"].get_control_findings(framework_id, control_id)
+        _ = env["compliance_repo"].get_findings_for_control(framework_id, control_id)
     
     retrieval_time = time.time() - start_time
     print(f"Performed various compliance retrieval operations in {retrieval_time:.2f} seconds")
@@ -539,7 +561,7 @@ def test_large_compliance_framework(stress_test_env):
     assert retrieval_time < 5.0, f"Compliance retrieval operations took {retrieval_time:.2f}s, should be <5s"
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_large_report_generation(stress_test_env):
     """Test report generation with a large number of findings and evidence."""
     env = stress_test_env
@@ -652,7 +674,7 @@ def test_large_report_generation(stress_test_env):
     # 3. Compliance Report
     start_time = time.time()
     compliance_report = env["report_generator"].generate_report(
-        report_type=ReportType.COMPLIANCE_ASSESSMENT,
+        report_type=ReportType.COMPLIANCE_REPORT,
         title="Large Compliance Report",
         findings=finding_ids,
         audience_level=RedactionLevel.MEDIUM,
@@ -719,7 +741,7 @@ def test_large_report_generation(stress_test_env):
     assert save_time < 5.0, f"Saving large report took {save_time:.2f}s, should be <5s"
 
 
-@pytest.mark.skip("Long-running stress test")
+# Long-running stress test
 def test_redaction_performance_large_data(stress_test_env):
     """Test redaction performance with large data structures."""
     # Create a large nested data structure with sensitive information

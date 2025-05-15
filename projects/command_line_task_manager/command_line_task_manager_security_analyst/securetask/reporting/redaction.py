@@ -161,7 +161,7 @@ class RedactionEngine:
         self,
         data: Dict[str, Any],
         level: Union[RedactionLevel, str],
-        field_specific_levels: Optional[Dict[str, RedactionLevel]] = None
+        field_specific_levels: Optional[Dict[str, Union[RedactionLevel, str]]] = None
     ) -> Dict[str, Any]:
         """
         Redact all string values in a dictionary.
@@ -169,7 +169,8 @@ class RedactionEngine:
         Args:
             data: Dictionary with data to redact
             level: Default redaction level to apply
-            field_specific_levels: Optional dict mapping field names to redaction levels
+            field_specific_levels: Optional dict mapping field names to redaction levels.
+                                  Supports dot notation for nested fields (e.g., "parent.child")
 
         Returns:
             Dictionary with redacted values
@@ -186,9 +187,10 @@ class RedactionEngine:
         result = {}
 
         for key, value in data.items():
-            # Use field-specific level if available
+            # Check if there's a specific redaction level for this field
             field_level = field_specific_levels.get(key, level)
-
+            
+            # Convert string to enum if needed
             if isinstance(field_level, str):
                 field_level = RedactionLevel(field_level)
 
@@ -203,7 +205,17 @@ class RedactionEngine:
             elif isinstance(value, str):
                 result[key] = self.redact_text(value, field_level)
             elif isinstance(value, dict):
-                result[key] = self.redact_dict(value, field_level)
+                # For nested dictionaries, extract any field-specific levels for children
+                # using dot notation (e.g., "parent.child")
+                nested_field_levels = {}
+                prefix = f"{key}."
+                for field_key, field_value in field_specific_levels.items():
+                    if field_key.startswith(prefix):
+                        # Strip the prefix to get the child key
+                        child_key = field_key[len(prefix):]
+                        nested_field_levels[child_key] = field_value
+                
+                result[key] = self.redact_dict(value, field_level, nested_field_levels)
             elif isinstance(value, list):
                 result[key] = self.redact_list(value, field_level)
             else:
@@ -306,9 +318,27 @@ class RedactionEngine:
         # Passwords in code or config
         self.add_pattern(RedactionPattern(
             name="password_in_code",
-            pattern=r"(password|passwd|pwd)\s*[=:]\s*.*",
+            pattern=r"(password|passwd|pwd)\s*[=:]\s*[\"\']?([^\"\'\n}]*)[\"\']?",
             replacement="\\1=[PASSWORD REDACTED]",
             description="Password in code or configuration",
+            levels={RedactionLevel.LOW, RedactionLevel.MEDIUM, RedactionLevel.HIGH, RedactionLevel.MAXIMUM}
+        ))
+        
+        # Passwords in JSON
+        self.add_pattern(RedactionPattern(
+            name="password_in_json",
+            pattern=r"\"(password|passwd|pwd)\"\s*:\s*\"([^\"]+)\"",
+            replacement="\"\\1\":\"[PASSWORD REDACTED]\"",
+            description="Password in JSON data",
+            levels={RedactionLevel.LOW, RedactionLevel.MEDIUM, RedactionLevel.HIGH, RedactionLevel.MAXIMUM}
+        ))
+        
+        # Passwords in XML
+        self.add_pattern(RedactionPattern(
+            name="password_in_xml",
+            pattern=r"<(password|passwd|pwd)>(.*?)</(password|passwd|pwd)>",
+            replacement="<\\1>[PASSWORD REDACTED]</\\3>",
+            description="Password in XML data",
             levels={RedactionLevel.LOW, RedactionLevel.MEDIUM, RedactionLevel.HIGH, RedactionLevel.MAXIMUM}
         ))
 
@@ -324,7 +354,7 @@ class RedactionEngine:
         # Private keys in code (SSH, etc.)
         self.add_pattern(RedactionPattern(
             name="private_key",
-            pattern=r"-----BEGIN ([A-Z]+ )?PRIVATE KEY-----.*?-----END ([A-Z]+ )?PRIVATE KEY-----",
+            pattern=r"-----BEGIN ([A-Z]+ )?PRIVATE KEY-----[\s\S]*?-----END ([A-Z]+ )?PRIVATE KEY-----",
             replacement="[PRIVATE KEY REDACTED]",
             description="Private key block",
             levels={RedactionLevel.LOW, RedactionLevel.MEDIUM, RedactionLevel.HIGH, RedactionLevel.MAXIMUM}

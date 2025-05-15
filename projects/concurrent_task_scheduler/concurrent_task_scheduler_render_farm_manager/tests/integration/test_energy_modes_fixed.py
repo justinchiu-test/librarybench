@@ -17,7 +17,10 @@ from render_farm_manager.core.manager import RenderFarmManager
 
 @pytest.fixture
 def audit_logger():
-    return MagicMock()
+    mock = MagicMock()
+    mock.log_event = MagicMock()
+    mock.log_energy_mode_changed = MagicMock()
+    return mock
 
 
 @pytest.fixture
@@ -30,7 +33,7 @@ def farm_manager(audit_logger, performance_metrics):
     """Creates a render farm manager with mocked audit logger and performance metrics."""
     return RenderFarmManager(
         audit_logger=audit_logger,
-        performance_metrics=performance_metrics
+        performance_monitor=performance_metrics
     )
 
 

@@ -1,243 +1,145 @@
-# Unified In-Memory Database Refactoring Project
+# Instructions for Library Refactoring Project
 
-## Overview
-This project requires creating a shared library for two specialized in-memory database implementations (ML Engineer's VectorDB and Mobile Developer's SyncDB) that eliminates redundancy while ensuring all requirements are met. The unified codebase must support both application domains through a common core with specialized extensions.
+This document provides instructions for creating a unified library from multiple persona-specific implementations.
 
-## Task Description
-You need to create a shared, unified library in the `projects/in_memory_database/unified` directory that can be imported by both the ML Engineer implementation and Mobile Developer implementation. This library should consolidate common functionality while providing specialized components for each domain's unique requirements.
+## Objective
 
-## Key Requirements
+Your task is to create a shared unified library that can be used by all persona implementations by:
+1. Identifying common functionality across implementations
+2. Creating a shared library structure in the unified directory
+3. Refactoring each persona's implementation to use the unified library
+4. Ensuring all tests pass for each persona
 
-1. **Create a Unified Core Library**
-   - Implement a shared in-memory database engine with common functionality
-   - Design modular components that can be extended for specialized use cases
-   - Place all code in the `projects/in_memory_database/unified/src/` directory
-   - Ensure the library is importable by both implementations
+## Rules and Constraints
 
-2. **Support ML Engineer Requirements**
-   - Vector data types with optimized distance calculations
-   - Feature store with versioning and lineage
-   - Batch prediction optimization
-   - Automatic feature normalization and transformation
-   - A/B testing support
+### What You Can Modify
+- **Unified Library (`common/`)**: You can create, modify, or delete any files in this directory.
+- **Persona packages**: You can modify the persona implementation files to use the unified library `common`.
+- **PLAN.md**: Please put your plan for refactoring here.
+- **README.md**: Please update the README as you go.
 
-3. **Support Mobile Developer Requirements**
-   - Differential sync protocol
-   - Conflict resolution strategies
-   - Type-aware payload compression
-   - Automatic schema migration
-   - Battery-aware operation modes
+### What You Cannot Modify
+- **Test Files**: All test files are considered ground truth and must not be modified.
+- **External Dependencies**: The unified library must use only the Python standard library unless otherwise specified.
 
-4. **Maintain Test Compatibility**
-   - Update import paths in both implementations to use the unified library
-   - Ensure all tests from both implementations pass with the unified library
-   - Make NO modifications to existing test files
+## Project Structure
 
-5. **Code Organization**
-   - Create a clean, modular architecture with clear separation of concerns
-   - Document the design with a detailed PLAN.md file
-   - Use interfaces and abstraction to support both domains
-   - Eliminate code duplication through shared components
+The unified library should have the following structure:
+```
+./
+├── common/                        # Common functionality across all implementations
+│   └── core/                      # Core data structures and algorithms
+├── <package_name_1>/              # First persona implementation
+│   └── ...                        # Preserve original package structure
+├── <package_name_2>/              # Second persona implementation
+│   └── ...                        # Preserve original package structure
+├── tests/                         # Tests directory
+│   ├── <persona_1>/               # Tests for first persona implementation
+│   └── <persona_2>/               # Tests for second persona implementation
+├── INSTRUCTIONS_<persona_1>.md    # Original instructions for first persona
+├── INSTRUCTIONS_<persona_2>.md    # Original instructions for second persona
+├── PLAN.md                        # Architecture and design plan
+├── README.md                      # Project documentation
+├── conftest.py                    # Pytest configuration
+├── pyproject.toml                 # Project configuration
+└── setup.py                       # Installation script
+```
 
-## Technical Requirements
+## Task Steps
 
-### Implementation Rules
-- **Source Code Location**: ALL source code MUST be placed in the `projects/in_memory_database/unified/src/` directory
-- **Import Strategy**: The unified library must be importable by both implementations
-- **NO modifications** to any code outside the `unified/` directory except for import paths
-- **NO importing** code from outside the `unified/` directory
+### 1. Analyze Implementations
 
-### Testability Requirements
-- All tests from both original implementations must pass when using the unified library
-- Tests must validate functionality from both domains
-- Performance must meet or exceed the requirements of both domains
+Begin by examining all persona implementations to identify common patterns:
+- Look for similar data structures, algorithms, and utility functions
+- Note common interfaces and abstractions
+- Identify domain-specific extensions and customizations
+- Map the core functionality that can be shared across implementations
 
-### Performance Expectations
-- The unified library must maintain or improve upon the performance metrics specified in both original implementations
-- No functionality should be compromised for the sake of unification
-- Domain-specific optimizations must be preserved
+### 2. Design and Document Architecture
 
-### Key Constraints
-- The implementation must use only Python standard library with no external dependencies
-- All functionality must be testable without manual intervention
-- The solution must satisfy all requirements from both original implementations
+Create a detailed architecture plan in `PLAN.md` that outlines:
+- Core components and their responsibilities
+- Interface definitions and abstractions
+- Extension points for persona-specific functionality
+- Relationship between components
+- Migration strategy for each implementation
 
-IMPORTANT: The implementation should have NO UI/UX components. All functionality must be implemented as testable Python modules and classes that can be thoroughly tested using pytest.
+### 3. Implement Common Library
 
-## Core Functionality
+Implement the core shared functionality in the `common` package:
+- Create modular, reusable components
+- Design clean interfaces that can be extended
+- Implement shared data structures and algorithms
+- Provide utility functions used across implementations
+- Document code clearly with docstrings and comments
 
-The system must provide the following core functionality:
-
-1. **In-Memory Database Engine**
-   - Efficient in-memory data storage with schema definitions
-   - Indexing mechanisms for fast retrieval
-   - Standard CRUD operations with transactional integrity
-   - Query capabilities for different access patterns
-
-2. **Change Tracking and Versioning**
-   - Record-level versioning and change history
-   - Timestamp-based tracking for synchronization
-   - Historical data access for both domains
-
-3. **ML-Specific Extensions**
-   - Vector operations and similarity search
-   - Feature store with lineage tracking
-   - Batch processing optimizations
-   - Feature transformation framework
-
-4. **Mobile-Specific Extensions**
-   - Sync protocol for differential updates
-   - Conflict resolution framework
-   - Compression algorithms for efficient data transfer
-   - Schema migration and compatibility management
-
-## Testing Requirements
-
-### Testing Methodology
-- For the unified library, run tests using pytest with the specified command:
-  ```
-  cd projects/in_memory_database/unified/
-  pytest tests/ --json-report --json-report-file=report.json --continue-on-collection-errors
-  ```
-- Additionally, you must run the original tests in both implementation directories to verify compatibility
-- Tests must validate that both application domains function correctly with the unified library
-- Performance benchmarks must be maintained for both domains
-
-### Key Functionalities to Verify
-- Proper functionality of shared core components
-- Domain-specific features for ML applications
-- Domain-specific features for mobile applications
-- Cross-domain compatibility and integration
-
-### Required Test Coverage Metrics
-- Minimum 90% code coverage for all modules
-- 100% coverage of critical domain-specific functionality
-- All error handling paths must be tested
-- Performance tests must cover both domains' requirements
-
-IMPORTANT:
-- ALL functionality must be testable via pytest without any manual intervention
-- Tests should verify behavior against requirements, not implementation details
-- The report.json file must be included as proof that all tests pass
-
-## Development Steps
-
-### 1. Analysis Phase
-- Examine both implementations to identify common functionality
-- Understand domain-specific requirements for each application
-- Map out shared interfaces and components
-
-### 2. Design Phase
-- Create a detailed architecture plan in `unified/PLAN.md`
-- Define component boundaries and responsibilities
-- Design interfaces for domain-specific extensions
-
-### 3. Implementation Phase
-- Build the core shared library components
-- Implement domain-specific extensions
-- Create necessary factory methods and configuration options
-
-### 4. Integration Phase
-- Update import paths in both implementations to use the unified library
-- Add the unified library as a dependency in both project configurations
-- Ensure all tests pass with the unified library
-- Optimize for both domains' performance requirements
-
-#### Adding the Unified Library as a Dependency
-
-For each implementation (ML Engineer and Mobile Developer), you must add the unified library as a dependency. Here's how to do it for different project configurations:
-
-**For setup.py projects:**
+You can import from the common library in all packages using:
 ```python
-from setuptools import setup, find_packages
-
-setup(
-    name="vector_db",  # or "sync_db" for mobile implementation
-    version="0.1.0",
-    packages=find_packages(),
-    install_requires=[],  # Regular dependencies here
-    dependency_links=[
-        "../unified/"  # Relative path to unified library
-    ],
-)
+from common import core
+from common.core import some_function
 ```
 
-**For pyproject.toml projects:**
-```toml
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+### 4. Implement Persona-Specific Extensions
 
-# Add local path dependency to the unified library
-[tool.pip]
-dependencies = [
-    {path = "../unified", develop = true}
-]
-```
+For each persona implementation:
+1. Preserve the original package name and structure
+2. Refactor the existing code to use the new `common` library
+3. Utilize the common library components where possible
+4. Ensure backward compatibility with existing tests
 
-**Alternative method using pip:**
-You can also install the unified library in development mode using pip:
+### 5. Integration and Testing
+
+For EVERY persona implementation:
+1. Update import paths to use the unified library
+2. Add the unified library as a dependency
+3. Run all tests to ensure functionality is preserved
+4. Verify performance meets or exceeds original implementation
+
+Test the unified and persona libraries using pytest:
 ```bash
-# From the ML Engineer or Mobile Developer directory
-pip install -e ../unified/
+pytest tests/ --json-report --json-report-file=report.json --continue-on-collection-errors
 ```
+Note that this will run all persona tests, as they are in `tests/{persona}`.
 
-IMPORTANT: You must ensure the unified library is properly installed in both project environments to allow imports to function correctly.
+## Tips for Success
 
-### 5. Verification Phase
-- Run all tests in both subdirectories to ensure complete functionality
-- Follow the original testing instructions in each subdirectory:
-  ```bash
-  # For ML Engineer implementation
-  cd projects/in_memory_database/in_memory_database_ml_engineer/
-  pip install pytest-json-report
-  pytest --json-report --json-report-file=pytest_results.json --continue-on-collection-errors
-  
-  # For Mobile Developer implementation
-  cd projects/in_memory_database/in_memory_database_mobile_developer/
-  pip install pytest-json-report
-  pytest --json-report --json-report-file=pytest_results.json --continue-on-collection-errors
-  ```
-- Benchmark performance against original implementations
-- Document the final architecture and design decisions
+1. **Focus on Common Patterns**: Prioritize implementing components that can be used across all implementations.
 
-IMPORTANT: You must ensure that ALL tests in BOTH original implementations pass with the unified library. The original test files must not be modified; only the implementation code should import from the unified library.
+2. **Use Proper Abstraction**: Create clear interfaces that allow for persona-specific customization.
 
-## Success Criteria
+3. **Preserve Original Behavior**: The refactored implementations must behave exactly like the originals.
 
-The implementation will be considered successful if:
+4. **Incremental Testing**: Test continuously as you refactor to catch issues early.
 
-1. All tests from both original implementations pass when using the unified library
-2. The unified library meets or exceeds the performance requirements of both domains
-3. Code duplication is minimized through shared components
-4. The architecture is clean, modular, and maintainable
-5. Domain-specific functionality is preserved without compromise
+5. **Document Design Decisions**: Keep thorough notes in PLAN.md about architectural decisions.
 
-REQUIRED FOR SUCCESS:
-- All tests must pass when run with pytest
-- A valid report.json file must be generated showing all tests passing
-- The implementation must satisfy all key requirements from both original personas
+## Evaluation Criteria
+
+Your solution will be evaluated based on:
+
+1. **Correctness**: All tests for all implementations must pass.
+2. **Code Reduction**: Minimization of code duplication across implementations.
+3. **Architecture Quality**: Clean separation of concerns and appropriate abstractions.
+4. **Performance**: The unified library must maintain or improve performance.
+5. **Completeness**: All requirements from all personas must be satisfied.
 
 ## Development Setup
 
 To set up the development environment:
 
-1. Clone the repository and navigate to the project directory
-2. Create a virtual environment using:
+1. Install the unified library in development mode:
+   ```bash
+   pip install -e .
    ```
-   uv venv
-   ```
-3. Activate the virtual environment:
-   ```
-   source .venv/bin/activate
-   ```
-4. Install the project in development mode:
-   ```
-   uv pip install -e .
-   ```
-5. Run tests with:
-   ```
+
+2. Run tests with:
+   ```bash
    pytest tests/ --json-report --json-report-file=report.json --continue-on-collection-errors
    ```
+   or just
+   ```bash
+   pytest
+   ```
+   if debugging
 
 CRITICAL REMINDER: Generating and providing the report.json file is a MANDATORY requirement for project completion.

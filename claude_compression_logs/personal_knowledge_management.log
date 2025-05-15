@@ -1,0 +1,88 @@
+Starting compression for personal_knowledge_management/unified at Thu May 15 22:54:58 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/personal_knowledge_management/unified...
+~/librarybench/projects/personal_knowledge_management/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/personal_knowledge_management/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: numpy in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (2.2.5)
+Requirement already satisfied: scikit-learn in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (1.6.1)
+Requirement already satisfied: pandas in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (2.2.3)
+Requirement already satisfied: nltk in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (3.9.1)
+Requirement already satisfied: pydantic in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (2.11.4)
+Requirement already satisfied: pypdf>=3.17.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (5.5.0)
+Requirement already satisfied: bibtexparser>=1.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (1.4.3)
+Requirement already satisfied: pybtex>=0.24.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (0.24.0)
+Requirement already satisfied: markdown>=3.5.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (3.8)
+Requirement already satisfied: fastapi>=0.104.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (0.115.12)
+Requirement already satisfied: uvicorn>=0.24.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (0.34.2)
+Requirement already satisfied: rich>=13.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (14.0.0)
+Requirement already satisfied: tqdm>=4.66.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (4.67.1)
+Requirement already satisfied: pyarrow>=14.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (20.0.0)
+Requirement already satisfied: networkx>=3.2.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (3.4.2)
+Requirement already satisfied: python-multipart>=0.0.6 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (0.0.20)
+Requirement already satisfied: pyyaml>=6.0.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (6.0.2)
+Requirement already satisfied: jinja2>=3.1.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_knowledge_management==0.1.0) (3.1.6)
+Requirement already satisfied: pyparsing>=2.0.3 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from bibtexparser>=1.4.0->unified-personal_knowledge_management==0.1.0) (3.2.3)
+Requirement already satisfied: starlette<0.47.0,>=0.40.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (0.46.2)
+Requirement already satisfied: typing-extensions>=4.8.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (4.13.2)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from jinja2>=3.1.2->unified-personal_knowledge_management==0.1.0) (3.0.2)
+Requirement already satisfied: python-dateutil>=2.8.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas->unified-personal_knowledge_management==0.1.0) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas->unified-personal_knowledge_management==0.1.0) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas->unified-personal_knowledge_management==0.1.0) (2025.2)
+Requirement already satisfied: latexcodec>=1.0.4 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pybtex>=0.24.0->unified-personal_knowledge_management==0.1.0) (3.0.0)
+Requirement already satisfied: six in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pybtex>=0.24.0->unified-personal_knowledge_management==0.1.0) (1.17.0)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-personal_knowledge_management==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-personal_knowledge_management==0.1.0) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-personal_knowledge_management==0.1.0) (0.4.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from rich>=13.6.0->unified-personal_knowledge_management==0.1.0) (3.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from rich>=13.6.0->unified-personal_knowledge_management==0.1.0) (2.19.1)
+Requirement already satisfied: click>=7.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from uvicorn>=0.24.0->unified-personal_knowledge_management==0.1.0) (8.1.8)
+Requirement already satisfied: h11>=0.8 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from uvicorn>=0.24.0->unified-personal_knowledge_management==0.1.0) (0.16.0)
+Requirement already satisfied: joblib in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-personal_knowledge_management==0.1.0) (1.5.0)
+Requirement already satisfied: regex>=2021.8.3 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-personal_knowledge_management==0.1.0) (2024.11.6)
+Requirement already satisfied: scipy>=1.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from scikit-learn->unified-personal_knowledge_management==0.1.0) (1.15.3)
+Requirement already satisfied: threadpoolctl>=3.1.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from scikit-learn->unified-personal_knowledge_management==0.1.0) (3.6.0)
+Requirement already satisfied: mdurl~=0.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=13.6.0->unified-personal_knowledge_management==0.1.0) (0.1.2)
+Requirement already satisfied: anyio<5,>=3.6.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from starlette<0.47.0,>=0.40.0->fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (4.9.0)
+Requirement already satisfied: exceptiongroup>=1.0.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from anyio<5,>=3.6.2->starlette<0.47.0,>=0.40.0->fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (1.3.0)
+Requirement already satisfied: idna>=2.8 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from anyio<5,>=3.6.2->starlette<0.47.0,>=0.40.0->fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (3.10)
+Requirement already satisfied: sniffio>=1.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from anyio<5,>=3.6.2->starlette<0.47.0,>=0.40.0->fastapi>=0.104.1->unified-personal_knowledge_management==0.1.0) (1.3.1)
+Building wheels for collected packages: unified-personal_knowledge_management
+  Building editable for unified-personal_knowledge_management (pyproject.toml): started
+  Building editable for unified-personal_knowledge_management (pyproject.toml): finished with status 'done'
+  Created wheel for unified-personal_knowledge_management: filename=unified_personal_knowledge_management-0.1.0-0.editable-py3-none-any.whl size=3507 sha256=9aaadd5be897390aec67a7eb73cce4fd8a3af13a385be3de601470f631689966
+  Stored in directory: /tmp/pip-ephem-wheel-cache-5l37t9z4/wheels/cb/f3/8a/12f2d2871dc5773682afece8e26378c30b75c3cb7466e80942
+Successfully built unified-personal_knowledge_management
+Installing collected packages: unified-personal_knowledge_management
+Successfully installed unified-personal_knowledge_management-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/personal_knowledge_management/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.780s
+user	0m0.727s
+sys	0m0.113s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.810s
+user	0m0.744s
+sys	0m0.112s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.809s
+user	0m0.797s
+sys	0m0.074s
+~/librarybench
+Done!
+Completed compression for personal_knowledge_management/unified at Thu May 15 22:55:04 UTC 2025

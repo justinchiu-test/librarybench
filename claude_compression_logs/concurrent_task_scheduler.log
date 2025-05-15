@@ -1,0 +1,64 @@
+Starting compression for concurrent_task_scheduler/unified at Thu May 15 22:54:52 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/concurrent_task_scheduler/unified...
+~/librarybench/projects/concurrent_task_scheduler/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/concurrent_task_scheduler/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: numpy>=1.20.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-concurrent_task_scheduler==0.1.0) (2.2.5)
+Requirement already satisfied: pandas>=1.3.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-concurrent_task_scheduler==0.1.0) (2.2.3)
+Requirement already satisfied: scikit-learn>=1.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-concurrent_task_scheduler==0.1.0) (1.6.1)
+Requirement already satisfied: pydantic>=2.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-concurrent_task_scheduler==0.1.0) (2.11.4)
+Requirement already satisfied: python-dateutil>=2.8.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas>=1.3.0->unified-concurrent_task_scheduler==0.1.0) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas>=1.3.0->unified-concurrent_task_scheduler==0.1.0) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas>=1.3.0->unified-concurrent_task_scheduler==0.1.0) (2025.2)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-concurrent_task_scheduler==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-concurrent_task_scheduler==0.1.0) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-concurrent_task_scheduler==0.1.0) (4.13.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-concurrent_task_scheduler==0.1.0) (0.4.0)
+Requirement already satisfied: scipy>=1.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from scikit-learn>=1.0.0->unified-concurrent_task_scheduler==0.1.0) (1.15.3)
+Requirement already satisfied: joblib>=1.2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from scikit-learn>=1.0.0->unified-concurrent_task_scheduler==0.1.0) (1.5.0)
+Requirement already satisfied: threadpoolctl>=3.1.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from scikit-learn>=1.0.0->unified-concurrent_task_scheduler==0.1.0) (3.6.0)
+Requirement already satisfied: six>=1.5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from python-dateutil>=2.8.2->pandas>=1.3.0->unified-concurrent_task_scheduler==0.1.0) (1.17.0)
+Building wheels for collected packages: unified-concurrent_task_scheduler
+  Building editable for unified-concurrent_task_scheduler (pyproject.toml): started
+  Building editable for unified-concurrent_task_scheduler (pyproject.toml): finished with status 'done'
+  Created wheel for unified-concurrent_task_scheduler: filename=unified_concurrent_task_scheduler-0.1.0-0.editable-py3-none-any.whl size=3330 sha256=bdde4804b5cbb9374969811c0a414e4d62ee4059bd7433687b3deae24f9f1407
+  Stored in directory: /tmp/pip-ephem-wheel-cache-5ou7yc72/wheels/9a/10/b2/6553493f6b3af80e2d2cb154da4416c6892238d24b4ee50fa3
+Successfully built unified-concurrent_task_scheduler
+Installing collected packages: unified-concurrent_task_scheduler
+  Attempting uninstall: unified-concurrent_task_scheduler
+    Found existing installation: unified-concurrent_task_scheduler 0.1.0
+    Uninstalling unified-concurrent_task_scheduler-0.1.0:
+      Successfully uninstalled unified-concurrent_task_scheduler-0.1.0
+Successfully installed unified-concurrent_task_scheduler-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/concurrent_task_scheduler/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.803s
+user	0m0.738s
+sys	0m0.134s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.783s
+user	0m0.686s
+sys	0m0.110s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.728s
+user	0m0.749s
+sys	0m0.123s
+~/librarybench
+Done!
+Completed compression for concurrent_task_scheduler/unified at Thu May 15 22:54:58 UTC 2025

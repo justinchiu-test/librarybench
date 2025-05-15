@@ -1,0 +1,30 @@
+Starting compression for network_protocol_analyzer/unified at Thu May 15 22:54:58 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/network_protocol_analyzer/unified...
+~/librarybench/projects/network_protocol_analyzer/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/network_protocol_analyzer/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/network_protocol_analyzer/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/network_protocol_analyzer/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.712s
+user	0m0.709s
+sys	0m0.087s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.803s
+user	0m0.764s
+sys	0m0.102s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.715s
+user	0m0.632s
+sys	0m0.082s
+~/librarybench
+Done!
+Completed compression for network_protocol_analyzer/unified at Thu May 15 22:55:00 UTC 2025

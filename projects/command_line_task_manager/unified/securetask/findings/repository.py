@@ -5,16 +5,17 @@ import json
 import time
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Callable, Union, Generator
+from typing import Dict, List, Optional, Any, Callable, Union
 
 from pydantic import ValidationError as PydanticValidationError
 
+from common.core.storage import BaseStorageInterface
+from common.core.security import CryptoManager
 from securetask.findings.models import Finding
-from securetask.utils.crypto import CryptoManager
 from securetask.utils.validation import ValidationError
 
 
-class FindingRepository:
+class FindingRepository(BaseStorageInterface[Finding]):
     """
     Repository for CRUD operations on security findings.
     
@@ -37,7 +38,7 @@ class FindingRepository:
         # Create findings directory if it doesn't exist
         os.makedirs(self.findings_dir, exist_ok=True)
     
-    def create(self, finding: Finding) -> Finding:
+    def create(self, finding: Finding) -> str:
         """
         Create a new security finding.
         
@@ -45,7 +46,7 @@ class FindingRepository:
             finding: The finding to create
             
         Returns:
-            The created finding with ID
+            The created finding ID
             
         Raises:
             ValidationError: If finding validation fails
@@ -64,12 +65,12 @@ class FindingRepository:
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding creation took {execution_time*1000:.2f}ms")
                 
-            return finding
+            return finding.id
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
     
-    def get(self, finding_id: str) -> Finding:
+    def get(self, finding_id: str) -> Optional[Finding]:
         """
         Retrieve a finding by ID.
         
@@ -109,7 +110,7 @@ class FindingRepository:
         # Create the Finding object directly
         return Finding(**finding_dict)
     
-    def update(self, finding: Finding) -> Finding:
+    def update(self, finding: Finding) -> bool:
         """
         Update an existing finding.
         
@@ -117,7 +118,7 @@ class FindingRepository:
             finding: The finding to update
             
         Returns:
-            The updated finding
+            True if update was successful
             
         Raises:
             FileNotFoundError: If the finding does not exist
@@ -139,7 +140,7 @@ class FindingRepository:
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding update took {execution_time*1000:.2f}ms")
             
-            return finding
+            return True
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
@@ -152,7 +153,7 @@ class FindingRepository:
             finding_id: ID of the finding to delete
             
         Returns:
-            True if deleted, False if not found
+            bool: True if deleted, False if not found
         """
         file_path = os.path.join(self.findings_dir, f"{finding_id}.json.enc")
         digest_path = os.path.join(self.findings_dir, f"{finding_id}.hmac")
@@ -167,29 +168,17 @@ class FindingRepository:
             
         return True
     
-    def list(
-        self, 
-        filters: Optional[Dict[str, Any]] = None, 
-        sort_by: str = "discovered_date", 
-        reverse: bool = True,
-        limit: Optional[int] = None,
-        offset: int = 0
-    ) -> List[Finding]:
+    def list(self, filters: Optional[Dict[str, Any]] = None) -> List[Finding]:
         """
-        List findings with optional filtering and sorting.
+        List findings with optional filtering.
         
         Args:
             filters: Optional filters as field-value pairs
-            sort_by: Field to sort by
-            reverse: Whether to sort in reverse order
-            limit: Maximum number of findings to return
-            offset: Number of findings to skip
             
         Returns:
             List of findings matching criteria
         """
         findings = []
-        count = 0
         
         # Get all finding IDs from filenames
         for filename in os.listdir(self.findings_dir):
@@ -204,28 +193,13 @@ class FindingRepository:
                 # Apply filters if provided
                 if filters and not self._matches_filters(finding, filters):
                     continue
-                
-                count += 1
-                if count <= offset:
-                    continue
                     
                 findings.append(finding)
-                
-                if limit and len(findings) >= limit:
-                    break
                     
             except (FileNotFoundError, ValidationError):
                 # Skip invalid files
                 continue
         
-        # Sort findings
-        if hasattr(Finding, sort_by):
-            # Handle title field specially to ensure alphabetical sorting
-            if sort_by == "title":
-                findings.sort(key=lambda f: f.title.lower(), reverse=reverse)
-            else:
-                findings.sort(key=lambda f: getattr(f, sort_by), reverse=reverse)
-
         return findings
     
     def count(self, filters: Optional[Dict[str, Any]] = None) -> int:

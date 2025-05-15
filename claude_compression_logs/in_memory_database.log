@@ -1,0 +1,49 @@
+Starting compression for in_memory_database/unified at Thu May 15 22:54:55 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/in_memory_database/unified...
+~/librarybench/projects/in_memory_database/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/in_memory_database/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: unified-in_memory_database
+  Building editable for unified-in_memory_database (pyproject.toml): started
+  Building editable for unified-in_memory_database (pyproject.toml): finished with status 'done'
+  Created wheel for unified-in_memory_database: filename=unified_in_memory_database-0.1.0-0.editable-py3-none-any.whl size=3115 sha256=03fc4b7e154a80119bd8d67eaaef1d8caf2b62fd2d90766ef3b928abb67dabe4
+  Stored in directory: /tmp/pip-ephem-wheel-cache-y6qvu99k/wheels/bc/f4/14/516086a02eeaa2f8574b0f2a5c2bcd4d357a7216e984f073ee
+Successfully built unified-in_memory_database
+Installing collected packages: unified-in_memory_database
+  Attempting uninstall: unified-in_memory_database
+    Found existing installation: unified-in_memory_database 0.1.0
+    Uninstalling unified-in_memory_database-0.1.0:
+      Successfully uninstalled unified-in_memory_database-0.1.0
+Successfully installed unified-in_memory_database-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/in_memory_database/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.841s
+user	0m0.756s
+sys	0m0.092s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.822s
+user	0m0.778s
+sys	0m0.105s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.756s
+user	0m0.766s
+sys	0m0.112s
+~/librarybench
+Done!
+Completed compression for in_memory_database/unified at Thu May 15 22:55:01 UTC 2025

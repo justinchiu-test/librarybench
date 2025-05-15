@@ -1,12 +1,48 @@
-# Unified Personal Finance Tracker Libraries
+# Unified Financial Management Library
 
 ## Overview
-This is a unified implementation of personal finance tracker functionality 
-that preserves the original package names from multiple persona implementations.
+This project provides a unified financial management library that serves both freelancers and socially responsible investors through a common architecture. It maintains the original package structure while sharing core functionality through a common library.
 
-The following packages are available:
-- `common` - Shared functionality for all implementations
-- `ethical_finance` - `personal_finance_tracker`
+The primary packages are:
+- `common` - Core shared functionality for all implementations
+- `personal_finance_tracker` - Freelancer financial management functionality
+- `ethical_finance` - Socially responsible investor functionality
+
+## Key Features
+
+### For Freelancers
+- Income smoothing for irregular revenue
+- Business vs. personal expense categorization
+- Project profitability analysis
+- Tax obligation forecasting
+- Cash runway visualization
+
+### For Socially Responsible Investors
+- Ethical investment screening
+- Impact metric tracking
+- Shareholder voting analysis
+- Portfolio industry/sector analysis
+- Values-aligned budget categories
+
+### Common Functionality
+- Transaction modeling and categorization
+- Time-series analysis
+- Financial calculations
+- Data validation
+- Performance monitoring
+
+## Architecture
+The library follows a modular architecture with a shared core:
+
+```
+common/
+├── core/
+│   ├── models/          # Shared data models
+│   ├── categorization/  # Classification and categorization
+│   ├── analysis/        # Financial analysis algorithms
+│   ├── reporting/       # Reporting and summarization
+│   └── utils/           # Shared utilities
+```
 
 ## Installation
 Install the library in development mode:
@@ -16,25 +52,36 @@ pip install -e .
 ```
 
 ## Usage
-Import the original packages directly:
+Import the original packages directly or use the common library:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import ethical_finance # Example using first package
+from personal_finance_tracker.expense import categorizer
+from ethical_finance.ethical_screening import screening
 
 # Import from common package (for shared functionality)
-from common import core
+from common.core.models import Transaction
+from common.core.categorization import Rule
 ```
 
 ## Testing
-Tests are preserved for each persona implementation:
+Run tests for all persona implementations:
 
 ```bash
-cd tests
 pytest
 ```
 
-Record test results with:
+Generate a JSON report for evaluation:
+
 ```bash
-pytest --json-report --json-report-file=report.json --continue-on-collection-errors
+pytest tests/ --json-report --json-report-file=report.json --continue-on-collection-errors
 ```
+
+## Documentation
+See the following files for more detailed information:
+- `PLAN.md` - Detailed refactoring plan and architecture
+- `INSTRUCTIONS_freelancer.md` - Requirements for the freelancer persona
+- `INSTRUCTIONS_socially_responsible_investor.md` - Requirements for the socially responsible investor persona
+
+## License
+This project is proprietary and for evaluation purposes only.

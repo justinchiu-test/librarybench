@@ -1,215 +1,311 @@
-"""Basic memory system for the virtual machine."""
+"""Memory system implementation for parallel computing VM."""
 
-from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
+
+from common.core.memory import (
+    MemorySystem as BaseMemorySystem,
+    MemoryAccessType,
+    MemoryPermission,
+    MemoryAccess,
+    MemorySegment,
+    MemoryProtectionLevel
+)
+from common.core.exceptions import MemoryException, SegmentationFault
 
 
-class MemoryAccessType(Enum):
-    """Types of memory accesses."""
-    READ = auto()
-    WRITE = auto()
-    READ_MODIFY_WRITE = auto()  # For atomic operations like CAS
+# Re-export common types
+MemoryAccessType = MemoryAccessType
+MemoryAccess = MemoryAccess
 
 
-class MemoryAccess:
-    """Representation of a memory access operation."""
+class MemorySystem(BaseMemorySystem):
+    """
+    Extended memory system for parallel computing.
+    
+    This extends the base memory system with features specific to
+    parallel computing, such as race detection.
+    """
     
     def __init__(
         self,
-        address: int,
-        access_type: MemoryAccessType,
-        processor_id: int,
-        thread_id: str,
-        timestamp: int,
-        value: Optional[int] = None,
+        size: int = 2**16,
+        protection_level: MemoryProtectionLevel = MemoryProtectionLevel.STANDARD,
+        enable_race_detection: bool = True
     ):
-        self.address = address
-        self.access_type = access_type
-        self.processor_id = processor_id
-        self.thread_id = thread_id
-        self.timestamp = timestamp  # Global clock timestamp
-        self.value = value  # For WRITE and READ_MODIFY_WRITE
-    
-    def __str__(self) -> str:
-        action = self.access_type.name
-        if self.value is not None:
-            return f"[{self.timestamp}] P{self.processor_id} T{self.thread_id} {action} addr={self.address} value={self.value}"
-        return f"[{self.timestamp}] P{self.processor_id} T{self.thread_id} {action} addr={self.address}"
-
-
-class MemorySystem:
-    """
-    Base memory system for the virtual machine.
-    
-    This is a simple memory model with no caching. More complex models
-    implementing cache coherence protocols will extend this.
-    """
-    
-    def __init__(self, size: int = 2**16):
         """
         Initialize the memory system.
         
         Args:
-            size: Size of the memory in words (not bytes)
+            size: Size of memory in words
+            protection_level: Level of memory protection
+            enable_race_detection: Whether to enable race detection
         """
-        self.size = size
-        self.memory = [0] * size
-        self.access_log: List[MemoryAccess] = []
+        super().__init__(size, protection_level)
+        
+        # Race detection
+        self.enable_race_detection = enable_race_detection
+        self.shared_addresses: Set[int] = set()
+        self.last_writer: Dict[int, Tuple[str, int]] = {}  # addr -> (thread_id, timestamp)
+        self.race_conditions: List[Dict[str, Any]] = []
     
     def read(
-        self, address: int, processor_id: int, thread_id: str, timestamp: int
+        self,
+        address: int,
+        processor_id: Optional[int] = None,
+        thread_id: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None
     ) -> int:
         """
-        Read a value from memory.
+        Read a value from memory with race detection.
         
         Args:
             address: Memory address to read from
             processor_id: ID of the processor performing the read
             thread_id: ID of the thread performing the read
-            timestamp: Current global clock value
+            timestamp: Current timestamp
+            context: Additional context for the operation
             
         Returns:
             Value read from memory
         """
-        if not 0 <= address < self.size:
-            raise IndexError(f"Memory address out of bounds: {address}")
+        value = super().read(address, processor_id, thread_id, timestamp, context)
         
-        value = self.memory[address]
-        
-        # Log the memory access
-        access = MemoryAccess(
-            address=address,
-            access_type=MemoryAccessType.READ,
-            processor_id=processor_id,
-            thread_id=thread_id,
-            timestamp=timestamp,
-        )
-        self.access_log.append(access)
+        # Check for race conditions if enabled
+        if self.enable_race_detection and thread_id is not None and timestamp is not None:
+            if address in self.shared_addresses:
+                if address in self.last_writer:
+                    last_thread, last_time = self.last_writer[address]
+                    if last_thread != thread_id:
+                        # Potential race condition (read after write)
+                        self.race_conditions.append({
+                            "type": "read_after_write",
+                            "address": address,
+                            "reader_thread": thread_id,
+                            "reader_processor": processor_id,
+                            "writer_thread": last_thread,
+                            "read_time": timestamp,
+                            "write_time": last_time,
+                        })
         
         return value
     
     def write(
-        self, address: int, value: int, processor_id: int, thread_id: str, timestamp: int
+        self,
+        address: int,
+        value: int,
+        processor_id: Optional[int] = None,
+        thread_id: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None
     ) -> None:
         """
-        Write a value to memory.
+        Write a value to memory with race detection.
         
         Args:
             address: Memory address to write to
             value: Value to write
             processor_id: ID of the processor performing the write
             thread_id: ID of the thread performing the write
-            timestamp: Current global clock value
+            timestamp: Current timestamp
+            context: Additional context for the operation
         """
-        if not 0 <= address < self.size:
-            raise IndexError(f"Memory address out of bounds: {address}")
+        super().write(address, value, processor_id, thread_id, timestamp, context)
         
-        self.memory[address] = value
-        
-        # Log the memory access
-        access = MemoryAccess(
-            address=address,
-            access_type=MemoryAccessType.WRITE,
-            processor_id=processor_id,
-            thread_id=thread_id,
-            timestamp=timestamp,
-            value=value,
-        )
-        self.access_log.append(access)
+        # Race detection if enabled
+        if self.enable_race_detection and thread_id is not None and timestamp is not None:
+            # Mark as shared address if accessed by multiple threads
+            if address in self.last_writer and self.last_writer[address][0] != thread_id:
+                self.shared_addresses.add(address)
+            
+            # Update last writer
+            self.last_writer[address] = (thread_id, timestamp)
+            
+            # Check for write-write races
+            if address in self.shared_addresses:
+                for last_thread, last_time in self.last_writer.values():
+                    if last_thread != thread_id and last_time == timestamp:
+                        # Potential race condition (concurrent write)
+                        self.race_conditions.append({
+                            "type": "concurrent_write",
+                            "address": address,
+                            "writer1_thread": thread_id,
+                            "writer1_processor": processor_id,
+                            "writer2_thread": last_thread,
+                            "time": timestamp,
+                        })
     
-    def compare_and_swap(
+    def get_race_conditions(self) -> List[Dict[str, Any]]:
+        """
+        Get detected race conditions.
+        
+        Returns:
+            List of race condition details
+        """
+        return self.race_conditions
+    
+    def clear_race_conditions(self) -> None:
+        """Clear detected race conditions."""
+        self.race_conditions = []
+
+
+class CoherentMemorySystem(MemorySystem):
+    """
+    Memory system with cache coherence for parallel computing.
+    
+    This extends the basic memory system with cache coherence protocols
+    for multi-processor systems.
+    """
+    
+    def __init__(
+        self,
+        size: int = 2**16,
+        protection_level: MemoryProtectionLevel = MemoryProtectionLevel.STANDARD,
+        enable_race_detection: bool = True,
+        coherence_protocol: str = "MESI"
+    ):
+        """
+        Initialize the coherent memory system.
+        
+        Args:
+            size: Size of memory in words
+            protection_level: Level of memory protection
+            enable_race_detection: Whether to enable race detection
+            coherence_protocol: Cache coherence protocol to use
+        """
+        super().__init__(size, protection_level, enable_race_detection)
+        self.coherence_protocol = coherence_protocol
+        self.caches: Dict[int, Any] = {}  # processor_id -> Cache
+        self.bus_operations: List[Dict[str, Any]] = []
+    
+    def add_cache(self, processor_id: int, cache: Any) -> None:
+        """
+        Add a cache for a processor.
+        
+        Args:
+            processor_id: ID of the processor
+            cache: Cache instance
+        """
+        self.caches[processor_id] = cache
+    
+    def read(
         self,
         address: int,
-        expected: int,
-        new_value: int,
-        processor_id: int,
-        thread_id: str,
-        timestamp: int,
-    ) -> bool:
-        """
-        Atomic compare-and-swap operation.
-        
-        Args:
-            address: Memory address to operate on
-            expected: Expected current value
-            new_value: New value to set if current matches expected
-            processor_id: ID of the processor performing the operation
-            thread_id: ID of the thread performing the operation
-            timestamp: Current global clock value
-            
-        Returns:
-            True if the swap was performed, False otherwise
-        """
-        if not 0 <= address < self.size:
-            raise IndexError(f"Memory address out of bounds: {address}")
-        
-        # Perform the CAS operation atomically
-        current = self.memory[address]
-        success = current == expected
-        
-        if success:
-            self.memory[address] = new_value
-        
-        # Log the memory access
-        access = MemoryAccess(
-            address=address,
-            access_type=MemoryAccessType.READ_MODIFY_WRITE,
-            processor_id=processor_id,
-            thread_id=thread_id,
-            timestamp=timestamp,
-            value=new_value if success else None,
-        )
-        self.access_log.append(access)
-        
-        return success
-    
-    def get_access_history(
-        self,
-        address: Optional[int] = None,
         processor_id: Optional[int] = None,
         thread_id: Optional[str] = None,
-    ) -> List[MemoryAccess]:
+        timestamp: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> int:
         """
-        Get a filtered history of memory accesses.
+        Read a value from memory through the cache hierarchy.
         
         Args:
-            address: Filter by memory address
-            processor_id: Filter by processor ID
-            thread_id: Filter by thread ID
+            address: Memory address to read from
+            processor_id: ID of the processor performing the read
+            thread_id: ID of the thread performing the read
+            timestamp: Current timestamp
+            context: Additional context for the operation
             
         Returns:
-            List of memory access logs matching the filters
+            Value read from memory
         """
-        result = self.access_log
-        
-        if address is not None:
-            result = [access for access in result if access.address == address]
-        
-        if processor_id is not None:
-            result = [access for access in result if access.processor_id == processor_id]
-        
-        if thread_id is not None:
-            result = [access for access in result if access.thread_id == thread_id]
-        
-        return result
+        # Check if this processor has a cache
+        if processor_id is not None and processor_id in self.caches:
+            cache = self.caches[processor_id]
+            value, hit = cache.read(address)
+            
+            if hit:
+                # Cache hit, just record the access
+                access = MemoryAccess(
+                    address=address,
+                    access_type=MemoryAccessType.READ,
+                    processor_id=processor_id,
+                    thread_id=thread_id,
+                    timestamp=timestamp,
+                    context=context
+                )
+                self._log_access(access)
+                
+                # Also check for race conditions
+                if self.enable_race_detection and thread_id is not None and timestamp is not None:
+                    if address in self.shared_addresses:
+                        if address in self.last_writer:
+                            last_thread, last_time = self.last_writer[address]
+                            if last_thread != thread_id:
+                                # Potential race condition (read after write)
+                                self.race_conditions.append({
+                                    "type": "read_after_write",
+                                    "address": address,
+                                    "reader_thread": thread_id,
+                                    "reader_processor": processor_id,
+                                    "writer_thread": last_thread,
+                                    "read_time": timestamp,
+                                    "write_time": last_time,
+                                })
+                
+                return value
+            else:
+                # Cache miss, need to go to memory
+                # This will generate bus traffic in a real system
+                value = super().read(address, processor_id, thread_id, timestamp, context)
+                
+                # Update the cache
+                cache.update(address, value)
+                
+                return value
+        else:
+            # No cache, just go straight to memory
+            return super().read(address, processor_id, thread_id, timestamp, context)
     
-    def clear_logs(self) -> None:
-        """Clear all access logs."""
-        self.access_log = []
-        
-    def get_memory_dump(self, start: int = 0, length: Optional[int] = None) -> List[int]:
+    def write(
+        self,
+        address: int,
+        value: int,
+        processor_id: Optional[int] = None,
+        thread_id: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
-        Get a dump of memory contents.
+        Write a value to memory through the cache hierarchy.
         
         Args:
-            start: Starting address
-            length: Number of words to include, or None for all remaining memory
-            
-        Returns:
-            List of memory values
+            address: Memory address to write to
+            value: Value to write
+            processor_id: ID of the processor performing the write
+            thread_id: ID of the thread performing the write
+            timestamp: Current timestamp
+            context: Additional context for the operation
         """
-        if length is None:
-            length = self.size - start
+        # Check if this processor has a cache
+        if processor_id is not None and processor_id in self.caches:
+            cache = self.caches[processor_id]
+            hit = cache.write(address, value)
             
-        end = min(start + length, self.size)
-        return self.memory[start:end]
+            # Record the access
+            access = MemoryAccess(
+                address=address,
+                access_type=MemoryAccessType.WRITE,
+                processor_id=processor_id,
+                thread_id=thread_id,
+                timestamp=timestamp,
+                value=value,
+                context=context
+            )
+            self._log_access(access)
+            
+            # Update memory directly for simplicity
+            # In a real system this would happen on cache eviction or based on coherence protocol
+            super().memory[address] = value
+            
+            # Race detection
+            if self.enable_race_detection and thread_id is not None and timestamp is not None:
+                # Mark as shared address if accessed by multiple threads
+                if address in self.last_writer and self.last_writer[address][0] != thread_id:
+                    self.shared_addresses.add(address)
+                
+                # Update last writer
+                self.last_writer[address] = (thread_id, timestamp)
+        else:
+            # No cache, just go straight to memory
+            super().write(address, value, processor_id, thread_id, timestamp, context)

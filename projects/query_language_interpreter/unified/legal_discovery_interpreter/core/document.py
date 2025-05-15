@@ -4,6 +4,8 @@ from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
 
+from common.models.base import BaseModel as CommonBaseModel, Document as CommonDocument
+
 
 class DocumentMetadata(BaseModel):
     """Metadata for a legal document."""
@@ -33,11 +35,10 @@ class DocumentMetadata(BaseModel):
         extra = "allow"  # Allow extra fields for flexibility
 
 
-class Document(BaseModel):
+class Document(CommonDocument):
     """Base model for a legal document."""
     
     metadata: DocumentMetadata = Field(..., description="Document metadata")
-    content: str = Field(..., description="Full text content of the document")
     
     # Search and analysis related fields
     relevance_score: Optional[float] = Field(None, description="Relevance score for the document")
@@ -45,6 +46,40 @@ class Document(BaseModel):
     extracted_entities: Optional[Dict[str, List[str]]] = Field(None, 
                                                             description="Extracted entities from the document")
     tags: Optional[List[str]] = Field(None, description="Tags assigned to the document")
+    
+    def __init__(
+        self,
+        id: str = None,
+        content: str = None,
+        metadata: DocumentMetadata = None,
+        relevance_score: Optional[float] = None,
+        privilege_score: Optional[float] = None,
+        extracted_entities: Optional[Dict[str, List[str]]] = None,
+        tags: Optional[List[str]] = None,
+        **kwargs
+    ):
+        """Initialize a document.
+
+        Args:
+            id: Document ID (uses metadata.document_id if not provided)
+            content: Document content
+            metadata: Document metadata
+            relevance_score: Relevance score for the document
+            privilege_score: Privilege score for the document
+            extracted_entities: Extracted entities from the document
+            tags: Tags assigned to the document
+        """
+        doc_id = id if id is not None else (metadata.document_id if metadata else None)
+        super().__init__(
+            id=doc_id,
+            content=content,
+            metadata=metadata.__dict__ if metadata else {}
+        )
+        self.metadata = metadata
+        self.relevance_score = relevance_score
+        self.privilege_score = privilege_score
+        self.extracted_entities = extracted_entities
+        self.tags = tags
     
     def get_content_preview(self, max_length: int = 200) -> str:
         """Get a preview of the document content.
@@ -85,7 +120,7 @@ class LegalAgreement(Document):
     agreement_type: str = Field(..., description="Type of agreement")
 
 
-class DocumentCollection(BaseModel):
+class DocumentCollection(CommonBaseModel):
     """A collection of documents for a legal discovery case."""
     
     collection_id: str = Field(..., description="Unique identifier for the collection")
@@ -134,3 +169,18 @@ class DocumentCollection(BaseModel):
             Number of documents in the collection
         """
         return len(self.documents)
+        
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert collection to dictionary.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation
+        """
+        return {
+            "collection_id": self.collection_id,
+            "name": self.name,
+            "description": self.description,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "document_count": self.count(),
+        }

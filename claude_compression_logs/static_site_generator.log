@@ -1,0 +1,30 @@
+Starting compression for static_site_generator/unified at Thu May 15 22:54:58 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/static_site_generator/unified...
+~/librarybench/projects/static_site_generator/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/static_site_generator/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/static_site_generator/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/static_site_generator/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.803s
+user	0m0.751s
+sys	0m0.117s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.806s
+user	0m0.724s
+sys	0m0.135s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.814s
+user	0m0.763s
+sys	0m0.122s
+~/librarybench
+Done!
+Completed compression for static_site_generator/unified at Thu May 15 22:55:01 UTC 2025

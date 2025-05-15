@@ -1,63 +1,19 @@
 """File system utility functions for the Database Storage Optimization Analyzer."""
 
 import os
-import stat
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, Iterator, Union
-import platform
-import psutil
-import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from functools import lru_cache
 
-logger = logging.getLogger(__name__)
-
-
-def get_file_stats(file_path: Union[str, Path]) -> Dict[str, Union[int, datetime, bool]]:
-    """
-    Get detailed file statistics.
-
-    Args:
-        file_path: Path to the file
-
-    Returns:
-        Dict containing file statistics including size, modification times, etc.
-    """
-    try:
-        path = Path(file_path)
-        stats = path.stat()
-        
-        result = {
-            "path": str(path.absolute()),
-            "size_bytes": stats.st_size,
-            "last_modified": datetime.fromtimestamp(stats.st_mtime),
-            "creation_time": datetime.fromtimestamp(stats.st_ctime),
-            "last_accessed": datetime.fromtimestamp(stats.st_atime),
-            "exists": path.exists(),
-            "is_file": path.is_file(),
-            "is_dir": path.is_dir(),
-            "is_symlink": path.is_symlink(),
-        }
-        
-        # Add platform-specific information
-        if platform.system() == "Windows":
-            # Add Windows-specific attributes
-            result["is_hidden"] = bool(stats.st_file_attributes & 0x2)  # type: ignore
-            
-        elif platform.system() in ["Linux", "Darwin"]:
-            # Add Unix-specific attributes
-            result["is_executable"] = bool(stats.st_mode & stat.S_IXUSR)
-            result["permissions"] = oct(stats.st_mode & 0o777)
-            
-        return result
-    except Exception as e:
-        logger.error(f"Error getting stats for {file_path}: {str(e)}")
-        return {
-            "path": str(file_path),
-            "exists": False,
-            "error": str(e)
-        }
+# Import from common library
+from common.utils.file_utils import (
+    find_files as common_find_files,
+    get_file_stats as common_get_file_stats,
+    calculate_dir_size as common_calculate_dir_size,
+    get_disk_usage as common_get_disk_usage,
+    read_file_sample as common_read_file_sample,
+    detect_file_type as common_detect_file_type
+)
 
 
 def find_files(
@@ -92,66 +48,32 @@ def find_files(
     Returns:
         Iterator of Path objects for matching files
     """
-    root = Path(root_path)
-    if not root.exists() or not root.is_dir():
-        logger.warning(f"Root path {root_path} does not exist or is not a directory")
-        return
+    return common_find_files(
+        root_path=root_path,
+        extensions=extensions,
+        min_size=min_size,
+        max_size=max_size,
+        modified_after=modified_after,
+        modified_before=modified_before,
+        max_depth=max_depth,
+        follow_symlinks=follow_symlinks,
+        skip_hidden=skip_hidden,
+        recursive=recursive,
+        max_files=max_files
+    )
 
-    count = 0
-    
-    for current_depth, (dirpath, dirnames, filenames) in enumerate(os.walk(root, followlinks=follow_symlinks)):
-        # Skip hidden directories if requested
-        if skip_hidden:
-            dirnames[:] = [d for d in dirnames if not d.startswith('.')]
 
-        # Respect max depth if specified
-        if max_depth is not None and current_depth >= max_depth:
-            dirnames.clear()  # Clear dirnames to prevent further recursion
-        
-        # Skip further processing if not recursive and not at root
-        if not recursive and Path(dirpath) != root:
-            continue
+def get_file_stats(file_path: Union[str, Path]) -> Dict[str, Union[int, datetime, bool]]:
+    """
+    Get detailed file statistics.
 
-        # Process files in current directory
-        for filename in filenames:
-            # Skip hidden files if requested
-            if skip_hidden and filename.startswith('.'):
-                continue
-                
-            file_path = Path(dirpath) / filename
-            
-            # Check extension filter
-            if extensions and file_path.suffix.lower() not in extensions:
-                continue
-                
-            try:
-                # Get file stats for further filtering
-                stats = file_path.stat()
-                
-                # Size filters
-                if min_size is not None and stats.st_size < min_size:
-                    continue
-                if max_size is not None and stats.st_size > max_size:
-                    continue
-                    
-                # Date filters
-                mod_time = datetime.fromtimestamp(stats.st_mtime)
-                if modified_after is not None and mod_time < modified_after:
-                    continue
-                if modified_before is not None and mod_time > modified_before:
-                    continue
-                    
-                # Yield the matching file
-                yield file_path
-                
-                # Check if we've reached the max files limit
-                count += 1
-                if max_files is not None and count >= max_files:
-                    return
-                    
-            except (PermissionError, OSError) as e:
-                logger.warning(f"Error accessing {file_path}: {e}")
-                continue
+    Args:
+        file_path: Path to the file
+
+    Returns:
+        Dict containing file statistics including size, modification times, etc.
+    """
+    return common_get_file_stats(file_path)
 
 
 def calculate_dir_size(
@@ -170,30 +92,13 @@ def calculate_dir_size(
     Returns:
         Total size in bytes
     """
-    path = Path(dir_path)
-    if not path.exists() or not path.is_dir():
-        return 0
-
-    try:
-        # For small directories, use a simple approach
-        if len(list(path.glob('**/*'))) < 1000:
-            return sum(f.stat().st_size for f in path.glob('**/*') if f.is_file())
-        
-        # For larger directories, use parallel processing
-        files = [f for f in path.glob('**/*') if f.is_file()]
-        
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [executor.submit(lambda p: p.stat().st_size, file_path) for file_path in files]
-            sizes = [future.result() for future in as_completed(futures)]
-            
-        return sum(sizes)
-    
-    except (PermissionError, OSError) as e:
-        logger.error(f"Error calculating size of {dir_path}: {e}")
-        return 0
+    return common_calculate_dir_size(
+        dir_path=dir_path,
+        follow_symlinks=follow_symlinks,
+        max_workers=max_workers
+    )
 
 
-@lru_cache(maxsize=128)
 def get_disk_usage(path: Union[str, Path]) -> Dict[str, Union[int, float]]:
     """
     Get disk usage statistics for the partition containing the path.
@@ -204,19 +109,30 @@ def get_disk_usage(path: Union[str, Path]) -> Dict[str, Union[int, float]]:
     Returns:
         Dictionary with disk usage information
     """
-    try:
-        usage = psutil.disk_usage(str(path))
-        return {
-            "total_bytes": usage.total,
-            "used_bytes": usage.used,
-            "free_bytes": usage.free,
-            "percent_used": usage.percent,
-        }
-    except Exception as e:
-        logger.error(f"Error getting disk usage for {path}: {e}")
-        return {
-            "error": str(e)
-        }
+    return common_get_disk_usage(path)
+
+
+def read_file_sample(
+    file_path: Union[str, Path], 
+    max_bytes: int = 8192, 
+    offset: int = 0
+) -> bytes:
+    """
+    Read a sample of data from a file.
+
+    Args:
+        file_path: Path to the file
+        max_bytes: Maximum number of bytes to read
+        offset: Byte offset to start reading from
+
+    Returns:
+        Sample of file content as bytes
+    """
+    return common_read_file_sample(
+        file_path=file_path,
+        max_bytes=max_bytes,
+        offset=offset
+    )
 
 
 def estimate_file_growth_rate(

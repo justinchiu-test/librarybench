@@ -4,7 +4,7 @@ Pytest configuration and shared fixtures.
 import pytest
 
 # Import fixtures from test_data.py
-from tests.fixtures.test_data import (
+from tests.product_manager.fixtures.test_data import (
     temp_data_dir,
     feedback_samples,
     theme_samples,

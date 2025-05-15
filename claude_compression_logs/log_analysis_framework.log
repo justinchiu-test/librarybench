@@ -1,0 +1,30 @@
+Starting compression for log_analysis_framework/unified at Thu May 15 22:54:55 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/log_analysis_framework/unified...
+~/librarybench/projects/log_analysis_framework/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/log_analysis_framework/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/log_analysis_framework/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/log_analysis_framework/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.946s
+user	0m0.913s
+sys	0m0.136s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.748s
+user	0m0.787s
+sys	0m0.094s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.722s
+user	0m0.693s
+sys	0m0.078s
+~/librarybench
+Done!
+Completed compression for log_analysis_framework/unified at Thu May 15 22:54:58 UTC 2025

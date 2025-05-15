@@ -4,20 +4,17 @@ Core backup engine for GameVault.
 This module provides the main backup engine functionality.
 """
 
-import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union, cast
+from typing import Dict, List, Optional, Union
 
-import bsdiff4
+from common.core.backup_engine import IncrementalBackupEngine
+from common.core.chunking import ChunkingStrategy, RollingHashChunker
+from common.core.storage import StorageManager, FileSystemStorageManager
+from common.core.versioning import VersionTracker, FileSystemVersionTracker
+from common.core.models import VersionInfo
 
-from gamevault.backup_engine.chunker import ChunkingStrategy, RollingHashChunker
-from gamevault.backup_engine.storage import StorageManager
-from gamevault.backup_engine.version_tracker import VersionTracker
 from gamevault.config import get_config
-from gamevault.models import FileInfo, GameVersionType, ProjectVersion
-from gamevault.utils import (generate_timestamp, get_file_hash, get_file_size,
-                           get_file_modification_time, is_binary_file,
-                           scan_directory)
+from gamevault.models import GameVersionType, ProjectVersion
 
 
 class BackupEngine:
@@ -52,165 +49,36 @@ class BackupEngine:
         # Directory for storing backups
         self.storage_dir = Path(storage_dir) if storage_dir else config.backup_dir
         
-        # Initialize components
-        self.storage_manager = StorageManager(self.storage_dir)
-        self.version_tracker = VersionTracker(project_name, self.storage_dir)
+        # Set chunking strategy
         self.chunking_strategy = chunking_strategy or RollingHashChunker(
             min_chunk_size=config.min_chunk_size,
             max_chunk_size=config.max_chunk_size
         )
-    
-    def _scan_project_files(self) -> Dict[str, Dict]:
-        """
-        Scan the project directory for files.
         
-        Returns:
-            Dict[str, Dict]: Dictionary of file paths to file metadata
-        """
-        files = {}
+        # Initialize common components using the unified library
+        # Create a custom storage manager
+        self.storage_manager = FileSystemStorageManager(
+            self.storage_dir,
+            self.chunking_strategy
+        )
         
-        for file_path in scan_directory(self.project_path, self.config.ignore_patterns):
-            rel_path = str(file_path.relative_to(self.project_path))
-            
-            files[rel_path] = {
-                "path": rel_path,
-                "size": get_file_size(file_path),
-                "modified_time": get_file_modification_time(file_path),
-                "is_binary": is_binary_file(file_path, self.config.binary_extensions),
-                "abs_path": str(file_path)
-            }
+        # Create a custom version tracker
+        self.version_tracker = FileSystemVersionTracker(
+            project_name,
+            self.storage_dir
+        )
         
-        return files
-    
-    def _detect_changes(
-        self, 
-        current_files: Dict[str, Dict], 
-        prev_version: Optional[ProjectVersion] = None
-    ) -> Tuple[Dict[str, Dict], Dict[str, FileInfo], Set[str]]:
-        """
-        Detect changes between the current state and the previous version.
+        # Create the core backup engine
+        self._engine = IncrementalBackupEngine(
+            project_name=project_name,
+            config=None,  # Use default config from the engine
+            storage_manager=self.storage_manager,
+            version_tracker=self.version_tracker,
+            chunking_strategy=self.chunking_strategy
+        )
         
-        Args:
-            current_files: Dictionary of current file paths to file metadata
-            prev_version: Previous version to compare against
-            
-        Returns:
-            Tuple containing:
-                Dict[str, Dict]: Files that have changed
-                Dict[str, FileInfo]: Files from the previous version that haven't changed
-                Set[str]: Paths that have been deleted
-        """
-        if prev_version is None:
-            # No previous version, all files are new
-            return current_files, {}, set()
-        
-        changed_files = {}
-        unchanged_files = {}
-        deleted_files = set()
-        
-        # Check for changed or unchanged files
-        for rel_path, file_meta in current_files.items():
-            if rel_path in prev_version.files:
-                prev_file = prev_version.files[rel_path]
-                abs_path = file_meta["abs_path"]
-                
-                # Calculate current file hash to properly detect changes
-                current_hash = get_file_hash(abs_path)
-                
-                # Check if content has actually changed by comparing hash values
-                if current_hash != prev_file.hash or file_meta["modified_time"] > prev_file.modified_time:
-                    changed_files[rel_path] = file_meta
-                else:
-                    # File hasn't changed, use info from previous version
-                    unchanged_files[rel_path] = prev_file
-            else:
-                # New file
-                changed_files[rel_path] = file_meta
-        
-        # Check for deleted files
-        for rel_path in prev_version.files:
-            if rel_path not in current_files:
-                deleted_files.add(rel_path)
-        
-        return changed_files, unchanged_files, deleted_files
-    
-    def _process_text_file(self, file_path: Union[str, Path]) -> Tuple[str, str]:
-        """
-        Process a text file for backup.
-        
-        Args:
-            file_path: Path to the file
-            
-        Returns:
-            Tuple[str, str]: File ID (hash) and storage path
-        """
-        return self.storage_manager.store_file(file_path)
-    
-    def _process_binary_file(self, file_path: Union[str, Path]) -> Tuple[str, List[str]]:
-        """
-        Process a binary file for backup using chunking.
-        
-        Args:
-            file_path: Path to the file
-            
-        Returns:
-            Tuple[str, List[str]]: File hash and list of chunk IDs
-        """
-        file_path = Path(file_path)
-        
-        with open(file_path, "rb") as f:
-            data = f.read()
-        
-        # Calculate file hash
-        file_hash = get_file_hash(file_path)
-        
-        # Chunk the file
-        chunks = self.chunking_strategy.chunk_data(data)
-        
-        # Store chunks
-        chunk_ids = []
-        for chunk in chunks:
-            chunk_id = self.storage_manager.store_chunk(chunk)
-            chunk_ids.append(chunk_id)
-        
-        return file_hash, chunk_ids
-    
-    def _process_file(self, file_path: Union[str, Path], is_binary: bool) -> FileInfo:
-        """
-        Process a file for backup.
-        
-        Args:
-            file_path: Path to the file
-            is_binary: Whether the file is binary
-            
-        Returns:
-            FileInfo: Information about the processed file
-        """
-        file_path = Path(file_path)
-        rel_path = str(file_path.relative_to(self.project_path))
-        size = get_file_size(file_path)
-        modified_time = get_file_modification_time(file_path)
-        
-        if is_binary:
-            file_hash, chunks = self._process_binary_file(file_path)
-            return FileInfo(
-                path=rel_path,
-                size=size,
-                hash=file_hash,
-                modified_time=modified_time,
-                is_binary=True,
-                chunks=chunks
-            )
-        else:
-            file_hash, storage_path = self._process_text_file(file_path)
-            return FileInfo(
-                path=rel_path,
-                size=size,
-                hash=file_hash,
-                modified_time=modified_time,
-                is_binary=False,
-                storage_path=storage_path
-            )
+        # Set the project path for the engine
+        self._engine.project_path = self.project_path
     
     def create_backup(
         self,
@@ -233,41 +101,46 @@ class BackupEngine:
         Returns:
             ProjectVersion: The created version
         """
-        # Get previous version if it exists
-        prev_version = self.version_tracker.get_latest_version()
+        # Use the common engine to create the snapshot
+        metadata = {
+            "description": description,
+            "tags": tags or [],
+            "is_milestone": is_milestone,
+            "version_type": version_type
+        }
         
-        # Scan project files
-        current_files = self._scan_project_files()
+        # Create the snapshot
+        snapshot_id = self._engine.create_snapshot(self.project_path, metadata)
         
-        # Detect changes
-        changed_files, unchanged_files, deleted_files = self._detect_changes(current_files, prev_version)
+        # Get the version information
+        version_info = self._engine.version_tracker.get_version(snapshot_id)
         
-        # Process changed files
-        processed_files = {}
-        
-        # Add unchanged files
-        processed_files.update(unchanged_files)
-        
-        # Process and add changed files
-        for rel_path, file_meta in changed_files.items():
-            is_binary = file_meta["is_binary"]
-            abs_path = file_meta["abs_path"]
+        # Convert to ProjectVersion for API compatibility
+        # Convert files from common.core.models.FileInfo to gamevault.models.FileInfo
+        converted_files = {}
+        for path, file_info in version_info.files.items():
+            converted_files[path] = FileInfo(
+                path=file_info.path,
+                size=file_info.size,
+                hash=file_info.hash,
+                modified_time=file_info.modified_time,
+                is_binary=file_info.is_binary,
+                chunks=file_info.chunks,
+                storage_path=file_info.storage_path,
+                metadata=file_info.metadata or {}
+            )
             
-            file_info = self._process_file(abs_path, is_binary)
-            processed_files[rel_path] = file_info
-        
-        # Create a new version
-        version = self.version_tracker.create_version(
+        return ProjectVersion(
+            id=version_info.id,
+            timestamp=version_info.timestamp,
             name=name,
-            files=processed_files,
-            version_type=version_type,
+            parent_id=version_info.parent_id,
+            type=version_type,
+            tags=tags or [],
             description=description,
-            is_milestone=is_milestone,
-            tags=tags,
-            parent_id=prev_version.id if prev_version else None
+            files=converted_files,
+            is_milestone=is_milestone
         )
-        
-        return version
     
     def restore_version(
         self,
@@ -289,47 +162,16 @@ class BackupEngine:
         Raises:
             FileNotFoundError: If the version doesn't exist
         """
-        # Get the version
-        version = self.version_tracker.get_version(version_id)
-        
         # Determine output path
         if output_path is None:
+            from gamevault.utils import generate_timestamp
             timestamp = int(generate_timestamp())
             output_path = self.project_path.parent / f"{self.project_name}_restore_{timestamp}"
         
         output_path = Path(output_path)
         
-        # Create output directory
-        os.makedirs(output_path, exist_ok=True)
-        
-        # Convert excluded paths to set for faster lookup
-        excluded = set(excluded_paths or [])
-        
-        # Restore each file
-        for rel_path, file_info in version.files.items():
-            if rel_path in excluded:
-                continue
-            
-            file_path = output_path / rel_path
-            
-            # Create parent directories
-            os.makedirs(file_path.parent, exist_ok=True)
-            
-            if file_info.is_binary and file_info.chunks:
-                # Restore binary file from chunks
-                chunks = []
-                for chunk_id in file_info.chunks:
-                    chunk_data = self.storage_manager.retrieve_chunk(chunk_id)
-                    chunks.append(chunk_data)
-                
-                # Combine chunks
-                with open(file_path, "wb") as f:
-                    for chunk in chunks:
-                        f.write(chunk)
-            else:
-                # Restore text file
-                file_id = file_info.hash
-                self.storage_manager.retrieve_file(file_id, file_path)
+        # Use the common engine to restore the snapshot
+        self._engine.restore_snapshot(version_id, output_path, excluded_paths)
         
         return output_path
     
@@ -349,35 +191,7 @@ class BackupEngine:
             Dict[str, str]: Dictionary of file paths to change types
                 (added, modified, deleted, unchanged)
         """
-        # Get the versions
-        version1 = self.version_tracker.get_version(version_id1)
-        version2 = self.version_tracker.get_version(version_id2)
-        
-        diff = {}
-        
-        # Check for added, modified, or unchanged files
-        for rel_path, file_info in version2.files.items():
-            if rel_path not in version1.files:
-                diff[rel_path] = "added"
-            elif file_info.hash != version1.files[rel_path].hash:
-                # Hash difference means content changed
-                diff[rel_path] = "modified"
-            elif file_info.size != version1.files[rel_path].size:
-                # Size difference is another indicator of modification
-                diff[rel_path] = "modified"
-            elif file_info.modified_time != version1.files[rel_path].modified_time:
-                # Modified time difference can indicate changes
-                # This is a more aggressive detection of changes
-                diff[rel_path] = "modified"
-            else:
-                diff[rel_path] = "unchanged"
-        
-        # Check for deleted files
-        for rel_path in version1.files:
-            if rel_path not in version2.files:
-                diff[rel_path] = "deleted"
-        
-        return diff
+        return self._engine.get_version_diff(version_id1, version_id2)
     
     def get_storage_stats(self) -> Dict[str, int]:
         """
@@ -386,8 +200,4 @@ class BackupEngine:
         Returns:
             Dict[str, int]: Dictionary with storage statistics
         """
-        return self.storage_manager.get_storage_size()
-
-
-# Import chunker here to avoid circular imports
-from gamevault.backup_engine.chunker import ChunkingStrategy, RollingHashChunker
+        return self._engine.get_storage_stats()

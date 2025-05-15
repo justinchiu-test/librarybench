@@ -1,0 +1,73 @@
+Starting compression for command_line_task_manager/unified at Thu May 15 22:54:52 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/command_line_task_manager/unified...
+~/librarybench/projects/command_line_task_manager/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/command_line_task_manager/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: pydantic>=2.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (2.11.4)
+Requirement already satisfied: typing-extensions>=4.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (4.13.2)
+Requirement already satisfied: pytest>=7.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (8.3.5)
+Requirement already satisfied: pytest-json-report>=1.5.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (1.5.0)
+Requirement already satisfied: cryptography>=41.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (44.0.3)
+Requirement already satisfied: pycryptodome>=3.18.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (3.22.0)
+Requirement already satisfied: python-jose>=3.3.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (3.4.0)
+Requirement already satisfied: jinja2>=3.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-command_line_task_manager==0.1.0) (3.1.6)
+Requirement already satisfied: cffi>=1.12 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cryptography>=41.0.0->unified-command_line_task_manager==0.1.0) (1.17.1)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from jinja2>=3.0.0->unified-command_line_task_manager==0.1.0) (3.0.2)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-command_line_task_manager==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-command_line_task_manager==0.1.0) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-command_line_task_manager==0.1.0) (0.4.0)
+Requirement already satisfied: exceptiongroup>=1.0.0rc8 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest>=7.0.0->unified-command_line_task_manager==0.1.0) (1.3.0)
+Requirement already satisfied: iniconfig in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest>=7.0.0->unified-command_line_task_manager==0.1.0) (2.1.0)
+Requirement already satisfied: packaging in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest>=7.0.0->unified-command_line_task_manager==0.1.0) (25.0)
+Requirement already satisfied: pluggy<2,>=1.5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest>=7.0.0->unified-command_line_task_manager==0.1.0) (1.5.0)
+Requirement already satisfied: tomli>=1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest>=7.0.0->unified-command_line_task_manager==0.1.0) (2.2.1)
+Requirement already satisfied: pytest-metadata in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pytest-json-report>=1.5.0->unified-command_line_task_manager==0.1.0) (3.1.1)
+Requirement already satisfied: ecdsa!=0.15 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from python-jose>=3.3.0->unified-command_line_task_manager==0.1.0) (0.19.1)
+Requirement already satisfied: rsa!=4.1.1,!=4.4,<5.0,>=4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from python-jose>=3.3.0->unified-command_line_task_manager==0.1.0) (4.9)
+Requirement already satisfied: pyasn1<0.5.0,>=0.4.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from python-jose>=3.3.0->unified-command_line_task_manager==0.1.0) (0.4.8)
+Requirement already satisfied: pycparser in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cffi>=1.12->cryptography>=41.0.0->unified-command_line_task_manager==0.1.0) (2.22)
+Requirement already satisfied: six>=1.9.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from ecdsa!=0.15->python-jose>=3.3.0->unified-command_line_task_manager==0.1.0) (1.17.0)
+Building wheels for collected packages: unified-command_line_task_manager
+  Building editable for unified-command_line_task_manager (pyproject.toml): started
+  Building editable for unified-command_line_task_manager (pyproject.toml): finished with status 'done'
+  Created wheel for unified-command_line_task_manager: filename=unified_command_line_task_manager-0.1.0-0.editable-py3-none-any.whl size=3342 sha256=a03512e1cfbf507d10d23665f940368a553337b6be4112e60dcef7a12b335944
+  Stored in directory: /tmp/pip-ephem-wheel-cache-d4_pxoov/wheels/8d/dd/37/df9dcddc0fd628fbbae513e4d1a938c438e310518a8d295a97
+Successfully built unified-command_line_task_manager
+Installing collected packages: unified-command_line_task_manager
+  Attempting uninstall: unified-command_line_task_manager
+    Found existing installation: unified-command_line_task_manager 0.1.0
+    Uninstalling unified-command_line_task_manager-0.1.0:
+      Successfully uninstalled unified-command_line_task_manager-0.1.0
+Successfully installed unified-command_line_task_manager-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/command_line_task_manager/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.778s
+user	0m0.753s
+sys	0m0.095s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.743s
+user	0m0.724s
+sys	0m0.131s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.775s
+user	0m0.673s
+sys	0m0.136s
+~/librarybench
+Done!
+Completed compression for command_line_task_manager/unified at Thu May 15 22:54:58 UTC 2025

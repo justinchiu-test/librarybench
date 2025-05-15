@@ -9,10 +9,18 @@ import os
 import time
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Dict, List, Set, Optional, Any, Union, Tuple, Iterator
 
 from pydantic import BaseModel, Field
 
+# Import from common library
+from common.core.base import ScanSession
+from common.core.analysis import DifferentialAnalyzer
+from common.core.reporting import GenericReportGenerator, Report
+from common.utils.crypto import CryptoProvider
+
+# Import from persona-specific modules
 from file_system_analyzer.detection.scanner import (
     SensitiveDataScanner, 
     ScanOptions, 
@@ -34,7 +42,7 @@ from file_system_analyzer.reporting.reports import (
 )
 from file_system_analyzer.reporting.frameworks import FrameworkRegistry
 from file_system_analyzer.differential.analyzer import (
-    DifferentialAnalyzer,
+    DifferentialAnalyzer as SecurityDifferentialAnalyzer,
     ScanBaseline,
     DifferentialScanResult
 )
@@ -43,7 +51,6 @@ from file_system_analyzer.custody.evidence import (
     EvidencePackage,
     EvidenceType
 )
-from file_system_analyzer.utils.crypto import CryptoProvider
 
 
 class ComplianceScanOptions(BaseModel):
@@ -80,7 +87,7 @@ class ComplianceScanner:
             crypto_provider=self.crypto_provider,
             user_id=self.options.user_id
         )
-        self.diff_analyzer = DifferentialAnalyzer()
+        self.diff_analyzer = SecurityDifferentialAnalyzer()
         self.evidence_packager = EvidencePackager(crypto_provider=self.crypto_provider)
         
         # Initialize state

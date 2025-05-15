@@ -5,6 +5,9 @@ from enum import Enum, auto
 from datetime import datetime, date, timedelta
 from pydantic import BaseModel, Field
 
+from common.core.query import BaseQuery, ExecutionContext
+from common.core.result import QueryResult as CommonQueryResult
+
 
 class QueryOperator(str, Enum):
     """Query operators for the legal discovery query language."""
@@ -148,15 +151,12 @@ class CompositeQuery(QueryClause):
     clauses: List[QueryClause] = Field(..., description="Query clauses to combine")
 
 
-class QueryResult(BaseModel):
-    """Result of a query execution."""
+class LegalQueryResult(CommonQueryResult):
+    """Result of a legal discovery query execution."""
     
-    query_id: str = Field(..., description="Unique identifier for the query")
     document_ids: List[str] = Field(default_factory=list, description="Matching document IDs")
-    total_hits: int = Field(default=0, description="Total number of matching documents")
     relevance_scores: Optional[Dict[str, float]] = Field(None, description="Relevance scores for documents")
     privilege_status: Optional[Dict[str, str]] = Field(None, description="Privilege status for documents")
-    execution_time: float = Field(..., description="Query execution time in seconds")
     executed_at: datetime = Field(default_factory=datetime.now, description="When the query was executed")
     
     pagination: Optional[Dict[str, Any]] = Field(None, description="Pagination information")
@@ -164,10 +164,9 @@ class QueryResult(BaseModel):
     facets: Optional[Dict[str, Any]] = Field(None, description="Facet results")
 
 
-class LegalDiscoveryQuery(BaseModel):
+class LegalDiscoveryQuery(BaseQuery):
     """Main query model for the legal discovery interpreter."""
     
-    query_id: str = Field(..., description="Unique identifier for the query")
     clauses: List[QueryClause] = Field(..., description="Query clauses")
     sort: Optional[List[SortField]] = Field(None, description="Sort specifications")
     limit: Optional[int] = Field(None, description="Maximum number of results to return")
@@ -178,6 +177,108 @@ class LegalDiscoveryQuery(BaseModel):
     highlight: bool = Field(default=False, description="Whether to highlight matching terms")
     expand_terms: bool = Field(default=True, description="Whether to expand terms using legal ontology")
     include_privileged: bool = Field(default=False, description="Whether to include privileged documents")
+
+    class Config:
+        """Pydantic model configuration."""
+        arbitrary_types_allowed = True
+    
+    def __init__(
+        self,
+        query_id: str,
+        clauses: List[QueryClause],
+        sort: Optional[List[SortField]] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        aggregations: Optional[Dict[str, Any]] = None,
+        facets: Optional[List[str]] = None,
+        highlight: bool = False,
+        expand_terms: bool = True,
+        include_privileged: bool = False,
+        **kwargs
+    ):
+        """Initialize a legal discovery query.
+
+        Args:
+            query_id: Unique identifier for the query
+            clauses: Query clauses
+            sort: Sort specifications
+            limit: Maximum number of results to return
+            offset: Offset for pagination
+            aggregations: Aggregation specifications
+            facets: Facet specifications
+            highlight: Whether to highlight matching terms
+            expand_terms: Whether to expand terms using legal ontology
+            include_privileged: Whether to include privileged documents
+        """
+        # Initialize BaseQuery attributes
+        query_string = self._generate_query_string(clauses)
+        parameters = {
+            "sort": sort,
+            "limit": limit,
+            "offset": offset,
+            "aggregations": aggregations,
+            "facets": facets,
+            "highlight": highlight,
+            "expand_terms": expand_terms,
+            "include_privileged": include_privileged,
+        }
+        super().__init__(
+            query_type="LEGAL_DISCOVERY",
+            query_string=query_string,
+            parameters=parameters
+        )
+        
+        # Set LegalDiscoveryQuery specific attributes
+        self.query_id = query_id
+        self.clauses = clauses
+        self.sort = sort
+        self.limit = limit
+        self.offset = offset
+        self.aggregations = aggregations
+        self.facets = facets
+        self.highlight = highlight
+        self.expand_terms = expand_terms
+        self.include_privileged = include_privileged
+    
+    def _generate_query_string(self, clauses: List[QueryClause]) -> str:
+        """Generate a string representation of the query clauses.
+        
+        Args:
+            clauses: Query clauses
+            
+        Returns:
+            String representation of the query
+        """
+        if not clauses:
+            return ""
+        
+        try:
+            return self.to_sql_like()
+        except:
+            # Fallback for when to_sql_like fails during initialization
+            return str(clauses)
+    
+    def validate(self) -> bool:
+        """Validate query structure and parameters.
+        
+        Returns:
+            bool: True if valid, False otherwise
+        """
+        # Basic validation
+        if not self.query_id or not self.clauses:
+            return False
+        
+        # Additional validation could be added here
+        
+        return True
+    
+    def to_string(self) -> str:
+        """Convert query back to string representation.
+        
+        Returns:
+            str: String representation of the query
+        """
+        return self.to_sql_like()
     
     def to_sql_like(self) -> str:
         """Convert the query to a SQL-like string representation.

@@ -1,0 +1,30 @@
+Starting compression for workflow_automation_engine/unified at Thu May 15 22:55:01 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/workflow_automation_engine/unified...
+~/librarybench/projects/workflow_automation_engine/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/workflow_automation_engine/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/workflow_automation_engine/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/workflow_automation_engine/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.775s
+user	0m0.709s
+sys	0m0.131s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.818s
+user	0m0.753s
+sys	0m0.126s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.725s
+user	0m0.739s
+sys	0m0.107s
+~/librarybench
+Done!
+Completed compression for workflow_automation_engine/unified at Thu May 15 22:55:04 UTC 2025

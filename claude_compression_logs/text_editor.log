@@ -1,0 +1,100 @@
+Starting compression for text_editor/unified at Thu May 15 22:55:00 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/text_editor/unified...
+~/librarybench/projects/text_editor/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/text_editor/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: nltk in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-text_editor==0.1.0) (3.9.1)
+Requirement already satisfied: textstat in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-text_editor==0.1.0) (0.7.7)
+Requirement already satisfied: spacy in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-text_editor==0.1.0) (3.8.5)
+Requirement already satisfied: pydantic in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-text_editor==0.1.0) (2.11.4)
+Requirement already satisfied: click in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-text_editor==0.1.0) (8.1.8)
+Requirement already satisfied: joblib in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-text_editor==0.1.0) (1.5.0)
+Requirement already satisfied: regex>=2021.8.3 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-text_editor==0.1.0) (2024.11.6)
+Requirement already satisfied: tqdm in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from nltk->unified-text_editor==0.1.0) (4.67.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-text_editor==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-text_editor==0.1.0) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-text_editor==0.1.0) (4.13.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic->unified-text_editor==0.1.0) (0.4.0)
+Requirement already satisfied: spacy-legacy<3.1.0,>=3.0.11 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (3.0.12)
+Requirement already satisfied: spacy-loggers<2.0.0,>=1.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (1.0.5)
+Requirement already satisfied: murmurhash<1.1.0,>=0.28.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (1.0.12)
+Requirement already satisfied: cymem<2.1.0,>=2.0.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (2.0.11)
+Requirement already satisfied: preshed<3.1.0,>=3.0.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (3.0.9)
+Requirement already satisfied: thinc<8.4.0,>=8.3.4 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (8.3.6)
+Requirement already satisfied: wasabi<1.2.0,>=0.9.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (1.1.3)
+Requirement already satisfied: srsly<3.0.0,>=2.4.3 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (2.5.1)
+Requirement already satisfied: catalogue<2.1.0,>=2.0.6 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (2.0.10)
+Requirement already satisfied: weasel<0.5.0,>=0.1.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (0.4.1)
+Requirement already satisfied: typer<1.0.0,>=0.3.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (0.15.4)
+Requirement already satisfied: numpy>=1.19.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (2.2.5)
+Requirement already satisfied: requests<3.0.0,>=2.13.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (2.32.3)
+Requirement already satisfied: jinja2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (3.1.6)
+Requirement already satisfied: setuptools in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (65.5.0)
+Requirement already satisfied: packaging>=20.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (25.0)
+Requirement already satisfied: langcodes<4.0.0,>=3.2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from spacy->unified-text_editor==0.1.0) (3.5.0)
+Requirement already satisfied: pyphen in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from textstat->unified-text_editor==0.1.0) (0.17.2)
+Requirement already satisfied: cmudict in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from textstat->unified-text_editor==0.1.0) (1.0.32)
+Requirement already satisfied: language-data>=1.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from langcodes<4.0.0,>=3.2.0->spacy->unified-text_editor==0.1.0) (1.3.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from requests<3.0.0,>=2.13.0->spacy->unified-text_editor==0.1.0) (3.4.0)
+Requirement already satisfied: idna<4,>=2.5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from requests<3.0.0,>=2.13.0->spacy->unified-text_editor==0.1.0) (3.10)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from requests<3.0.0,>=2.13.0->spacy->unified-text_editor==0.1.0) (2.2.3)
+Requirement already satisfied: certifi>=2017.4.17 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from requests<3.0.0,>=2.13.0->spacy->unified-text_editor==0.1.0) (2024.12.14)
+Requirement already satisfied: blis<1.4.0,>=1.3.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from thinc<8.4.0,>=8.3.4->spacy->unified-text_editor==0.1.0) (1.3.0)
+Requirement already satisfied: confection<1.0.0,>=0.0.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from thinc<8.4.0,>=8.3.4->spacy->unified-text_editor==0.1.0) (0.1.5)
+Requirement already satisfied: shellingham>=1.3.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from typer<1.0.0,>=0.3.0->spacy->unified-text_editor==0.1.0) (1.5.4)
+Requirement already satisfied: rich>=10.11.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from typer<1.0.0,>=0.3.0->spacy->unified-text_editor==0.1.0) (14.0.0)
+Requirement already satisfied: cloudpathlib<1.0.0,>=0.7.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from weasel<0.5.0,>=0.1.0->spacy->unified-text_editor==0.1.0) (0.21.1)
+Requirement already satisfied: smart-open<8.0.0,>=5.2.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from weasel<0.5.0,>=0.1.0->spacy->unified-text_editor==0.1.0) (7.1.0)
+Requirement already satisfied: importlib-metadata>=5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cmudict->textstat->unified-text_editor==0.1.0) (8.5.0)
+Requirement already satisfied: importlib-resources>=5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cmudict->textstat->unified-text_editor==0.1.0) (6.5.2)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from jinja2->spacy->unified-text_editor==0.1.0) (3.0.2)
+Requirement already satisfied: zipp>=3.20 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from importlib-metadata>=5->cmudict->textstat->unified-text_editor==0.1.0) (3.21.0)
+Requirement already satisfied: marisa-trie>=1.1.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from language-data>=1.2->langcodes<4.0.0,>=3.2.0->spacy->unified-text_editor==0.1.0) (1.2.1)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from rich>=10.11.0->typer<1.0.0,>=0.3.0->spacy->unified-text_editor==0.1.0) (3.0.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from rich>=10.11.0->typer<1.0.0,>=0.3.0->spacy->unified-text_editor==0.1.0) (2.19.1)
+Requirement already satisfied: wrapt in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from smart-open<8.0.0,>=5.2.1->weasel<0.5.0,>=0.1.0->spacy->unified-text_editor==0.1.0) (1.17.0)
+Requirement already satisfied: mdurl~=0.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=10.11.0->typer<1.0.0,>=0.3.0->spacy->unified-text_editor==0.1.0) (0.1.2)
+Building wheels for collected packages: unified-text_editor
+  Building editable for unified-text_editor (pyproject.toml): started
+  Building editable for unified-text_editor (pyproject.toml): finished with status 'done'
+  Created wheel for unified-text_editor: filename=unified_text_editor-0.1.0-0.editable-py3-none-any.whl size=3026 sha256=8fe76881c951e2713daf990838f4d8fdf6d0fc74657c28e8a1b3055d865c5e4e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-vhtvro3h/wheels/30/5f/c4/2b916c2b6494271a36ff88a72cf8ba6ca89fa76e5d8e987b89
+Successfully built unified-text_editor
+Installing collected packages: unified-text_editor
+  Attempting uninstall: unified-text_editor
+    Found existing installation: unified-text_editor 0.1.0
+    Uninstalling unified-text_editor-0.1.0:
+      Successfully uninstalled unified-text_editor-0.1.0
+Successfully installed unified-text_editor-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/text_editor/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.827s
+user	0m0.839s
+sys	0m0.095s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.815s
+user	0m0.810s
+sys	0m0.120s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.812s
+user	0m0.848s
+sys	0m0.091s
+~/librarybench
+Done!
+Completed compression for text_editor/unified at Thu May 15 22:55:07 UTC 2025

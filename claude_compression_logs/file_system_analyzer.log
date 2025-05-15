@@ -1,0 +1,58 @@
+Starting compression for file_system_analyzer/unified at Thu May 15 22:54:55 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/file_system_analyzer/unified...
+~/librarybench/projects/file_system_analyzer/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/file_system_analyzer/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: pydantic>=2.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-file_system_analyzer==0.1.0) (2.11.4)
+Requirement already satisfied: cryptography>=40.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-file_system_analyzer==0.1.0) (44.0.3)
+Requirement already satisfied: xxhash>=3.0.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-file_system_analyzer==0.1.0) (3.5.0)
+Collecting python-magic>=0.4.24 (from unified-file_system_analyzer==0.1.0)
+  Using cached python_magic-0.4.27-py2.py3-none-any.whl.metadata (5.8 kB)
+Requirement already satisfied: pytz in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-file_system_analyzer==0.1.0) (2025.2)
+Requirement already satisfied: cffi>=1.12 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cryptography>=40.0.0->unified-file_system_analyzer==0.1.0) (1.17.1)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-file_system_analyzer==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-file_system_analyzer==0.1.0) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-file_system_analyzer==0.1.0) (4.13.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=2.0.0->unified-file_system_analyzer==0.1.0) (0.4.0)
+Requirement already satisfied: pycparser in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from cffi>=1.12->cryptography>=40.0.0->unified-file_system_analyzer==0.1.0) (2.22)
+Using cached python_magic-0.4.27-py2.py3-none-any.whl (13 kB)
+Building wheels for collected packages: unified-file_system_analyzer
+  Building editable for unified-file_system_analyzer (pyproject.toml): started
+  Building editable for unified-file_system_analyzer (pyproject.toml): finished with status 'done'
+  Created wheel for unified-file_system_analyzer: filename=unified_file_system_analyzer-0.1.0-0.editable-py3-none-any.whl size=3231 sha256=8b19bc0dbd6452779e429311ab1c93224fbda5f396b4466a957680803ce4e905
+  Stored in directory: /tmp/pip-ephem-wheel-cache-g6003z9e/wheels/7f/df/b5/cf288a91b6f265d3ed476790de124302aa476e978e3b72e7c9
+Successfully built unified-file_system_analyzer
+Installing collected packages: python-magic, unified-file_system_analyzer
+Successfully installed python-magic-0.4.27 unified-file_system_analyzer-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/file_system_analyzer/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.725s
+user	0m0.740s
+sys	0m0.107s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.745s
+user	0m0.767s
+sys	0m0.106s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.922s
+user	0m0.933s
+sys	0m0.171s
+~/librarybench
+Done!
+Completed compression for file_system_analyzer/unified at Thu May 15 22:55:01 UTC 2025

@@ -1,0 +1,30 @@
+Starting compression for test_automation_framework/unified at Thu May 15 22:55:00 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/test_automation_framework/unified...
+~/librarybench/projects/test_automation_framework/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/test_automation_framework/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/test_automation_framework/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/test_automation_framework/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.854s
+user	0m0.808s
+sys	0m0.100s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.839s
+user	0m0.752s
+sys	0m0.112s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.832s
+user	0m0.755s
+sys	0m0.124s
+~/librarybench
+Done!
+Completed compression for test_automation_framework/unified at Thu May 15 22:55:04 UTC 2025

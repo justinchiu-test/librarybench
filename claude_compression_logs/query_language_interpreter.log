@@ -1,0 +1,49 @@
+Starting compression for query_language_interpreter/unified at Thu May 15 22:54:58 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/query_language_interpreter/unified...
+~/librarybench/projects/query_language_interpreter/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/query_language_interpreter/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: unified-query_language_interpreter
+  Building editable for unified-query_language_interpreter (pyproject.toml): started
+  Building editable for unified-query_language_interpreter (pyproject.toml): finished with status 'done'
+  Created wheel for unified-query_language_interpreter: filename=unified_query_language_interpreter-0.1.0-0.editable-py3-none-any.whl size=3202 sha256=590509228473c5c083e52de6ce63783fc09dd93ab56c793c9036c066eed71068
+  Stored in directory: /tmp/pip-ephem-wheel-cache-8otp90s4/wheels/c9/e1/d9/7bac4604e0d719ffebbca6af5a8c213ef03871757f41a4f509
+Successfully built unified-query_language_interpreter
+Installing collected packages: unified-query_language_interpreter
+  Attempting uninstall: unified-query_language_interpreter
+    Found existing installation: unified-query_language_interpreter 0.1.0
+    Uninstalling unified-query_language_interpreter-0.1.0:
+      Successfully uninstalled unified-query_language_interpreter-0.1.0
+Successfully installed unified-query_language_interpreter-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/query_language_interpreter/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.710s
+user	0m0.733s
+sys	0m0.100s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.733s
+user	0m0.752s
+sys	0m0.111s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.738s
+user	0m0.723s
+sys	0m0.128s
+~/librarybench
+Done!
+Completed compression for query_language_interpreter/unified at Thu May 15 22:55:04 UTC 2025

@@ -1,1 +1,1 @@
-# Core functionality that can be used by all packages
+"""Core data structures and algorithms for personal knowledge management."""

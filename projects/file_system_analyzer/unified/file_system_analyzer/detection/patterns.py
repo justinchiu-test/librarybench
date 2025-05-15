@@ -7,49 +7,16 @@ health records, and proprietary business data.
 """
 
 import re
-from enum import Enum
-from typing import Dict, List, Pattern, Union, Optional
-from pydantic import BaseModel, Field
+from typing import Dict, List
+
+# Import from common library
+from common.utils.types import SensitivityLevel, ComplianceCategory
+from common.core.patterns import FilePattern, FilePatternRegistry, PatternValidator
 
 
-class SensitivityLevel(str, Enum):
-    """Sensitivity level of detected data."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
-class ComplianceCategory(str, Enum):
-    """Regulatory compliance categories for detected data."""
-    PII = "pii"  # Personally Identifiable Information
-    PHI = "phi"  # Protected Health Information
-    PCI = "pci"  # Payment Card Industry Data
-    FINANCIAL = "financial"
-    PROPRIETARY = "proprietary"
-    CREDENTIALS = "credentials"
-    OTHER = "other"
-
-
-class SensitiveDataPattern(BaseModel):
-    """Definition of a sensitive data pattern."""
-    name: str
-    description: str
-    pattern: str
-    regex: Optional[Pattern] = Field(None, exclude=True)
-    sensitivity: SensitivityLevel
-    category: ComplianceCategory
-    context_rules: List[str] = Field(default_factory=list)
-    false_positive_examples: List[str] = Field(default_factory=list)
-    validation_func: Optional[str] = None
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.regex = re.compile(self.pattern, re.IGNORECASE)
-
-    def match(self, content: str) -> List[str]:
-        """Find all matches of this pattern in the given content."""
-        return self.regex.findall(content)
+class SensitiveDataPattern(FilePattern):
+    """Definition of a sensitive data pattern for security auditing."""
+    pass
 
 
 class PatternDefinitions:
@@ -206,47 +173,20 @@ class PatternDefinitions:
         return [p for p in cls.get_all_patterns() if p.sensitivity == level]
 
 
+# Register patterns with the common registry
+for pattern in PatternDefinitions.get_all_patterns():
+    FilePatternRegistry.register_pattern(pattern, "security_audit")
+
+
 class PatternValidators:
     """Validation functions for sensitive data patterns."""
     
     @staticmethod
     def validate_ssn(ssn: str) -> bool:
         """Validate a Social Security Number."""
-        # Remove any hyphens or spaces
-        ssn = re.sub(r'[\s-]', '', ssn)
-        
-        # Check if it's 9 digits
-        if not re.match(r'^\d{9}$', ssn):
-            return False
-        
-        # Check if it's not all zeros in each part
-        if ssn[0:3] == '000' or ssn[3:5] == '00' or ssn[5:9] == '0000':
-            return False
-        
-        # Check if first part is not 666 and not between 900-999
-        if ssn[0:3] == '666' or int(ssn[0:3]) >= 900:
-            return False
-            
-        return True
+        return PatternValidator.validate_ssn(ssn)
     
     @staticmethod
     def validate_credit_card(cc: str) -> bool:
         """Validate a credit card number using the Luhn algorithm."""
-        # Remove any non-digit characters
-        cc = re.sub(r'\D', '', cc)
-        
-        if not cc.isdigit():
-            return False
-            
-        # Check length (most cards are between 13-19 digits)
-        if not (13 <= len(cc) <= 19):
-            return False
-            
-        # Luhn algorithm
-        digits = [int(d) for d in cc]
-        odd_digits = digits[-1::-2]
-        even_digits = digits[-2::-2]
-        checksum = sum(odd_digits)
-        for d in even_digits:
-            checksum += sum(divmod(d * 2, 10))
-        return checksum % 10 == 0
+        return PatternValidator.validate_credit_card(cc)

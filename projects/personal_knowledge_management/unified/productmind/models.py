@@ -8,6 +8,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from common.core.models import KnowledgeNode, Priority, NodeType, Relation, RelationType
+
 
 class Sentiment(str, Enum):
     """Sentiment classification for feedback."""
@@ -15,14 +17,6 @@ class Sentiment(str, Enum):
     NEUTRAL = "neutral"
     NEGATIVE = "negative"
     MIXED = "mixed"
-
-
-class Priority(str, Enum):
-    """Priority levels for features and stakeholders."""
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
 
 
 class SourceType(str, Enum):
@@ -54,62 +48,56 @@ class StakeholderType(str, Enum):
     OTHER = "other"
 
 
-class Feedback(BaseModel):
+class Feedback(KnowledgeNode):
     """Customer feedback model."""
-    id: UUID = Field(default_factory=uuid4)
+    title: str = ""  # Added to match common pattern
     content: str
     source: SourceType
     source_id: Optional[str] = None
     customer_id: Optional[str] = None
     customer_segment: Optional[str] = None
     sentiment: Optional[Sentiment] = None
-    created_at: datetime = Field(default_factory=datetime.now)
     themes: List[str] = Field(default_factory=list)
     cluster_id: Optional[int] = None
     impact_score: Optional[float] = None
+    node_type: NodeType = NodeType.OTHER
 
 
-class Theme(BaseModel):
+class Theme(KnowledgeNode):
     """Extracted theme from feedback."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: Optional[str] = None
     keywords: List[str] = Field(default_factory=list)
     frequency: int = 0
     impact_score: float = 0.0
-    sentiment_distribution: Dict[Sentiment, int] = Field(default_factory=dict)
+    sentiment_distribution: Dict[str, int] = Field(default_factory=dict)
     feedback_ids: List[UUID] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.TAG
 
 
-class FeedbackCluster(BaseModel):
+class FeedbackCluster(KnowledgeNode):
     """Cluster of related feedback items."""
-    id: int
+    cluster_id: int
     name: str
     description: Optional[str] = None
     centroid: List[float] = Field(default_factory=list)
     feedback_ids: List[UUID] = Field(default_factory=list)
     themes: List[str] = Field(default_factory=list)
-    sentiment_distribution: Dict[Sentiment, int] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    sentiment_distribution: Dict[str, int] = Field(default_factory=dict)
+    node_type: NodeType = NodeType.OTHER
 
 
-class StrategicGoal(BaseModel):
+class StrategicGoal(KnowledgeNode):
     """Strategic business objective."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     priority: Priority
     metrics: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
-class Feature(BaseModel):
+class Feature(KnowledgeNode):
     """Product feature for prioritization."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     status: str = "proposed"
@@ -119,15 +107,13 @@ class Feature(BaseModel):
     risk_level: Optional[float] = None
     dependencies: List[UUID] = Field(default_factory=list)
     themes: List[str] = Field(default_factory=list)
-    strategic_alignment: Dict[UUID, float] = Field(default_factory=dict)
+    strategic_alignment: Dict[str, float] = Field(default_factory=dict)
     feedback_ids: List[UUID] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
-class Competitor(BaseModel):
+class Competitor(KnowledgeNode):
     """Competitor profile."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: Optional[str] = None
     website: Optional[str] = None
@@ -137,13 +123,11 @@ class Competitor(BaseModel):
     weaknesses: List[str] = Field(default_factory=list)
     feature_comparison: Dict[str, bool] = Field(default_factory=dict)
     price_points: Dict[str, float] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
-class CompetitiveFeature(BaseModel):
+class CompetitiveFeature(KnowledgeNode):
     """Feature for competitive analysis."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     category: str
@@ -152,20 +136,18 @@ class CompetitiveFeature(BaseModel):
     our_rating: Optional[float] = None
     competitor_implementations: Dict[str, Optional[str]] = Field(default_factory=dict)
     competitor_ratings: Dict[str, Optional[float]] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
-class MarketGap(BaseModel):
+class MarketGap(KnowledgeNode):
     """Identified gap in the market."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     size_estimate: Optional[float] = None
     opportunity_score: float = 0.0
     related_feedback: List[UUID] = Field(default_factory=list)
     competing_solutions: List[UUID] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
 class Alternative(BaseModel):
@@ -181,9 +163,8 @@ class Alternative(BaseModel):
     score: Optional[float] = None
 
 
-class Decision(BaseModel):
+class Decision(KnowledgeNode):
     """Product decision with context and rationale."""
-    id: UUID = Field(default_factory=uuid4)
     title: str
     description: str
     context: str
@@ -199,24 +180,22 @@ class Decision(BaseModel):
     related_features: List[UUID] = Field(default_factory=list)
     status: str = "decided"
     outcome_assessment: Optional[str] = None
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.OTHER
 
 
-class Perspective(BaseModel):
+class Perspective(KnowledgeNode):
     """Stakeholder perspective on a topic."""
-    id: UUID = Field(default_factory=uuid4)
     topic: str
     content: str
     priority: Priority
     influence_level: float = 1.0
     agreement_level: float = 0.0
     stakeholder_id: UUID
+    node_type: NodeType = NodeType.OTHER
 
 
-class Stakeholder(BaseModel):
+class Stakeholder(KnowledgeNode):
     """Stakeholder profile."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     title: str
     department: str
@@ -224,15 +203,32 @@ class Stakeholder(BaseModel):
     influence_level: float = 1.0
     perspectives: List[UUID] = Field(default_factory=list)
     interests: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    node_type: NodeType = NodeType.PERSON
 
 
-class StakeholderRelationship(BaseModel):
+class StakeholderRelationship(Relation):
     """Relationship between stakeholders."""
-    id: UUID = Field(default_factory=uuid4)
     stakeholder1_id: UUID
     stakeholder2_id: UUID
-    relationship_type: str
+    relationship_type: str = "stakeholder_relationship"
     alignment_level: float = 0.0
     notes: Optional[str] = None
+    
+    def __init__(self, **data):
+        # Initialize the base Relation with the stakeholders
+        super().__init__(
+            source_id=data.get("stakeholder1_id"),
+            target_id=data.get("stakeholder2_id"),
+            relation_type=data.get("relationship_type", "stakeholder_relationship"),
+            metadata={
+                "alignment_level": data.get("alignment_level", 0.0),
+                "notes": data.get("notes")
+            }
+        )
+        
+        # Keep the original attributes for backward compatibility
+        self.stakeholder1_id = data.get("stakeholder1_id")
+        self.stakeholder2_id = data.get("stakeholder2_id")
+        self.relationship_type = data.get("relationship_type", "stakeholder_relationship")
+        self.alignment_level = data.get("alignment_level", 0.0)
+        self.notes = data.get("notes")

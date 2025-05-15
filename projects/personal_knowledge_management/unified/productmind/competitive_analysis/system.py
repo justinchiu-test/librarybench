@@ -10,12 +10,16 @@ This module provides capabilities for:
 """
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple, Union
+from uuid import UUID
 import json
 import os
 
 import numpy as np
 
+from common.core.storage import BaseStorage, LocalStorage
+from common.core.knowledge import KnowledgeBase, StandardKnowledgeBase
 from productmind.models import (
     Competitor,
     CompetitiveFeature,
@@ -35,22 +39,31 @@ class CompetitiveAnalysisSystem:
     - Visualize market positioning using text-based matrices
     """
     
-    def __init__(self, storage_dir: str = "./data"):
+    def __init__(self, storage: Optional[Union[BaseStorage, str, Path]] = None):
         """
         Initialize the competitive analysis system.
         
         Args:
-            storage_dir: Directory to store data
+            storage: Storage system to use. Can be either:
+                    - Instance of BaseStorage
+                    - Path to storage directory (creates LocalStorage)
+                    - None (creates LocalStorage with default path)
         """
-        self.storage_dir = storage_dir
+        # Handle different types of storage parameter
+        if storage is None:
+            self.storage = LocalStorage("./data")
+        elif isinstance(storage, BaseStorage):
+            self.storage = storage
+        else:
+            self.storage = LocalStorage(storage)
+            
+        # Initialize knowledge base
+        self.kb = StandardKnowledgeBase(self.storage)
+        
+        # Maintain internal caches for performance
         self._competitors_cache = {}
         self._features_cache = {}
         self._gaps_cache = {}
-        
-        # Create storage directories
-        os.makedirs(os.path.join(storage_dir, "competitors"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "competitive_features"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "market_gaps"), exist_ok=True)
     
     def add_competitor(self, competitor: Union[Competitor, List[Competitor]]) -> List[str]:
         """
@@ -74,7 +87,7 @@ class CompetitiveAnalysisSystem:
     
     def _store_competitor(self, competitor: Competitor) -> None:
         """
-        Store a competitor in cache and on disk.
+        Store a competitor in cache and using the storage system.
         
         Args:
             competitor: Competitor to store
@@ -82,12 +95,8 @@ class CompetitiveAnalysisSystem:
         # Store in memory cache
         self._competitors_cache[str(competitor.id)] = competitor
         
-        # Store on disk
-        competitor_path = os.path.join(
-            self.storage_dir, "competitors", f"{competitor.id}.json"
-        )
-        with open(competitor_path, "w") as f:
-            f.write(competitor.model_dump_json())
+        # Store using storage system
+        self.storage.save(competitor)
     
     def add_competitive_feature(
         self, 
@@ -114,7 +123,7 @@ class CompetitiveAnalysisSystem:
     
     def _store_competitive_feature(self, feature: CompetitiveFeature) -> None:
         """
-        Store a competitive feature in cache and on disk.
+        Store a competitive feature in cache and using the storage system.
         
         Args:
             feature: Competitive feature to store
@@ -122,12 +131,8 @@ class CompetitiveAnalysisSystem:
         # Store in memory cache
         self._features_cache[str(feature.id)] = feature
         
-        # Store on disk
-        feature_path = os.path.join(
-            self.storage_dir, "competitive_features", f"{feature.id}.json"
-        )
-        with open(feature_path, "w") as f:
-            f.write(feature.model_dump_json())
+        # Store using storage system
+        self.storage.save(feature)
     
     def add_market_gap(self, gap: Union[MarketGap, List[MarketGap]]) -> List[str]:
         """
@@ -151,7 +156,7 @@ class CompetitiveAnalysisSystem:
     
     def _store_market_gap(self, gap: MarketGap) -> None:
         """
-        Store a market gap in cache and on disk.
+        Store a market gap in cache and using the storage system.
         
         Args:
             gap: Market gap to store
@@ -159,12 +164,8 @@ class CompetitiveAnalysisSystem:
         # Store in memory cache
         self._gaps_cache[str(gap.id)] = gap
         
-        # Store on disk
-        gap_path = os.path.join(
-            self.storage_dir, "market_gaps", f"{gap.id}.json"
-        )
-        with open(gap_path, "w") as f:
-            f.write(gap.model_dump_json())
+        # Store using storage system
+        self.storage.save(gap)
     
     def get_competitor(self, competitor_id: str) -> Optional[Competitor]:
         """
@@ -180,16 +181,11 @@ class CompetitiveAnalysisSystem:
         if competitor_id in self._competitors_cache:
             return self._competitors_cache[competitor_id]
         
-        # Try to load from disk
-        competitor_path = os.path.join(
-            self.storage_dir, "competitors", f"{competitor_id}.json"
-        )
-        if os.path.exists(competitor_path):
-            with open(competitor_path, "r") as f:
-                competitor_data = json.load(f)
-                competitor = Competitor.model_validate(competitor_data)
-                self._competitors_cache[competitor_id] = competitor
-                return competitor
+        # Try to get from storage
+        competitor = self.storage.get(Competitor, UUID(competitor_id))
+        if competitor:
+            self._competitors_cache[competitor_id] = competitor
+            return competitor
         
         return None
     
@@ -207,16 +203,11 @@ class CompetitiveAnalysisSystem:
         if feature_id in self._features_cache:
             return self._features_cache[feature_id]
         
-        # Try to load from disk
-        feature_path = os.path.join(
-            self.storage_dir, "competitive_features", f"{feature_id}.json"
-        )
-        if os.path.exists(feature_path):
-            with open(feature_path, "r") as f:
-                feature_data = json.load(f)
-                feature = CompetitiveFeature.model_validate(feature_data)
-                self._features_cache[feature_id] = feature
-                return feature
+        # Try to get from storage
+        feature = self.storage.get(CompetitiveFeature, UUID(feature_id))
+        if feature:
+            self._features_cache[feature_id] = feature
+            return feature
         
         return None
     
@@ -234,16 +225,11 @@ class CompetitiveAnalysisSystem:
         if gap_id in self._gaps_cache:
             return self._gaps_cache[gap_id]
         
-        # Try to load from disk
-        gap_path = os.path.join(
-            self.storage_dir, "market_gaps", f"{gap_id}.json"
-        )
-        if os.path.exists(gap_path):
-            with open(gap_path, "r") as f:
-                gap_data = json.load(f)
-                gap = MarketGap.model_validate(gap_data)
-                self._gaps_cache[gap_id] = gap
-                return gap
+        # Try to get from storage
+        gap = self.storage.get(MarketGap, UUID(gap_id))
+        if gap:
+            self._gaps_cache[gap_id] = gap
+            return gap
         
         return None
     
@@ -254,20 +240,7 @@ class CompetitiveAnalysisSystem:
         Returns:
             List of all competitors
         """
-        competitors = []
-        competitors_dir = os.path.join(self.storage_dir, "competitors")
-        
-        if not os.path.exists(competitors_dir):
-            return competitors
-        
-        for filename in os.listdir(competitors_dir):
-            if filename.endswith(".json"):
-                competitor_id = filename.replace(".json", "")
-                competitor = self.get_competitor(competitor_id)
-                if competitor:
-                    competitors.append(competitor)
-        
-        return competitors
+        return self.storage.list_all(Competitor)
     
     def get_all_competitive_features(self) -> List[CompetitiveFeature]:
         """
@@ -276,20 +249,7 @@ class CompetitiveAnalysisSystem:
         Returns:
             List of all competitive features
         """
-        features = []
-        features_dir = os.path.join(self.storage_dir, "competitive_features")
-        
-        if not os.path.exists(features_dir):
-            return features
-        
-        for filename in os.listdir(features_dir):
-            if filename.endswith(".json"):
-                feature_id = filename.replace(".json", "")
-                feature = self.get_competitive_feature(feature_id)
-                if feature:
-                    features.append(feature)
-        
-        return features
+        return self.storage.list_all(CompetitiveFeature)
     
     def get_all_market_gaps(self) -> List[MarketGap]:
         """
@@ -298,20 +258,7 @@ class CompetitiveAnalysisSystem:
         Returns:
             List of all market gaps
         """
-        gaps = []
-        gaps_dir = os.path.join(self.storage_dir, "market_gaps")
-        
-        if not os.path.exists(gaps_dir):
-            return gaps
-        
-        for filename in os.listdir(gaps_dir):
-            if filename.endswith(".json"):
-                gap_id = filename.replace(".json", "")
-                gap = self.get_market_gap(gap_id)
-                if gap:
-                    gaps.append(gap)
-        
-        return gaps
+        return self.storage.list_all(MarketGap)
     
     def update_competitor_feature(
         self, 
@@ -336,7 +283,7 @@ class CompetitiveAnalysisSystem:
         
         # Update feature_comparison dictionary
         competitor.feature_comparison[feature_name] = has_feature
-        competitor.updated_at = datetime.now()
+        competitor.update()
         
         # Save competitor
         self._store_competitor(competitor)
@@ -377,7 +324,7 @@ class CompetitiveAnalysisSystem:
         if rating is not None:
             feature.competitor_ratings[competitor_id] = rating
         
-        feature.updated_at = datetime.now()
+        feature.update()
         
         # Save feature
         self._store_competitive_feature(feature)

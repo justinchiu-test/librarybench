@@ -7,14 +7,17 @@ This module manages version history and tracking for game projects.
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
+
+from common.core.versioning import VersionTracker as BaseVersionTracker
+from common.core.models import VersionInfo
 
 from gamevault.config import get_config
 from gamevault.models import FileInfo, GameVersionType, ProjectVersion
 from gamevault.utils import generate_timestamp
 
 
-class VersionTracker:
+class VersionTracker(BaseVersionTracker):
     """
     Tracks and manages project versions and their history.
     
@@ -109,6 +112,7 @@ class VersionTracker:
         with open(version_path, "r") as f:
             version_data = json.load(f)
         
+        # Convert to ProjectVersion model
         return ProjectVersion.model_validate(version_data)
     
     def _save_version(self, version: ProjectVersion) -> None:
@@ -160,20 +164,69 @@ class VersionTracker:
             return self.get_version(latest_id)
         return None
     
-    def list_versions(self) -> List[Dict]:
+    def list_versions(self, filter_criteria: Optional[Dict[str, Any]] = None) -> List[ProjectVersion]:
         """
-        List all versions of the project with basic metadata.
+        List versions matching the filter criteria.
         
+        Args:
+            filter_criteria: Optional criteria to filter versions
+            
         Returns:
-            List[Dict]: List of version metadata
+            List[ProjectVersion]: List of matching versions
         """
-        return self.metadata.get("versions", [])
+        # Get all versions
+        all_versions = []
+        for version_meta in self.metadata.get("versions", []):
+            try:
+                version = self.get_version(version_meta["id"])
+                all_versions.append(version)
+            except FileNotFoundError:
+                continue
+        
+        # Apply filters if provided
+        if filter_criteria:
+            filtered_versions = []
+            for version in all_versions:
+                match = True
+                for key, value in filter_criteria.items():
+                    if key == "tags" and isinstance(value, list):
+                        # Check if any of the required tags are in the version's tags
+                        if not any(tag in version.tags for tag in value):
+                            match = False
+                            break
+                    elif key == "before":
+                        if version.timestamp >= value:
+                            match = False
+                            break
+                    elif key == "after":
+                        if version.timestamp <= value:
+                            match = False
+                            break
+                    elif key == "is_milestone" and value is True:
+                        if not version.is_milestone:
+                            match = False
+                            break
+                    elif key == "type":
+                        if version.type != value:
+                            match = False
+                            break
+                    elif hasattr(version, key):
+                        if getattr(version, key) != value:
+                            match = False
+                            break
+                
+                if match:
+                    filtered_versions.append(version)
+            
+            return filtered_versions
+        
+        return all_versions
     
     def create_version(
         self, 
         name: str,
         files: Dict[str, FileInfo],
-        version_type: GameVersionType = GameVersionType.DEVELOPMENT,
+        version_type: Optional[str] = None,
         description: Optional[str] = None,
         is_milestone: bool = False,
         tags: Optional[List[str]] = None,
@@ -199,12 +252,21 @@ class VersionTracker:
             latest = self.get_latest_version()
             parent_id = latest.id if latest else None
         
+        # Convert version_type to GameVersionType if provided
+        if version_type is not None:
+            try:
+                version_type_enum = GameVersionType(version_type)
+            except ValueError:
+                version_type_enum = GameVersionType.DEVELOPMENT
+        else:
+            version_type_enum = GameVersionType.DEVELOPMENT
+        
         # Create new version
         version = ProjectVersion(
             timestamp=generate_timestamp(),
             name=name,
             parent_id=parent_id,
-            type=version_type,
+            type=version_type_enum,
             tags=tags or [],
             description=description,
             files=files,
@@ -328,44 +390,3 @@ class VersionTracker:
                     continue
         
         return result
-    
-    def delete_version(self, version_id: str) -> bool:
-        """
-        Delete a version.
-        
-        Note: This does not delete any files or chunks associated with the version.
-        
-        Args:
-            version_id: ID of the version to delete
-            
-        Returns:
-            bool: True if the version was deleted, False otherwise
-        """
-        version_path = self._get_version_path(version_id)
-        
-        if not version_path.exists():
-            return False
-        
-        # Remove from cache
-        if version_id in self.versions:
-            del self.versions[version_id]
-        
-        # Remove from metadata
-        self.metadata["versions"] = [v for v in self.metadata["versions"] if v["id"] != version_id]
-        
-        # Update latest version if needed
-        if self.metadata.get("latest_version_id") == version_id:
-            if self.metadata["versions"]:
-                # Sort by timestamp to find the latest
-                self.metadata["versions"].sort(key=lambda v: v["timestamp"], reverse=True)
-                self.metadata["latest_version_id"] = self.metadata["versions"][0]["id"]
-            else:
-                self.metadata["latest_version_id"] = None
-        
-        # Save metadata
-        self._save_metadata()
-        
-        # Delete the version file
-        os.remove(version_path)
-        
-        return True

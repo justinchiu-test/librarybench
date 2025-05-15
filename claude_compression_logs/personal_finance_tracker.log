@@ -1,0 +1,60 @@
+Starting compression for personal_finance_tracker/unified at Thu May 15 22:54:58 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/personal_finance_tracker/unified...
+~/librarybench/projects/personal_finance_tracker/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/personal_finance_tracker/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: numpy>=1.22.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_finance_tracker==0.1.0) (2.2.5)
+Requirement already satisfied: pandas>=1.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_finance_tracker==0.1.0) (2.2.3)
+Requirement already satisfied: pydantic>=1.9.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_finance_tracker==0.1.0) (2.11.4)
+Requirement already satisfied: python-dateutil>=2.8.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from unified-personal_finance_tracker==0.1.0) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas>=1.4.0->unified-personal_finance_tracker==0.1.0) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pandas>=1.4.0->unified-personal_finance_tracker==0.1.0) (2025.2)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=1.9.0->unified-personal_finance_tracker==0.1.0) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=1.9.0->unified-personal_finance_tracker==0.1.0) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=1.9.0->unified-personal_finance_tracker==0.1.0) (4.13.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from pydantic>=1.9.0->unified-personal_finance_tracker==0.1.0) (0.4.0)
+Requirement already satisfied: six>=1.5 in /home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages (from python-dateutil>=2.8.2->unified-personal_finance_tracker==0.1.0) (1.17.0)
+Building wheels for collected packages: unified-personal_finance_tracker
+  Building editable for unified-personal_finance_tracker (pyproject.toml): started
+  Building editable for unified-personal_finance_tracker (pyproject.toml): finished with status 'done'
+  Created wheel for unified-personal_finance_tracker: filename=unified_personal_finance_tracker-0.1.0-0.editable-py3-none-any.whl size=3206 sha256=c964646fd9ab227390f883493a3eb1dc0dc2d428425a962da0e0b6a2c878cd1e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-2xu6qu1b/wheels/2b/3c/ab/9b4d1679c93508133c9abb5a01e2ae06ae734a0d1e950fa6e0
+Successfully built unified-personal_finance_tracker
+Installing collected packages: unified-personal_finance_tracker
+  Attempting uninstall: unified-personal_finance_tracker
+    Found existing installation: unified-personal_finance_tracker 0.1.0
+    Uninstalling unified-personal_finance_tracker-0.1.0:
+      Successfully uninstalled unified-personal_finance_tracker-0.1.0
+Successfully installed unified-personal_finance_tracker-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/personal_finance_tracker/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.828s
+user	0m0.720s
+sys	0m0.125s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.725s
+user	0m0.721s
+sys	0m0.137s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.806s
+user	0m0.746s
+sys	0m0.129s
+~/librarybench
+Done!
+Completed compression for personal_finance_tracker/unified at Thu May 15 22:55:04 UTC 2025

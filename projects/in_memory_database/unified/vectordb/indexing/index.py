@@ -12,11 +12,12 @@ from typing import List, Dict, Tuple, Callable, Optional, Set, Any, Iterator, Un
 import random
 import uuid
 
+from common.core import InMemoryStorage
 from vectordb.core.vector import Vector
 from vectordb.core.distance import get_distance_function, euclidean_distance
 
 
-class VectorIndex:
+class VectorIndex(InMemoryStorage[Vector]):
     """
     Base vector index for efficient similarity searches.
     
@@ -30,45 +31,26 @@ class VectorIndex:
         
         Args:
             distance_metric: The distance metric to use for similarity calculations.
-                             Supported metrics: euclidean, squared_euclidean, manhattan, 
-                             cosine, angular, chebyshev.
-                             
+                           Supported metrics: euclidean, squared_euclidean, manhattan, 
+                           cosine, angular, chebyshev.
+                           
         Raises:
             ValueError: If an unsupported distance metric is provided.
         """
-        self._vectors: Dict[str, Vector] = {}
-        self._metadata: Dict[str, Dict[str, Any]] = {}
+        super().__init__()
         self._distance_function = get_distance_function(distance_metric)
         self._distance_metric = distance_metric
-        self._last_modified = time.time()
         
-    def __len__(self) -> int:
-        """Return the number of vectors in the index."""
-        return len(self._vectors)
-        
-    def __contains__(self, id: str) -> bool:
-        """Check if a vector with the given ID exists in the index."""
-        return id in self._vectors
-        
-    def __iter__(self) -> Iterator[Vector]:
-        """Iterate over all vectors in the index."""
-        return iter(self._vectors.values())
-    
-    @property
-    def ids(self) -> List[str]:
-        """Get a list of all vector IDs in the index."""
-        return list(self._vectors.keys())
-    
-    @property
-    def last_modified(self) -> float:
-        """Get the timestamp of the last modification to the index."""
-        return self._last_modified
-    
     @property
     def distance_metric(self) -> str:
         """Get the distance metric used by this index."""
         return self._distance_metric
         
+    @property
+    def ids(self) -> List[str]:
+        """Get a list of all vector IDs in the index."""
+        return [record.id for record in self]
+    
     def add(self, vector: Vector, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
         Add a vector to the index.
@@ -84,22 +66,17 @@ class VectorIndex:
             ValueError: If the vector does not have an ID and cannot be added
         """
         # Generate an ID if the vector doesn't have one
-        vector_id = vector.id
-        if vector_id is None:
+        if vector.id is None:
             vector_id = str(uuid.uuid4())
             # Create a new vector with the generated ID
             vector = Vector(vector.values, vector_id)
         
-        self._vectors[vector_id] = vector
-        
+        # Add metadata to the vector if provided
         if metadata is not None:
-            self._metadata[vector_id] = metadata
-        elif vector_id not in self._metadata:
-            # Initialize empty metadata if not provided
-            self._metadata[vector_id] = {}
+            vector.metadata.update(metadata)
             
-        self._last_modified = time.time()
-        return vector_id
+        # Use the InMemoryStorage add method
+        return super().add(vector)
     
     def add_batch(self, vectors: List[Vector], metadatas: Optional[List[Dict[str, Any]]] = None) -> List[str]:
         """
@@ -125,90 +102,36 @@ class VectorIndex:
             
         return ids
     
-    def get(self, id: str) -> Optional[Vector]:
+    def get(self, record_id: str) -> Optional[Vector]:
         """
         Retrieve a vector by its ID.
         
         Args:
-            id: The ID of the vector to retrieve
+            record_id: The ID of the vector to retrieve
             
         Returns:
             The vector if found, None otherwise
         """
-        return self._vectors.get(id)
+        return super().get(record_id)
     
-    def get_metadata(self, id: str) -> Optional[Dict[str, Any]]:
-        """
-        Retrieve the metadata associated with a vector.
-        
-        Args:
-            id: The ID of the vector
-            
-        Returns:
-            The metadata dictionary if the vector exists, None otherwise
-        """
-        return self._metadata.get(id)
-    
-    def update_metadata(self, id: str, metadata: Dict[str, Any]) -> bool:
+    def update_metadata(self, record_id: str, metadata: Dict[str, Any]) -> bool:
         """
         Update the metadata for a vector.
         
         Args:
-            id: The ID of the vector
+            record_id: The ID of the vector
             metadata: The new metadata dictionary
             
         Returns:
             True if the metadata was updated, False if the vector was not found
         """
-        if id not in self._vectors:
+        vector = self.get(record_id)
+        if vector is None:
             return False
-            
-        self._metadata[id] = metadata
-        self._last_modified = time.time()
-        return True
-    
-    def remove(self, id: str) -> bool:
-        """
-        Remove a vector from the index.
         
-        Args:
-            id: The ID of the vector to remove
-            
-        Returns:
-            True if the vector was removed, False if it was not found
-        """
-        if id not in self._vectors:
-            return False
-            
-        del self._vectors[id]
-        if id in self._metadata:
-            del self._metadata[id]
-            
-        self._last_modified = time.time()
+        vector.metadata.update(metadata)
+        vector.updated_at = time.time()
         return True
-    
-    def remove_batch(self, ids: List[str]) -> int:
-        """
-        Remove multiple vectors from the index.
-        
-        Args:
-            ids: List of vector IDs to remove
-            
-        Returns:
-            Number of vectors actually removed
-        """
-        removed_count = 0
-        for id in ids:
-            if self.remove(id):
-                removed_count += 1
-                
-        return removed_count
-    
-    def clear(self) -> None:
-        """Remove all vectors from the index."""
-        self._vectors.clear()
-        self._metadata.clear()
-        self._last_modified = time.time()
     
     def distance(self, v1: Union[str, Vector], v2: Union[str, Vector]) -> float:
         """
@@ -248,7 +171,7 @@ class VectorIndex:
         if k < 1:
             raise ValueError("k must be at least 1")
             
-        if len(self._vectors) == 0:
+        if len(self) == 0:
             return []
             
         # Ensure we have a Vector object
@@ -256,17 +179,17 @@ class VectorIndex:
         
         # Calculate distances and filter results
         distances = []
-        for vec_id, vector in self._vectors.items():
+        for record in self:
             # Skip if the filter excludes this vector
-            if filter_fn is not None and not filter_fn(vec_id, self._metadata.get(vec_id, {})):
+            if filter_fn is not None and not filter_fn(record.id, record.metadata):
                 continue
                 
             # Skip if this is the query vector itself
-            if isinstance(query, str) and query == vec_id:
+            if isinstance(query, str) and query == record.id:
                 continue
                 
-            dist = self._distance_function(query_vector, vector)
-            distances.append((vec_id, dist))
+            dist = self._distance_function(query_vector, record)
+            distances.append((record.id, dist))
         
         # Sort by distance and return the k nearest
         return sorted(distances, key=lambda x: x[1])[:k]
@@ -286,7 +209,7 @@ class VectorIndex:
         nearest_results = self.nearest(query, k, filter_fn)
         
         # Add metadata to each result
-        return [(id, dist, self._metadata.get(id, {})) for id, dist in nearest_results]
+        return [(id, dist, self.get(id).metadata) for id, dist in nearest_results]
     
     def _get_vector_object(self, vector_or_id: Union[str, Vector]) -> Vector:
         """
@@ -322,11 +245,12 @@ class VectorIndex:
         Raises:
             ValueError: If n is greater than the number of vectors in the index
         """
-        if n > len(self._vectors):
-            raise ValueError(f"Cannot sample {n} vectors from an index of size {len(self._vectors)}")
+        if n > len(self):
+            raise ValueError(f"Cannot sample {n} vectors from an index of size {len(self)}")
             
         if seed is not None:
             random.seed(seed)
             
-        sampled_ids = random.sample(list(self._vectors.keys()), n)
-        return [self._vectors[id] for id in sampled_ids]
+        all_ids = [record.id for record in self]
+        sampled_ids = random.sample(all_ids, n)
+        return [self.get(id) for id in sampled_ids]

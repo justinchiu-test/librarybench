@@ -6,6 +6,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Tuple, Set, Any, Union
 from pydantic import BaseModel, Field
 
+from common.core.position import StructuredPosition, StructuredElementType
 from writer_text_editor.document import Document, Section, TextSegment
 from writer_text_editor.narrative import NarrativeTracker, ElementType, NarrativeElement
 
@@ -65,11 +66,18 @@ class NavigationView(BaseModel):
 
 
 class NavigationPosition(BaseModel):
-    """A position within the navigation structure."""
+    """A position within the navigation structure.
+    
+    This implementation uses the common library's StructuredPosition where appropriate.
+    """
 
     view_id: str
     element_id: str
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    position: Optional[StructuredPosition] = None
+    
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class DocumentNavigator:
@@ -140,6 +148,18 @@ class DocumentNavigator:
             self.current_position = NavigationPosition(
                 view_id=view_id, element_id=root_elements[0]
             )
+            # Initialize a structured position for the first section
+            if self.document.current_revision.sections:
+                first_section = self.document.current_revision.sections[0]
+                element_type = StructuredElementType.SECTION
+                self.current_position.position = StructuredPosition(
+                    view_id=view_id,
+                    element_id=first_section.id,
+                    element_type=element_type,
+                    section_index=0,
+                    segment_index=0,
+                    offset_in_segment=0
+                )
 
     def _create_character_view(self) -> str:
         """Create a view organized by characters."""
@@ -664,9 +684,58 @@ class DocumentNavigator:
         if view_id not in self.views or element_id not in self.elements:
             return False
 
-        self.current_position = NavigationPosition(
-            view_id=view_id, element_id=element_id
-        )
+        # Find the element to navigate to
+        nav_element = self.elements.get(element_id)
+        if not nav_element or not nav_element.original_id:
+            self.current_position = NavigationPosition(
+                view_id=view_id, element_id=element_id
+            )
+            return True
+            
+        # Create a structured position based on the element type
+        element_type = None
+        section_index = 0
+        segment_index = 0
+        
+        if nav_element.element_type == "section":
+            element_type = StructuredElementType.SECTION
+            # Find section index
+            for i, section in enumerate(self.document.current_revision.sections):
+                if section.id == nav_element.original_id:
+                    section_index = i
+                    break
+        elif nav_element.element_type == "segment":
+            element_type = StructuredElementType.SEGMENT
+            # Find section and segment indices
+            for i, section in enumerate(self.document.current_revision.sections):
+                for j, segment in enumerate(section.segments):
+                    if segment.id == nav_element.original_id:
+                        section_index = i
+                        segment_index = j
+                        break
+                if element_type == StructuredElementType.SEGMENT and segment_index > 0:
+                    break
+                    
+        if element_type:
+            position = StructuredPosition(
+                view_id=view_id,
+                element_id=nav_element.original_id,
+                element_type=element_type,
+                section_index=section_index,
+                segment_index=segment_index,
+                offset_in_segment=0
+            )
+            self.current_position = NavigationPosition(
+                view_id=view_id, 
+                element_id=element_id,
+                position=position
+            )
+        else:
+            self.current_position = NavigationPosition(
+                view_id=view_id, element_id=element_id
+            )
+            
+        return True
 
         return True
 
@@ -713,9 +782,45 @@ class DocumentNavigator:
 
         if parent_id:
             # Navigate to parent
-            self.current_position = NavigationPosition(
-                view_id=view_id, element_id=parent_id
-            )
+            nav_element = self.elements.get(parent_id)
+            if not nav_element or not nav_element.original_id:
+                self.current_position = NavigationPosition(
+                    view_id=view_id, element_id=parent_id
+                )
+                return True
+                
+            # Create a structured position
+            element_type = None
+            section_index = 0
+            segment_index = 0
+            
+            if nav_element.element_type == "section":
+                element_type = StructuredElementType.SECTION
+                # Find section index
+                for i, section in enumerate(self.document.current_revision.sections):
+                    if section.id == nav_element.original_id:
+                        section_index = i
+                        break
+            
+            if element_type:
+                position = StructuredPosition(
+                    view_id=view_id,
+                    element_id=nav_element.original_id,
+                    element_type=element_type,
+                    section_index=section_index,
+                    segment_index=segment_index,
+                    offset_in_segment=0
+                )
+                self.current_position = NavigationPosition(
+                    view_id=view_id, 
+                    element_id=parent_id,
+                    position=position
+                )
+            else:
+                self.current_position = NavigationPosition(
+                    view_id=view_id, element_id=parent_id
+                )
+                
             return True
 
         # Check if this is a root element in the view
@@ -754,9 +859,57 @@ class DocumentNavigator:
                 # If there's a next sibling, navigate to it
                 if current_index + 1 < len(siblings):
                     next_id = siblings[current_index + 1]
-                    self.current_position = NavigationPosition(
-                        view_id=view_id, element_id=next_id
-                    )
+                    # Navigate to next sibling
+                    nav_element = self.elements.get(next_id)
+                    if not nav_element or not nav_element.original_id:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=next_id
+                        )
+                        return True
+                        
+                    # Create a structured position
+                    element_type = None
+                    section_index = 0
+                    segment_index = 0
+                    
+                    if nav_element.element_type == "section":
+                        element_type = StructuredElementType.SECTION
+                        # Find section index
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            if section.id == nav_element.original_id:
+                                section_index = i
+                                break
+                    elif nav_element.element_type == "segment":
+                        element_type = StructuredElementType.SEGMENT
+                        # Find section and segment indices
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            for j, segment in enumerate(section.segments):
+                                if segment.id == nav_element.original_id:
+                                    section_index = i
+                                    segment_index = j
+                                    break
+                            if element_type == StructuredElementType.SEGMENT and segment_index > 0:
+                                break
+                    
+                    if element_type:
+                        position = StructuredPosition(
+                            view_id=view_id,
+                            element_id=nav_element.original_id,
+                            element_type=element_type,
+                            section_index=section_index,
+                            segment_index=segment_index,
+                            offset_in_segment=0
+                        )
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, 
+                            element_id=next_id,
+                            position=position
+                        )
+                    else:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=next_id
+                        )
+                        
                     return True
             except ValueError:
                 pass
@@ -771,9 +924,57 @@ class DocumentNavigator:
                 # If there's a next sibling, navigate to it
                 if current_index + 1 < len(view.root_elements):
                     next_id = view.root_elements[current_index + 1]
-                    self.current_position = NavigationPosition(
-                        view_id=view_id, element_id=next_id
-                    )
+                    # Navigate to next root element
+                    nav_element = self.elements.get(next_id)
+                    if not nav_element or not nav_element.original_id:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=next_id
+                        )
+                        return True
+                        
+                    # Create a structured position
+                    element_type = None
+                    section_index = 0
+                    segment_index = 0
+                    
+                    if nav_element.element_type == "section":
+                        element_type = StructuredElementType.SECTION
+                        # Find section index
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            if section.id == nav_element.original_id:
+                                section_index = i
+                                break
+                    elif nav_element.element_type == "segment":
+                        element_type = StructuredElementType.SEGMENT
+                        # Find section and segment indices
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            for j, segment in enumerate(section.segments):
+                                if segment.id == nav_element.original_id:
+                                    section_index = i
+                                    segment_index = j
+                                    break
+                            if element_type == StructuredElementType.SEGMENT and segment_index > 0:
+                                break
+                    
+                    if element_type:
+                        position = StructuredPosition(
+                            view_id=view_id,
+                            element_id=nav_element.original_id,
+                            element_type=element_type,
+                            section_index=section_index,
+                            segment_index=segment_index,
+                            offset_in_segment=0
+                        )
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, 
+                            element_id=next_id,
+                            position=position
+                        )
+                    else:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=next_id
+                        )
+                        
                     return True
             except ValueError:
                 pass
@@ -808,9 +1009,57 @@ class DocumentNavigator:
                 # If there's a previous sibling, navigate to it
                 if current_index > 0:
                     prev_id = siblings[current_index - 1]
-                    self.current_position = NavigationPosition(
-                        view_id=view_id, element_id=prev_id
-                    )
+                    # Navigate to previous sibling
+                    nav_element = self.elements.get(prev_id)
+                    if not nav_element or not nav_element.original_id:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=prev_id
+                        )
+                        return True
+                        
+                    # Create a structured position
+                    element_type = None
+                    section_index = 0
+                    segment_index = 0
+                    
+                    if nav_element.element_type == "section":
+                        element_type = StructuredElementType.SECTION
+                        # Find section index
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            if section.id == nav_element.original_id:
+                                section_index = i
+                                break
+                    elif nav_element.element_type == "segment":
+                        element_type = StructuredElementType.SEGMENT
+                        # Find section and segment indices
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            for j, segment in enumerate(section.segments):
+                                if segment.id == nav_element.original_id:
+                                    section_index = i
+                                    segment_index = j
+                                    break
+                            if element_type == StructuredElementType.SEGMENT and segment_index > 0:
+                                break
+                    
+                    if element_type:
+                        position = StructuredPosition(
+                            view_id=view_id,
+                            element_id=nav_element.original_id,
+                            element_type=element_type,
+                            section_index=section_index,
+                            segment_index=segment_index,
+                            offset_in_segment=0
+                        )
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, 
+                            element_id=prev_id,
+                            position=position
+                        )
+                    else:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=prev_id
+                        )
+                        
                     return True
             except ValueError:
                 pass
@@ -825,9 +1074,57 @@ class DocumentNavigator:
                 # If there's a previous sibling, navigate to it
                 if current_index > 0:
                     prev_id = view.root_elements[current_index - 1]
-                    self.current_position = NavigationPosition(
-                        view_id=view_id, element_id=prev_id
-                    )
+                    # Navigate to previous root element
+                    nav_element = self.elements.get(prev_id)
+                    if not nav_element or not nav_element.original_id:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=prev_id
+                        )
+                        return True
+                        
+                    # Create a structured position
+                    element_type = None
+                    section_index = 0
+                    segment_index = 0
+                    
+                    if nav_element.element_type == "section":
+                        element_type = StructuredElementType.SECTION
+                        # Find section index
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            if section.id == nav_element.original_id:
+                                section_index = i
+                                break
+                    elif nav_element.element_type == "segment":
+                        element_type = StructuredElementType.SEGMENT
+                        # Find section and segment indices
+                        for i, section in enumerate(self.document.current_revision.sections):
+                            for j, segment in enumerate(section.segments):
+                                if segment.id == nav_element.original_id:
+                                    section_index = i
+                                    segment_index = j
+                                    break
+                            if element_type == StructuredElementType.SEGMENT and segment_index > 0:
+                                break
+                    
+                    if element_type:
+                        position = StructuredPosition(
+                            view_id=view_id,
+                            element_id=nav_element.original_id,
+                            element_type=element_type,
+                            section_index=section_index,
+                            segment_index=segment_index,
+                            offset_in_segment=0
+                        )
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, 
+                            element_id=prev_id,
+                            position=position
+                        )
+                    else:
+                        self.current_position = NavigationPosition(
+                            view_id=view_id, element_id=prev_id
+                        )
+                        
                     return True
             except ValueError:
                 pass

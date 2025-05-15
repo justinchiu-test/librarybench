@@ -5,29 +5,31 @@ This module handles the low-level storage operations for files and chunks.
 """
 
 import os
-import shutil
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
+from common.core.storage import StorageManager as BaseStorageManager
+from common.core.chunking import ChunkingStrategy, RollingHashChunker
+
 from gamevault.config import get_config
-from gamevault.utils import (compress_data, decompress_data, get_file_hash,
-                           get_file_size, get_file_xxhash)
+from gamevault.utils import compress_data, decompress_data, get_file_hash, get_file_xxhash
 
 
-class StorageManager:
+class StorageManager(BaseStorageManager):
     """
     Manages the physical storage of backed up files and chunks.
     
     This class handles the writing, reading, and organizing of files and chunks
-    in the backup storage location.
+    in the backup storage location, with GameVault-specific compression.
     """
     
-    def __init__(self, storage_dir: Optional[Union[str, Path]] = None):
+    def __init__(self, storage_dir: Optional[Union[str, Path]] = None, chunking_strategy: Optional[ChunkingStrategy] = None):
         """
         Initialize the storage manager.
         
         Args:
             storage_dir: Directory where files will be stored. If None, uses the default from config.
+            chunking_strategy: Optional chunking strategy for binary files
         """
         config = get_config()
         self.storage_dir = Path(storage_dir) if storage_dir else config.backup_dir / "storage"
@@ -39,6 +41,7 @@ class StorageManager:
         os.makedirs(self.chunk_dir, exist_ok=True)
         
         self.compression_level = config.compression_level
+        self.chunking_strategy = chunking_strategy
     
     def _get_file_path(self, file_id: str) -> Path:
         """
@@ -72,7 +75,7 @@ class StorageManager:
     
     def store_file(self, file_path: Union[str, Path]) -> Tuple[str, str]:
         """
-        Store a file in the backup storage.
+        Store a file in the backup storage with compression.
         
         Args:
             file_path: Path to the file to store
@@ -97,13 +100,16 @@ class StorageManager:
         
         return file_id, str(storage_path)
     
-    def retrieve_file(self, file_id: str, output_path: Union[str, Path]) -> None:
+    def retrieve_file(self, file_id: str, output_path: Union[str, Path]) -> bool:
         """
-        Retrieve a file from the backup storage.
+        Retrieve a file from the backup storage and decompress it.
         
         Args:
             file_id: ID (hash) of the file to retrieve
             output_path: Path where the file should be written
+            
+        Returns:
+            bool: True if the file was successfully retrieved
             
         Raises:
             FileNotFoundError: If the file doesn't exist in storage
@@ -122,10 +128,12 @@ class StorageManager:
             compressed_data = src_file.read()
             data = decompress_data(compressed_data)
             dest_file.write(data)
+            
+        return True
     
     def store_chunk(self, data: bytes) -> str:
         """
-        Store a chunk of data in the backup storage.
+        Store a chunk of data in the backup storage with compression.
         
         Args:
             data: Binary data to store
@@ -151,7 +159,7 @@ class StorageManager:
     
     def retrieve_chunk(self, chunk_id: str) -> bytes:
         """
-        Retrieve a chunk of data from the backup storage.
+        Retrieve a chunk of data from the backup storage and decompress it.
         
         Args:
             chunk_id: ID (hash) of the chunk to retrieve
@@ -198,40 +206,6 @@ class StorageManager:
         """
         return self._get_chunk_path(chunk_id).exists()
     
-    def remove_file(self, file_id: str) -> bool:
-        """
-        Remove a file from the backup storage.
-        
-        Args:
-            file_id: ID (hash) of the file
-            
-        Returns:
-            bool: True if the file was removed, False if it didn't exist
-        """
-        storage_path = self._get_file_path(file_id)
-        
-        if storage_path.exists():
-            os.remove(storage_path)
-            return True
-        return False
-    
-    def remove_chunk(self, chunk_id: str) -> bool:
-        """
-        Remove a chunk from the backup storage.
-        
-        Args:
-            chunk_id: ID (hash) of the chunk
-            
-        Returns:
-            bool: True if the chunk was removed, False if it didn't exist
-        """
-        storage_path = self._get_chunk_path(chunk_id)
-        
-        if storage_path.exists():
-            os.remove(storage_path)
-            return True
-        return False
-    
     def get_storage_size(self) -> Dict[str, int]:
         """
         Get the total size of the backup storage.
@@ -260,30 +234,3 @@ class StorageManager:
         """
         file_path = self._get_file_path(file_hash)
         return file_path if file_path.exists() else None
-    
-    def get_chunks_for_file(self, file_hash: str) -> Optional[List[str]]:
-        """
-        Get the list of chunk IDs associated with a file.
-        
-        This method requires an external mapping of files to chunks.
-        In a real implementation, this would query a database or index.
-        For now, it implements a simple fallback approach that works
-        for files directly managed by this storage system.
-        
-        Args:
-            file_hash: Hash of the file
-            
-        Returns:
-            Optional[List[str]]: List of chunk IDs if found, None otherwise
-        """
-        # In a full implementation, this would query a database or index
-        # As a fallback, we check if there's a chunk with the same ID as the file
-        if self.chunk_exists(file_hash):
-            return [file_hash]
-        
-        # For files stored as-is (not chunked), there's typically no chunk mapping
-        # A more complete implementation would maintain a file-to-chunks mapping
-        if self.file_exists(file_hash):
-            return []
-            
-        return None

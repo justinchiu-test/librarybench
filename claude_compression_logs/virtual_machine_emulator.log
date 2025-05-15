@@ -1,0 +1,48 @@
+Starting compression for virtual_machine_emulator/unified at Thu May 15 22:55:01 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/virtual_machine_emulator/unified...
+~/librarybench/projects/virtual_machine_emulator/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+WARNING: Ignoring invalid distribution -nified-query-language-interpreter (/home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages)
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/virtual_machine_emulator/unified
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+  WARNING: Ignoring invalid distribution -nified-query-language-interpreter (/home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages)
+Building wheels for collected packages: unified-virtual_machine_emulator
+  Building editable for unified-virtual_machine_emulator (pyproject.toml): started
+  Building editable for unified-virtual_machine_emulator (pyproject.toml): finished with status 'done'
+  Created wheel for unified-virtual_machine_emulator: filename=unified_virtual_machine_emulator-0.1.0-0.editable-py3-none-any.whl size=3188 sha256=173cce6cceff250de219a71560b5fad5406b79d73a8ae101934557f253cfef33
+  Stored in directory: /tmp/pip-ephem-wheel-cache-_9q_l6qs/wheels/71/58/b6/810f1fc35163bfc1305746e7aeed3e21af467984c0cc2ee1bb
+Successfully built unified-virtual_machine_emulator
+WARNING: Ignoring invalid distribution -nified-query-language-interpreter (/home/justinchiu_cohere_com/.pyenv/versions/3.10.11/lib/python3.10/site-packages)
+Installing collected packages: unified-virtual_machine_emulator
+Successfully installed unified-virtual_machine_emulator-0.1.0
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/virtual_machine_emulator/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.808s
+user	0m0.729s
+sys	0m0.100s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.818s
+user	0m0.742s
+sys	0m0.080s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.705s
+user	0m0.718s
+sys	0m0.105s
+~/librarybench
+Done!
+Completed compression for virtual_machine_emulator/unified at Thu May 15 22:55:07 UTC 2025

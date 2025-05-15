@@ -1,0 +1,30 @@
+Starting compression for domain_specific_language_toolkit/unified at Thu May 15 22:54:52 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/domain_specific_language_toolkit/unified...
+~/librarybench/projects/domain_specific_language_toolkit/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/domain_specific_language_toolkit/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/domain_specific_language_toolkit/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/domain_specific_language_toolkit/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.734s
+user	0m0.767s
+sys	0m0.089s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.776s
+user	0m0.707s
+sys	0m0.075s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.823s
+user	0m0.745s
+sys	0m0.136s
+~/librarybench
+Done!
+Completed compression for domain_specific_language_toolkit/unified at Thu May 15 22:54:55 UTC 2025

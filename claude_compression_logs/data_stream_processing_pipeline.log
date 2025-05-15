@@ -1,0 +1,30 @@
+Starting compression for data_stream_processing_pipeline/unified at Thu May 15 22:54:52 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/data_stream_processing_pipeline/unified...
+~/librarybench/projects/data_stream_processing_pipeline/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/data_stream_processing_pipeline/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/data_stream_processing_pipeline/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/data_stream_processing_pipeline/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.727s
+user	0m0.770s
+sys	0m0.069s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.902s
+user	0m0.805s
+sys	0m0.103s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.763s
+user	0m0.684s
+sys	0m0.110s
+~/librarybench
+Done!
+Completed compression for data_stream_processing_pipeline/unified at Thu May 15 22:54:55 UTC 2025

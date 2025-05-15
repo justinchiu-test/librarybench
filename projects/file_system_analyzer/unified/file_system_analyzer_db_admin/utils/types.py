@@ -1,9 +1,18 @@
 """Data type definitions for the Database Storage Optimization Analyzer."""
 
-from enum import Enum, auto
+from enum import Enum
 from typing import Dict, List, Optional, Set, Tuple, Union
 from datetime import datetime
 from pydantic import BaseModel, Field
+
+# Import common types
+from common.utils.types import (
+    FileCategory as CommonFileCategory,
+    ScanStatus,
+    PriorityLevel,
+    FileMetadata,
+    AnalysisResult
+)
 
 
 class DatabaseEngine(str, Enum):
@@ -17,36 +26,14 @@ class DatabaseEngine(str, Enum):
     UNKNOWN = "unknown"
 
 
-class FileCategory(str, Enum):
-    """Database file categories."""
-
-    DATA = "data"
-    INDEX = "index"
-    LOG = "log"
-    TEMP = "temp"
-    CONFIG = "config"
-    BACKUP = "backup"
-    UNKNOWN = "unknown"
+class FileCategory(CommonFileCategory):
+    """Database file categories, extending common file categories."""
+    pass
 
 
-class ScanStatus(str, Enum):
-    """Status of a file system scan."""
-
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    INTERRUPTED = "interrupted"
-
-
-class OptimizationPriority(str, Enum):
+class OptimizationPriority(PriorityLevel):
     """Priority levels for optimization recommendations."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFORMATIONAL = "informational"
+    pass
 
 
 class DatabaseFile(BaseModel):
@@ -118,8 +105,8 @@ class OptimizationRecommendation(BaseModel):
         }
 
 
-class AnalysisResult(BaseModel):
-    """Base class for analysis results."""
+class DatabaseAnalysisResult(AnalysisResult):
+    """Base class for database analysis results."""
 
     timestamp: datetime = Field(default_factory=datetime.now)
     analysis_duration_seconds: float

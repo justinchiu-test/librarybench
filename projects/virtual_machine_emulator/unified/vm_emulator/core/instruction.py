@@ -1,115 +1,114 @@
-"""Instruction set for the virtual machine."""
+"""Main virtual machine instruction representation."""
 
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
+from common.core.instruction import (
+    Instruction as BaseInstruction,
+    InstructionType,
+    InstructionSet
+)
 
-class InstructionType(Enum):
-    """Types of instructions supported by the VM."""
-    COMPUTE = auto()  # Arithmetic/logic operations
-    MEMORY = auto()   # Memory read/write operations
-    BRANCH = auto()   # Conditional and unconditional jumps
-    SYNC = auto()     # Synchronization operations
-    SYSTEM = auto()   # System calls and VM control
+# Re-export common types and classes
+InstructionType = InstructionType
 
 
-@dataclass
-class Instruction:
-    """Representation of a single VM instruction."""
-    opcode: str
-    type: InstructionType
-    operands: List[Any]
-    latency: int  # Cycles required to execute
+class Instruction(BaseInstruction):
+    """
+    Extended instruction implementation for parallel computing.
     
-    def __str__(self) -> str:
-        operand_str = ", ".join(str(op) for op in self.operands)
-        return f"{self.opcode} {operand_str}"
-
-
-class InstructionSet:
-    """Defines the instruction set for the virtual machine."""
+    This extends the base instruction class with parallel-specific features.
+    """
     
-    # Compute operations
-    ADD = "ADD"       # Add
-    SUB = "SUB"       # Subtract
-    MUL = "MUL"       # Multiply
-    DIV = "DIV"       # Divide
-    MOD = "MOD"       # Modulo
-    AND = "AND"       # Logical AND
-    OR = "OR"         # Logical OR
-    XOR = "XOR"       # Logical XOR
-    NOT = "NOT"       # Logical NOT
-    SHL = "SHL"       # Shift left
-    SHR = "SHR"       # Shift right
-    
-    # Memory operations
-    LOAD = "LOAD"     # Load from memory
-    STORE = "STORE"   # Store to memory
-    
-    # Branch operations
-    JMP = "JMP"       # Unconditional jump
-    JZ = "JZ"         # Jump if zero
-    JNZ = "JNZ"       # Jump if not zero
-    JGT = "JGT"       # Jump if greater than
-    JLT = "JLT"       # Jump if less than
-    
-    # Synchronization operations
-    LOCK = "LOCK"     # Acquire lock
-    UNLOCK = "UNLOCK" # Release lock
-    FENCE = "FENCE"   # Memory fence
-    CAS = "CAS"       # Compare and swap
-    
-    # System operations
-    HALT = "HALT"     # Stop execution
-    YIELD = "YIELD"   # Yield to scheduler
-    SPAWN = "SPAWN"   # Create new thread
-    JOIN = "JOIN"     # Wait for thread completion
-    
-    # Mapping of instruction opcodes to their types and latencies
-    INSTRUCTION_SPECS: Dict[str, Tuple[InstructionType, int]] = {
-        # Compute operations - types and cycle counts
-        ADD: (InstructionType.COMPUTE, 1),
-        SUB: (InstructionType.COMPUTE, 1),
-        MUL: (InstructionType.COMPUTE, 3),
-        DIV: (InstructionType.COMPUTE, 5),
-        MOD: (InstructionType.COMPUTE, 5),
-        AND: (InstructionType.COMPUTE, 1),
-        OR: (InstructionType.COMPUTE, 1),
-        XOR: (InstructionType.COMPUTE, 1),
-        NOT: (InstructionType.COMPUTE, 1),
-        SHL: (InstructionType.COMPUTE, 1),
-        SHR: (InstructionType.COMPUTE, 1),
+    def __init__(
+        self,
+        opcode: str,
+        type: InstructionType,
+        operands: List[Any],
+        latency: int = 1,
+        privileged: bool = False,
+        metadata: Dict[str, Any] = None,
+        parallel_safe: bool = True
+    ):
+        """
+        Initialize an instruction.
         
-        # Memory operations
-        LOAD: (InstructionType.MEMORY, 2),
-        STORE: (InstructionType.MEMORY, 2),
-        
-        # Branch operations
-        JMP: (InstructionType.BRANCH, 1),
-        JZ: (InstructionType.BRANCH, 1),
-        JNZ: (InstructionType.BRANCH, 1),
-        JGT: (InstructionType.BRANCH, 1),
-        JLT: (InstructionType.BRANCH, 1),
-        
-        # Synchronization operations
-        LOCK: (InstructionType.SYNC, 10),
-        UNLOCK: (InstructionType.SYNC, 5),
-        FENCE: (InstructionType.SYNC, 10),
-        CAS: (InstructionType.SYNC, 8),
-        
-        # System operations
-        HALT: (InstructionType.SYSTEM, 1),
-        YIELD: (InstructionType.SYSTEM, 5),
-        SPAWN: (InstructionType.SYSTEM, 50),
-        JOIN: (InstructionType.SYSTEM, 5),
-    }
+        Args:
+            opcode: The operation code (e.g., "ADD", "LOAD")
+            type: The type of instruction
+            operands: List of operands for the instruction
+            latency: Number of cycles to execute this instruction
+            privileged: Whether this is a privileged instruction
+            metadata: Additional instruction-specific metadata
+            parallel_safe: Whether this instruction is safe for parallel execution
+        """
+        super().__init__(opcode, type, operands, latency, privileged, metadata)
+        self.parallel_safe = parallel_safe
     
-    @classmethod
-    def create_instruction(cls, opcode: str, operands: List[Any]) -> Instruction:
-        """Create an instruction with the given opcode and operands."""
-        if opcode not in cls.INSTRUCTION_SPECS:
-            raise ValueError(f"Unknown opcode: {opcode}")
+    def is_sync(self) -> bool:
+        """
+        Check if this is a synchronization instruction.
         
-        instr_type, latency = cls.INSTRUCTION_SPECS[opcode]
-        return Instruction(opcode=opcode, type=instr_type, operands=operands, latency=latency)
+        Returns:
+            True if this is a synchronization instruction
+        """
+        return self.type == InstructionType.SYNC
+    
+    def is_atomic(self) -> bool:
+        """
+        Check if this is an atomic instruction.
+        
+        Returns:
+            True if this is an atomic instruction
+        """
+        return self.opcode in ("CAS", "CMPXCHG", "XADD")
+    
+    def get_affected_addresses(self) -> List[int]:
+        """
+        Get the memory addresses affected by this instruction.
+        
+        Returns:
+            List of memory addresses affected
+        """
+        addresses = []
+        
+        if self.type == InstructionType.MEMORY:
+            if self.opcode == "LOAD" and len(self.operands) >= 2:
+                if isinstance(self.operands[1], int):
+                    addresses.append(self.operands[1])
+            elif self.opcode == "STORE" and len(self.operands) >= 2:
+                if isinstance(self.operands[1], int):
+                    addresses.append(self.operands[1])
+        
+        return addresses
+
+
+# Create a parallel-optimized instruction set
+def create_parallel_instruction_set() -> InstructionSet:
+    """
+    Create an instruction set optimized for parallel computing.
+    
+    Returns:
+        An InstructionSet instance with parallel-specific instructions
+    """
+    from common.core.instruction import create_common_instruction_set
+    
+    # Start with the common instruction set
+    isa = create_common_instruction_set()
+    
+    # Add parallel-specific instructions
+    isa.add_instruction("ATOMIC_ADD", InstructionType.SYNC, latency=3)
+    isa.add_instruction("ATOMIC_SUB", InstructionType.SYNC, latency=3)
+    isa.add_instruction("CMPXCHG", InstructionType.SYNC, latency=4)  # Compare and exchange
+    isa.add_instruction("XADD", InstructionType.SYNC, latency=4)     # Exchange and add
+    isa.add_instruction("XCHG", InstructionType.SYNC, latency=3)     # Exchange
+    
+    # Thread management instructions
+    isa.add_instruction("FORK", InstructionType.SPECIAL, latency=6)  # Fork a new thread
+    isa.add_instruction("JOIN_ALL", InstructionType.SYNC, latency=3) # Wait for all threads
+    isa.add_instruction("BARRIER", InstructionType.SYNC, latency=5)  # Synchronization barrier
+    
+    return isa
+
+
+# Default instruction set for parallel VM
+DEFAULT_INSTRUCTION_SET = create_parallel_instruction_set()

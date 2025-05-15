@@ -5,8 +5,10 @@ from typing import List, Union, Tuple, Iterable, Dict, Any, Optional
 import math
 import json
 
+from common.core import BaseRecord, Serializable
 
-class Vector:
+
+class Vector(BaseRecord, Serializable):
     """
     Vector data type with optimized operations for machine learning.
     
@@ -14,17 +16,30 @@ class Vector:
     operations, with support for common vector operations and serialization.
     """
     
-    def __init__(self, values: Union[List[float], Tuple[float, ...]], id: Optional[str] = None):
+    def __init__(
+        self, 
+        values: Union[List[float], Tuple[float, ...]],
+        id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        created_at: Optional[float] = None,
+        updated_at: Optional[float] = None
+    ):
         """
         Initialize a vector with values.
         
         Args:
             values: List or tuple of float values representing the vector.
             id: Optional identifier for the vector.
+            metadata: Optional metadata associated with the vector.
+            created_at: Timestamp when the vector was created. If None, current time is used.
+            updated_at: Timestamp when the vector was last updated. If None, created_at is used.
         
         Raises:
             ValueError: If values is empty or contains non-numeric values.
         """
+        # Initialize BaseRecord
+        super().__init__(id, metadata, created_at, updated_at)
+        
         if not values:
             raise ValueError("Vector cannot be empty")
         
@@ -33,13 +48,7 @@ class Vector:
         except (ValueError, TypeError):
             raise ValueError("Vector values must be numeric")
             
-        self._id = id
         self._dimension = len(self._values)
-        
-    @property
-    def id(self) -> Optional[str]:
-        """Get the vector ID."""
-        return self._id
         
     @property
     def values(self) -> Tuple[float, ...]:
@@ -67,12 +76,16 @@ class Vector:
         """Check if two vectors are equal."""
         if not isinstance(other, Vector):
             return False
+        # Check if IDs are the same (inherit from BaseRecord)
+        if super().__eq__(other):
+            return True
+        # Otherwise check if values are the same
         return self._values == other.values
         
     def __repr__(self) -> str:
         """Return a string representation of the vector."""
-        if self._id:
-            return f"Vector(id={self._id}, dimension={self._dimension})"
+        if self.id:
+            return f"Vector(id={self.id}, dimension={self._dimension})"
         return f"Vector(dimension={self._dimension})"
         
     def __str__(self) -> str:
@@ -81,8 +94,8 @@ class Vector:
         if len(values_str) > 50:
             values_str = f"{str(self._values[:3])[:-1]}, ..., {str(self._values[-3:])[1:]}"
         
-        if self._id:
-            return f"Vector(id={self._id}, values={values_str})"
+        if self.id:
+            return f"Vector(id={self.id}, values={values_str})"
         return f"Vector(values={values_str})"
     
     def dot(self, other: 'Vector') -> float:
@@ -126,7 +139,7 @@ class Vector:
         if math.isclose(mag, 0):
             raise ValueError("Cannot normalize a zero vector")
         
-        return Vector([x / mag for x in self._values], self._id)
+        return Vector([x / mag for x in self._values], self.id, self.metadata.copy())
     
     def add(self, other: 'Vector') -> 'Vector':
         """
@@ -174,28 +187,20 @@ class Vector:
         Returns:
             A new Vector representing the scaled vector.
         """
-        return Vector([x * scalar for x in self._values], self._id)
+        return Vector([x * scalar for x in self._values], self.id, self.metadata.copy())
     
     def to_dict(self) -> Dict[str, Any]:
         """
         Convert the vector to a dictionary representation.
         
         Returns:
-            A dictionary with the vector's ID and values.
+            A dictionary with the vector's data.
         """
-        result = {"values": list(self._values)}
-        if self._id is not None:
-            result["id"] = self._id
+        # Start with the base record data
+        result = super().to_dict()
+        # Add vector-specific data
+        result["values"] = list(self._values)
         return result
-    
-    def to_json(self) -> str:
-        """
-        Convert the vector to a JSON string.
-        
-        Returns:
-            A JSON string representation of the vector.
-        """
-        return json.dumps(self.to_dict())
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Vector':
@@ -203,35 +208,21 @@ class Vector:
         Create a vector from a dictionary representation.
         
         Args:
-            data: Dictionary containing 'values' and optionally 'id'.
-            
+            data: Dictionary containing vector data.
+        
         Returns:
             A new Vector instance.
-            
+        
         Raises:
             ValueError: If the dictionary is missing required fields.
         """
         if "values" not in data:
             raise ValueError("Dictionary must contain 'values' field")
         
-        return cls(data["values"], data.get("id"))
-    
-    @classmethod
-    def from_json(cls, json_str: str) -> 'Vector':
-        """
-        Create a vector from a JSON string.
-        
-        Args:
-            json_str: JSON string representation of a vector.
-            
-        Returns:
-            A new Vector instance.
-            
-        Raises:
-            ValueError: If the JSON string cannot be parsed.
-        """
-        try:
-            data = json.loads(json_str)
-            return cls.from_dict(data)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON string: {e}")
+        return cls(
+            values=data["values"],
+            id=data.get("id"),
+            metadata=data.get("metadata", {}),
+            created_at=data.get("created_at"),
+            updated_at=data.get("updated_at")
+        )

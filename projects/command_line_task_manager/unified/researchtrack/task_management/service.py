@@ -2,11 +2,12 @@ from datetime import datetime
 from typing import Dict, List, Optional, Set, Union, Any
 from uuid import UUID, uuid4
 
+from common.core.service import BaseService, BaseTaskService
 from .models import ResearchQuestion, ResearchTask, TaskPriority, TaskStatus
 from .storage import TaskStorageInterface
 
 
-class TaskManagementService:
+class TaskManagementService(BaseTaskService):
     """Service for managing research tasks and questions."""
 
     def __init__(self, storage: TaskStorageInterface):
@@ -16,7 +17,8 @@ class TaskManagementService:
         Args:
             storage: The storage implementation to use
         """
-        self._storage = storage
+        super().__init__(storage)
+        self._storage = storage  # Cast for IDE support
 
         # Reference validation callback to be set by external services
         self._validate_reference_callback = None
@@ -66,7 +68,9 @@ class TaskManagementService:
         """
         self._validate_experiment_callback = validator_callback
     
-    # Task operations
+    def _create_task_instance(self, **kwargs) -> ResearchTask:
+        """Create a ResearchTask instance."""
+        return ResearchTask(**kwargs)
     
     def create_task(
         self,
@@ -123,7 +127,7 @@ class TaskManagementService:
             priority=priority,
             estimated_hours=estimated_hours,
             due_date=due_date,
-            parent_task_id=parent_task_id,
+            parent_id=parent_task_id,
             research_question_ids=research_question_ids or set(),
             tags=tags or set(),
             custom_metadata=custom_metadata or {},
@@ -140,208 +144,6 @@ class TaskManagementService:
                 self._storage.update_task(parent_task)
         
         return task_id
-    
-    def get_task(self, task_id: UUID) -> Optional[ResearchTask]:
-        """
-        Retrieve a task by ID.
-        
-        Args:
-            task_id: The ID of the task to retrieve
-            
-        Returns:
-            Optional[ResearchTask]: The task if found, None otherwise
-        """
-        return self._storage.get_task(task_id)
-    
-    def update_task(
-        self,
-        task_id: UUID,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        status: Optional[TaskStatus] = None,
-        priority: Optional[TaskPriority] = None,
-        estimated_hours: Optional[float] = None,
-        actual_hours: Optional[float] = None,
-        due_date: Optional[datetime] = None,
-    ) -> bool:
-        """
-        Update an existing task.
-        
-        Args:
-            task_id: The ID of the task to update
-            title: New task title
-            description: New task description
-            status: New task status
-            priority: New task priority
-            estimated_hours: New estimated hours
-            actual_hours: New actual hours
-            due_date: New due date
-            
-        Returns:
-            bool: True if update successful, False otherwise
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        task = self._storage.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task with ID {task_id} does not exist")
-        
-        update_data = {}
-        if title is not None:
-            update_data["title"] = title
-        if description is not None:
-            update_data["description"] = description
-        if status is not None:
-            update_data["status"] = status
-        if priority is not None:
-            update_data["priority"] = priority
-        if estimated_hours is not None:
-            update_data["estimated_hours"] = estimated_hours
-        if actual_hours is not None:
-            update_data["actual_hours"] = actual_hours
-        if due_date is not None:
-            update_data["due_date"] = due_date
-        
-        task.update(**update_data)
-        return self._storage.update_task(task)
-    
-    def delete_task(self, task_id: UUID) -> bool:
-        """
-        Delete a task by ID.
-        
-        Args:
-            task_id: The ID of the task to delete
-            
-        Returns:
-            bool: True if deletion successful, False otherwise
-        """
-        return self._storage.delete_task(task_id)
-    
-    def list_tasks(
-        self,
-        status: Optional[TaskStatus] = None,
-        priority: Optional[TaskPriority] = None,
-        tags: Optional[Set[str]] = None,
-        research_question_id: Optional[UUID] = None,
-    ) -> List[ResearchTask]:
-        """
-        List tasks with optional filtering.
-        
-        Args:
-            status: Filter by task status
-            priority: Filter by task priority
-            tags: Filter by tags (tasks must have all specified tags)
-            research_question_id: Filter by associated research question ID
-            
-        Returns:
-            List[ResearchTask]: List of tasks matching the criteria
-        """
-        return self._storage.list_tasks(
-            status=status,
-            priority=priority,
-            tags=tags,
-            research_question_id=research_question_id,
-        )
-    
-    def add_task_note(self, task_id: UUID, note: str) -> bool:
-        """
-        Add a note to a task.
-        
-        Args:
-            task_id: The ID of the task
-            note: The note to add
-            
-        Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        task = self._storage.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task with ID {task_id} does not exist")
-        
-        task.add_note(note)
-        return self._storage.update_task(task)
-    
-    def add_task_tag(self, task_id: UUID, tag: str) -> bool:
-        """
-        Add a tag to a task.
-        
-        Args:
-            task_id: The ID of the task
-            tag: The tag to add
-            
-        Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        task = self._storage.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task with ID {task_id} does not exist")
-        
-        task.add_tag(tag)
-        return self._storage.update_task(task)
-    
-    def remove_task_tag(self, task_id: UUID, tag: str) -> bool:
-        """
-        Remove a tag from a task.
-        
-        Args:
-            task_id: The ID of the task
-            tag: The tag to remove
-            
-        Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        task = self._storage.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task with ID {task_id} does not exist")
-        
-        task.remove_tag(tag)
-        return self._storage.update_task(task)
-    
-    def update_task_custom_metadata(
-        self, task_id: UUID, key: str, value: Union[str, int, float, bool, list, dict]
-    ) -> bool:
-        """
-        Update a custom metadata field on a task.
-        
-        Args:
-            task_id: The ID of the task
-            key: The metadata key
-            value: The metadata value
-            
-        Returns:
-            bool: True if successful, False otherwise
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        task = self._storage.get_task(task_id)
-        if not task:
-            raise ValueError(f"Task with ID {task_id} does not exist")
-        
-        task.update_custom_metadata(key, value)
-        return self._storage.update_task(task)
-    
-    def get_subtasks(self, parent_task_id: UUID) -> List[ResearchTask]:
-        """
-        Get all subtasks of a parent task.
-        
-        Args:
-            parent_task_id: The ID of the parent task
-            
-        Returns:
-            List[ResearchTask]: List of subtasks
-        """
-        return self._storage.get_subtasks(parent_task_id)
     
     # Research question operations
     

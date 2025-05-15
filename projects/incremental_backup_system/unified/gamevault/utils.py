@@ -4,37 +4,27 @@ Utility functions for GameVault.
 This module contains utility functions used throughout the backup system.
 """
 
-import hashlib
 import os
-import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Generator, List, Optional, Set, Tuple, Union
 
-import xxhash
+# Import common utilities from the unified library
+from common.core.utils import (
+    calculate_file_hash as get_file_hash,
+    get_file_size,
+    get_file_modification_time,
+    is_binary_file,
+    create_timestamp as format_timestamp,
+    create_unique_id,
+    generate_timestamp,
+    save_json,
+    load_json
+)
+
+# Import third-party libraries for compression (not included in common)
 from pyzstd import compress, decompress
-
-
-def get_file_hash(file_path: Union[str, Path], chunk_size: int = 8192) -> str:
-    """
-    Calculate the SHA-256 hash of a file.
-    
-    Args:
-        file_path: Path to the file
-        chunk_size: Size of chunks to read from the file
-        
-    Returns:
-        str: Hexadecimal digest of the file hash
-    """
-    hasher = hashlib.sha256()
-    
-    try:
-        with open(file_path, "rb") as f:
-            for chunk in iter(lambda: f.read(chunk_size), b""):
-                hasher.update(chunk)
-        return hasher.hexdigest()
-    except (IOError, OSError) as e:
-        raise ValueError(f"Failed to calculate hash for {file_path}: {str(e)}")
+import xxhash
 
 
 def get_file_xxhash(file_path: Union[str, Path], chunk_size: int = 8192) -> str:
@@ -84,74 +74,6 @@ def decompress_data(compressed_data: bytes) -> bytes:
         bytes: Decompressed data
     """
     return decompress(compressed_data)
-
-
-def get_file_modification_time(file_path: Union[str, Path]) -> float:
-    """
-    Get the modification time of a file as a Unix timestamp.
-    
-    Args:
-        file_path: Path to the file
-        
-    Returns:
-        float: Modification time as a Unix timestamp
-    """
-    return os.path.getmtime(file_path)
-
-
-def get_file_size(file_path: Union[str, Path]) -> int:
-    """
-    Get the size of a file in bytes.
-    
-    Args:
-        file_path: Path to the file
-        
-    Returns:
-        int: Size of the file in bytes
-    """
-    return os.path.getsize(file_path)
-
-
-def format_timestamp(timestamp: float) -> str:
-    """
-    Format a Unix timestamp as a human-readable string.
-    
-    Args:
-        timestamp: Unix timestamp
-        
-    Returns:
-        str: Formatted timestamp
-    """
-    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
-
-
-def generate_timestamp() -> float:
-    """
-    Generate a current timestamp.
-    
-    Returns:
-        float: Current Unix timestamp
-    """
-    return time.time()
-
-
-def is_binary_file(file_path: Union[str, Path], binary_extensions: Optional[Set[str]] = None) -> bool:
-    """
-    Check if a file is binary based on its extension.
-    
-    Args:
-        file_path: Path to the file
-        binary_extensions: Set of binary file extensions
-        
-    Returns:
-        bool: True if the file is binary, False otherwise
-    """
-    if binary_extensions is None:
-        from gamevault.config import get_config
-        binary_extensions = get_config().binary_extensions
-    
-    file_path = Path(file_path)
-    return file_path.suffix.lower() in binary_extensions
 
 
 def scan_directory(

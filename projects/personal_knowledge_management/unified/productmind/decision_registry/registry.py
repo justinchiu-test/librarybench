@@ -8,17 +8,19 @@ This module provides capabilities for:
 - Outcome prediction and post-implementation assessment
 - Cross-reference linking between related decisions
 """
-from collections import defaultdict
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Tuple, Union
-import json
+from typing import Dict, List, Optional, Set, Tuple, Type, Union
 import os
-import re
+from pathlib import Path
+from uuid import UUID, uuid4
 
 from productmind.models import (
     Alternative,
     Decision
 )
+
+from common.core.storage import BaseStorage, LocalStorage
+from common.core.knowledge import KnowledgeGraph
 
 
 class DecisionRegistry:
@@ -33,18 +35,24 @@ class DecisionRegistry:
     - Record and assess outcomes of decisions
     """
     
-    def __init__(self, storage_dir: str = "./data"):
+    def __init__(self, storage_dir: str = "./data", storage: Optional[BaseStorage] = None):
         """
         Initialize the decision registry.
         
         Args:
-            storage_dir: Directory to store decision data
+            storage_dir: Directory to store decision data (used if storage is not provided)
+            storage: Optional BaseStorage implementation to use
         """
+        if storage is not None:
+            self.storage = storage
+        else:
+            # Create storage directory
+            os.makedirs(os.path.join(storage_dir, "decisions"), exist_ok=True)
+            self.storage = LocalStorage(Path(storage_dir))
+            
         self.storage_dir = storage_dir
         self._decisions_cache = {}
-        
-        # Create storage directory
-        os.makedirs(os.path.join(storage_dir, "decisions"), exist_ok=True)
+        self.graph = KnowledgeGraph()
     
     def add_decision(self, decision: Union[Decision, List[Decision]]) -> List[str]:
         """
@@ -63,6 +71,13 @@ class DecisionRegistry:
         for item in decision:
             self._store_decision(item)
             decision_ids.append(str(item.id))
+            
+            # Add to the knowledge graph
+            self.graph.add_node(str(item.id), 
+                                type="Decision", 
+                                title=item.title, 
+                                date=item.decision_date.isoformat(),
+                                status=item.status)
         
         return decision_ids
     
@@ -76,12 +91,8 @@ class DecisionRegistry:
         # Store in memory cache
         self._decisions_cache[str(decision.id)] = decision
         
-        # Store on disk
-        decision_path = os.path.join(
-            self.storage_dir, "decisions", f"{decision.id}.json"
-        )
-        with open(decision_path, "w") as f:
-            f.write(decision.model_dump_json())
+        # Store using the common storage system
+        self.storage.save(decision)
     
     def get_decision(self, decision_id: str) -> Optional[Decision]:
         """
@@ -97,16 +108,15 @@ class DecisionRegistry:
         if decision_id in self._decisions_cache:
             return self._decisions_cache[decision_id]
         
-        # Try to load from disk
-        decision_path = os.path.join(
-            self.storage_dir, "decisions", f"{decision_id}.json"
-        )
-        if os.path.exists(decision_path):
-            with open(decision_path, "r") as f:
-                decision_data = json.load(f)
-                decision = Decision.model_validate(decision_data)
+        # Try to load from storage
+        try:
+            decision = self.storage.get(Decision, UUID(decision_id))
+            if decision:
                 self._decisions_cache[decision_id] = decision
                 return decision
+        except ValueError:
+            # Handle invalid UUID format
+            pass
         
         return None
     
@@ -117,18 +127,11 @@ class DecisionRegistry:
         Returns:
             List of all decisions
         """
-        decisions = []
-        decisions_dir = os.path.join(self.storage_dir, "decisions")
+        decisions = self.storage.list_all(Decision)
         
-        if not os.path.exists(decisions_dir):
-            return decisions
-        
-        for filename in os.listdir(decisions_dir):
-            if filename.endswith(".json"):
-                decision_id = filename.replace(".json", "")
-                decision = self.get_decision(decision_id)
-                if decision:
-                    decisions.append(decision)
+        # Update cache with retrieved decisions
+        for decision in decisions:
+            self._decisions_cache[str(decision.id)] = decision
         
         return decisions
     
@@ -195,6 +198,9 @@ class DecisionRegistry:
             if related_id != decision_id and related_id not in decision.related_decisions:
                 decision.related_decisions.append(related_id)
                 
+                # Add edge to knowledge graph
+                self.graph.add_edge(str(decision_id), related_id, type="related_to")
+                
                 # Also link in the other direction
                 related_decision = self.get_decision(related_id)
                 if decision_id not in related_decision.related_decisions:
@@ -233,6 +239,9 @@ class DecisionRegistry:
         decision.status = "assessed"
         decision.updated_at = datetime.now()
         
+        # Update node in knowledge graph
+        self.graph.add_node(str(decision_id), status="assessed")
+        
         # Save decision
         self._store_decision(decision)
         
@@ -253,21 +262,11 @@ class DecisionRegistry:
         Returns:
             List of matching decisions
         """
-        decisions = self.get_all_decisions()
-        results = []
-        
         if not search_fields:
             search_fields = ["title", "description", "context", "problem_statement", "rationale"]
         
-        query = query.lower()
-        
-        for decision in decisions:
-            for field in search_fields:
-                if hasattr(decision, field):
-                    field_value = getattr(decision, field)
-                    if isinstance(field_value, str) and query in field_value.lower():
-                        results.append(decision)
-                        break
+        # Use the storage search functionality
+        results = self.storage.search_text(Decision, query, search_fields)
         
         return results
     
@@ -281,37 +280,11 @@ class DecisionRegistry:
         Returns:
             List of decisions with summary information
         """
-        decisions = self.get_all_decisions()
-        
-        # Apply filters if provided
         if filter_by:
-            filtered_decisions = []
-            for decision in decisions:
-                include = True
-                
-                for key, value in filter_by.items():
-                    if hasattr(decision, key):
-                        attr_value = getattr(decision, key)
-                        
-                        # Handle list fields
-                        if isinstance(attr_value, list) and isinstance(value, str):
-                            if value not in attr_value:
-                                include = False
-                                break
-                        # Handle string fields
-                        elif isinstance(attr_value, str) and isinstance(value, str):
-                            if value.lower() not in attr_value.lower():
-                                include = False
-                                break
-                        # Handle exact match fields
-                        elif attr_value != value:
-                            include = False
-                            break
-                
-                if include:
-                    filtered_decisions.append(decision)
-            
-            decisions = filtered_decisions
+            # Use the query functionality for filtering
+            decisions = self.storage.query(Decision, **filter_by)
+        else:
+            decisions = self.get_all_decisions()
         
         # Sort by decision date
         decisions.sort(key=lambda d: d.decision_date, reverse=True)
@@ -363,8 +336,19 @@ class DecisionRegistry:
         nodes = []
         edges = []
         
+        # Clear existing graph
+        self.graph = KnowledgeGraph()
+        
         for decision in decisions:
             # Add node
+            self.graph.add_node(
+                str(decision.id),
+                type="Decision", 
+                label=decision.title,
+                date=decision.decision_date.isoformat(),
+                status=decision.status
+            )
+            
             nodes.append({
                 "id": str(decision.id),
                 "label": decision.title,
@@ -377,6 +361,9 @@ class DecisionRegistry:
                 # Only add edge if related decision exists
                 related_decision = self.get_decision(related_id)
                 if related_decision:
+                    # Add to knowledge graph
+                    self.graph.add_edge(str(decision.id), related_id, type="related_to")
+                    
                     edge = {
                         "source": str(decision.id),
                         "target": related_id

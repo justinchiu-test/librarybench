@@ -4,12 +4,13 @@ import uuid
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Set
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
+from common.core.models import BaseTask
 from securetask.utils.validation import ValidationError
 
 
-class Finding(BaseModel):
+class Finding(BaseTask):
     """
     Model representing a security finding or vulnerability.
     
@@ -17,14 +18,8 @@ class Finding(BaseModel):
     technical details, affected systems, and tracking information.
     """
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    title: str
-    description: str
     affected_systems: List[str] = Field(default_factory=list)
-    discovered_date: datetime = Field(default_factory=datetime.now)
     discovered_by: str
-    status: str = "open"  # open, in_progress, remediated, verified, closed, false_positive
-    severity: str  # critical, high, medium, low, info
     cvss_vector: Optional[str] = None
     cvss_score: Optional[float] = None
     cvss_severity: Optional[str] = None
@@ -33,13 +28,13 @@ class Finding(BaseModel):
     remediated_by: Optional[str] = None
     verification_date: Optional[datetime] = None
     verified_by: Optional[str] = None
-    tags: List[str] = Field(default_factory=list)
-    references: List[str] = Field(default_factory=list)
-    notes: List[Dict[str, Any]] = Field(default_factory=list)
     evidence_ids: List[str] = Field(default_factory=list)
     compliance_controls: List[str] = Field(default_factory=list)
     
-    @field_validator("status")
+    # Field aliases for backward compatibility
+    discovered_date: datetime = Field(default_factory=datetime.now, alias="discovered_date")
+    
+    @field_validator("status", check_fields=False)
     @classmethod
     def validate_status(cls, value: str) -> str:
         """Validate that the status is a known value."""
@@ -53,7 +48,7 @@ class Finding(BaseModel):
             )
         return value
     
-    @field_validator("severity")
+    @field_validator("severity", check_fields=False)
     @classmethod
     def validate_severity(cls, value: str) -> str:
         """Validate that the severity is a known value."""
@@ -118,6 +113,7 @@ class Finding(BaseModel):
             "timestamp": datetime.now()
         }
         self.notes.append(note)
+        self.updated_at = datetime.now()
         return note
     
     def add_evidence(self, evidence_id: str) -> None:
@@ -129,6 +125,7 @@ class Finding(BaseModel):
         """
         if evidence_id not in self.evidence_ids:
             self.evidence_ids.append(evidence_id)
+            self.updated_at = datetime.now()
             
     def remove_evidence(self, evidence_id: str) -> bool:
         """
@@ -142,6 +139,7 @@ class Finding(BaseModel):
         """
         if evidence_id in self.evidence_ids:
             self.evidence_ids.remove(evidence_id)
+            self.updated_at = datetime.now()
             return True
         return False
             
@@ -154,6 +152,7 @@ class Finding(BaseModel):
         """
         if control_id not in self.compliance_controls:
             self.compliance_controls.append(control_id)
+            self.updated_at = datetime.now()
     
     def remove_compliance_control(self, control_id: str) -> bool:
         """
@@ -167,6 +166,7 @@ class Finding(BaseModel):
         """
         if control_id in self.compliance_controls:
             self.compliance_controls.remove(control_id)
+            self.updated_at = datetime.now()
             return True
         return False
     
@@ -182,6 +182,7 @@ class Finding(BaseModel):
         self.cvss_vector = vector
         self.cvss_score = score
         self.cvss_severity = severity
+        self.updated_at = datetime.now()
         
     def update_status(self, new_status: str, user: str) -> None:
         """

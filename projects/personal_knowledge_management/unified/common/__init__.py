@@ -1,1 +1,1 @@
-# Common functionality shared across packages
+"""Common functionality for personal knowledge management."""

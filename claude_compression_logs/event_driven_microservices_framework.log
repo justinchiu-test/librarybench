@@ -1,0 +1,30 @@
+Starting compression for event_driven_microservices_framework/unified at Thu May 15 22:54:52 UTC 2025
+Starting refactoring for /home/justinchiu_cohere_com/librarybench/projects/event_driven_microservices_framework/unified...
+~/librarybench/projects/event_driven_microservices_framework/unified ~/librarybench
+Using CPython 3.12.9
+Creating virtual environment at: .venv
+Activate with: source .venv/bin/activate
+Obtaining file:///home/justinchiu_cohere_com/librarybench/projects/event_driven_microservices_framework/unified
+
+[notice] A new release of pip is available: 24.3.1 -> 25.1.1
+[notice] To update, run: pip install --upgrade pip
+ERROR: file:///home/justinchiu_cohere_com/librarybench/projects/event_driven_microservices_framework/unified does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+Following the instructions in /home/justinchiu_cohere_com/librarybench/projects/event_driven_microservices_framework/unified/REFACTOR.md...
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.785s
+user	0m0.735s
+sys	0m0.095s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.800s
+user	0m0.709s
+sys	0m0.090s
+--dangerously-skip-permissions must be accepted in an interactive session first.
+
+real	0m0.734s
+user	0m0.714s
+sys	0m0.145s
+~/librarybench
+Done!
+Completed compression for event_driven_microservices_framework/unified at Thu May 15 22:54:55 UTC 2025

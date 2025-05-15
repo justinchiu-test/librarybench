@@ -92,6 +92,7 @@ def sample_scenarios():
         description="High-resolution atmospheric simulation",
         estimated_duration=timedelta(days=14),
         priority=SimulationPriority.HIGH,
+        stages={},  # Empty stages dictionary to satisfy the requirement
     )
     
     sim2 = Simulation(

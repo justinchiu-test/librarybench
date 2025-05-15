@@ -130,7 +130,9 @@ class TestScientificMetric:
             is_higher_better=True,
         )
         
-        assert metric7.normalized_score() == 1.2  # 0.8 * 1.5
+        # Use pytest.approx for float comparisons to handle floating point precision
+        import pytest
+        assert metric7.normalized_score() == pytest.approx(1.2)  # 0.8 * 1.5
 
 
 class TestResearchObjective:

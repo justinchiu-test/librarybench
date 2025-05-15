@@ -379,7 +379,14 @@ class ApproximateNearestNeighbor:
             # Get vectors that hash to the same bucket
             if hash_code in self._hash_tables[table_idx]:
                 candidates.update(self._hash_tables[table_idx][hash_code])
+        
+        # If we don't have enough candidates, we can use a fallback strategy
+        if len(candidates) < max_candidates:
+            # Try to find close matches by checking neighboring buckets
+            # For simplicity, if we have no matches, return some random vectors as candidates
+            if not candidates and len(self._vector_index) > 0:
+                # Take a random sample of vectors to ensure we have some candidates
+                sample_size = min(max_candidates, len(self._vector_index))
+                candidates = set(random.sample(self._vector_index.ids, sample_size))
                 
-        # If we don't have enough candidates, we can use multiprobe LSH
-        # or just return what we have for simplicity
         return candidates

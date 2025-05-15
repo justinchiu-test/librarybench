@@ -268,20 +268,17 @@ class TestApproximateNearestNeighbor:
     
     def test_performance_with_large_dataset(self):
         """Test performance with a larger dataset (as a basic benchmark)."""
-        # Skip this test in normal runs - enable for benchmarking
-        pytest.skip("Skipping performance test")
-        
-        # Create a larger index
-        dimensions = 128
+        # Create a smaller index with reduced dimensions and vectors for faster testing
+        dimensions = 32
         index = ApproximateNearestNeighbor(
             dimensions=dimensions,
-            n_projections=16,
-            n_tables=8,
+            n_projections=8,
+            n_tables=4,
             seed=42
         )
         
-        # Create a dataset of random vectors
-        num_vectors = 10000
+        # Create a dataset of random vectors - use a smaller number for testing
+        num_vectors = 1000
         random.seed(42)
         
         for i in range(num_vectors):
@@ -293,12 +290,10 @@ class TestApproximateNearestNeighbor:
         
         # Time the query
         start_time = time.time()
-        results = index.nearest(query, k=10, ef_search=100)
+        results = index.nearest(query, k=10, ef_search=50)
         query_time = time.time() - start_time
         
-        # Print results
-        print(f"Query time for {num_vectors} vectors with {dimensions} dimensions: {query_time:.4f} seconds")
-        print(f"Found {len(results)} results")
-        
-        # Simple assertion to make sure the test works
+        # We're not asserting on the exact time since it varies by machine,
+        # but we want to make sure it completes and finds results
         assert len(results) == 10
+        assert query_time > 0  # Just ensure timing worked

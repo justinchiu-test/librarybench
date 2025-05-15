@@ -30,6 +30,7 @@ from concurrent_task_scheduler.failure_resilience.resilience_coordinator import 
 from concurrent_task_scheduler.models import (
     ComputeNode,
     NodeStatus,
+    NodeType,
     Simulation,
     SimulationStage,
     SimulationStageStatus,

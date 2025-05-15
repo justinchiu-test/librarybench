@@ -144,7 +144,7 @@ IMPORTANT:
 - REQUIRED: Tests must be run with pytest-json-report to generate a pytest_results.json file:
   ```
   pip install pytest-json-report
-  pytest --json-report --json-report-file=pytest_results.json
+  pytest --json-report --json-report-file=pytest_results.json --continue-on-collection-errors
   ```
 - The pytest_results.json file must be included as proof that all tests pass
 

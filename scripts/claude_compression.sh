@@ -1,9 +1,9 @@
 #!/bin/bash
-# must be run from repo base directory
+# must be run from the unified project directory
 
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <directory_name>"
-    echo "Example: $0 workflow_orchestration"
+    echo "Example: $0 projects/text_editor/unified"
     exit 1
 fi
 
@@ -19,15 +19,11 @@ echo "Starting refactoring for $directory..."
 # Push into the directory
 pushd "$directory"
 
-echo "Following the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md..."
+echo "Following the instructions in $(pwd)/REFACTOR.md..."
 # Run Claude Code and tell it to follow instructions
-#time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR_INSTRUCTIONS.md"
+time claude --dangerously-skip-permissions -p "Follow the instructions in $(pwd)/REFACTOR.md"
 
 # Pop back to the original directory
 popd
-
-# Run scoring script
-echo "Running scoring script..."
-#python score.py --directory "$directory/unified"
 
 echo "Done!"

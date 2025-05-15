@@ -781,6 +781,24 @@ As the refactoring progresses, more shared code will be moved here.
         f.write(readme)
 
 
+def copy_instructions_from_personas(unified_dir, persona_dirs, library_name):
+    """Copy INSTRUCTIONS.md from each persona directory to unified/INSTRUCTIONS_persona.md."""
+    for persona_dir in persona_dirs:
+        persona_name = os.path.basename(persona_dir)
+        persona_short_name = persona_name.replace(f"{library_name}_", "")
+        
+        instructions_path = persona_dir / "INSTRUCTIONS.md"
+        if instructions_path.exists():
+            # Create the destination file path
+            target_path = unified_dir / f"INSTRUCTIONS_{persona_short_name}.md"
+            
+            # Copy the INSTRUCTIONS.md
+            print(f"Copying instructions from {persona_name} to {target_path}")
+            shutil.copy2(instructions_path, target_path)
+        else:
+            print(f"No INSTRUCTIONS.md found in {persona_name}")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Setup refactoring for a library project.')
     parser.add_argument('library_name', help='Name of the library to refactor (e.g., in_memory_database)')
@@ -843,6 +861,9 @@ def main():
     # Create PLAN.md and README.md
     create_plan_md(unified_dir, library_name, persona_dirs, package_names)
     create_readme(unified_dir, library_name, package_names)
+    
+    # Copy INSTRUCTIONS.md from each persona
+    copy_instructions_from_personas(unified_dir, persona_dirs, library_name)
     
     print("Setup complete. The unified directory structure is ready for refactoring.")
     print(f"Successfully processed {processed_count} out of {len(persona_dirs)} persona directories.")

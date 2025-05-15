@@ -9,4 +9,4 @@ description = "Unified libraries for query_language_interpreter with original pa
 requires-python = ">=3.8"
 
 [tool.setuptools]
-packages = ["common", "legal_discovery_interpreter", "privacy_query_interpreter"]
+packages = ["common", "privacy_query_interpreter", "legal_discovery_interpreter"]

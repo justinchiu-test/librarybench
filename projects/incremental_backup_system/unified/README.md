@@ -20,7 +20,7 @@ Import the original packages directly:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import creative_vault # Example using first package
+import gamevault # Example using first package
 
 # Import from common package (for shared functionality)
 from common import core

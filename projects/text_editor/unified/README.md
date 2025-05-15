@@ -20,7 +20,7 @@ Import the original packages directly:
 
 ```python
 # Import from original packages (preserved for backward compatibility)
-import text_editor # Example using first package
+import writer_text_editor # Example using first package
 
 # Import from common package (for shared functionality)
 from common import core

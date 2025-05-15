@@ -130,6 +130,24 @@ class CheckpointPolicy(BaseModel):
     priority_level: int = 3  # 1 (highest) to 5 (lowest)
     enabled: bool = True
     
+    @property
+    def interval_minutes(self) -> int:
+        """Alias for frequency_minutes for backward compatibility."""
+        return self.frequency_minutes
+        
+    @property
+    def priority(self):
+        """Legacy property for SimulationPriority compatibility."""
+        from concurrent_task_scheduler.models.simulation import SimulationPriority
+        # Convert priority_level to SimulationPriority
+        # 1 (highest) to 5 (lowest)
+        if self.priority_level <= 1:
+            return SimulationPriority.HIGH
+        elif self.priority_level <= 3:
+            return SimulationPriority.MEDIUM
+        else:
+            return SimulationPriority.LOW
+    
     def should_create_checkpoint(
         self,
         last_checkpoint_time: Optional[datetime],

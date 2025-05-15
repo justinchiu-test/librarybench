@@ -78,6 +78,10 @@ class Result(BaseModel, Generic[T]):
     value: Optional[T] = None
     error: Optional[str] = None
     
+    # Allow extra fields
+    class Config:
+        extra = "allow"
+    
     @classmethod
     def ok(cls, value: T) -> Result[T]:
         """Create a successful result."""

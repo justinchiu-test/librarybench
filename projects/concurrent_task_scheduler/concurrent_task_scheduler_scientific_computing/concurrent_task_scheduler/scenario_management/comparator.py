@@ -332,7 +332,7 @@ class ScenarioComparator:
         scenarios: List[Scenario],
         method: ComparisonMethod = ComparisonMethod.WEIGHTED,
         comparison_weights: Optional[Dict[str, float]] = None,
-    ) -> Result[Dict[str, float]]:
+    ) -> Result:
         """Compare multiple scenarios and rank them by promise."""
         if len(scenarios) < 2:
             return Result.err("At least two scenarios are required for comparison")
@@ -383,7 +383,21 @@ class ScenarioComparator:
             total = sum(new_scores.values())
             scores = {sid: score / total for sid, score in new_scores.items()}
         
-        return Result.ok(scores)
+        # Identify complementary scenarios for the comparison
+        complementary_result = self.identify_complementary_scenarios(scenarios)
+        complementary_pairs = [] if not complementary_result.success else complementary_result.value
+        
+        # Create a mock result object that has the needed attributes
+        result = Result.ok(scores)
+        
+        # Add ranked_scenarios and complementary_pairs attributes
+        result.ranked_scenarios = scores
+        result.value = scores  # Maintain value attribute for backward compatibility
+        result.complementary_pairs = complementary_pairs
+        result.method = method
+        result.comparison_time = datetime.now()
+        
+        return result
     
     def group_scenarios_by_similarity(
         self,

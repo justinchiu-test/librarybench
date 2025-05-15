@@ -96,11 +96,24 @@ class SimulationDependency:
 class DependencyGraph:
     """A graph representing dependencies between simulation stages."""
 
-    def __init__(self, simulation_id: str):
+    def __init__(self, simulation_id: str = "default-simulation"):
         self.simulation_id = simulation_id
         self.graph = nx.DiGraph()
         self.dependencies: Dict[Tuple[str, str], SimulationDependency] = {}
         self.node_metadata: Dict[str, Dict[str, Union[str, dict]]] = {}
+        
+    @property
+    def nodes(self) -> List[str]:
+        """Get all nodes in the graph."""
+        return list(self.graph.nodes())
+        
+    def get_simulation_dependencies(self, simulation_id: str) -> List[str]:
+        """Get all dependencies for a simulation."""
+        # In this simplified implementation, we just return the predecessors
+        # of the simulation node in the graph
+        if simulation_id in self.graph:
+            return list(self.graph.predecessors(simulation_id))
+        return []
     
     def add_stage(
         self,

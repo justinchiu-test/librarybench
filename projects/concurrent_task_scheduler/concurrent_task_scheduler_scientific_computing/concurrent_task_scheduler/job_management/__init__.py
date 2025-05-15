@@ -26,6 +26,7 @@ from concurrent_task_scheduler.job_management.scheduler import (
     ResourceReservation,
     SchedulingDecision,
     SchedulingStrategy,
+    Scheduler,
 )
 
 __all__ = [
@@ -55,4 +56,5 @@ __all__ = [
     "ResourceReservation",
     "SchedulingDecision",
     "SchedulingStrategy",
+    "Scheduler",
 ]

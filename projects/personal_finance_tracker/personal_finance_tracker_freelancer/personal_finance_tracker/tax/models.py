@@ -89,11 +89,15 @@ class EstimatedPayment(BaseModel):
     quarter: int
     jurisdiction: TaxJurisdiction
     due_date: datetime
-    suggested_amount: float
+    payment_amount: float  # Use this field instead of suggested_amount
+    suggested_amount: Optional[float] = None  # Keep for backwards compatibility
     minimum_required: float
     safe_harbor_amount: Optional[float] = None
     year_to_date_liability: float
     previous_payments: float
+    federal_tax: Optional[float] = None  # Added for test compatibility
+    self_employment_tax: Optional[float] = None  # Added for test compatibility
+    state_tax: Optional[float] = None  # Added for test compatibility
     calculation_date: datetime = Field(default_factory=datetime.now)
     notes: Optional[str] = None
 

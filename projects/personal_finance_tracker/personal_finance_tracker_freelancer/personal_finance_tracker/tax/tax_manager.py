@@ -336,10 +336,12 @@ class TaxManager:
 
     def calculate_tax_liability(
         self,
-        transactions: List[Transaction],
-        tax_year: int,
+        income: Optional[float] = None,
+        transactions: Optional[List[Transaction]] = None,
+        tax_year: int = datetime.now().year,
         deductions: List[TaxDeduction] = None,
         include_state: bool = True,
+        jurisdiction: TaxJurisdiction = TaxJurisdiction.FEDERAL,
     ) -> TaxLiability:
         """
         Calculate total tax liability.
@@ -357,9 +359,23 @@ class TaxManager:
         start_time = time.time()
 
         # Calculate taxable income
-        total_income, total_deductions, taxable_income = self.calculate_taxable_income(
-            transactions, tax_year, deductions
-        )
+        if income is not None:
+            # Direct income provided
+            total_income = income
+            # Use standard deduction as default
+            std_deduction = self._standard_deduction.get(tax_year, {}).get(
+                self.filing_status,
+                12950,  # Default to 2022 single
+            )
+            total_deductions = std_deduction
+            taxable_income = max(0, total_income - total_deductions)
+        elif transactions is not None:
+            # Calculate from transactions
+            total_income, total_deductions, taxable_income = self.calculate_taxable_income(
+                transactions, tax_year, deductions
+            )
+        else:
+            raise ValueError("Either income or transactions must be provided")
 
         # Calculate federal income tax
         federal_tax = self.calculate_federal_tax(taxable_income, tax_year)
@@ -430,6 +446,79 @@ class TaxManager:
 
         return liability
 
+    def calculate_quarterly_tax_payment(
+        self,
+        quarterly_taxable_income: float,
+        ytd_taxable_income: float,
+        tax_year: int,
+        quarter: int,
+        prior_payments: float = 0.0,
+    ) -> EstimatedPayment:
+        """
+        Calculate estimated quarterly tax payment.
+
+        Args:
+            quarterly_taxable_income: Taxable income for the quarter
+            ytd_taxable_income: Year-to-date taxable income
+            tax_year: Tax year
+            quarter: Quarter number (1-4)
+            prior_payments: Sum of prior payments made this year
+
+        Returns:
+            EstimatedPayment object with payment details
+        """
+        # Get quarter information
+        quarters = self.calculate_tax_quarters(tax_year)
+        quarter_info = next((q for q in quarters if q.quarter == quarter), None)
+        
+        if not quarter_info:
+            raise ValueError(f"Invalid quarter: {quarter}")
+            
+        # Calculate federal tax on YTD income
+        ytd_federal_tax = self.calculate_federal_tax(ytd_taxable_income, tax_year)
+        
+        # Calculate self-employment tax on YTD income (simplified)
+        ytd_se_tax = ytd_taxable_income * 0.15  # Approximate SE tax rate
+        
+        # Total YTD liability
+        ytd_liability = ytd_federal_tax + ytd_se_tax
+        
+        # Calculate payment based on quarter
+        if quarter == 1:
+            # First quarter - pay 25% of projected annual tax
+            payment_amount = ytd_liability * 0.25
+        else:
+            # For later quarters, adjust for prior payments
+            remaining_liability = ytd_liability - prior_payments
+            remaining_quarters = 5 - quarter  # Quarters remaining including current
+            
+            if remaining_quarters <= 0:
+                # Last quarter or past end of year
+                payment_amount = remaining_liability
+            else:
+                payment_amount = remaining_liability / remaining_quarters
+                
+        # Calculate safe harbor amount (simplified)
+        safe_harbor = ytd_liability * 0.225  # 90% of annual tax / 4
+        
+        # Create estimated payment object with federal tax component for test compatibility
+        payment = EstimatedPayment(
+            tax_year=tax_year,
+            quarter=quarter,
+            jurisdiction=TaxJurisdiction.FEDERAL,
+            due_date=quarter_info.due_date,
+            payment_amount=max(0, payment_amount),
+            minimum_required=max(0, min(payment_amount, safe_harbor)),
+            safe_harbor_amount=safe_harbor,
+            year_to_date_liability=ytd_liability,
+            previous_payments=prior_payments,
+            federal_tax=ytd_federal_tax * (quarter/4),
+            self_employment_tax=ytd_se_tax * (quarter/4),
+            notes=f"Estimated Q{quarter} tax payment for {tax_year}",
+        )
+        
+        return payment
+    
     def calculate_estimated_payment(
         self,
         transactions: List[Transaction],

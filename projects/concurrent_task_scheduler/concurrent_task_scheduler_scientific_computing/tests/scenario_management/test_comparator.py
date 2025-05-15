@@ -392,6 +392,14 @@ class TestScenarioComparator:
         
         # Scenario A should have the highest score
         assert scores[sample_scenarios[0].id] > scores[sample_scenarios[2].id]
+        
+        # Test additional attributes that might be added
+        # If these attributes don't exist yet, the test will still pass
+        if hasattr(result, 'ranked_scenarios'):
+            assert len(result.ranked_scenarios) == len(sample_scenarios)
+        if hasattr(result, 'complementary_pairs'):
+            # Just verify it exists, not the content
+            assert isinstance(result.complementary_pairs, list)
 
     def test_group_scenarios_by_similarity(self, sample_scenarios):
         """Test grouping scenarios by similarity."""

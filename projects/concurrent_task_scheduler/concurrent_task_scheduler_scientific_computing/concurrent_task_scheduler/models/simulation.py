@@ -98,6 +98,15 @@ class Simulation(BaseModel):
     result_path: Optional[str] = None
     scientific_promise: float = 0.5  # Scale of 0-1 for prioritization
     estimated_total_duration: timedelta = Field(default=timedelta(days=1))
+    
+    @property
+    def progress(self) -> float:
+        """Get the simulation progress. Alias for total_progress."""
+        # For compatibility with tests that expect a progress property
+        # Access metadata if it's there, otherwise calculate from stages
+        if "progress" in self.metadata:
+            return float(self.metadata["progress"])
+        return self.total_progress()
 
     def total_progress(self) -> float:
         """Calculate the total progress of the simulation."""

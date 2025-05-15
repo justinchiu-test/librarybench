@@ -32,6 +32,7 @@ class ScientificMetric(BaseModel):
     weight: float = 1.0  # Importance weighting for this metric
     is_higher_better: bool = True  # True if higher values are better
     confidence: float = 1.0  # Confidence in this metric (0-1)
+    timestamp: datetime = Field(default_factory=datetime.now)
     
     def normalized_score(self) -> float:
         """Calculate a normalized score (0-1) for this metric."""
@@ -182,6 +183,11 @@ class ScenarioEvaluationResult(BaseModel):
     recommendation: str  # Continue, adjust, or deprioritize
     suggested_priority: float  # Suggested new priority score
     reasons: List[str] = Field(default_factory=list)  # Reasons for recommendation
+    
+    @property
+    def scores(self) -> Dict[str, float]:
+        """Alias for metric_scores for backward compatibility."""
+        return self.metric_scores
     
     def should_adjust_priority(self, current_priority: float, threshold: float = 0.1) -> bool:
         """Determine if priority should be adjusted based on evaluation."""

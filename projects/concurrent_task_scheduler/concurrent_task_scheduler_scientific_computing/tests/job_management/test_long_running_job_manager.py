@@ -17,6 +17,7 @@ from concurrent_task_scheduler.job_management import (
     ReservationStatus,
     SchedulingStrategy,
     ResourceAllocation,
+    Scheduler,
 )
 from concurrent_task_scheduler.models import (
     ComputeNode,
@@ -39,7 +40,7 @@ class TestLongRunningJobManager:
     
     def setup_method(self):
         """Set up test environment before each test method."""
-        self.scheduler = JobScheduler(strategy=SchedulingStrategy.HYBRID)
+        self.scheduler = Scheduler(strategy=SchedulingStrategy.HYBRID)
         self.job_manager = LongRunningJobManager(scheduler=self.scheduler)
         
         # Create some test nodes
@@ -577,7 +578,7 @@ class TestJobScheduler:
     
     def setup_method(self):
         """Set up test environment before each test method."""
-        self.scheduler = JobScheduler(strategy=SchedulingStrategy.HYBRID)
+        self.scheduler = Scheduler(strategy=SchedulingStrategy.HYBRID)
     
     def test_reserve_resources(self):
         """Test reserving resources for a simulation."""

@@ -56,20 +56,26 @@ class CheckpointManager:
     
     def __init__(
         self,
-        base_storage_path: str,
+        base_storage_path: str = None,
         max_concurrent_operations: int = 4,
+        checkpoint_base_path: str = None,
     ):
-        self.base_storage_path = base_storage_path
+        # For backward compatibility
+        self.base_storage_path = base_storage_path or checkpoint_base_path or "/tmp/checkpoints"
         self.max_concurrent_operations = max_concurrent_operations
         self.policies: Dict[str, CheckpointPolicy] = {}
         self.checkpoints: Dict[str, Dict[str, Checkpoint]] = {}  # sim_id -> checkpoint_id -> Checkpoint
         self.simulation_managers: Dict[str, CheckpointManagerModel] = {}
         self.active_operations: Dict[str, datetime] = {}  # operation_id -> start_time
+        # ValidationResult is defined in this file, so it's accessible here
         self.validation_cache: Dict[str, Tuple[ValidationResult, datetime]] = {}  # checkpoint_id -> (result, time)
         self.executor = ThreadPoolExecutor(max_workers=max_concurrent_operations)
         
+        # Store checkpoint policies for simulations
+        self.checkpoint_policies: Dict[str, CheckpointPolicy] = {}
+        
         # Ensure storage path exists
-        os.makedirs(base_storage_path, exist_ok=True)
+        os.makedirs(self.base_storage_path, exist_ok=True)
     
     def register_policy(self, policy: CheckpointPolicy) -> str:
         """Register a checkpoint policy."""
@@ -92,6 +98,34 @@ class CheckpointManager:
             self.register_policy(default_policy)
         
         return self.policies["default"]
+    
+    def set_checkpoint_policy(
+        self,
+        simulation_id: str,
+        policy: CheckpointPolicy,
+    ) -> Result[bool]:
+        """Set the checkpoint policy for a simulation."""
+        self.checkpoint_policies[simulation_id] = policy
+        return Result.ok(True)
+    
+    def get_checkpoint_policy(self, simulation_id: str) -> CheckpointPolicy:
+        """Get the checkpoint policy for a simulation."""
+        # Return the policy if it exists, otherwise a default policy
+        return self.checkpoint_policies.get(
+            simulation_id,
+            CheckpointPolicy(
+                name="Default",
+                description="Default checkpoint policy",
+                checkpoint_type=CheckpointType.FULL,
+                storage_type=CheckpointStorageType.PARALLEL_FS,
+                compression=CheckpointCompression.ZSTD,
+                frequency_minutes=60,  # Default to hourly checkpoints
+                min_progress_delta=0.05,    # Default to 5% progress
+                interval_minutes=60,         # For backward compatibility
+                max_checkpoints=5,           # For backward compatibility
+                priority="medium"            # For backward compatibility
+            )
+        )
     
     def create_manager_for_simulation(
         self,

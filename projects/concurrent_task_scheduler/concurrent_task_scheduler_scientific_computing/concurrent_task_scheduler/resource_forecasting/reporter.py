@@ -64,14 +64,17 @@ class ResourceReporter:
 
     def __init__(
         self,
-        data_collector: ResourceDataCollector,
-        forecaster: ResourceForecaster,
-        optimizer: ResourceOptimizer,
+        data_collector=None,
+        forecaster=None,
+        optimizer=None,
     ):
         self.data_collector = data_collector
         self.forecaster = forecaster
         self.optimizer = optimizer
-        self.analyzer = ResourceUsageAnalyzer(data_collector)
+        if data_collector is not None:
+            self.analyzer = ResourceUsageAnalyzer(data_collector)
+        else:
+            self.analyzer = None
         self.generated_reports: Dict[str, Dict] = {}
     
     def generate_utilization_report(

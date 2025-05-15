@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from pydantic import BaseModel, Field
@@ -56,6 +56,13 @@ class ResourceForecast(BaseModel):
     confidence_intervals: Dict[str, Tuple[float, float]] = Field(default_factory=dict)
     accuracy: Optional[ForecastAccuracy] = None
     metadata: Dict[str, Union[str, int, float, bool]] = Field(default_factory=dict)
+    
+    # Fields for backward compatibility with tests
+    scenario_id: Optional[str] = None
+    forecast_method: Optional[str] = None
+    data_points: List[Any] = Field(default_factory=list)
+    forecast_created: Optional[datetime] = None
+    resource_forecasts: List[Any] = Field(default_factory=list)
     
     def calculate_accuracy(self) -> ForecastAccuracy:
         """Calculate accuracy metrics based on actual vs. forecasted values."""

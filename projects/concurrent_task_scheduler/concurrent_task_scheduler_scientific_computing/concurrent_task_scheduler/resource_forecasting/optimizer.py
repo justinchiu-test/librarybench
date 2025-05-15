@@ -573,6 +573,42 @@ class ResourceOptimizer:
         
         return costs.get(resource_type, 1.0)
     
+    def generate_recommendations(
+        self,
+        scenario_id: str,
+        priority_score: float,
+        goal: OptimizationGoal = OptimizationGoal.BALANCE,
+    ) -> Result[List[ResourceAllocationRecommendation]]:
+        """Generate resource allocation recommendations based on priority score."""
+        # Fetch the scenario from the forecaster
+        scenarios = self.forecaster.get_all_scenarios()
+        scenario = None
+        for s in scenarios:
+            if s.id == scenario_id:
+                scenario = s
+                break
+        
+        if not scenario:
+            return Result.err(f"Scenario {scenario_id} not found")
+        
+        # Determine timeframe based on priority score
+        # Higher priority scenarios get more immediate attention
+        if priority_score >= 0.8:
+            timeframe = OptimizationTimeframe.IMMEDIATE
+        elif priority_score >= 0.6:
+            timeframe = OptimizationTimeframe.SHORT_TERM
+        elif priority_score >= 0.4:
+            timeframe = OptimizationTimeframe.MEDIUM_TERM
+        else:
+            timeframe = OptimizationTimeframe.LONG_TERM
+        
+        # Use the existing optimize_simulation_resources method
+        return self.optimize_simulation_resources(
+            simulation=scenario,
+            goal=goal,
+            timeframe=timeframe
+        )
+    
     def _generate_capacity_justification(
         self,
         resource_type: ResourceType,

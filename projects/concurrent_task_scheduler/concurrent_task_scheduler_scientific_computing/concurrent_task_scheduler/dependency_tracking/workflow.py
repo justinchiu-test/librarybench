@@ -584,10 +584,10 @@ class WorkflowInstance:
 class WorkflowManager:
     """Manager for workflow templates and instances."""
 
-    def __init__(self, dependency_tracker: DependencyTracker):
+    def __init__(self, dependency_tracker=None):
         self.templates: Dict[str, WorkflowTemplate] = {}
         self.instances: Dict[str, WorkflowInstance] = {}
-        self.dependency_tracker = dependency_tracker
+        self.dependency_tracker = dependency_tracker or DependencyTracker()
     
     def register_template(self, template: WorkflowTemplate) -> Result[bool]:
         """Register a workflow template."""

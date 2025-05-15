@@ -97,10 +97,13 @@ class TransitionRule:
 class DependencyTracker:
     """Tracker for simulation dependencies and stage transitions."""
 
-    def __init__(self):
+    def __init__(self, dependency_graph=None):
         self.dependency_graphs: Dict[str, DependencyGraph] = {}
+        if dependency_graph:
+            self.dependency_graphs[dependency_graph.simulation_id] = dependency_graph
         self.transition_rules: Dict[str, List[TransitionRule]] = {}
         self.manual_overrides: Dict[str, Set[Tuple[str, str]]] = {}
+        self.registered_simulations: Dict[str, Simulation] = {}
     
     def create_dependency_graph(self, simulation: Simulation) -> Result[DependencyGraph]:
         """Create a dependency graph for a simulation."""
@@ -110,14 +113,35 @@ class DependencyTracker:
         # Create graph
         graph = DependencyGraph(simulation.id)
         
-        # Add all stages
-        for stage_id, stage in simulation.stages.items():
-            graph.add_stage(stage_id)
+        # Add simulation itself as a node
+        graph.add_stage(simulation.id, metadata={"type": "simulation"})
+        
+        # Add all stages if any
+        if hasattr(simulation, 'stages') and simulation.stages:
+            for stage_id, stage in simulation.stages.items():
+                graph.add_stage(stage_id)
+                
+                # Add dependencies based on stage.dependencies
+                for dep_id in stage.dependencies:
+                    if dep_id in simulation.stages:
+                        graph.add_dependency(dep_id, stage_id)
+        
+        # Add simulation dependencies from metadata if any
+        if hasattr(simulation, 'metadata') and 'dependencies' in simulation.metadata:
+            dependencies = simulation.metadata['dependencies']
+            if isinstance(dependencies, str):
+                # Handle comma-separated string format
+                dependencies = [dep.strip() for dep in dependencies.split(',')]
+            elif not isinstance(dependencies, (list, set)):
+                # Handle single dependency that's not in a collection
+                dependencies = [dependencies]
             
-            # Add dependencies based on stage.dependencies
-            for dep_id in stage.dependencies:
-                if dep_id in simulation.stages:
-                    graph.add_dependency(dep_id, stage_id)
+            for dep_id in dependencies:
+                # Add dependency as node if it doesn't exist
+                if dep_id not in graph.nodes:
+                    graph.add_stage(dep_id, metadata={"type": "dependency"})
+                # Add edge from dependency to simulation
+                graph.add_dependency(dep_id, simulation.id)
         
         # Store graph
         self.dependency_graphs[simulation.id] = graph
@@ -338,7 +362,9 @@ class DependencyTracker:
             if stage.status == SimulationStageStatus.COMPLETED
         }
         
-        return graph.get_ready_stages(completed_stages)
+        # Get ready stages and filter out the simulation ID itself
+        ready_stages = graph.get_ready_stages(completed_stages)
+        return [stage_id for stage_id in ready_stages if stage_id != simulation.id]
     
     def is_stage_ready(self, simulation: Simulation, stage_id: str) -> bool:
         """Check if a stage is ready to execute."""
@@ -410,7 +436,9 @@ class DependencyTracker:
             return []
         
         graph = self.dependency_graphs[simulation.id]
-        return graph.get_critical_path()
+        # Get critical path and filter out the simulation ID itself
+        critical_path = graph.get_critical_path()
+        return [stage_id for stage_id in critical_path if stage_id != simulation.id]
     
     def bypass_dependency(
         self,
@@ -591,6 +619,73 @@ class DependencyTracker:
                 
             return []
     
+    def register_simulation(self, simulation: Simulation) -> Result[bool]:
+        """Register a simulation with the dependency tracker."""
+        # Store the simulation
+        self.registered_simulations[simulation.id] = simulation
+        
+        # Create a dependency graph for the simulation if it doesn't exist
+        if simulation.id not in self.dependency_graphs:
+            result = self.create_dependency_graph(simulation)
+            if not result.success:
+                return Result.err(f"Failed to create dependency graph: {result.error}")
+        
+        # Add the simulation itself as a node in the graph
+        graph = self.dependency_graphs[simulation.id]
+        # Add simulation as a node even if it doesn't have stages
+        if simulation.id not in graph.nodes:
+            graph.add_stage(simulation.id, metadata={"type": "simulation"})
+            
+        # If simulation has dependencies in its metadata, add them as graph edges
+        if hasattr(simulation, 'metadata') and 'dependencies' in simulation.metadata:
+            dependencies = simulation.metadata['dependencies']
+            if isinstance(dependencies, str):
+                # Handle comma-separated string format
+                dependencies = [dep.strip() for dep in dependencies.split(',')]
+            
+            for dep_id in dependencies:
+                if dep_id not in graph.nodes:
+                    graph.add_stage(dep_id, metadata={"type": "dependency"})
+                graph.add_dependency(dep_id, simulation.id)
+            
+        # Validate the simulation
+        errors = self.validate_simulation(simulation)
+        if errors:
+            return Result.err(f"Simulation validation failed: {', '.join(errors)}")
+        
+        return Result.ok(True)
+    
+    def get_dependency_graph(self, simulation_id: Optional[str] = None) -> Optional[DependencyGraph]:
+        """Get the dependency graph for a simulation."""
+        if simulation_id:
+            return self.dependency_graphs.get(simulation_id)
+            
+        # If no simulation ID provided, return the graph for the first registered simulation
+        if self.registered_simulations:
+            sim_id = next(iter(self.registered_simulations.keys()))
+            return self.dependency_graphs.get(sim_id)
+            
+        # If no simulations are registered, return None
+        return None
+    
+    def get_dependencies(self, simulation_id: str) -> List[str]:
+        """Get all dependencies for a simulation."""
+        if simulation_id not in self.registered_simulations:
+            return []
+            
+        simulation = self.registered_simulations[simulation_id]
+        dependencies = []
+        
+        # Check if this simulation has a dependency graph
+        if simulation_id in self.dependency_graphs:
+            graph = self.dependency_graphs[simulation_id]
+            dependencies = list(graph.get_simulation_dependencies(simulation_id))
+        elif hasattr(simulation, 'dependencies'):
+            # If simulation has dependencies attribute, use that
+            dependencies = list(simulation.dependencies)
+        
+        return dependencies
+        
     def validate_simulation(self, simulation: Simulation) -> List[str]:
         """Validate the simulation dependency structure."""
         errors = []

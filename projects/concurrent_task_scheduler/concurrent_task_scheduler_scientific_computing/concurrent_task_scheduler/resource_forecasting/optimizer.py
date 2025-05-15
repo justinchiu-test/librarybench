@@ -156,6 +156,7 @@ class ResourceOptimizer:
             ResourceType.MEMORY: 0.75,
             ResourceType.STORAGE: 0.85,
             ResourceType.NETWORK: 0.7,
+            ResourceType.GPU: 0.85,  # GPUs are expensive, target higher utilization
         }
         self.buffer_factors = {
             OptimizationTimeframe.IMMEDIATE: 1.1,  # 10% buffer
@@ -295,10 +296,11 @@ class ResourceOptimizer:
             
             # Calculate cost impact (simplified)
             cost_rates = {
-                ResourceType.CPU: 100,  # $ per unit per month
-                ResourceType.MEMORY: 50,  # $ per GB per month
-                ResourceType.STORAGE: 10,  # $ per GB per month
+                ResourceType.CPU: 100,      # $ per unit per month
+                ResourceType.MEMORY: 50,    # $ per GB per month
+                ResourceType.STORAGE: 10,   # $ per GB per month
                 ResourceType.NETWORK: 100,  # $ per Gbps per month
+                ResourceType.GPU: 600,      # $ per GPU per month
             }
             
             monthly_rate = cost_rates.get(resource_type, 50)
@@ -340,9 +342,11 @@ class ResourceOptimizer:
             ResourceType.MEMORY: 128,  # GB
             ResourceType.STORAGE: 1024,  # GB
             ResourceType.NETWORK: 10,  # Gbps
+            ResourceType.GPU: 4,   # GPU units
         }
         
-        return mock_allocations.get(resource_type)
+        # Default to 1.0 for tests for any resource type not explicitly defined
+        return mock_allocations.get(resource_type, 1.0)
     
     def _get_current_capacity(self, resource_type: ResourceType) -> Optional[float]:
         """Get current capacity for a resource type."""
@@ -355,9 +359,11 @@ class ResourceOptimizer:
             ResourceType.MEMORY: 4000,  # GB
             ResourceType.STORAGE: 100000,  # GB
             ResourceType.NETWORK: 100,  # Gbps
+            ResourceType.GPU: 32,   # GPU units
         }
         
-        return mock_capacities.get(resource_type)
+        # Default to 10.0 for tests for any resource type not explicitly defined
+        return mock_capacities.get(resource_type, 10.0)
     
     def _calculate_optimized_allocation(
         self,
@@ -455,6 +461,9 @@ class ResourceOptimizer:
         elif resource_type == ResourceType.NETWORK:
             resource_name = "network bandwidth"
             unit = "Gbps"
+        elif resource_type == ResourceType.GPU:
+            resource_name = "GPU allocation"
+            unit = "GPUs"
         else:
             resource_name = f"{resource_type.value} allocation"
             unit = "units"
@@ -555,10 +564,11 @@ class ResourceOptimizer:
         """Get the cost per unit for a resource type."""
         # Monthly cost per unit
         costs = {
-            ResourceType.CPU: 50,  # $ per core per month
-            ResourceType.MEMORY: 10,  # $ per GB per month
-            ResourceType.STORAGE: 0.2,  # $ per GB per month
+            ResourceType.CPU: 50,      # $ per core per month
+            ResourceType.MEMORY: 10,   # $ per GB per month
+            ResourceType.STORAGE: 0.2, # $ per GB per month
             ResourceType.NETWORK: 20,  # $ per Gbps per month
+            ResourceType.GPU: 300,     # $ per GPU per month
         }
         
         return costs.get(resource_type, 1.0)
@@ -589,6 +599,9 @@ class ResourceOptimizer:
         elif resource_type == ResourceType.NETWORK:
             resource_name = "network capacity"
             unit = "Gbps"
+        elif resource_type == ResourceType.GPU:
+            resource_name = "GPU capacity"
+            unit = "GPUs"
         else:
             resource_name = f"{resource_type.value} capacity"
             unit = "units"

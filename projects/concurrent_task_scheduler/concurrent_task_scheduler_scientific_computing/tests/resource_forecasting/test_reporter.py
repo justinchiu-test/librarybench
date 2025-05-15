@@ -14,6 +14,13 @@ from concurrent_task_scheduler.models import (
     SimulationStatus,
     ForecastPeriod,
 )
+
+# Mock simulation class that overrides total_progress
+class MockSimulation(Simulation):
+    def total_progress(self) -> float:
+        # Always return 0.5 for testing
+        return 0.5
+
 from concurrent_task_scheduler.resource_forecasting.data_collector import (
     ResourceDataCollector,
     ResourceUsageAnalyzer,
@@ -91,7 +98,7 @@ def sample_simulation():
     stages[main_stage.id] = main_stage
     
     # Create the simulation
-    simulation = Simulation(
+    simulation = MockSimulation(
         id="sim_reporter_test",
         name="Reporter Test Simulation",
         creation_time=datetime.now() - timedelta(hours=3),
@@ -104,9 +111,9 @@ def sample_simulation():
 
 
 @pytest.fixture
-def simulation_with_data(resource_data_collector):
+def simulation_with_data(resource_data_collector, sample_simulation):
     """Create a simulation with resource data for testing."""
-    simulation = sample_simulation()
+    simulation = sample_simulation
     
     # Add resource usage data
     start_date = datetime.now() - timedelta(days=7)

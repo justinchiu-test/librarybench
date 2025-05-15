@@ -706,3 +706,346 @@ class PortfolioAnalysisSystem:
         
         # Cap at 1.0
         return min(1.0, benefit)
+        
+    def analyze_esg_theme_concentration(
+        self,
+        portfolio: Portfolio, 
+        investments: Dict[str, Investment]
+    ) -> Dict[str, Any]:
+        """Analyze ESG theme concentration in a portfolio.
+        
+        Args:
+            portfolio: The portfolio to analyze
+            investments: Dict mapping investment IDs to Investment objects
+            
+        Returns:
+            Dictionary with theme concentration analysis
+        """
+        # Define ESG themes and their related positive practices
+        esg_theme_practices = {
+            "climate_action": [
+                "carbon_reduction", "emissions_reduction", "renewable_energy",
+                "climate_initiative", "sustainable_development", "clean_energy"
+            ],
+            "renewable_energy": [
+                "renewable_energy", "clean_energy", "solar_power", "wind_power",
+                "energy_efficiency"
+            ],
+            "social_justice": [
+                "ethical_sourcing", "fair_trade", "labor_rights", "human_rights",
+                "affordable_housing", "living_wage"
+            ],
+            "diversity_equity_inclusion": [
+                "diversity_initiative", "gender_equality", "inclusive_workplace",
+                "equal_opportunity", "board_diversity"
+            ],
+            "sustainable_agriculture": [
+                "sustainable_agriculture", "organic_farming", "sustainable_forestry",
+                "regenerative_farming"
+            ],
+            "circular_economy": [
+                "recycling_program", "waste_reduction", "packaging_reduction",
+                "product_lifecycle_management", "circular_design"
+            ],
+            "water_conservation": [
+                "water_efficiency", "clean_water", "water_treatment",
+                "ocean_conservation"
+            ],
+            "good_governance": [
+                "board_diversity", "executive_accountability", "transparency_initiative",
+                "ethical_business", "anti_corruption"
+            ]
+        }
+        
+        # Calculate total portfolio value
+        total_portfolio_value = portfolio.total_value
+        
+        # Initialize theme weights
+        theme_weights = {theme: 0.0 for theme in esg_theme_practices}
+        theme_holdings = {theme: [] for theme in esg_theme_practices}
+        
+        # Analyze each holding
+        for holding in portfolio.holdings:
+            investment_id = holding.investment_id
+            if investment_id not in investments:
+                continue
+                
+            investment = investments[investment_id]
+            holding_weight = holding.current_value / total_portfolio_value
+            
+            # Check positive practices for theme alignment
+            for practice in investment.positive_practices:
+                for theme, practices in esg_theme_practices.items():
+                    if any(p.lower() in practice.lower() for p in practices):
+                        # Weight by ESG score - higher scores get more theme weight
+                        esg_factor = investment.esg_ratings.overall / 100
+                        theme_weights[theme] += holding_weight * esg_factor
+                        
+                        if investment_id not in theme_holdings[theme]:
+                            theme_holdings[theme].append(investment_id)
+            
+            # Check sector-based theme alignment
+            sector_theme_map = {
+                "Energy": ["renewable_energy", "climate_action"],
+                "Technology": ["circular_economy"],
+                "Utilities": ["renewable_energy", "water_conservation"],
+                "Consumer Staples": ["sustainable_agriculture"],
+                "Financial Services": ["good_governance"]
+            }
+            
+            if investment.sector in sector_theme_map:
+                for theme in sector_theme_map[investment.sector]:
+                    # Add sector-based weight, but at lower intensity than direct practices
+                    sector_factor = 0.5 * (investment.esg_ratings.overall / 100)
+                    theme_weights[theme] += holding_weight * sector_factor
+                    
+                    if investment_id not in theme_holdings[theme]:
+                        theme_holdings[theme].append(investment_id)
+        
+        # Calculate diversity metrics
+        non_zero_themes = sum(1 for weight in theme_weights.values() if weight > 0.05)
+        
+        # Calculate concentration index (Herfindahl-Hirschman Index)
+        hhi = sum(weight**2 for weight in theme_weights.values())
+        
+        # Normalize theme weights to ensure they sum to 1.0
+        total_theme_weight = sum(theme_weights.values())
+        if total_theme_weight > 0:
+            for theme in theme_weights:
+                theme_weights[theme] /= total_theme_weight
+        
+        # Build result structure
+        themes_data = {}
+        for theme, weight in theme_weights.items():
+            if weight > 0:
+                themes_data[theme] = {
+                    "weight": weight,
+                    "holdings": theme_holdings[theme],
+                    "holdings_count": len(theme_holdings[theme])
+                }
+        
+        # Sort themes by weight for easy analysis
+        sorted_themes = {
+            theme: themes_data[theme]
+            for theme in sorted(themes_data, key=lambda t: themes_data[t]["weight"], reverse=True)
+        }
+        
+        result = {
+            "themes": sorted_themes,
+            "diversity": {
+                "theme_count": non_zero_themes,
+                "concentration_index": hhi,
+                "balanced_exposure": hhi < 0.25,
+                "dominant_theme": max(theme_weights.items(), key=lambda x: x[1])[0] if theme_weights else None
+            }
+        }
+        
+        return result
+        
+    def compare_portfolio_esg_performance(
+        self,
+        portfolio1: Portfolio,
+        portfolio2: Portfolio,
+        investments: Dict[str, Investment]
+    ) -> Dict[str, Any]:
+        """Compare ESG performance between two portfolios.
+        
+        Args:
+            portfolio1: First portfolio to compare
+            portfolio2: Second portfolio to compare
+            investments: Dict mapping investment IDs to Investment objects
+            
+        Returns:
+            Dictionary with comparison results
+        """
+        # Calculate ESG metrics for portfolio 1
+        p1_metrics = self._calculate_portfolio_esg_metrics(portfolio1, investments)
+        
+        # Calculate ESG metrics for portfolio 2
+        p2_metrics = self._calculate_portfolio_esg_metrics(portfolio2, investments)
+        
+        # Compare the metrics
+        comparison = {
+            "environmental_difference": p1_metrics["environmental_score"] - p2_metrics["environmental_score"],
+            "social_difference": p1_metrics["social_score"] - p2_metrics["social_score"],
+            "governance_difference": p1_metrics["governance_score"] - p2_metrics["governance_score"],
+            "overall_difference": p1_metrics["overall_score"] - p2_metrics["overall_score"]
+        }
+        
+        # Determine which portfolio has better overall ESG performance
+        if comparison["overall_difference"] > 0:
+            better_portfolio = "portfolio1"
+        elif comparison["overall_difference"] < 0:
+            better_portfolio = "portfolio2"
+        else:
+            better_portfolio = "equal"
+            
+        comparison["better_portfolio"] = better_portfolio
+        
+        # Identify areas of strength for each portfolio
+        p1_strengths = []
+        p2_strengths = []
+        
+        for category in ["environmental", "social", "governance"]:
+            key = f"{category}_difference"
+            if comparison[key] > 2:  # Threshold for significance
+                p1_strengths.append(category)
+            elif comparison[key] < -2:
+                p2_strengths.append(category)
+                
+        comparison["portfolio1_strengths"] = p1_strengths
+        comparison["portfolio2_strengths"] = p2_strengths
+        
+        # Assemble final result
+        result = {
+            "portfolio1": {
+                "portfolio_id": portfolio1.portfolio_id,
+                "portfolio_name": portfolio1.name,
+                "esg_metrics": p1_metrics
+            },
+            "portfolio2": {
+                "portfolio_id": portfolio2.portfolio_id,
+                "portfolio_name": portfolio2.name,
+                "esg_metrics": p2_metrics
+            },
+            "comparison": comparison
+        }
+        
+        return result
+        
+    def calculate_risk_adjusted_esg_performance(
+        self,
+        portfolio: Portfolio,
+        investments: Dict[str, Investment],
+        volatility_data: Dict[str, float],
+        return_data: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """Calculate risk-adjusted ESG performance metrics.
+        
+        Args:
+            portfolio: The portfolio to analyze
+            investments: Dict mapping investment IDs to Investment objects
+            volatility_data: Dict mapping investment IDs to volatility values
+            return_data: Dict mapping investment IDs to return values
+            
+        Returns:
+            Dictionary with risk-adjusted ESG metrics
+        """
+        total_portfolio_value = portfolio.total_value
+        
+        # Initialize portfolio-level metrics
+        portfolio_esg_score = 0.0
+        portfolio_risk = 0.0
+        portfolio_return = 0.0
+        by_investment = {}
+        
+        # Process each holding
+        for holding in portfolio.holdings:
+            investment_id = holding.investment_id
+            if investment_id not in investments:
+                continue
+                
+            investment = investments[investment_id]
+            weight = holding.current_value / total_portfolio_value
+            
+            # Get ESG score
+            esg_score = investment.esg_ratings.overall
+            
+            # Get risk (volatility) and return data
+            risk = volatility_data.get(investment_id, 0.15)  # Default if missing
+            investment_return = return_data.get(investment_id, 0.08)  # Default if missing
+            
+            # Calculate risk-adjusted ESG score
+            # Formula: ESG score divided by risk, normalized
+            # Higher risk should reduce the effective ESG score
+            risk_adjusted_esg = esg_score / (1 + risk)
+            
+            # Calculate risk-return ratio
+            risk_return_ratio = investment_return / risk if risk > 0 else 0
+            
+            # Add to portfolio totals (weighted)
+            portfolio_esg_score += esg_score * weight
+            portfolio_risk += risk * weight
+            portfolio_return += investment_return * weight
+            
+            # Store investment-level metrics
+            by_investment[investment_id] = {
+                "name": investment.name,
+                "weight": weight,
+                "esg_score": esg_score,
+                "risk": risk,
+                "return": investment_return,
+                "risk_adjusted_esg_score": risk_adjusted_esg,
+                "risk_return_ratio": risk_return_ratio
+            }
+        
+        # Calculate portfolio-level risk-adjusted metrics
+        portfolio_risk_adjusted_esg = portfolio_esg_score / (1 + portfolio_risk)
+        
+        # Calculate Sharpe ratio (assuming risk-free rate of 2%)
+        risk_free_rate = 0.02
+        portfolio_sharpe = (portfolio_return - risk_free_rate) / portfolio_risk if portfolio_risk > 0 else 0
+        
+        # Calculate risk-return-ESG ratio (custom metric combining all three factors)
+        # Higher is better: (return * ESG score) / risk
+        risk_return_esg_ratio = (portfolio_return * portfolio_esg_score / 100) / portfolio_risk if portfolio_risk > 0 else 0
+        
+        # Compile result
+        result = {
+            "overall": {
+                "esg_score": portfolio_esg_score,
+                "risk": portfolio_risk,
+                "return": portfolio_return,
+                "risk_adjusted_esg_score": portfolio_risk_adjusted_esg,
+                "sharpe_ratio": portfolio_sharpe,
+                "risk_return_esg_ratio": risk_return_esg_ratio
+            },
+            "by_investment": by_investment
+        }
+        
+        return result
+        
+    def _calculate_portfolio_esg_metrics(
+        self,
+        portfolio: Portfolio,
+        investments: Dict[str, Investment]
+    ) -> Dict[str, float]:
+        """Calculate basic ESG metrics for a portfolio.
+        
+        Args:
+            portfolio: The portfolio to analyze
+            investments: Dict mapping investment IDs to Investment objects
+            
+        Returns:
+            Dictionary with ESG metric scores
+        """
+        total_value = portfolio.total_value
+        
+        # Initialize scores
+        environmental_score = 0.0
+        social_score = 0.0
+        governance_score = 0.0
+        overall_score = 0.0
+        
+        # Process each holding
+        for holding in portfolio.holdings:
+            investment_id = holding.investment_id
+            if investment_id not in investments:
+                continue
+                
+            investment = investments[investment_id]
+            weight = holding.current_value / total_value
+            
+            # Weighted ESG scores
+            environmental_score += investment.esg_ratings.environmental * weight
+            social_score += investment.esg_ratings.social * weight
+            governance_score += investment.esg_ratings.governance * weight
+            overall_score += investment.esg_ratings.overall * weight
+        
+        # Compile results
+        return {
+            "environmental_score": environmental_score,
+            "social_score": social_score,
+            "governance_score": governance_score,
+            "overall_score": overall_score
+        }

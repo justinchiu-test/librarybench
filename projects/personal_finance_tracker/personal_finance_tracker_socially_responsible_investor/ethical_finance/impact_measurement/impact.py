@@ -373,6 +373,271 @@ class ImpactMeasurementEngine:
                 return benchmark / value if value > 0 else float('inf')
         
         return 1.0  # Default neutral value for unknown metrics
+        
+    def analyze_sdg_alignment(
+        self, 
+        investment: Investment, 
+        sdg_data: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """Analyze investment alignment with UN Sustainable Development Goals (SDGs).
+        
+        Args:
+            investment: The investment to analyze
+            sdg_data: Dictionary containing SDG-related metrics for the investment
+                (e.g., {"sdg7_clean_energy_contribution": 0.85})
+                
+        Returns:
+            Dictionary with SDG alignment analysis results
+        """
+        # SDG definitions for reference
+        sdg_definitions = {
+            "sdg1": "No Poverty",
+            "sdg2": "Zero Hunger",
+            "sdg3": "Good Health and Well-being",
+            "sdg4": "Quality Education",
+            "sdg5": "Gender Equality",
+            "sdg6": "Clean Water and Sanitation",
+            "sdg7": "Affordable and Clean Energy",
+            "sdg8": "Decent Work and Economic Growth",
+            "sdg9": "Industry, Innovation and Infrastructure",
+            "sdg10": "Reduced Inequality",
+            "sdg11": "Sustainable Cities and Communities",
+            "sdg12": "Responsible Consumption and Production",
+            "sdg13": "Climate Action",
+            "sdg14": "Life Below Water",
+            "sdg15": "Life on Land",
+            "sdg16": "Peace, Justice and Strong Institutions",
+            "sdg17": "Partnerships for the Goals"
+        }
+        
+        # Extract SDG alignment scores from provided data
+        sdg_alignment_scores = {}
+        for key, value in sdg_data.items():
+            # Extract SDG number from key
+            if key.startswith("sdg") and "_" in key:
+                sdg_number = key.split("_")[0]
+                if sdg_number in sdg_definitions:
+                    sdg_alignment_scores[sdg_number] = value
+        
+        # Default scores for SDGs based on ESG ratings and company attributes
+        if "sdg13" not in sdg_alignment_scores:  # Climate Action
+            sdg_alignment_scores["sdg13"] = max(0, min(1.0, 1.0 - (investment.carbon_footprint / 100000000)))
+            
+        if "sdg7" not in sdg_alignment_scores:  # Affordable and Clean Energy
+            sdg_alignment_scores["sdg7"] = investment.renewable_energy_use
+            
+        if "sdg5" not in sdg_alignment_scores:  # Gender Equality
+            sdg_alignment_scores["sdg5"] = investment.diversity_score
+            
+        if "sdg16" not in sdg_alignment_scores:  # Peace, Justice and Strong Institutions
+            sdg_alignment_scores["sdg16"] = investment.board_independence
+        
+        # Determine primary and secondary SDGs
+        sorted_sdgs = sorted(
+            sdg_alignment_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+        
+        primary_sdgs = [sdg for sdg, score in sorted_sdgs[:3] if score >= 0.7]
+        secondary_sdgs = [sdg for sdg, score in sorted_sdgs[3:6] if score >= 0.4]
+        
+        # Calculate overall SDG alignment score (weighted average)
+        overall_sdg_alignment = sum(sdg_alignment_scores.values()) / len(sdg_alignment_scores) if sdg_alignment_scores else 0
+        
+        # Combine results
+        result = {
+            "investment_id": investment.id,
+            "investment_name": investment.name,
+            "sdg_alignment_scores": sdg_alignment_scores,
+            "primary_sdgs": primary_sdgs,
+            "secondary_sdgs": secondary_sdgs,
+            "overall_sdg_alignment": overall_sdg_alignment
+        }
+        
+        return result
+        
+    def calculate_impact_per_dollar(
+        self,
+        portfolio: Portfolio,
+        investments: Dict[str, Investment],
+        impact_data: Dict[str, Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Calculate impact metrics per dollar invested in the portfolio.
+        
+        Args:
+            portfolio: The portfolio to analyze
+            investments: Dict mapping investment IDs to Investment objects
+            impact_data: Dict mapping investment IDs to impact data
+                
+        Returns:
+            Dictionary with impact per dollar metrics
+        """
+        # Calculate portfolio value and weights
+        total_portfolio_value = portfolio.total_value
+        investment_weights = {}
+        impact_per_investment = {}
+        
+        # Collect and aggregate impact data per investment
+        aggregate_impact = {
+            "renewable_energy_generated_kwh": 0,
+            "co2_emissions_avoided_tons": 0,
+            "water_saved_gallons": 0,
+            "jobs_created": 0
+        }
+        
+        # Process each holding in the portfolio
+        for holding in portfolio.holdings:
+            investment_id = holding.investment_id
+            
+            # Skip if investment data is not available
+            if investment_id not in investments or investment_id not in impact_data:
+                continue
+                
+            # Calculate weight of this investment in the portfolio
+            weight = holding.current_value / total_portfolio_value
+            investment_weights[investment_id] = weight
+            
+            # Get investment impact data
+            inv_impact = impact_data[investment_id]
+            
+            # Calculate attribution percentage (how much of the company's impact is attributable to the portfolio)
+            investment = investments[investment_id]
+            company_value = investment.market_cap
+            attribution_percentage = (holding.current_value / company_value) * 100 if company_value > 0 else 0
+            
+            # Calculate absolute impact contribution to the portfolio
+            investment_impact = {}
+            for metric, value in inv_impact.items():
+                if metric in aggregate_impact:
+                    attributed_value = value * (attribution_percentage / 100)
+                    investment_impact[metric] = attributed_value
+                    aggregate_impact[metric] += attributed_value
+            
+            # Store results for this investment
+            impact_per_investment[investment_id] = {
+                "weight": weight,
+                "attribution_percentage": attribution_percentage,
+                "impact_metrics": investment_impact
+            }
+        
+        # Calculate impact per dollar invested
+        impact_per_dollar = {}
+        for metric, total_value in aggregate_impact.items():
+            impact_per_dollar[metric] = total_value / total_portfolio_value if total_portfolio_value > 0 else 0
+        
+        # Compile the final result
+        result = {
+            "total_portfolio_value": total_portfolio_value,
+            "impact_per_dollar": impact_per_dollar,
+            "impact_per_investment": impact_per_investment,
+            "total_impact": aggregate_impact
+        }
+        
+        return result
+        
+    def compare_to_industry_benchmark(
+        self,
+        investment: Investment,
+        company_data: Dict[str, Any],
+        industry_benchmark: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Compare investment impact metrics against industry benchmarks.
+        
+        Args:
+            investment: The investment to analyze
+            company_data: Company-specific impact data
+            industry_benchmark: Benchmark data for the investment's industry
+                
+        Returns:
+            Dictionary with comparative analysis results
+        """
+        # Initialize results
+        metrics_comparison = {}
+        
+        # Compare metrics where there's both company data and benchmark data
+        for metric, benchmark_value in industry_benchmark.items():
+            # Get company value for this metric
+            company_value = None
+            
+            # Check in company_data first
+            if metric in company_data:
+                company_value = company_data[metric]
+            # Check in investment basic data
+            elif metric == "carbon_emissions":
+                company_value = investment.carbon_footprint
+            elif metric == "renewable_energy_percentage":
+                company_value = investment.renewable_energy_use * 100  # Convert to percentage
+            
+            # Skip if we don't have company data for this metric
+            if company_value is None:
+                continue
+                
+            # Determine if higher or lower is better for this metric
+            higher_is_better = True
+            if metric in ["carbon_emissions", "water_usage"]:
+                higher_is_better = False
+                
+            # Calculate percentage difference from benchmark
+            percent_diff = ((company_value - benchmark_value) / benchmark_value) * 100
+            
+            # Determine if better than benchmark
+            better_than_benchmark = (
+                (percent_diff > 0 and higher_is_better) or
+                (percent_diff < 0 and not higher_is_better)
+            )
+            
+            # Compile comparison for this metric
+            metrics_comparison[metric] = {
+                "investment_value": company_value,
+                "benchmark_value": benchmark_value,
+                "percentage_difference": percent_diff,
+                "better_than_benchmark": better_than_benchmark
+            }
+        
+        # Calculate overall comparison score (-100 to 100, where positive is better than benchmark)
+        overall_comparison = 0
+        if metrics_comparison:
+            score_sum = 0
+            for metric, comparison in metrics_comparison.items():
+                # Normalize percentage difference to -1 to 1 range
+                norm_diff = comparison["percentage_difference"] / 100
+                
+                # Invert if lower is better
+                if metric in ["carbon_emissions", "water_usage"]:
+                    norm_diff = -norm_diff
+                    
+                score_sum += norm_diff
+                
+            # Average across all metrics and scale to -100 to 100
+            overall_comparison = (score_sum / len(metrics_comparison)) * 100
+        
+        # Estimate percentile in industry (simplified calculation)
+        # A positive overall comparison above 20 is considered upper quartile
+        if overall_comparison > 20:
+            percentile = 75 + (overall_comparison - 20) / 80 * 25  # 75th to 100th percentile
+        elif overall_comparison > 0:
+            percentile = 50 + overall_comparison / 20 * 25  # 50th to 75th percentile
+        elif overall_comparison > -20:
+            percentile = 25 + (overall_comparison + 20) / 20 * 25  # 25th to 50th percentile
+        else:
+            percentile = max(1, 25 + (overall_comparison + 20) / 80 * 24)  # 1st to 25th percentile
+            
+        # Cap percentile between 1 and 100
+        percentile = max(1, min(100, percentile))
+        
+        # Compile final result
+        result = {
+            "investment_id": investment.id,
+            "investment_name": investment.name,
+            "sector": investment.sector,
+            "industry": investment.industry,
+            "metrics_comparison": metrics_comparison,
+            "overall_comparison": overall_comparison,
+            "percentile_in_industry": percentile
+        }
+        
+        return result
 
 
 def create_default_impact_metrics() -> List[ImpactMetricDefinition]:

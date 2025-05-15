@@ -71,6 +71,28 @@ def _export_markdown(grant: GrantProposal, notes: List[Note],
 
 {{ grant.description }}
 
+{% if grant.budget_items %}
+## Budget
+
+{% for category, items in grant.budget_items.items() %}
+### {{ category|title }}
+{% for item, amount in items.items() %}
+- {{ item }}: ${{ '{:,.2f}'.format(amount) }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if grant.timeline %}
+## Timeline
+
+{% for period, milestones in grant.timeline.items() %}
+### {{ period|title }}
+{% for phase, description in milestones.items() %}
+- {{ phase|upper }}: {{ description }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
 {% if questions %}
 ## Research Questions
 

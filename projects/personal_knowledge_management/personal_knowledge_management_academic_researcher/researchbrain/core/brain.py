@@ -488,7 +488,7 @@ class ResearchBrain:
     
     def create_research_question(self, question: str, description: Optional[str] = None, 
                                 tags: Optional[Set[str]] = None, status: str = "open", 
-                                priority: int = 0) -> UUID:
+                                priority: int = 0, knowledge_gaps: Optional[List[str]] = None) -> UUID:
         """Create a new research question or hypothesis.
         
         Args:
@@ -497,6 +497,7 @@ class ResearchBrain:
             tags: Optional set of tags for categorization.
             status: Status of the question (open, resolved, abandoned).
             priority: Priority level (0-10).
+            knowledge_gaps: Optional list of identified knowledge gaps.
             
         Returns:
             ID of the created research question.
@@ -506,7 +507,8 @@ class ResearchBrain:
             description=description,
             tags=tags or set(),
             status=status,
-            priority=priority
+            priority=priority,
+            knowledge_gaps=knowledge_gaps or []
         )
         
         self.storage.save(research_question)
@@ -874,11 +876,15 @@ class ResearchBrain:
 
                 if 'content' not in item or not item['content']:
                     continue
+                    
+                # Make sure content is not empty after stripping whitespace
+                if not item['content'].strip():
+                    continue
 
-                # Try to parse the node_id as UUID and validate the node exists
                 try:
+                    # Try to parse the node_id as UUID and validate the node exists
                     node_id = UUID(item['node_id'])
-
+                    
                     # Verify the node exists
                     if not self._node_exists(node_id):
                         continue
@@ -896,17 +902,25 @@ class ResearchBrain:
                     if 'parent_id' in item and item['parent_id']:
                         try:
                             parent_id = UUID(item['parent_id'])
-                            parent_annotation = self.storage.query(Annotation, node_id=node_id, id=parent_id)
+                            # Get the parent annotation directly by ID instead of querying by both node_id and id
+                            parent_annotation = self.storage.get(Annotation, parent_id)
 
-                            if parent_annotation and len(parent_annotation) > 0:
+                            if parent_annotation:
                                 # Set this annotation as a reply to the parent
                                 annotation.parent_id = parent_id
 
                                 # Update the parent annotation to include this reply
-                                parent = parent_annotation[0]
-                                if annotation.id not in parent.replies:
-                                    parent.replies.append(annotation.id)
-                                    self.storage.save(parent)
+                                if annotation.id not in parent_annotation.replies:
+                                    parent_annotation.replies.append(annotation.id)
+                                    parent_annotation.update()
+                                    self.storage.save(parent_annotation)
+                                    
+                                # Add a 'replies_to' edge in the knowledge graph
+                                self._knowledge_graph.add_edge(
+                                    str(annotation.id),
+                                    str(parent_id),
+                                    type='replies_to'
+                                )
                         except (ValueError, TypeError):
                             # Invalid parent_id format, continue without setting parent
                             pass
@@ -940,9 +954,8 @@ class ResearchBrain:
                             self.storage.save(collaborator)
 
                     count += 1
-
                 except (ValueError, TypeError):
-                    # Invalid UUID format, skip this item
+                    # Skip items with invalid UUID format or other issues
                     continue
 
             return count

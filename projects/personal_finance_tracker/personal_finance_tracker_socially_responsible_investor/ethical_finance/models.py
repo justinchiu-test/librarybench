@@ -32,13 +32,23 @@ class Investment:
     industry: str
     market_cap: float
     price: float
-    esg_ratings: ESGRating
+    esg_ratings: Union[ESGRating, Dict[str, Any]]
     carbon_footprint: float
     renewable_energy_use: float
     diversity_score: float
     board_independence: float
     controversies: List[str] = field(default_factory=list)
     positive_practices: List[str] = field(default_factory=list)
+    
+    def __post_init__(self):
+        """Convert dictionary esg_ratings to ESGRating object if necessary."""
+        if isinstance(self.esg_ratings, dict):
+            self.esg_ratings = ESGRating(
+                environmental=self.esg_ratings["environmental"],
+                social=self.esg_ratings["social"],
+                governance=self.esg_ratings["governance"],
+                overall=self.esg_ratings["overall"]
+            )
     
     @property
     def has_major_controversies(self) -> bool:
@@ -76,14 +86,24 @@ class Portfolio:
     
     portfolio_id: str
     name: str
-    holdings: List[InvestmentHolding]
+    holdings: List[Union[InvestmentHolding, Dict[str, Any]]]
     total_value: float
     cash_balance: float
     creation_date: date
     last_updated: date
     
     def __post_init__(self):
-        """Validate that total_value equals the sum of all holdings' values."""
+        """Validate that total_value equals the sum of all holdings' values and convert dict holdings to InvestmentHolding objects."""
+        # Convert dictionary holdings to InvestmentHolding objects
+        for i, holding in enumerate(self.holdings):
+            if isinstance(holding, dict):
+                # Convert any string dates to date objects
+                if isinstance(holding.get("purchase_date"), str):
+                    holding["purchase_date"] = date.fromisoformat(holding["purchase_date"])
+                
+                self.holdings[i] = InvestmentHolding(**holding)
+        
+        # Now validate total value
         holdings_sum = sum(holding.current_value for holding in self.holdings)
         if abs(self.total_value - holdings_sum) > 0.01:  # Allow for small rounding errors
             raise ValueError(f"Total value {self.total_value} does not match holdings sum {holdings_sum}")

@@ -490,10 +490,17 @@ class TestResearchQuestions:
         assert main_question_id in sub_question2.related_questions
 
         # Check knowledge graph edges
-        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question1_id), type='related_to')
-        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question2_id), type='related_to')
-        assert brain._knowledge_graph.has_edge(str(sub_question1_id), str(main_question_id), type='related_to')
-        assert brain._knowledge_graph.has_edge(str(sub_question2_id), str(main_question_id), type='related_to')
+        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question1_id))
+        assert brain._knowledge_graph.has_edge(str(main_question_id), str(sub_question2_id))
+        assert brain._knowledge_graph.has_edge(str(sub_question1_id), str(main_question_id))
+        assert brain._knowledge_graph.has_edge(str(sub_question2_id), str(main_question_id))
+        
+        # Check edge attributes
+        edge_data1 = brain._knowledge_graph.get_edge_data(str(main_question_id), str(sub_question1_id))
+        edge_data2 = brain._knowledge_graph.get_edge_data(str(main_question_id), str(sub_question2_id))
+        
+        assert any('related_to' in str(data) for _, data in edge_data1.items())
+        assert any('related_to' in str(data) for _, data in edge_data2.items())
 
     def test_identifying_knowledge_gaps(self, brain):
         """Test identifying knowledge gaps in research questions."""

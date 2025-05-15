@@ -294,7 +294,7 @@ class TestShareholderAdvocacy:
         resolutions = []
         for res_data in sample_shareholder_resolutions:
             # Make sure we have resolutions for companies in our portfolio
-            if res_data["company_id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if res_data["company_id"] in [h.investment_id for h in portfolio.holdings]:
                 resolutions.append(ShareholderResolution(
                     company_id=res_data["company_id"],
                     resolution_id=res_data["resolution_id"],

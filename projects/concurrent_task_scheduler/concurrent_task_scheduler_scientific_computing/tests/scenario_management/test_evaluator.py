@@ -9,7 +9,14 @@ from concurrent_task_scheduler.models.scenario import (
     ScientificMetric,
     ScenarioStatus,
 )
-from concurrent_task_scheduler.models.simulation import Simulation, SimulationPriority
+from concurrent_task_scheduler.models.simulation import Simulation, SimulationPriority, SimulationStatus
+
+# Mock simulation class that overrides total_progress
+class MockSimulation(Simulation):
+    def total_progress(self) -> float:
+        # Always return 0.5 for testing
+        return 0.5
+
 from concurrent_task_scheduler.scenario_management.evaluator import (
     ScenarioEvaluator,
     EvaluationCriteria,
@@ -58,12 +65,14 @@ def sample_scenario():
     }
     
     # Add a simulation
-    sim = Simulation(
+    sim = MockSimulation(
         id="sim-1",
         name="Test Simulation",
         description="Test simulation for the scenario",
         estimated_duration=timedelta(hours=48),
+        status=SimulationStatus.RUNNING,
         priority=SimulationPriority.MEDIUM,
+        stages={},
     )
     scenario.simulations = {"sim-1": sim}
     

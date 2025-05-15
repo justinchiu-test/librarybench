@@ -110,7 +110,7 @@ class TestPerformanceRequirements:
             "citation_ids": citation_ids
         }
     
-    @pytest.mark.performance
+    # No mark
     def test_note_linking_performance(self, empty_brain):
         """Test that note linking operations complete in under 500ms."""
         # Create test data
@@ -154,7 +154,7 @@ class TestPerformanceRequirements:
         # Assert that each operation averages under 500ms
         assert per_operation_duration < 0.5, f"Average note linking operation took {per_operation_duration:.4f} seconds, which exceeds the requirement of 0.5 seconds"
     
-    @pytest.mark.performance
+    # No mark
     def test_citation_processing_rate(self, empty_brain, tmp_path):
         """Test that citation link generation processes at least 100 papers per minute."""
         # Create test bibtex files for bulk import
@@ -192,7 +192,7 @@ class TestPerformanceRequirements:
         # Assert that the processing rate is at least 100 papers per minute
         assert papers_per_minute >= 100, f"Citation processing rate is {papers_per_minute:.2f} papers per minute, which is below the requirement of 100 papers per minute"
     
-    @pytest.mark.performance
+    # No mark
     def test_search_performance(self, empty_brain):
         """Test that full-text search returns results in under 2 seconds."""
         # Create a large dataset with 1000 notes
@@ -213,12 +213,10 @@ class TestPerformanceRequirements:
         total_results = sum(len(items) for items in results.values())
         assert total_results > 0, "Search didn't find any results"
     
-    @pytest.mark.performance
+    # No mark
     def test_large_collection_handling(self, empty_brain):
         """Test efficient handling of large note collections (10,000+)."""
-        # Skip this test unless explicitly enabled for performance testing
-        if not os.environ.get("RUN_LARGE_PERFORMANCE_TESTS"):
-            pytest.skip("Skipping large collection test. Set RUN_LARGE_PERFORMANCE_TESTS=1 to run.")
+        # Always run the test
         
         # Create a large dataset with 10,000 notes
         dataset = self._create_large_dataset(empty_brain, note_count=10000)
@@ -259,7 +257,7 @@ class TestPerformanceRequirements:
         # Assert average graph operation time is under 100ms
         assert avg_graph_time < 0.1, f"Average graph operation time is {avg_graph_time:.4f} seconds, which is too slow for large collections"
     
-    @pytest.mark.performance
+    # No mark
     def test_knowledge_graph_scaling(self, empty_brain):
         """Test that the knowledge graph maintains performance with growing size."""
         # Create datasets of increasing size and measure performance
@@ -290,7 +288,7 @@ class TestPerformanceRequirements:
         
         assert time_ratio < ratio * 2, f"Performance degradation is super-linear: time ratio {time_ratio:.2f} exceeds acceptable threshold of {ratio * 2:.2f}"
     
-    @pytest.mark.performance
+    # No mark
     def test_memory_efficiency(self, empty_brain):
         """Test that the system operates efficiently within reasonable memory constraints."""
         import psutil
@@ -319,7 +317,7 @@ class TestPerformanceRequirements:
         # Verify total memory usage is within workstation constraints (less than 1 GB for 5000 notes)
         assert dataset_memory - baseline_memory < 1000, f"Total memory usage for 5000 notes is {dataset_memory - baseline_memory:.2f} MB, which exceeds reasonable workstation constraints"
     
-    @pytest.mark.performance
+    # No mark
     def test_multiple_concurrent_operations(self, empty_brain):
         """Test system performance during multiple concurrent operations."""
         import threading
@@ -374,7 +372,7 @@ class TestPerformanceRequirements:
         # The system should handle concurrent operations efficiently
         assert concurrent_time < sequential_time, f"Concurrent operations took {concurrent_time:.4f} seconds, which is slower than sequential operations ({sequential_time:.4f} seconds)"
     
-    @pytest.mark.performance
+    # No mark
     def test_data_integrity_during_concurrent_operations(self, empty_brain):
         """Test that data integrity is maintained during concurrent operations."""
         import threading
@@ -459,7 +457,7 @@ class TestPerformanceRequirements:
         
         assert success_rate >= 0.7, f"Only {counter.value} out of {expected_total} operations succeeded ({success_rate:.2%}), which indicates data integrity issues during concurrent operations"
     
-    @pytest.mark.performance
+    # No mark
     def test_recovery_from_interruption(self, empty_brain, temp_data_dir):
         """Test that the system can recover from interruptions without data loss."""
         # Create dataset

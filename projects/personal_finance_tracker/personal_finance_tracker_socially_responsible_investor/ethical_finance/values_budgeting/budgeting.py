@@ -482,6 +482,536 @@ class ValuesAlignedBudgeting:
         """
         return {cat_id for cat_id, category in self.categories.items() 
                 if category.alignment == alignment}
+                
+    def analyze_values_consistency_across_categories(
+        self,
+        transactions_by_category: Dict[str, List[Transaction]]
+    ) -> Dict[str, Any]:
+        """Analyze values consistency across different spending categories.
+        
+        Args:
+            transactions_by_category: Dict mapping spending categories to lists of transactions
+            
+        Returns:
+            Dict with analysis of values consistency across categories
+        """
+        # Initialize result structure
+        result = {
+            "category_alignment": {},
+            "consistency_score": 0,
+            "value_conflicts": [],
+            "aligned_categories": [],
+            "misaligned_categories": []
+        }
+        
+        # Calculate alignment for each spending category
+        for category, transactions in transactions_by_category.items():
+            if not transactions:
+                continue
+                
+            # Categorize all transactions in this category
+            categorized = self.batch_categorize_transactions(transactions)
+            
+            # Calculate totals for this category
+            total_amount = sum(tx.amount for tx in transactions)
+            aligned_amount = 0
+            neutral_amount = 0
+            misaligned_amount = 0
+            
+            # Count aligned/neutral/misaligned transactions
+            for tx in transactions:
+                if tx.id in categorized:
+                    alignment = categorized[tx.id]
+                    if alignment.alignment_score > 0.3:
+                        aligned_amount += tx.amount
+                    elif alignment.alignment_score < -0.3:
+                        misaligned_amount += tx.amount
+                    else:
+                        neutral_amount += tx.amount
+            
+            # Calculate overall alignment score for this category
+            # Range from -1.0 (completely misaligned) to 1.0 (completely aligned)
+            alignment_score = 0
+            if total_amount > 0:
+                alignment_score = (aligned_amount - misaligned_amount) / total_amount
+            
+            # Store category results
+            result["category_alignment"][category] = {
+                "alignment_score": alignment_score,
+                "transaction_count": len(transactions),
+                "total_amount": total_amount,
+                "aligned_amount": aligned_amount,
+                "neutral_amount": neutral_amount,
+                "misaligned_amount": misaligned_amount,
+                "aligned_percentage": (aligned_amount / total_amount * 100) if total_amount > 0 else 0,
+                "misaligned_percentage": (misaligned_amount / total_amount * 100) if total_amount > 0 else 0
+            }
+            
+            # Classify as aligned or misaligned overall
+            if alignment_score > 0.3:
+                result["aligned_categories"].append(category)
+            elif alignment_score < -0.3:
+                result["misaligned_categories"].append(category)
+        
+        # Identify value conflicts (categories with contradictory values)
+        for cat1 in result["aligned_categories"]:
+            for cat2 in result["misaligned_categories"]:
+                # Check if these categories have significant spending
+                if (result["category_alignment"][cat1]["total_amount"] > 100 and
+                    result["category_alignment"][cat2]["total_amount"] > 100):
+                    result["value_conflicts"].append({
+                        "category1": cat1,
+                        "category2": cat2,
+                        "conflict_severity": abs(
+                            result["category_alignment"][cat1]["alignment_score"] - 
+                            result["category_alignment"][cat2]["alignment_score"]
+                        ),
+                        "combined_spending": (
+                            result["category_alignment"][cat1]["total_amount"] +
+                            result["category_alignment"][cat2]["total_amount"]
+                        )
+                    })
+        
+        # Sort conflicts by severity
+        result["value_conflicts"].sort(key=lambda x: x["conflict_severity"], reverse=True)
+        
+        # Calculate overall consistency score (0-100)
+        # Higher means more consistent values across categories
+        if result["category_alignment"]:
+            # Calculate the variance of alignment scores
+            alignment_scores = [data["alignment_score"] for data in result["category_alignment"].values()]
+            alignment_variance = np.var(alignment_scores) if len(alignment_scores) > 1 else 0
+            
+            # Calculate weighted average of alignment scores
+            total_spending = sum(data["total_amount"] for data in result["category_alignment"].values())
+            weighted_alignment = 0
+            if total_spending > 0:
+                for category, data in result["category_alignment"].items():
+                    weight = data["total_amount"] / total_spending
+                    weighted_alignment += data["alignment_score"] * weight
+            
+            # Combine weighted alignment (want higher) and variance (want lower)
+            # Scale to 0-100
+            variance_penalty = min(50, alignment_variance * 100)
+            alignment_bonus = ((weighted_alignment + 1) / 2) * 100  # Convert -1...1 to 0...100
+            
+            result["consistency_score"] = max(0, min(100, alignment_bonus - variance_penalty))
+        
+        return result
+        
+    def analyze_values_drift_over_time(
+        self,
+        transactions: List[Transaction],
+        start_date: date,
+        end_date: date
+    ) -> Dict[str, Any]:
+        """Detect values drift in spending patterns over time.
+        
+        Args:
+            transactions: List of transactions to analyze
+            start_date: Start date for the analysis period
+            end_date: End date for the analysis period
+            
+        Returns:
+            Dict with analysis of values drift over time
+        """
+        # Ensure transactions are sorted by date
+        sorted_transactions = sorted(transactions, key=lambda tx: tx.date)
+        
+        # Group transactions by month
+        transactions_by_month = {}
+        
+        for tx in sorted_transactions:
+            if tx.date < start_date or tx.date > end_date:
+                continue
+                
+            # Create a month key (YYYY-MM)
+            month_key = tx.date.strftime("%Y-%m")
+            
+            if month_key not in transactions_by_month:
+                transactions_by_month[month_key] = []
+                
+            transactions_by_month[month_key].append(tx)
+        
+        # Sort month keys chronologically
+        month_keys = sorted(transactions_by_month.keys())
+        
+        # Analyze each month
+        monthly_alignment = {}
+        for month in month_keys:
+            month_transactions = transactions_by_month[month]
+            
+            # Skip months with very few transactions
+            if len(month_transactions) < 3:
+                continue
+                
+            # Calculate alignment for this month
+            categorized = self.batch_categorize_transactions(month_transactions)
+            
+            aligned_count = 0
+            misaligned_count = 0
+            neutral_count = 0
+            
+            aligned_amount = 0
+            misaligned_amount = 0
+            neutral_amount = 0
+            total_spent = sum(tx.amount for tx in month_transactions)
+            
+            # Count alignment categories
+            for tx in month_transactions:
+                if tx.id in categorized:
+                    alignment = categorized[tx.id]
+                    
+                    if alignment.alignment_score > 0.3:
+                        aligned_count += 1
+                        aligned_amount += tx.amount
+                    elif alignment.alignment_score < -0.3:
+                        misaligned_count += 1
+                        misaligned_amount += tx.amount
+                    else:
+                        neutral_count += 1
+                        neutral_amount += tx.amount
+            
+            total_count = aligned_count + misaligned_count + neutral_count
+            
+            # Calculate overall alignment score for this month
+            alignment_score = 0
+            if total_spent > 0:
+                alignment_score = (aligned_amount - misaligned_amount) / total_spent
+                
+            # Store month analysis
+            monthly_alignment[month] = {
+                "alignment_score": alignment_score,
+                "transaction_count": total_count,
+                "total_spent": total_spent,
+                "aligned_amount": aligned_amount,
+                "misaligned_amount": misaligned_amount,
+                "neutral_amount": neutral_amount,
+                "aligned_percentage": (aligned_count / total_count * 100) if total_count > 0 else 0,
+                "misaligned_percentage": (misaligned_count / total_count * 100) if total_count > 0 else 0,
+                "neutral_percentage": (neutral_count / total_count * 100) if total_count > 0 else 0,
+                "aligned_spending_percentage": (aligned_amount / total_spent * 100) if total_spent > 0 else 0,
+                "misaligned_spending_percentage": (misaligned_amount / total_spent * 100) if total_spent > 0 else 0
+            }
+        
+        # Analyze trend over time
+        alignment_by_month = [monthly_alignment[month]["alignment_score"] for month in month_keys 
+                             if month in monthly_alignment]
+        months_index = list(range(len(alignment_by_month)))
+        
+        # Check if we have enough data points for regression
+        drift_detected = False
+        drift_magnitude = {}
+        trend_analysis = {"slope": 0, "correlation": 0, "is_significant": False}
+        
+        if len(alignment_by_month) >= 3:
+            # Calculate linear regression
+            if len(months_index) > 0 and len(alignment_by_month) > 0:
+                slope, intercept = np.polyfit(months_index, alignment_by_month, 1)
+                
+                # Calculate correlation coefficient
+                correlation = np.corrcoef(months_index, alignment_by_month)[0, 1]
+                
+                # Consider trend significant if correlation > 0.7 or < -0.7
+                is_significant = abs(correlation) > 0.7
+                
+                trend_analysis = {
+                    "slope": slope,
+                    "correlation": correlation,
+                    "is_significant": is_significant
+                }
+                
+                # Determine if drift is detected
+                drift_detected = is_significant and abs(slope) > 0.1
+                
+                if drift_detected:
+                    # Calculate first and last month scores
+                    first_month = month_keys[0]
+                    last_month = month_keys[-1]
+                    
+                    if first_month in monthly_alignment and last_month in monthly_alignment:
+                        first_score = monthly_alignment[first_month]["alignment_score"]
+                        last_score = monthly_alignment[last_month]["alignment_score"]
+                        
+                        # Calculate percentage change
+                        if abs(first_score) > 0.01:  # Avoid division by zero or very small numbers
+                            percentage_change = ((last_score - first_score) / abs(first_score)) * 100
+                        else:
+                            percentage_change = 0
+                            
+                        drift_magnitude = {
+                            "direction": "improving" if slope > 0 else "worsening",
+                            "percentage_change": percentage_change,
+                            "first_month_score": first_score,
+                            "last_month_score": last_score
+                        }
+        
+        # Generate recommendations based on analysis
+        recommendations = []
+        
+        if drift_detected:
+            if drift_magnitude.get("direction") == "worsening":
+                # Identify categories with increasing misalignment
+                misaligned_categories = {}
+                
+                # Compare first and last month
+                first_month = month_keys[0]
+                last_month = month_keys[-1]
+                
+                if first_month in monthly_alignment and last_month in monthly_alignment:
+                    first_month_txs = transactions_by_month[first_month]
+                    last_month_txs = transactions_by_month[last_month]
+                    
+                    # Group by category
+                    first_by_category = {}
+                    last_by_category = {}
+                    
+                    for tx in first_month_txs:
+                        if tx.category not in first_by_category:
+                            first_by_category[tx.category] = []
+                        first_by_category[tx.category].append(tx)
+                        
+                    for tx in last_month_txs:
+                        if tx.category not in last_by_category:
+                            last_by_category[tx.category] = []
+                        last_by_category[tx.category].append(tx)
+                    
+                    # Compare alignment by category
+                    for category in set(last_by_category.keys()):
+                        if category in last_by_category:
+                            last_txs = last_by_category[category]
+                            last_total = sum(tx.amount for tx in last_txs)
+                            
+                            # Categorize last month's transactions
+                            categorized = self.batch_categorize_transactions(last_txs)
+                            
+                            # Count misaligned spending
+                            misaligned_amount = 0
+                            for tx in last_txs:
+                                if tx.id in categorized and categorized[tx.id].alignment_score < -0.3:
+                                    misaligned_amount += tx.amount
+                            
+                            # Check if category has significant misalignment
+                            misalignment_percentage = (misaligned_amount / last_total) if last_total > 0 else 0
+                            if misalignment_percentage > 0.5:  # More than 50% misaligned
+                                misaligned_categories[category] = misalignment_percentage
+                
+                # Add recommendation for each misaligned category
+                for category, percentage in sorted(misaligned_categories.items(), key=lambda x: x[1], reverse=True):
+                    recommendations.append({
+                        "type": "reduce_misaligned_category",
+                        "category": category,
+                        "misalignment_percentage": percentage,
+                        "suggestion": f"Consider alternatives for spending in the '{category}' category"
+                    })
+                
+                # Add general recommendation
+                recommendations.append({
+                    "type": "general_improvement",
+                    "suggestion": "Review your spending patterns to better align with your values"
+                })
+            else:
+                # Positive trend recommendations
+                recommendations.append({
+                    "type": "maintain_improvement",
+                    "suggestion": "Continue your positive trend in values-aligned spending"
+                })
+        else:
+            # No significant drift
+            # Check if alignment is generally good or poor
+            avg_alignment = np.mean(alignment_by_month) if alignment_by_month else 0
+            
+            if avg_alignment > 0.3:
+                recommendations.append({
+                    "type": "maintain_good_alignment",
+                    "suggestion": "Continue your consistent values-aligned spending"
+                })
+            elif avg_alignment < -0.3:
+                recommendations.append({
+                    "type": "improve_alignment",
+                    "suggestion": "Consider adjusting spending to better align with your values"
+                })
+        
+        # Compile final result
+        result = {
+            "monthly_alignment": monthly_alignment,
+            "trend_analysis": trend_analysis,
+            "drift_detected": drift_detected,
+            "drift_magnitude": drift_magnitude if drift_detected else {"direction": "neutral", "percentage_change": 0},
+            "average_alignment": np.mean(alignment_by_month) if alignment_by_month else 0,
+            "recommendations": recommendations
+        }
+        
+        return result
+        
+    def analyze_vendor_value_profiles(
+        self,
+        transactions: List[Transaction]
+    ) -> Dict[str, Any]:
+        """Create value profiles for vendors based on transaction history.
+        
+        Args:
+            transactions: List of transactions to analyze
+            
+        Returns:
+            Dict with vendor value profiles and rankings
+        """
+        # Group transactions by vendor
+        transactions_by_vendor = {}
+        
+        for tx in transactions:
+            vendor = tx.vendor
+            if vendor not in transactions_by_vendor:
+                transactions_by_vendor[vendor] = []
+                
+            transactions_by_vendor[vendor].append(tx)
+        
+        # Analyze each vendor
+        vendor_profiles = {}
+        for vendor, vendor_transactions in transactions_by_vendor.items():
+            # Skip vendors with very few transactions
+            if len(vendor_transactions) < 2:
+                continue
+                
+            # Calculate totals
+            total_spent = sum(tx.amount for tx in vendor_transactions)
+            
+            # Categorize transactions
+            categorized = self.batch_categorize_transactions(vendor_transactions)
+            
+            # Calculate alignment metrics
+            aligned_amount = 0
+            misaligned_amount = 0
+            neutral_amount = 0
+            
+            # Count alignment categories and collect tags
+            all_tags = []
+            for tx in vendor_transactions:
+                if tx.id in categorized:
+                    alignment = categorized[tx.id]
+                    
+                    if alignment.alignment_score > 0.3:
+                        aligned_amount += tx.amount
+                    elif alignment.alignment_score < -0.3:
+                        misaligned_amount += tx.amount
+                    else:
+                        neutral_amount += tx.amount
+                
+                # Collect all tags
+                all_tags.extend(tx.tags)
+            
+            # Calculate overall alignment score for this vendor
+            alignment_score = 0
+            if total_spent > 0:
+                alignment_score = (aligned_amount - misaligned_amount) / total_spent
+                # Ensure we stay within the -1.0 to 1.0 bounds (avoiding floating point errors)
+                alignment_score = max(-1.0, min(1.0, alignment_score))
+                
+            # Count tag frequencies
+            tag_counts = {}
+            for tag in all_tags:
+                if tag in tag_counts:
+                    tag_counts[tag] += 1
+                else:
+                    tag_counts[tag] = 1
+                    
+            # Find most common tags (at least appearing twice)
+            common_tags = [tag for tag, count in tag_counts.items() if count > 1]
+            
+            # Calculate value consistency (higher means more consistent values)
+            value_consistency = 0
+            if len(vendor_transactions) > 1:
+                # Calculate variance of alignment scores
+                alignment_scores = [categorized[tx.id].alignment_score for tx in vendor_transactions if tx.id in categorized]
+                if alignment_scores:
+                    # Lower variance means more consistent
+                    variance = np.var(alignment_scores)
+                    value_consistency = 1 / (1 + variance)  # Normalize to 0-1 range
+            
+            # Generate recommendation based on alignment
+            recommendation = {}
+            if alignment_score < -0.3:
+                # Suggest alternatives for misaligned vendors
+                category = vendor_transactions[0].category if vendor_transactions else "General"
+                alternatives = self.suggest_alternative_vendors(vendor, category)
+                
+                recommendation = {
+                    "type": "consider_alternatives",
+                    "reason": "Low values alignment",
+                    "alternatives": alternatives
+                }
+            elif alignment_score > 0.7:
+                recommendation = {
+                    "type": "continue_patronage",
+                    "reason": "Excellent values alignment"
+                }
+            elif alignment_score > 0.3:
+                recommendation = {
+                    "type": "maintain",
+                    "reason": "Good values alignment"
+                }
+            else:
+                recommendation = {
+                    "type": "neutral",
+                    "reason": "Neutral values alignment"
+                }
+                
+            # Store vendor profile
+            vendor_profiles[vendor] = {
+                "transaction_count": len(vendor_transactions),
+                "total_spent": total_spent,
+                "alignment_score": alignment_score,
+                "common_tags": common_tags,
+                "value_consistency": value_consistency,
+                "recommendation": recommendation,
+                "aligned_percentage": (aligned_amount / total_spent * 100) if total_spent > 0 else 0,
+                "misaligned_percentage": (misaligned_amount / total_spent * 100) if total_spent > 0 else 0
+            }
+        
+        # Create vendor rankings
+        sorted_vendors = sorted(vendor_profiles.items(), key=lambda x: x[1]["alignment_score"], reverse=True)
+        
+        most_aligned = [vendor for vendor, profile in sorted_vendors 
+                        if profile["alignment_score"] > 0.3][:5]  # Top 5 aligned
+                        
+        least_aligned = [vendor for vendor, profile in sorted_vendors 
+                         if profile["alignment_score"] < 0][-5:]  # Bottom 5 aligned
+        
+        # Generate alternatives for misaligned vendors
+        recommended_alternatives = {}
+        for vendor, profile in vendor_profiles.items():
+            if profile["alignment_score"] < -0.2:
+                # Find this vendor's transactions to get categories
+                vendor_txs = transactions_by_vendor[vendor]
+                
+                # Use most common category
+                category_counts = {}
+                for tx in vendor_txs:
+                    if tx.category in category_counts:
+                        category_counts[tx.category] += 1
+                    else:
+                        category_counts[tx.category] = 1
+                        
+                main_category = max(category_counts.items(), key=lambda x: x[1])[0] if category_counts else "General"
+                
+                # Get alternatives
+                alternatives = self.suggest_alternative_vendors(vendor, main_category)
+                
+                if alternatives:
+                    recommended_alternatives[vendor] = alternatives
+        
+        # Compile final result
+        result = {
+            "vendor_profiles": vendor_profiles,
+            "vendor_rankings": {
+                "most_aligned": most_aligned,
+                "least_aligned": least_aligned
+            },
+            "recommended_alternatives": recommended_alternatives,
+            "total_vendors_analyzed": len(vendor_profiles)
+        }
+        
+        return result
 
 
 def create_default_value_categories() -> List[ValueCategory]:

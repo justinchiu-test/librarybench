@@ -16,6 +16,13 @@ from concurrent_task_scheduler.models import (
     ResourceForecast,
     ResourceProjection,
 )
+
+# Mock simulation class that overrides total_progress
+class MockSimulation(Simulation):
+    def total_progress(self) -> float:
+        # Always return 0.5 for testing
+        return 0.5
+
 from concurrent_task_scheduler.resource_forecasting.data_collector import (
     ResourceDataCollector,
 )
@@ -79,7 +86,7 @@ def sample_simulation():
     stages[main_stage.id] = main_stage
     
     # Create the simulation
-    simulation = Simulation(
+    simulation = MockSimulation(
         id="sim_optimizer_test",
         name="Optimizer Test Simulation",
         creation_time=datetime.now() - timedelta(hours=3),
@@ -366,12 +373,12 @@ def test_resource_cost(resource_optimizer):
         assert cost > 0
 
 
-def test_mock_allocation_and_capacity(resource_optimizer):
+def test_mock_allocation_and_capacity(resource_optimizer, sample_simulation):
     """Test getting mock allocations and capacities."""
     # Test getting current allocation
     for resource_type in ResourceType:
         allocation = resource_optimizer._get_current_allocation(
-            simulation=sample_simulation(),
+            simulation=sample_simulation,
             resource_type=resource_type,
         )
         assert allocation is not None
@@ -386,7 +393,7 @@ def test_mock_allocation_and_capacity(resource_optimizer):
     # Current capacity should be greater than allocation
     for resource_type in ResourceType:
         allocation = resource_optimizer._get_current_allocation(
-            simulation=sample_simulation(),
+            simulation=sample_simulation,
             resource_type=resource_type,
         )
         capacity = resource_optimizer._get_current_capacity(resource_type)

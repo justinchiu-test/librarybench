@@ -29,9 +29,5 @@ def pytest_configure(config):
 
 def pytest_collection_modifyitems(config, items):
     """Modify collected tests based on options."""
-    if not config.getoption("--run-performance"):
-        # Skip performance tests unless explicitly enabled
-        skip_performance = pytest.mark.skip(reason="Need --run-performance option to run")
-        for item in items:
-            if "performance" in item.keywords or "test_performance.py" in item.nodeid:
-                item.add_marker(skip_performance)
+    # We want to run all tests, so don't skip performance tests
+    pass

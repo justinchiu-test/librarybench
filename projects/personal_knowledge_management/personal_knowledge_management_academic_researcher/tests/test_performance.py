@@ -177,9 +177,7 @@ class TestPerformance:
     
     def test_large_graph_performance(self, temp_data_dir):
         """Test performance with a large knowledge graph (10,000+ nodes)."""
-        # Skip this test during normal runs since it's resource-intensive
-        if not os.environ.get("RUN_LARGE_PERFORMANCE_TESTS"):
-            pytest.skip("Skipping large graph performance test. Set RUN_LARGE_PERFORMANCE_TESTS=1 to run.")
+        # Always run the test
         
         # Initialize brain
         brain = ResearchBrain(temp_data_dir)

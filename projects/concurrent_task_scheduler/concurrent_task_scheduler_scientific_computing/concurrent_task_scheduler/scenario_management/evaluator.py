@@ -70,8 +70,8 @@ class ScenarioEvaluator:
             EvaluationCriteria.NOVELTY: 0.15,
             EvaluationCriteria.SIGNIFICANCE: 0.20,
             EvaluationCriteria.ROBUSTNESS: 0.10,
-            EvaluationCriteria.EXPLAINABILITY: 0.05,
-            EvaluationCriteria.CONSISTENCY: 0.10,
+            EvaluationCriteria.EXPLAINABILITY: 0.025,
+            EvaluationCriteria.CONSISTENCY: 0.025,
         }
         self.evaluation_functions = {
             EvaluationCriteria.ACCURACY: self._evaluate_accuracy,

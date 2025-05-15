@@ -59,7 +59,7 @@ class TestPortfolioAnalysis:
         investments_dict = {}
         for inv_data in sample_investments:
             # Only include investments that are in the portfolio
-            if inv_data["id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if inv_data["id"] in [h.investment_id for h in portfolio.holdings]:
                 investments_dict[inv_data["id"]] = Investment(
                     id=inv_data["id"],
                     name=inv_data["name"],
@@ -122,7 +122,7 @@ class TestPortfolioAnalysis:
         investments_dict = {}
         for inv_data in sample_investments:
             # Only include investments that are in the portfolio
-            if inv_data["id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if inv_data["id"] in [h.investment_id for h in portfolio.holdings]:
                 investments_dict[inv_data["id"]] = Investment(
                     id=inv_data["id"],
                     name=inv_data["name"],
@@ -201,7 +201,7 @@ class TestPortfolioAnalysis:
         investments_dict = {}
         for inv_data in sample_investments:
             # Only include investments that are in the portfolio
-            if inv_data["id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if inv_data["id"] in [h.investment_id for h in portfolio.holdings]:
                 investments_dict[inv_data["id"]] = Investment(
                     id=inv_data["id"],
                     name=inv_data["name"],
@@ -265,7 +265,7 @@ class TestPortfolioAnalysis:
         investments_dict = {}
         for inv_data in sample_investments:
             # Only include investments that are in the portfolio
-            if inv_data["id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if inv_data["id"] in [h.investment_id for h in portfolio.holdings]:
                 investments_dict[inv_data["id"]] = Investment(
                     id=inv_data["id"],
                     name=inv_data["name"],
@@ -350,7 +350,7 @@ class TestPortfolioAnalysis:
             )
             
             # Add to current investments if in portfolio
-            if inv_data["id"] in [h["investment_id"] for h in portfolio.holdings]:
+            if inv_data["id"] in [h.investment_id for h in portfolio.holdings]:
                 current_investments[inv_data["id"]] = investment
             else:
                 # Add to candidate investments if not in portfolio

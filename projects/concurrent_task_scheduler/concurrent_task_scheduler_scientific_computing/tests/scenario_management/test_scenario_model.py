@@ -300,6 +300,7 @@ class TestScenario:
             name="Sim 1",
             description="Running simulation",
             status=SimulationStatus.RUNNING,
+            stages={},  # Empty stages dictionary to satisfy the requirement
         )
         
         sim2 = Simulation(
@@ -307,6 +308,7 @@ class TestScenario:
             name="Sim 2",
             description="Completed simulation",
             status=SimulationStatus.COMPLETED,
+            stages={},  # Empty stages dictionary to satisfy the requirement
         )
         
         sim3 = Simulation(
@@ -314,6 +316,7 @@ class TestScenario:
             name="Sim 3",
             description="Another running simulation",
             status=SimulationStatus.RUNNING,
+            stages={},  # Empty stages dictionary to satisfy the requirement
         )
         
         scenario.simulations = {
@@ -363,8 +366,8 @@ class TestScenario:
         assert scenario.total_progress() == 0.0
         
         # Add simulations with different progress
-        sim1 = Simulation(id="sim-1", name="Sim 1", description="Sim 1")
-        sim2 = Simulation(id="sim-2", name="Sim 2", description="Sim 2")
+        sim1 = Simulation(id="sim-1", name="Sim 1", description="Sim 1", stages={})
+        sim2 = Simulation(id="sim-2", name="Sim 2", description="Sim 2", stages={})
         
         # Mock the total_progress method on simulations
         sim1.total_progress = lambda: 0.25

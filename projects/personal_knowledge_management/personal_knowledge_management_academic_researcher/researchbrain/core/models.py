@@ -100,6 +100,7 @@ class EvidenceStrength(str, Enum):
     MODERATE = "moderate"
     WEAK = "weak"
     ANECDOTAL = "anecdotal"
+    THEORETICAL = "theoretical"
 
 
 class Evidence(BaseModel):

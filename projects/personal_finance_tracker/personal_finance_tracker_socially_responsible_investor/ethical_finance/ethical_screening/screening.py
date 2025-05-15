@@ -32,6 +32,83 @@ class EthicalScreener:
             criteria: The ethical criteria to use for screening
         """
         self.criteria = criteria
+        
+    @staticmethod
+    def generate_criteria_from_survey(survey_responses: Dict[str, Any]) -> EthicalCriteria:
+        """Generate ethical criteria from user survey responses.
+        
+        Args:
+            survey_responses: Dictionary containing survey responses with keys:
+                - top_concerns: List of user's top ethical concerns
+                - industries_to_avoid: List of industries to exclude
+                - industries_to_support: List of industries to prioritize
+                - relative_importance: Dict with weights for environmental, social, governance
+                - environmental_priorities: List of environmental priorities
+                - social_priorities: List of social priorities  
+                - governance_priorities: List of governance priorities
+                
+        Returns:
+            EthicalCriteria object based on survey responses
+        """
+        # Calculate weights based on relative importance
+        total_importance = sum(survey_responses["relative_importance"].values())
+        env_weight = survey_responses["relative_importance"]["environmental"] / total_importance
+        social_weight = survey_responses["relative_importance"]["social"] / total_importance
+        gov_weight = survey_responses["relative_importance"]["governance"] / total_importance
+        
+        # Create environmental criteria
+        environmental = {
+            "weight": env_weight,
+            "min_environmental_score": 60
+        }
+        
+        if "carbon_reduction" in survey_responses["environmental_priorities"]:
+            environmental["max_carbon_footprint"] = 50000000
+            
+        if "renewable_energy" in survey_responses["environmental_priorities"]:
+            environmental["min_renewable_energy_use"] = 0.5
+            
+        if "fossil_fuels" in survey_responses["industries_to_avoid"]:
+            environmental["exclude_fossil_fuel_production"] = True
+            
+        # Create social criteria
+        social = {
+            "weight": social_weight,
+            "min_social_score": 60
+        }
+        
+        if "diversity" in survey_responses["social_priorities"]:
+            social["min_diversity_score"] = 0.65
+            
+        if "human_rights" in survey_responses["top_concerns"]:
+            social["exclude_human_rights_violations"] = True
+            
+        if "weapons" in survey_responses["industries_to_avoid"]:
+            social["exclude_weapons_manufacturing"] = True
+            
+        # Create governance criteria
+        governance = {
+            "weight": gov_weight,
+            "min_governance_score": 60
+        }
+        
+        if "board_diversity" in survey_responses["governance_priorities"]:
+            governance["min_board_independence"] = 0.65
+            
+        if "executive_compensation" in survey_responses["governance_priorities"]:
+            governance["exclude_excessive_executive_compensation"] = True
+            
+        # Create the criteria
+        return EthicalCriteria(
+            criteria_id="user-personalized",
+            name="User Personalized Criteria",
+            environmental=environmental,
+            social=social,
+            governance=governance,
+            min_overall_score=65,
+            exclusions=survey_responses["industries_to_avoid"],
+            inclusions=survey_responses["industries_to_support"]
+        )
     
     def screen_investment(self, investment: Investment) -> ScreeningResult:
         """Screen a single investment against the ethical criteria.
@@ -125,21 +202,34 @@ class EthicalScreener:
         exclusion_flags = []
         
         # Check industry exclusions (from the top-level exclusions list)
-        if investment.industry.lower() in [e.lower() for e in self.criteria.exclusions]:
-            exclusion_flags.append(f"excluded_industry:{investment.industry}")
-        
-        # Check sector exclusions
-        if investment.sector.lower() in [e.lower() for e in self.criteria.exclusions]:
-            exclusion_flags.append(f"excluded_sector:{investment.sector}")
+        for exclusion in self.criteria.exclusions:
+            # Direct match on industry
+            if investment.industry.lower() == exclusion.lower():
+                exclusion_flags.append(f"excluded_industry:{investment.industry}")
+            
+            # Direct match on sector
+            if investment.sector.lower() == exclusion.lower():
+                exclusion_flags.append(f"excluded_sector:{investment.sector}")
+                
+            # Partial match on industry name (handles cases like "fossil_fuels" vs "Oil & Gas")
+            if exclusion.lower() in ["fossil_fuels", "fossil_fuel"] and "oil" in investment.industry.lower():
+                exclusion_flags.append(f"excluded_fossil_fuels_industry:{investment.industry}")
+                
+            # Check for related terms in industry or sector
+            for term in exclusion.lower().split("_"):
+                if len(term) > 3:  # Only use meaningful words, not short ones
+                    if term in investment.industry.lower() or term in investment.sector.lower():
+                        exclusion_flags.append(f"excluded_term:{term}")
         
         # Check environmental exclusions
         if (self.criteria.environmental.get("exclude_fossil_fuel_production", False) and
-                "fossil_fuel_production" in [p.lower() for p in investment.positive_practices + investment.controversies]):
+                ("fossil_fuel_production" in [p.lower() for p in investment.positive_practices + investment.controversies] 
+                 or "oil" in investment.industry.lower())):
             exclusion_flags.append("fossil_fuel_production")
         
         # Check social exclusions
         if (self.criteria.social.get("exclude_human_rights_violations", False) and
-                "human_rights" in [c.lower() for c in investment.controversies]):
+                any("human_rights" in c.lower() for c in investment.controversies)):
             exclusion_flags.append("human_rights_violations")
             
         if (self.criteria.social.get("exclude_weapons_manufacturing", False) and
@@ -148,7 +238,7 @@ class EthicalScreener:
         
         # Check governance exclusions
         if (self.criteria.governance.get("exclude_excessive_executive_compensation", False) and
-                "excessive_compensation" in [c.lower() for c in investment.controversies]):
+                any("compensation" in c.lower() for c in investment.controversies)):
             exclusion_flags.append("excessive_executive_compensation")
         
         return exclusion_flags

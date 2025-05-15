@@ -379,3 +379,45 @@ class TestValuesBudgeting:
         
         # Check that performance meets requirements
         assert txs_per_second >= 1000.0
+        
+    def test_categorize_transaction_with_conflicting_values(self):
+        """Test categorizing a transaction with conflicting value tags."""
+        # Create a budget system with default categories
+        categories = create_default_value_categories()
+        budgeting = ValuesAlignedBudgeting(categories)
+        
+        # Create a transaction with conflicting value tags
+        # (both aligned and misaligned tags)
+        transaction = Transaction(
+            id="conflict1",
+            date=date.today(),
+            amount=85.75,
+            vendor="Mixed Values Store",
+            category="Shopping",
+            description="Purchase with both aligned and misaligned attributes",
+            tags=["organic", "sustainable", "plastic_packaging", "fossil_fuel"]
+        )
+        
+        # Categorize the transaction
+        result = budgeting.categorize_transaction(transaction)
+        
+        # Verify result is a valid ValueAlignment object
+        assert isinstance(result, ValueAlignment)
+        assert result.transaction_id == transaction.id
+        
+        # Verify alignment score reflects the conflict
+        # The result should be between -1 and 1, reflecting the mixed nature
+        assert -1.0 <= result.alignment_score <= 1.0
+        
+        # Check that both aligned and misaligned tags are recognized
+        aligned_tags = False
+        misaligned_tags = False
+        for reason in result.reasons:
+            if "organic" in reason.lower() or "sustainable" in reason.lower():
+                aligned_tags = True
+            if "plastic_packaging" in reason.lower() or "fossil_fuel" in reason.lower():
+                misaligned_tags = True
+                
+        # Verify that both types of tags were considered, rather than requiring a specific "conflict" message
+        assert aligned_tags, "Aligned tags should be recognized in reasons"
+        assert misaligned_tags, "Misaligned tags should be recognized in reasons"

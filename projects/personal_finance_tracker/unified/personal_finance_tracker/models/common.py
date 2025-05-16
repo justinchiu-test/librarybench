@@ -13,6 +13,12 @@ from common.core.models.transaction import (
     AccountType as CommonAccountType,
     BusinessTransaction
 )
+from common.core.models.tax import (
+    TaxPayment as CommonTaxPayment,
+    TaxRate as CommonTaxRate,
+    TaxDeduction as CommonTaxDeduction,
+    TaxLiability as CommonTaxLiability
+)
 
 
 # Use the TransactionType from common library
@@ -124,36 +130,29 @@ class Invoice(CommonInvoice):
     client_id: str
 
 
-class TaxPayment(BaseModel):
-    """Tax payment model."""
-
-    id: UUID = Field(default_factory=uuid4)
-    date: datetime
-    amount: float
-    tax_year: int
-    quarter: int
-    payment_method: str
-    confirmation_number: Optional[str] = None
-    notes: Optional[str] = None
+# Extend tax models from the common library
+class TaxPayment(CommonTaxPayment):
+    """
+    Tax payment model for Personal Finance Tracker.
+    
+    Extends the TaxPayment model from the common library.
+    """
+    quarter: int  # Make quarter required for our implementation
 
 
-class TaxRate(BaseModel):
-    """Tax rate for a specific income bracket."""
+class TaxRate(CommonTaxRate):
+    """
+    Tax rate model for Personal Finance Tracker.
+    
+    Extends the TaxRate model from the common library.
+    """
+    pass
 
-    bracket_min: float
-    bracket_max: Optional[float] = None
-    rate: float  # Percentage (0-100)
-    tax_year: int
-    jurisdiction: str = "federal"  # e.g., "federal", "state", "local"
 
-
-class TaxDeduction(BaseModel):
-    """Tax deduction model."""
-
-    id: UUID = Field(default_factory=uuid4)
-    name: str
-    amount: float
-    tax_year: int
-    category: str
-    description: Optional[str] = None
-    receipt_path: Optional[str] = None
+class TaxDeduction(CommonTaxDeduction):
+    """
+    Tax deduction model for Personal Finance Tracker.
+    
+    Extends the TaxDeduction model from the common library.
+    """
+    pass

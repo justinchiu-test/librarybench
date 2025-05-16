@@ -1,20 +1,19 @@
-"""
-Core models for the unified concurrent task scheduler.
+"""Core models for concurrent task scheduling."""
 
-This module defines common base models that are shared between 
-the render farm manager and scientific computing implementations.
-"""
+from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Union, Any, TypeVar, Generic
+from typing import Any, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel as PydanticBaseModel
+from pydantic import Field
 
 
 class JobStatus(str, Enum):
-    """Status values for jobs in both implementations."""
+    """Status values for jobs."""
     
     PENDING = "pending"
     QUEUED = "queued"
@@ -26,7 +25,7 @@ class JobStatus(str, Enum):
 
 
 class NodeStatus(str, Enum):
-    """Status values for compute/render nodes."""
+    """Status values for nodes."""
     
     ONLINE = "online"
     OFFLINE = "offline"
@@ -34,50 +33,70 @@ class NodeStatus(str, Enum):
     ERROR = "error"
     STARTING = "starting"
     STOPPING = "stopping"
-    RESERVED = "reserved"
 
 
 class Priority(str, Enum):
-    """Priority levels for jobs and scenarios."""
+    """Priority levels for jobs."""
     
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
     LOW = "low"
-    BACKGROUND = "background"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
 
 
 class ResourceType(str, Enum):
-    """Types of resources that can be allocated to jobs."""
+    """Types of resources."""
     
     CPU = "cpu"
     GPU = "gpu"
     MEMORY = "memory"
     STORAGE = "storage"
     NETWORK = "network"
+    SPECIALIZED = "specialized"
 
 
 class DependencyType(str, Enum):
     """Types of dependencies between jobs or stages."""
     
-    SEQUENTIAL = "sequential"  # Must complete in sequence
-    DATA = "data"              # Data dependency
-    RESOURCE = "resource"      # Resource constraint
+    SEQUENTIAL = "sequential"  # Must run in sequence
+    DATA = "data"  # Depends on data from the other job/stage
+    RESOURCE = "resource"  # Depends on resource availability
     CONDITIONAL = "conditional"  # Depends on a condition
-    TIME = "time"              # Time-based dependency
+    TEMPORAL = "temporal"  # Depends on time-based conditions
 
 
 class DependencyState(str, Enum):
-    """States for a dependency."""
+    """States of dependencies."""
+    
+    PENDING = "pending"  # Dependency has not been satisfied yet
+    SATISFIED = "satisfied"  # Dependency has been satisfied
+    FAILED = "failed"  # Dependency has failed
+    BYPASSED = "bypassed"  # Dependency has been manually bypassed
+
+
+class CheckpointType(str, Enum):
+    """Types of checkpoints."""
+    
+    FULL = "full"  # Complete state capture
+    INCREMENTAL = "incremental"  # Only changes since last checkpoint
+    DELTA = "delta"  # Only differences from baseline
+    METADATA = "metadata"  # Only metadata, no actual state
+
+
+class CheckpointStatus(str, Enum):
+    """Status values for checkpoints."""
     
     PENDING = "pending"
-    SATISFIED = "satisfied"
-    BYPASSED = "bypassed"
+    CREATING = "creating"
+    COMPLETE = "complete"
     FAILED = "failed"
+    RESTORING = "restoring"
+    RESTORED = "restored"
+    DELETED = "deleted"
 
 
 class LogLevel(str, Enum):
-    """Log levels for audit logging."""
+    """Log levels for auditing and logging."""
     
     DEBUG = "debug"
     INFO = "info"
@@ -86,108 +105,97 @@ class LogLevel(str, Enum):
     CRITICAL = "critical"
 
 
-class CheckpointType(str, Enum):
-    """Types of checkpoints."""
+class BaseModel(PydanticBaseModel):
+    """Base model with common functionality."""
     
-    FULL = "full"
-    INCREMENTAL = "incremental"
-    DIFFERENTIAL = "differential"
-    METADATA = "metadata"
-
-
-class CheckpointStatus(str, Enum):
-    """Status values for checkpoints."""
-    
-    CREATING = "creating"
-    COMPLETE = "complete"
-    FAILED = "failed"
-    ARCHIVED = "archived"
-    RESTORING = "restoring"
+    class Config:
+        """Model configuration."""
+        
+        arbitrary_types_allowed = True
+        orm_mode = True
+        
+    def model_copy(self, **kwargs):
+        """Create a copy of the model."""
+        return self.__class__(**{**self.model_dump(), **kwargs})
 
 
 class ResourceRequirement(BaseModel):
-    """Resource requirements for a job or stage."""
+    """Resource requirement for a job or stage."""
     
     resource_type: ResourceType
     amount: float
-    unit: str = "units"
-
-
-class BaseNode(BaseModel):
-    """Base model for compute/render nodes."""
+    unit: str = "unit"
     
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    name: str
-    status: NodeStatus = NodeStatus.ONLINE
-    cpu_cores: int = Field(..., gt=0)
-    memory_gb: float = Field(..., gt=0)
-    gpu_count: int = Field(default=0, ge=0)
-    storage_gb: float = Field(..., gt=0)
-    network_bandwidth_gbps: float = Field(default=1.0, gt=0)
-    current_load: Dict[ResourceType, float] = Field(default_factory=dict)
-    assigned_jobs: List[str] = Field(default_factory=list)
-    last_failure_time: Optional[datetime] = None
-    uptime_hours: float = Field(default=0, ge=0)
-    
-    def is_available(self) -> bool:
-        """Check if the node is available for new jobs."""
-        return self.status == NodeStatus.ONLINE and len(self.assigned_jobs) < self.cpu_cores
-    
-    def get_available_resources(self) -> Dict[ResourceType, float]:
-        """Get the available resources on this node."""
-        available = {
-            ResourceType.CPU: self.cpu_cores,
-            ResourceType.MEMORY: self.memory_gb,
-            ResourceType.GPU: self.gpu_count,
-            ResourceType.STORAGE: self.storage_gb,
-            ResourceType.NETWORK: self.network_bandwidth_gbps
-        }
-        
-        for resource_type, used in self.current_load.items():
-            if resource_type in available:
-                available[resource_type] -= used
-        
-        return available
-    
-    def can_accommodate(self, requirements: List[ResourceRequirement]) -> bool:
-        """Check if this node can accommodate the given resource requirements."""
-        available = self.get_available_resources()
-        
-        for req in requirements:
-            if req.resource_type not in available:
-                return False
-            
-            if available[req.resource_type] < req.amount:
-                return False
-        
-        return True
+    def __hash__(self):
+        return hash((self.resource_type, self.amount, self.unit))
 
 
 class BaseJob(BaseModel):
-    """Base model for render/simulation jobs."""
+    """Base job model with common attributes."""
     
     id: str = Field(default_factory=lambda: str(uuid4()))
     name: str
     status: JobStatus = JobStatus.PENDING
     priority: Priority = Priority.MEDIUM
     submission_time: datetime = Field(default_factory=datetime.now)
-    estimated_duration: timedelta
-    progress: float = Field(default=0.0, ge=0.0, le=100.0)
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
+    dependencies: Set[str] = Field(default_factory=set)
     resource_requirements: List[ResourceRequirement] = Field(default_factory=list)
-    dependencies: List[str] = Field(default_factory=list)
     assigned_node_id: Optional[str] = None
-    owner: str
-    project: str = "default"
-    tags: List[str] = Field(default_factory=list)
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    error_count: int = 0
+    progress: float = 0.0
     
-    def can_run(self, dependencies_completed: Set[str]) -> bool:
-        """Check if the job can run based on its dependencies."""
-        return all(dep_id in dependencies_completed for dep_id in self.dependencies)
+    def is_active(self) -> bool:
+        """Check if the job is active."""
+        return self.status in [JobStatus.RUNNING, JobStatus.QUEUED]
+    
+    def is_complete(self) -> bool:
+        """Check if the job is complete."""
+        return self.status in [JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.CANCELLED]
+    
+    def get_duration(self) -> Optional[timedelta]:
+        """Get the duration of the job."""
+        if not self.start_time:
+            return None
+        
+        end = self.end_time or datetime.now()
+        return end - self.start_time
+
+
+class BaseNode(BaseModel):
+    """Base node model with common attributes."""
+    
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    name: str
+    status: NodeStatus = NodeStatus.OFFLINE
+    current_job_id: Optional[str] = None
+    resources: Dict[ResourceType, float] = Field(default_factory=dict)
+    uptime_hours: float = 0.0
+    last_error: Optional[str] = None
+    
+    def is_available(self) -> bool:
+        """Check if the node is available for jobs."""
+        return self.status == NodeStatus.ONLINE and self.current_job_id is None
+    
+    def is_busy(self) -> bool:
+        """Check if the node is busy."""
+        return self.status == NodeStatus.ONLINE and self.current_job_id is not None
+    
+    def can_satisfy_requirements(self, requirements: List[ResourceRequirement]) -> bool:
+        """Check if the node can satisfy the resource requirements."""
+        for req in requirements:
+            if req.resource_type not in self.resources:
+                return False
+            
+            if self.resources[req.resource_type] < req.amount:
+                return False
+        
+        return True
 
 
 class Dependency(BaseModel):
-    """A dependency between jobs or stages."""
+    """Dependency between jobs or stages."""
     
     from_id: str
     to_id: str
@@ -203,81 +211,118 @@ class Dependency(BaseModel):
         """Mark the dependency as satisfied."""
         self.state = DependencyState.SATISFIED
     
+    def fail(self) -> None:
+        """Mark the dependency as failed."""
+        self.state = DependencyState.FAILED
+    
     def bypass(self) -> None:
         """Bypass the dependency."""
         self.state = DependencyState.BYPASSED
     
-    def fail(self) -> None:
-        """Mark the dependency as failed."""
-        self.state = DependencyState.FAILED
+    # Aliases for compatibility with tests
+    @property
+    def from_stage_id(self) -> str:
+        """Alias for from_id to be compatible with stage-based tests."""
+        return self.from_id
+    
+    @property
+    def to_stage_id(self) -> str:
+        """Alias for to_id to be compatible with stage-based tests."""
+        return self.to_id
 
 
 class Checkpoint(BaseModel):
-    """A checkpoint for a job or simulation."""
+    """Checkpoint for a job or stage."""
     
     id: str = Field(default_factory=lambda: str(uuid4()))
     job_id: str
     checkpoint_type: CheckpointType = CheckpointType.FULL
-    status: CheckpointStatus = CheckpointStatus.CREATING
-    path: str
+    status: CheckpointStatus = CheckpointStatus.PENDING
     timestamp: datetime = Field(default_factory=datetime.now)
-    size_bytes: Optional[int] = None
+    path: str
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    validation_hash: Optional[str] = None
-    restore_count: int = Field(default=0, ge=0)
-    last_restore_time: Optional[datetime] = None
-
-
-# Define a TypeVar for the Result generic type
-T = TypeVar('T')
-
-class Result(BaseModel, Generic[T]):
-    """Generic result model with success flag and error message."""
     
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    def is_complete(self) -> bool:
+        """Check if the checkpoint is complete."""
+        return self.status == CheckpointStatus.COMPLETE
     
-    success: bool
-    value: Optional[T] = None
-    error: Optional[str] = None
-    
-    @classmethod
-    def ok(cls, value: Optional[T] = None):
-        """Create a successful result."""
-        return cls(success=True, value=value)
-    
-    @classmethod
-    def err(cls, error: str):
-        """Create a failed result."""
-        return cls(success=False, error=error)
-
-
-class TimeRange(BaseModel):
-    """A time range with start and end time."""
-    
-    start_time: datetime
-    end_time: datetime
-    
-    def contains(self, time: datetime) -> bool:
-        """Check if the time is within this time range."""
-        return self.start_time <= time <= self.end_time
-    
-    def overlaps(self, other: "TimeRange") -> bool:
-        """Check if this time range overlaps with another."""
-        return (self.start_time <= other.end_time and
-                other.start_time <= self.end_time)
-    
-    def duration(self) -> timedelta:
-        """Get the duration of this time range."""
-        return self.end_time - self.start_time
+    def is_restorable(self) -> bool:
+        """Check if the checkpoint can be restored."""
+        return self.status in [CheckpointStatus.COMPLETE, CheckpointStatus.RESTORED]
 
 
 class AuditLogEntry(BaseModel):
-    """Entry in the audit log."""
+    """Audit log entry for tracking operations."""
     
+    id: str = Field(default_factory=lambda: str(uuid4()))
     timestamp: datetime = Field(default_factory=datetime.now)
     event_type: str
+    level: LogLevel = LogLevel.INFO
     job_id: Optional[str] = None
     node_id: Optional[str] = None
-    owner_id: Optional[str] = None
+    user_id: Optional[str] = None
     description: str
     details: Dict[str, Any] = Field(default_factory=dict)
+
+
+class TimeRange(BaseModel):
+    """Time range for scheduling and reporting."""
+    
+    start: datetime
+    end: datetime
+    
+    def duration(self) -> timedelta:
+        """Get the duration of the time range."""
+        return self.end - self.start
+    
+    def contains(self, time: datetime) -> bool:
+        """Check if the time range contains the given time."""
+        return self.start <= time <= self.end
+    
+    def overlaps(self, other: TimeRange) -> bool:
+        """Check if this time range overlaps with another."""
+        return (self.start <= other.end) and (other.start <= self.end)
+
+
+T = TypeVar('T')
+
+
+class Result(Generic[T]):
+    """Generic result type for operations that can succeed or fail."""
+    
+    def __init__(self, success: bool, value: Optional[T] = None, error: Optional[str] = None):
+        self.success = success
+        self.value = value
+        self.error = error
+    
+    @classmethod
+    def ok(cls, value: T) -> Result[T]:
+        """Create a successful result."""
+        return cls(True, value)
+    
+    @classmethod
+    def err(cls, error: str) -> Result[T]:
+        """Create a failed result."""
+        return cls(False, error=error)
+    
+    def unwrap(self) -> T:
+        """Get the value or raise an exception if the result is an error."""
+        if not self.success:
+            raise ValueError(f"Cannot unwrap error result: {self.error}")
+        return self.value
+    
+    def unwrap_or(self, default: T) -> T:
+        """Get the value or a default if the result is an error."""
+        if not self.success:
+            return default
+        return self.value
+    
+    def map(self, f: callable) -> Result:
+        """Apply a function to the value if the result is successful."""
+        if not self.success:
+            return self
+        return Result.ok(f(self.value))
+    
+    def __bool__(self) -> bool:
+        """Convert to boolean."""
+        return self.success

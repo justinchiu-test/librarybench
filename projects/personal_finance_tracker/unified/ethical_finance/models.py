@@ -2,39 +2,27 @@
 
 from typing import Dict, List, Optional, Any, Union
 from datetime import date, datetime
-from dataclasses import dataclass, field
+from uuid import UUID, uuid4
+
+from pydantic import BaseModel, Field
 
 from common.core.models.investment import (
     Investment as CommonInvestment,
+    ESGRating as CommonESGRating,
     InvestmentHolding as BaseInvestmentHolding,
-    Portfolio as BasePortfolio
+    Portfolio as BasePortfolio,
+    EthicalCriteria as CommonEthicalCriteria,
+    ImpactMetric as CommonImpactMetric,
+    ImpactData as CommonImpactData
 )
 from common.core.models.transaction import BaseTransaction
 
 
-@dataclass
-class ESGRating:
-    """Environmental, Social, and Governance ratings for an investment."""
-    
-    environmental: int
-    social: int
-    governance: int
-    overall: int
-    
-    def __post_init__(self):
-        """Validate that the overall score is consistent with component scores."""
-        # Check if overall is within a reasonable range of the average
-        component_avg = (self.environmental + self.social + self.governance) / 3
-        if abs(self.overall - component_avg) > 15:  # Allow some variation in methodology
-            raise ValueError(f"Overall score {self.overall} is too different from component average {component_avg:.1f}")
-
-
-@dataclass
 class Investment(CommonInvestment):
     """Model representing an investment opportunity with ESG attributes."""
     
-    # These fields come from CommonInvestment:
-    # id: str
+    # We're inheriting all fields from CommonInvestment:
+    # id: Union[str, UUID] = Field(default_factory=uuid4)
     # name: str
     # sector: str
     # industry: str
@@ -45,34 +33,14 @@ class Investment(CommonInvestment):
     # renewable_energy_use: float
     # diversity_score: float
     # board_independence: float
-    # controversies: List[str]
-    # positive_practices: List[str]
+    # controversies: List[str] = Field(default_factory=list)
+    # positive_practices: List[str] = Field(default_factory=list)
     
-    # The ESG-specific fields are already in the parent class
-    # We just need to make the esg_ratings field compatible with both ESGRating and Dict
-    esg_ratings: Union[ESGRating, Dict[str, Any]] = None
-    
-    def __post_init__(self):
-        """Convert dictionary esg_ratings to ESGRating object if necessary."""
-        # Call parent post init first
-        super().__post_init__()
-        
-        if isinstance(self.esg_ratings, dict):
-            self.esg_ratings = ESGRating(
-                environmental=self.esg_ratings["environmental"],
-                social=self.esg_ratings["social"],
-                governance=self.esg_ratings["governance"],
-                overall=self.esg_ratings["overall"]
-            )
-    
-    @property
-    def has_major_controversies(self) -> bool:
-        """Check if the investment has major controversies."""
-        major_issues = ["human_rights", "fraud", "corruption", "environmental_disaster"]
-        return any(issue in self.controversies for issue in major_issues)
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
 class InvestmentHolding(BaseInvestmentHolding):
     """A specific holding of an investment in a portfolio."""
     
@@ -80,66 +48,35 @@ class InvestmentHolding(BaseInvestmentHolding):
     # investment_id: str
     # shares: float
     # purchase_price: float
-    # purchase_date: date
+    # purchase_date: Union[date, datetime]
     # current_price: float
     # current_value: float
     
     # No additional fields needed
     
-    def __post_init__(self):
-        """Validate that current_value = shares * current_price."""
-        super().__post_init__()
-        
-        expected_value = self.shares * self.current_price
-        if abs(self.current_value - expected_value) > 0.01:  # Allow for small rounding errors
-            raise ValueError(f"Current value {self.current_value} does not match shares * price {expected_value}")
-    
-    @property
-    def return_percentage(self) -> float:
-        """Calculate the percentage return on this holding."""
-        return (self.current_price / self.purchase_price - 1) * 100
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
 class Portfolio(BasePortfolio):
     """A collection of investment holdings."""
     
     # These fields come from BasePortfolio:
-    # portfolio_id: str
+    # id: Union[str, UUID] = Field(default_factory=uuid4)
     # name: str
-    # holdings: List[InvestmentHolding]
+    # holdings: List[InvestmentHolding] = Field(default_factory=list)
     # total_value: float
-    # creation_date: date
-    # last_updated: date
+    # cash_balance: float
+    # creation_date: Union[date, datetime]
+    # last_updated: Union[date, datetime] = Field(default_factory=datetime.now)
     
-    # Add ESG-specific fields
-    cash_balance: float
-    holdings: List[Union[InvestmentHolding, Dict[str, Any]]]
-    
-    def __post_init__(self):
-        """Validate that total_value equals the sum of all holdings' values and convert dict holdings to InvestmentHolding objects."""
-        # Convert dictionary holdings to InvestmentHolding objects
-        for i, holding in enumerate(self.holdings):
-            if isinstance(holding, dict):
-                # Convert any string dates to date objects
-                if isinstance(holding.get("purchase_date"), str):
-                    holding["purchase_date"] = date.fromisoformat(holding["purchase_date"])
-                
-                self.holdings[i] = InvestmentHolding(**holding)
-        
-        # Now validate total value
-        holdings_sum = sum(holding.current_value for holding in self.holdings)
-        if abs(self.total_value - holdings_sum) > 0.01:  # Allow for small rounding errors
-            raise ValueError(f"Total value {self.total_value} does not match holdings sum {holdings_sum}")
-    
-    @property
-    def total_assets(self) -> float:
-        """Calculate total assets including cash."""
-        return self.total_value + self.cash_balance
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class ShareholderResolution:
+class ShareholderResolution(BaseModel):
     """Model representing a shareholder resolution with voting results."""
     
     company_id: str
@@ -156,87 +93,127 @@ class ShareholderResolution:
     company_recommendation: Optional[str] = None
     outcome: Optional[str] = None
     
-    def __post_init__(self):
-        """Validate that vote percentages sum to approximately 1."""
-        if all(val is not None for val in [self.votes_for, self.votes_against, self.abstentions]):
-            vote_sum = self.votes_for + self.votes_against + self.abstentions
-            if abs(vote_sum - 1.0) > 0.01:  # Allow for small rounding errors
-                raise ValueError(f"Vote percentages sum to {vote_sum}, expected 1.0")
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
 class Transaction(BaseTransaction):
     """Model representing a personal financial transaction."""
     
     # These fields come from BaseTransaction:
-    # id: str
-    # date: date
+    # id: Union[str, UUID] = Field(default_factory=uuid4)
+    # date: Union[date, datetime]
     # amount: float
     # description: str
-    # transaction_type: TransactionType (we don't use this)
-    # tags: List[str]
+    # transaction_type: Optional[str] = None
+    # tags: List[str] = Field(default_factory=list)
     
     # Add ethical-specific fields
     vendor: str
     category: str
     
-    # We don't need transaction_type for ethical transactions
-    transaction_type: Optional[str] = None
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class EthicalCriteria:
+class EthicalCriteria(CommonEthicalCriteria):
     """Customizable ethical screening criteria for investments."""
     
-    criteria_id: str
-    name: str
-    environmental: Dict[str, Any]
-    social: Dict[str, Any]
-    governance: Dict[str, Any]
-    min_overall_score: float
-    exclusions: List[str] = field(default_factory=list)
-    inclusions: List[str] = field(default_factory=list)
+    # Converting from criteria_id to id (common model uses id)
+    criteria_id: Optional[str] = None
     
-    def __post_init__(self):
-        """Validate that criteria weights are included and sum approximately to 1."""
-        # Check that each criteria includes a weight
-        for field_name in ['environmental', 'social', 'governance']:
-            field_value = getattr(self, field_name)
-            if 'weight' not in field_value:
-                raise ValueError(f"{field_name} criteria must include a weight")
-            
-            # Ensure weight is between 0 and 1
-            if field_value['weight'] < 0 or field_value['weight'] > 1:
-                raise ValueError(f"{field_name} weight must be between 0 and 1")
-        
-        # Check that weights sum to approximately 1
-        weights_sum = (
-            self.environmental.get('weight', 0) + 
-            self.social.get('weight', 0) + 
-            self.governance.get('weight', 0)
+    @classmethod
+    def from_common_criteria(cls, common_criteria: CommonEthicalCriteria) -> "EthicalCriteria":
+        """Convert from common model to specialized model."""
+        return cls(
+            id=common_criteria.id,
+            criteria_id=str(common_criteria.id),  # For backward compatibility
+            name=common_criteria.name,
+            environmental=common_criteria.environmental,
+            social=common_criteria.social,
+            governance=common_criteria.governance,
+            min_overall_score=common_criteria.min_overall_score,
+            exclusions=common_criteria.exclusions,
+            inclusions=common_criteria.inclusions
         )
-        if abs(weights_sum - 1.0) > 0.01:  # Allow for small rounding errors
-            raise ValueError(f"Criteria weights sum to {weights_sum}, expected 1.0")
+    
+    def to_common_criteria(self) -> CommonEthicalCriteria:
+        """Convert to common model."""
+        return CommonEthicalCriteria(
+            id=self.id,
+            name=self.name,
+            environmental=self.environmental,
+            social=self.social,
+            governance=self.governance,
+            min_overall_score=self.min_overall_score,
+            exclusions=self.exclusions,
+            inclusions=self.inclusions
+        )
+    
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class ImpactMetric:
+class ImpactMetric(CommonImpactMetric):
     """Model for defining and tracking impact metrics."""
     
-    metric_id: str
-    name: str
-    category: str
-    unit: str
-    description: str
-    higher_is_better: bool
-    data_source: str
+    # All fields come from CommonImpactMetric
+    
+    @classmethod
+    def from_common_metric(cls, common_metric: CommonImpactMetric) -> "ImpactMetric":
+        """Convert from common model to specialized model."""
+        return cls(
+            id=common_metric.id,
+            name=common_metric.name,
+            category=common_metric.category,
+            unit=common_metric.unit,
+            description=common_metric.description,
+            higher_is_better=common_metric.higher_is_better,
+            data_source=common_metric.data_source
+        )
+    
+    def to_common_metric(self) -> CommonImpactMetric:
+        """Convert to common model."""
+        return CommonImpactMetric(
+            id=self.id,
+            name=self.name,
+            category=self.category,
+            unit=self.unit,
+            description=self.description,
+            higher_is_better=self.higher_is_better,
+            data_source=self.data_source
+        )
+    
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-@dataclass
-class ImpactData:
+class ImpactData(CommonImpactData):
     """Impact data for a specific investment in a specific year."""
     
-    investment_id: str
-    year: int
-    metrics: Dict[str, float]
-    # Additional fields allowed for future extensibility
+    # All fields come from CommonImpactData
+    
+    @classmethod
+    def from_common_data(cls, common_data: CommonImpactData) -> "ImpactData":
+        """Convert from common model to specialized model."""
+        return cls(
+            investment_id=common_data.investment_id,
+            year=common_data.year,
+            metrics=common_data.metrics
+        )
+    
+    def to_common_data(self) -> CommonImpactData:
+        """Convert to common model."""
+        return CommonImpactData(
+            investment_id=self.investment_id,
+            year=self.year,
+            metrics=self.metrics
+        )
+    
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True

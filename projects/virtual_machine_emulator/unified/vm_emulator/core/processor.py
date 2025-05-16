@@ -1,6 +1,7 @@
 """Processor implementation for parallel computing VM."""
 
 from typing import Any, Dict, List, Optional, Set, Tuple
+import sys
 
 from common.core.processor import (
     Processor as BaseProcessor,
@@ -10,7 +11,6 @@ from common.core.processor import (
 )
 from common.core.instruction import Instruction, InstructionType
 from common.core.exceptions import ProcessorException, InvalidInstructionException
-
 
 # Re-export common types
 ProcessorState = ProcessorState
@@ -89,13 +89,17 @@ class Processor(BaseProcessor):
         
         # Log the execution if enabled
         if self.execution_log:
-            self.instruction_trace.append({
+            trace_entry = {
                 "cycle": self.cycle_count,
                 "instruction": str(instruction),
                 "completed": completed,
-                "pc": self.registers.get_pc(),
-                "side_effects": side_effects.copy() if side_effects else None
-            })
+                "pc": self.registers.get_pc()
+            }
+            
+            if side_effects is not None:
+                trace_entry["side_effects"] = side_effects.copy()
+            
+            self.instruction_trace.append(trace_entry)
         
         # Ensure side_effects exists
         if side_effects is None:
@@ -172,15 +176,6 @@ class Processor(BaseProcessor):
             # Set up the memory write side effect
             side_effects["memory_write"] = (addr, value)
             
-            # Direct memory update - this directly modifies memory for testing
-            # and avoids relying on side effects being processed correctly
-            if isinstance(addr, int) and addr >= 0:
-                side_effects["direct_memory_writes"] = [(addr, value)]
-                
-                # Print debug info
-                import sys
-                print(f"STORE instruction: Writing value {value} to address {addr}", file=sys.stderr)
-            
             # Save original PC before incrementing it
             old_pc = self.registers.get_pc()
             # Increment PC to move to next instruction
@@ -208,14 +203,10 @@ class Processor(BaseProcessor):
         Returns:
             Whether to increment the PC after execution
         """
-        import sys
-        print(f"Executing branch instruction: {instruction}", file=sys.stderr)
-        
         # Handle JMP instruction
         if instruction.opcode == "JMP":
             if len(instruction.operands) >= 1:
                 target = self._get_operand_value(instruction.operands[0])
-                print(f"JMP to target: {target}", file=sys.stderr)
                 
                 # Set the PC directly to the target
                 self.registers.set_pc(target)
@@ -225,6 +216,15 @@ class Processor(BaseProcessor):
                 side_effects["branch_taken"] = True
                 side_effects["branch_target"] = target
                 side_effects["branch_type"] = "unconditional"
+                
+                # Record control flow event
+                self._record_control_flow(
+                    self.registers.get_pc(),
+                    target,
+                    "jump",
+                    instruction.opcode,
+                    True
+                )
                 
                 # Don't increment PC since we set it directly
                 return False
@@ -237,7 +237,6 @@ class Processor(BaseProcessor):
                 
                 # Get the condition value
                 condition_value = self.registers.get(condition_reg)
-                print(f"JZ/JEQ condition check: {condition_reg}={condition_value}, target={target}", file=sys.stderr)
                 
                 if condition_value == 0:
                     # Condition is true, take the jump
@@ -246,6 +245,16 @@ class Processor(BaseProcessor):
                     side_effects["branch_taken"] = True
                     side_effects["branch_target"] = target
                     side_effects["branch_type"] = "conditional"
+                    
+                    # Record control flow event
+                    self._record_control_flow(
+                        self.registers.get_pc(),
+                        target,
+                        "conditional_jump",
+                        instruction.opcode,
+                        True
+                    )
+                    
                     return False
                 else:
                     # Condition is false, don't take the jump
@@ -261,7 +270,6 @@ class Processor(BaseProcessor):
                 
                 # Get the condition value
                 condition_value = self.registers.get(condition_reg)
-                print(f"JNZ/JNE condition check: {condition_reg}={condition_value}, target={target}", file=sys.stderr)
                 
                 if condition_value != 0:
                     # Condition is true, take the jump
@@ -270,6 +278,16 @@ class Processor(BaseProcessor):
                     side_effects["branch_taken"] = True
                     side_effects["branch_target"] = target
                     side_effects["branch_type"] = "conditional"
+                    
+                    # Record control flow event
+                    self._record_control_flow(
+                        self.registers.get_pc(),
+                        target,
+                        "conditional_jump",
+                        instruction.opcode,
+                        True
+                    )
+                    
                     return False
                 else:
                     # Condition is false, don't take the jump
@@ -289,8 +307,6 @@ class Processor(BaseProcessor):
                 if condition_value > 0x7FFFFFFF:
                     condition_value = condition_value - 0x100000000
                 
-                print(f"JGT condition check: {condition_reg}={condition_value}, target={target}", file=sys.stderr)
-                
                 if condition_value > 0:
                     # Condition is true, take the jump
                     self.registers.set_pc(target)
@@ -298,6 +314,16 @@ class Processor(BaseProcessor):
                     side_effects["branch_taken"] = True
                     side_effects["branch_target"] = target
                     side_effects["branch_type"] = "conditional"
+                    
+                    # Record control flow event
+                    self._record_control_flow(
+                        self.registers.get_pc(),
+                        target,
+                        "conditional_jump",
+                        instruction.opcode,
+                        True
+                    )
+                    
                     return False
                 else:
                     # Condition is false, don't take the jump
@@ -313,7 +339,6 @@ class Processor(BaseProcessor):
                 
                 # Get the condition value
                 condition_value = self.registers.get(condition_reg)
-                print(f"JLT condition check: {condition_reg}={condition_value}, target={target}", file=sys.stderr)
                 
                 if condition_value < 0:
                     # Condition is true, take the jump
@@ -322,6 +347,16 @@ class Processor(BaseProcessor):
                     side_effects["branch_taken"] = True
                     side_effects["branch_target"] = target
                     side_effects["branch_type"] = "conditional"
+                    
+                    # Record control flow event
+                    self._record_control_flow(
+                        self.registers.get_pc(),
+                        target,
+                        "conditional_jump",
+                        instruction.opcode,
+                        True
+                    )
+                    
                     return False
                 else:
                     # Condition is false, don't take the jump
@@ -404,6 +439,12 @@ class Processor(BaseProcessor):
                 
                 # Create side effect for atomic add
                 side_effects["atomic_add"] = (addr, value, dest_reg)
+                
+                # Save original PC before incrementing it
+                old_pc = self.registers.get_pc()
+                # Increment PC to move to next instruction
+                self.registers.set_pc(old_pc + 1)
+                side_effects["pc_increment"] = True
             else:
                 raise InvalidInstructionException(
                     f"Not enough operands for {instruction.opcode}",
@@ -418,6 +459,12 @@ class Processor(BaseProcessor):
                 
                 # Create side effect for atomic sub
                 side_effects["atomic_sub"] = (addr, value, dest_reg)
+                
+                # Save original PC before incrementing it
+                old_pc = self.registers.get_pc()
+                # Increment PC to move to next instruction
+                self.registers.set_pc(old_pc + 1)
+                side_effects["pc_increment"] = True
             else:
                 raise InvalidInstructionException(
                     f"Not enough operands for {instruction.opcode}",
@@ -428,6 +475,12 @@ class Processor(BaseProcessor):
             if len(instruction.operands) >= 1:
                 barrier_id = self._get_operand_value(instruction.operands[0])
                 side_effects["barrier"] = barrier_id
+                
+                # Save original PC before incrementing it
+                old_pc = self.registers.get_pc()
+                # Increment PC to move to next instruction
+                self.registers.set_pc(old_pc + 1)
+                side_effects["pc_increment"] = True
             else:
                 raise InvalidInstructionException(
                     f"Not enough operands for {instruction.opcode}",
@@ -436,6 +489,12 @@ class Processor(BaseProcessor):
         
         elif instruction.opcode == "JOIN_ALL":
             side_effects["join_all"] = True
+            
+            # Save original PC before incrementing it
+            old_pc = self.registers.get_pc()
+            # Increment PC to move to next instruction
+            self.registers.set_pc(old_pc + 1)
+            side_effects["pc_increment"] = True
         
         else:
             # Unknown sync instruction, defer to base class

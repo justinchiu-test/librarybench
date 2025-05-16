@@ -163,19 +163,13 @@ class Table(InMemoryStorage[TableRecord]):
         # Create an updated TableRecord
         updated_record = self._create_table_record(stored_record)
         
-        # Update the record in storage
-        # We'll leverage InMemoryStorage's functionality here with our custom approach
-        # First, remove old indices
-        for index in self._indices.values():
-            if old_table_record:
-                index.remove(old_table_record)
-        
-        # Then update the record in _records
+        # Use InMemoryStorage's functionality to update the record
+        # This will automatically handle index updates
         self._records[record_id] = updated_record
         
-        # Finally, update indices
+        # Use InMemoryStorage's update indices to ensure all indices are updated correctly
         for index in self._indices.values():
-            index.add(updated_record)
+            index.update(old_table_record, updated_record)
         
         # Update last modified time
         current_time = time.time()
@@ -292,23 +286,38 @@ class Table(InMemoryStorage[TableRecord]):
             value = conditions[indexed_field]
             record_ids = self._indices[indexed_field].find(value)
             
-            # Get the records and filter further
-            for record_id in record_ids:
-                if record_id in self._records:
-                    record = self._records[record_id]
-                    if self._matches_conditions(record.get_data_dict(), conditions):
-                        matching_records.append(record)
-                        
-                    if limit is not None and len(matching_records) >= limit:
-                        break
-        else:
-            # Fallback to linear search
-            for record in self._records.values():
-                if self._matches_conditions(record.get_data_dict(), conditions):
-                    matching_records.append(record)
+            # Get the records that match the indexed field
+            filtered_records = [self._records[record_id] for record_id in record_ids if record_id in self._records]
+            
+            # If there are additional conditions, use the common filter method
+            if len(conditions) > 1:
+                # Create a predicate function to match remaining conditions
+                def predicate(record: TableRecord) -> bool:
+                    record_data = record.get_data_dict()
+                    for col_name, expected_value in conditions.items():
+                        if col_name != indexed_field:  # Skip the indexed field we already filtered on
+                            if col_name not in record_data or record_data[col_name] != expected_value:
+                                return False
+                    return True
                 
-                if limit is not None and len(matching_records) >= limit:
-                    break
+                # Use InMemoryStorage's filter method with our custom predicate
+                filtered_records = self.filter(predicate)
+            
+            matching_records = filtered_records
+            
+            # Apply limit if needed
+            if limit is not None and len(matching_records) > limit:
+                matching_records = matching_records[:limit]
+        else:
+            # Use InMemoryStorage's filter method with a predicate for all conditions
+            def predicate(record: TableRecord) -> bool:
+                return self._matches_conditions(record.get_data_dict(), conditions)
+            
+            matching_records = self.filter(predicate)
+            
+            # Apply limit if needed
+            if limit is not None and len(matching_records) > limit:
+                matching_records = matching_records[:limit]
         
         # Convert records to dictionaries and clean them
         return [self._clean_record(record.get_data_dict()) for record in matching_records]

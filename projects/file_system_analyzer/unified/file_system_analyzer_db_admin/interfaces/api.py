@@ -206,7 +206,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             export_path = self.output_dir / export_filename
             try:
                 export_results(
-                    data=analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                    data=analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+                        analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+                    ),
                     file_path=export_path,
                     format=export_format
                 )
@@ -222,7 +224,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             )
             
         # Cache result using common cache interface
-        result_dict = analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        result_dict = analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+            analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        )
         
         # Add scan_status for compatibility with tests
         if isinstance(result_dict, dict) and "scan_status" not in result_dict:
@@ -294,7 +298,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             output_path = self.output_dir / export_filename
             try:
                 export_results(
-                    data=analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                    data=analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+                        analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+                    ),
                     file_path=output_path,
                     format=export_format
                 )
@@ -322,7 +328,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
                 )
             
         # Convert to dict and add metadata
-        result_dict = json.loads(analysis_result.json())
+        result_dict = analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+            json.loads(analysis_result.json())
+        )
         result_dict["analysis_duration_seconds"] = analysis_duration
         result_dict["analyzed_at"] = datetime.now().isoformat()
         
@@ -419,7 +427,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             output_path = self.output_dir / export_filename
             try:
                 export_results(
-                    data=analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                    data=analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+                        analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+                    ),
                     file_path=output_path,
                     format=export_format
                 )
@@ -436,7 +446,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             )
         
         # Convert to dict and add metadata
-        result_dict = analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        result_dict = analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+            analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        )
         if isinstance(result_dict, dict):
             result_dict["analysis_duration_seconds"] = analysis_duration
             result_dict["analyzed_at"] = datetime.now().isoformat()
@@ -529,7 +541,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             output_path = self.output_dir / export_filename
             try:
                 export_results(
-                    data=analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                    data=analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+                        analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+                    ),
                     file_path=output_path,
                     format=export_format
                 )
@@ -559,7 +573,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
                 )
         
         # Convert to dict and add metadata
-        result_dict = analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        result_dict = analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+            analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        )
         if isinstance(result_dict, dict):
             result_dict["analysis_duration_seconds"] = analysis_duration
             result_dict["analyzed_at"] = datetime.now().isoformat()
@@ -664,7 +680,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
             output_path = self.output_dir / export_filename
             try:
                 export_results(
-                    data=analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result,
+                    data=analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+                        analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+                    ),
                     file_path=output_path,
                     format=export_format
                 )
@@ -696,7 +714,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
                 )
         
         # Convert to dict and add metadata
-        result_dict = analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        result_dict = analysis_result.model_dump() if hasattr(analysis_result, "model_dump") else (
+            analysis_result.dict() if hasattr(analysis_result, "dict") else analysis_result
+        )
         if isinstance(result_dict, dict):
             result_dict["analysis_duration_seconds"] = analysis_duration
             result_dict["analyzed_at"] = datetime.now().isoformat()
@@ -884,7 +904,9 @@ class StorageOptimizerAPI(BaseAnalyzerAPI):
         try:
             output_path = self.output_dir / export_filename
             return export_results(
-                data=result.dict() if hasattr(result, "dict") else result,
+                data=result.model_dump() if hasattr(result, "model_dump") else (
+                    result.dict() if hasattr(result, "dict") else result
+                ),
                 file_path=output_path,
                 format=export_format
             )

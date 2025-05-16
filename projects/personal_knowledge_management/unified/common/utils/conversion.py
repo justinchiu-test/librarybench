@@ -243,9 +243,104 @@ def convert_strings_to_enums(data: Dict[str, Any], model_class: Type[BaseModel])
         data: The data structure to convert, modified in place.
         model_class: The model class to use for enum conversion.
     """
-    # This function needs to be implemented with knowledge of the model's enum fields
-    # For a general implementation, you would need reflection or type annotations
-    pass
+    # Import common enum types that might need conversion
+    from common.core.models import Priority, RelationType, Status, NodeType
+    
+    # Map of known enum field names to enum classes
+    common_enum_map = {
+        'priority': Priority,
+        'relation_type': RelationType,
+        'status': Status,
+        'node_type': NodeType,
+    }
+    
+    # Try to get additional enum mappings from ResearchBrain if available
+    try:
+        from researchbrain.core.models import (
+            CitationType, CitationFormat, EvidenceType, EvidenceStrength,
+            ExperimentStatus, GrantStatus, CollaboratorRole
+        )
+        
+        # Add ResearchBrain enums to the map
+        rb_enum_map = {
+            'citation_type': CitationType,
+            'format': CitationFormat,
+            'evidence_type': EvidenceType,
+            'strength': EvidenceStrength,
+            'experiment_status': ExperimentStatus,
+            'grant_status': GrantStatus,
+            'role': CollaboratorRole
+        }
+        
+        common_enum_map.update(rb_enum_map)
+        
+        # Handle special case for 'status' field mapping by model class
+        if model_class.__name__ == 'Experiment':
+            common_enum_map['status'] = ExperimentStatus
+        elif model_class.__name__ == 'GrantProposal':
+            common_enum_map['status'] = GrantStatus
+        elif model_class.__name__ == 'Collaborator':
+            common_enum_map['role'] = CollaboratorRole
+    except ImportError:
+        # ResearchBrain models not available, ignore
+        pass
+        
+    # Try to get additional enum mappings from ProductMind if available
+    try:
+        from productmind.models import Sentiment, SourceType, StakeholderType
+        
+        # Add ProductMind enums to the map
+        pm_enum_map = {
+            'sentiment': Sentiment,
+            'source': SourceType,
+            'type': StakeholderType
+        }
+        
+        common_enum_map.update(pm_enum_map)
+    except ImportError:
+        # ProductMind models not available, ignore
+        pass
+    
+    # Process the data dictionary
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key in common_enum_map and common_enum_map[key] is not None and isinstance(value, str):
+                try:
+                    # Try to convert the string to the enum value
+                    data[key] = common_enum_map[key](value)
+                except (ValueError, KeyError):
+                    # Keep as string if conversion fails
+                    pass
+            elif isinstance(value, dict):
+                convert_strings_to_enums(value, model_class)
+            elif isinstance(value, list):
+                for item in value:
+                    if isinstance(item, dict):
+                        # For nested dictionaries (like evidence objects in a list)
+                        convert_strings_to_enums(item, model_class)
+                        
+    # Special case for handling nested structures like evidence
+    if isinstance(data, dict) and model_class.__name__ == 'ResearchQuestion' and 'evidence' in data:
+        try:
+            from researchbrain.core.models import EvidenceType, EvidenceStrength
+            
+            # Process evidence items
+            for evidence in data['evidence']:
+                if isinstance(evidence, dict):
+                    if 'evidence_type' in evidence and isinstance(evidence['evidence_type'], str):
+                        try:
+                            evidence['evidence_type'] = EvidenceType(evidence['evidence_type'])
+                        except ValueError:
+                            pass
+                            
+                    if 'strength' in evidence and isinstance(evidence['strength'], str):
+                        try:
+                            evidence['strength'] = EvidenceStrength(evidence['strength'])
+                        except ValueError:
+                            pass
+        except ImportError:
+            # ResearchBrain models not available, ignore
+            pass
 
 
 def convert_strings_to_datetimes(data: Dict[str, Any]) -> None:

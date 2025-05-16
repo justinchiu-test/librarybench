@@ -4,8 +4,11 @@ Change tracking system for efficient synchronization.
 from typing import Dict, List, Any, Optional, Set, Tuple
 import time
 import json
+import uuid
 from dataclasses import dataclass
 import copy
+
+from common.core.base import BaseRecord
 
 from common.core.versioning import ChangeTracker as CommonChangeTracker
 from common.core.versioning import VersionVector as CommonVersionVector
@@ -204,18 +207,49 @@ class ChangeTracker:
         This handles the appropriate method call based on the change type.
         """
         # The common library's ChangeTracker expects BaseRecord objects,
-        # but we work with dictionaries. This is a simplified approach.
+        # but we work with dictionaries. We need to create a mock record.
+        # Create a proxy that implements the BaseRecord interface
         
-        # For now, we'll just append the change to the changes list
-        # as the Common ChangeTracker's methods expect BaseRecord objects
-        self._common_tracker.changes.append(change)
+        class MockRecord(BaseRecord):
+            def __init__(self, record_id, data=None):
+                self.id = record_id
+                self._data = data or {}
+                self._created_at = time.time()
+                self._updated_at = self._created_at
+                
+            def to_dict(self):
+                return self._data
+            
+            def update(self, data):
+                self._data.update(data)
+                self._updated_at = time.time()
+                return self
+            
+            def get_created_at(self):
+                return self._created_at
+                
+            def get_updated_at(self):
+                return self._updated_at
         
-        # Update the version vector
-        self._common_tracker.version_vector.increment()
-        
-        # Update current versions
-        if change.change_type != ChangeType.DELETE and change.after_version:
-            self._common_tracker.current_versions[change.record_id] = change.after_version
+        # Handle different change types appropriately
+        if change.change_type == ChangeType.CREATE:
+            # For CREATE, create a mock record with the new data
+            mock_record = MockRecord(change.record_id, change.after_data)
+            # Use the common tracker's record_create method
+            self._common_tracker.record_create(mock_record)
+                
+        elif change.change_type == ChangeType.UPDATE:
+            # For UPDATE, create before and after records
+            before_record = MockRecord(change.record_id, change.before_data)
+            after_record = MockRecord(change.record_id, change.after_data)
+            # Use the common tracker's record_update method
+            self._common_tracker.record_update(before_record, after_record)
+                
+        elif change.change_type == ChangeType.DELETE:
+            # For DELETE, create a mock record with the before data
+            mock_record = MockRecord(change.record_id, change.before_data)
+            # Use the common tracker's record_delete method
+            self._common_tracker.record_delete(mock_record)
     
     def _prune_history(self, table_name: str) -> None:
         """
@@ -394,14 +428,16 @@ class VersionVector(Serializable):
     Tracks the version of data across multiple clients using a vector clock.
     Used for detecting conflicts during synchronization.
     
-    This class is now a wrapper around the common library's VersionVector
-    that maintains compatibility with the existing API.
+    This class is a wrapper around the common library's VersionVector
+    that maintains compatibility with the existing API while leveraging
+    the common library's implementation.
     """
     def __init__(self, client_id: str, initial_value: int = 0):
+        # Maintain compatibility with existing API by storing the client_id and vector
         self.vector: Dict[str, int] = {client_id: initial_value}
         self.client_id = client_id
         
-        # Internal common library version vector
+        # Create the common library version vector
         self._common_vector = CommonVersionVector(node_id=client_id)
         if initial_value > 0:
             # Set the initial value
@@ -409,16 +445,17 @@ class VersionVector(Serializable):
     
     def increment(self) -> None:
         """Increment the version for the current client."""
-        self.vector[self.client_id] = self.vector.get(self.client_id, 0) + 1
+        # Use the common library's increment method
         self._common_vector.increment()
+        # Keep our vector in sync
+        self.vector = dict(self._common_vector.vector)
     
     def update(self, other: 'VersionVector') -> None:
         """Merge with another version vector, taking the max value for each client."""
-        for client_id, version in other.vector.items():
-            self.vector[client_id] = max(self.vector.get(client_id, 0), version)
-        
-        # Update the common version vector
+        # Use the common library's merge method
         self._common_vector.merge(other._common_vector)
+        # Keep our vector in sync
+        self.vector = dict(self._common_vector.vector)
     
     def dominates(self, other: 'VersionVector') -> bool:
         """
@@ -427,26 +464,14 @@ class VersionVector(Serializable):
         Returns True if this vector is strictly greater than or equal to the other
         in all dimensions, and strictly greater in at least one dimension.
         """
-        # Update the common vectors to match the vector dictionaries
-        # This ensures the test data is correctly used
-        for client_id, value in self.vector.items():
-            self._common_vector.vector[client_id] = value
-            
-        for client_id, value in other.vector.items():
-            other._common_vector.vector[client_id] = value
-            
-        # Directly check the dominance relationship
-        strictly_greater = False
-        for client_id in set(self.vector.keys()) | set(other.vector.keys()):
-            self_val = self.vector.get(client_id, 0)
-            other_val = other.vector.get(client_id, 0)
-            
-            if self_val < other_val:
-                return False  # Not dominating if any value is less
-            if self_val > other_val:
-                strictly_greater = True
-                
-        return strictly_greater  # Must have at least one strictly greater value
+        # Ensure both common vectors are synchronized with current values
+        self._sync_common_vector()
+        other._sync_common_vector()
+        
+        # Use the common library's compare method
+        result = self._common_vector.compare(other._common_vector)
+        # Return True if this vector is strictly greater (happened-after)
+        return result == 1
     
     def concurrent_with(self, other: 'VersionVector') -> bool:
         """
@@ -455,15 +480,20 @@ class VersionVector(Serializable):
         Returns True if neither vector dominates the other, indicating
         that they represent concurrent modifications.
         """
-        # Update the common vectors to match the vector dictionaries
+        # Ensure both common vectors are synchronized with current values
+        self._sync_common_vector()
+        other._sync_common_vector()
+        
+        # Use the common library's compare method
+        result = self._common_vector.compare(other._common_vector)
+        # Return True if the vectors are concurrent (neither happens-before)
+        return result == 0
+    
+    def _sync_common_vector(self) -> None:
+        """Ensure the common vector matches our vector dictionary."""
+        # Update the common vector with our values
         for client_id, value in self.vector.items():
             self._common_vector.vector[client_id] = value
-            
-        for client_id, value in other.vector.items():
-            other._common_vector.vector[client_id] = value
-        
-        # Check if neither vector dominates the other
-        return not self.dominates(other) and not other.dominates(self)
     
     def to_dict(self) -> Dict[str, Any]:
         """

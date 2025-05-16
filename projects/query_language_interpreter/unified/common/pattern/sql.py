@@ -10,7 +10,7 @@ from common.models.enums import PrivacyFunction
 
 class SQLPatternMatch(PatternMatch):
     """Represents an SQL pattern match result."""
-    
+
     def __init__(
         self,
         pattern_id: str,
@@ -45,7 +45,7 @@ class SQLPatternMatch(PatternMatch):
             metadata=metadata,
         )
         self.sql_component = sql_component
-    
+
     def __str__(self) -> str:
         """String representation of the match.
 
@@ -53,7 +53,7 @@ class SQLPatternMatch(PatternMatch):
             str: String representation
         """
         return f"SQLPatternMatch(pattern={self.pattern_id}, component={self.sql_component}, confidence={self.confidence:.2f})"
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary.
 
@@ -74,7 +74,7 @@ class SQLPatternMatch(PatternMatch):
 
 class SQLPatternDetector(BasePatternDetector):
     """SQL pattern detector for query analysis."""
-    
+
     # Common SQL patterns
     DEFAULT_PATTERNS = {
         "select_clause": {
@@ -128,7 +128,7 @@ class SQLPatternDetector(BasePatternDetector):
             "threshold": 0.9,
         },
     }
-    
+
     def __init__(self, patterns: Dict[str, Any] = None):
         """Initialize an SQL pattern detector.
 
@@ -139,9 +139,9 @@ class SQLPatternDetector(BasePatternDetector):
         all_patterns = self.DEFAULT_PATTERNS.copy()
         if patterns:
             all_patterns.update(patterns)
-        
+
         super().__init__(all_patterns)
-    
+
     def detect(self, sql_query: str) -> List[SQLPatternMatch]:
         """Detect SQL patterns in a query.
 
@@ -152,11 +152,11 @@ class SQLPatternDetector(BasePatternDetector):
             List[SQLPatternMatch]: List of SQL pattern matches
         """
         # Normalize query (remove extra whitespace and make uppercase)
-        normalized_query = re.sub(r'\s+', ' ', sql_query).strip()
-        
+        normalized_query = re.sub(r"\s+", " ", sql_query).strip()
+
         # Get basic matches using parent method
         base_matches = super().detect(normalized_query)
-        
+
         # Convert to SQL matches
         sql_matches = []
         for match in base_matches:
@@ -171,11 +171,11 @@ class SQLPatternDetector(BasePatternDetector):
                 confidence=match.confidence,
                 metadata=match.metadata,
             )
-            
+
             sql_matches.append(sql_match)
-        
+
         return sql_matches
-    
+
     def extract_tables(self, sql_query: str) -> List[str]:
         """Extract table names from an SQL query.
 
@@ -186,7 +186,7 @@ class SQLPatternDetector(BasePatternDetector):
             List[str]: List of table names
         """
         tables = []
-        
+
         # Get FROM clause matches
         from_matches = self.detect_by_category(sql_query, "FROM")
         for match in from_matches:
@@ -195,15 +195,15 @@ class SQLPatternDetector(BasePatternDetector):
                 # Split by commas and clean up
                 table_parts = [t.strip() for t in tables_str.split(",")]
                 tables.extend(table_parts)
-        
+
         # Get JOIN clause matches
         join_matches = self.detect_by_category(sql_query, "JOIN")
         for match in join_matches:
             if "table" in match.groups:
                 tables.append(match.groups["table"].strip())
-        
+
         return tables
-    
+
     def extract_columns(self, sql_query: str) -> List[str]:
         """Extract column names from an SQL query.
 
@@ -214,7 +214,7 @@ class SQLPatternDetector(BasePatternDetector):
             List[str]: List of column names
         """
         columns = []
-        
+
         # Get SELECT clause matches
         select_matches = self.detect_by_category(sql_query, "SELECT")
         for match in select_matches:
@@ -234,16 +234,16 @@ class SQLPatternDetector(BasePatternDetector):
                         # Handle function calls
                         if "(" in col:
                             # Extract column from function if possible
-                            inside_parens = re.search(r'\((.+?)\)', col)
+                            inside_parens = re.search(r"\((.+?)\)", col)
                             if inside_parens:
                                 col_content = inside_parens.group(1).strip()
                                 if col_content != "*":
                                     columns.append(col_content)
                         else:
                             columns.append(col)
-        
+
         return columns
-    
+
     def analyze_query(self, sql_query: str) -> Dict[str, Any]:
         """Analyze an SQL query and extract its components.
 
@@ -254,7 +254,7 @@ class SQLPatternDetector(BasePatternDetector):
             Dict[str, Any]: Analysis results
         """
         matches = self.detect(sql_query)
-        
+
         # Extract query type
         query_type = None
         if any(m.sql_component == "SELECT" for m in matches):
@@ -265,7 +265,7 @@ class SQLPatternDetector(BasePatternDetector):
             query_type = "UPDATE"
         elif any(m.sql_component == "DELETE" for m in matches):
             query_type = "DELETE"
-        
+
         # Extract components
         components = {}
         for match in matches:
@@ -273,11 +273,11 @@ class SQLPatternDetector(BasePatternDetector):
                 "text": match.matched_text,
                 "groups": match.groups,
             }
-        
+
         # Extract tables and columns
         tables = self.extract_tables(sql_query)
         columns = self.extract_columns(sql_query)
-        
+
         return {
             "query_type": query_type,
             "components": components,
@@ -285,57 +285,57 @@ class SQLPatternDetector(BasePatternDetector):
             "columns": columns,
             "matches": [m.to_dict() for m in matches],
         }
-    
+
     def extract_table_relationships(self, sql_text: str) -> List[Tuple[str, str]]:
         """Extract table relationships from JOIN conditions.
-        
+
         Args:
             sql_text: SQL query text
-            
+
         Returns:
             List of (table1, table2) relationship tuples
         """
         # This is a simplified implementation
         relationships = []
-        
+
         # Extract JOIN ... ON conditions
-        join_pattern = r'JOIN\s+(\w+)(?:\s+(?:AS\s+)?(\w+))?\s+ON\s+([^WHERE]+)'
+        join_pattern = r"JOIN\s+(\w+)(?:\s+(?:AS\s+)?(\w+))?\s+ON\s+([^WHERE]+)"
         join_matches = re.finditer(join_pattern, sql_text, re.IGNORECASE)
-        
+
         for match in join_matches:
             join_table = match.group(1)
             join_alias = match.group(2) or join_table
             condition = match.group(3)
-            
+
             # Extract tables from the condition
-            condition_pattern = r'(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)'
+            condition_pattern = r"(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)"
             condition_matches = re.finditer(condition_pattern, condition)
-            
+
             for cmatch in condition_matches:
                 left_table, left_field, right_table, right_field = cmatch.groups()
                 relationships.append((left_table, right_table))
-        
+
         return relationships
 
 
 class SQLPrivacyPatternDetector(SQLPatternDetector):
     """Pattern detector for SQL privacy functions."""
-    
+
     def __init__(self, confidence_threshold: float = 0.7):
         """Initialize the SQL privacy pattern detector.
-        
+
         Args:
             confidence_threshold: Confidence threshold for matches
         """
         super().__init__()
         self.confidence_threshold = confidence_threshold
         self._initialize_patterns()
-    
+
     def _initialize_patterns(self) -> None:
         """Initialize standard privacy function patterns."""
         # Create regex patterns for privacy functions
-        function_pattern = r'(%s)\s*\(\s*([^,\)]+)(?:\s*,\s*([^\)]+))?\s*\)'
-        
+        function_pattern = r"(%s)\s*\(\s*([^,\)]+)(?:\s*,\s*([^\)]+))?\s*\)"
+
         # Add patterns for all privacy functions
         for func in PrivacyFunction:
             pattern = function_pattern % func.value
@@ -346,98 +346,94 @@ class SQLPrivacyPatternDetector(SQLPatternDetector):
                 category="privacy_function",
                 metadata={
                     "function_name": func.value,
-                    "description": f"{func.value} privacy function"
-                }
+                    "description": f"{func.value} privacy function",
+                },
             )
-    
+
     def detect_privacy_functions(self, sql_text: str) -> List[Dict[str, Any]]:
         """Extract privacy functions from SQL query.
-        
+
         Args:
             sql_text: SQL query text
-            
+
         Returns:
             List of extracted privacy functions with their parameters
         """
         # Find all privacy function patterns in the SQL
         matches = self.detect_by_category(sql_text, "privacy_function")
-        
+
         # Parse the matches into a structured format
         extracted_functions = []
         for match in matches:
             # Get the function name (pattern_id)
             function_name = match.pattern_id
-            
+
             # Extract field and arguments from the match
             groups = match.groups or {}
             # If no groups were captured, try to extract from the matched text
             if not groups and match.matched_text:
                 # Extract field name from the function call
-                field_match = re.search(r'\(\s*([^,\)]+)', match.matched_text)
+                field_match = re.search(r"\(\s*([^,\)]+)", match.matched_text)
                 if field_match:
                     field_name = field_match.group(1).strip()
                     # Extract arguments if any
-                    args_match = re.search(r',\s*([^\)]+)', match.matched_text)
+                    args_match = re.search(r",\s*([^\)]+)", match.matched_text)
                     args_text = args_match.group(1).strip() if args_match else ""
-                    
+
                     # Parse arguments
                     args = self._parse_function_args(args_text)
-                    
-                    extracted_functions.append({
-                        "function": function_name,
-                        "field": field_name,
-                        "args": args
-                    })
+
+                    extracted_functions.append(
+                        {"function": function_name, "field": field_name, "args": args}
+                    )
             else:
                 # If groups were captured, use them
                 if len(groups) > 0:
-                    field_name = groups.get('1', "").strip() if '1' in groups else ""
-                    args_text = groups.get('2', "").strip() if '2' in groups else ""
-                    
+                    field_name = groups.get("1", "").strip() if "1" in groups else ""
+                    args_text = groups.get("2", "").strip() if "2" in groups else ""
+
                     # Parse arguments
                     args = self._parse_function_args(args_text)
-                    
-                    extracted_functions.append({
-                        "function": function_name,
-                        "field": field_name,
-                        "args": args
-                    })
-        
+
+                    extracted_functions.append(
+                        {"function": function_name, "field": field_name, "args": args}
+                    )
+
         return extracted_functions
-    
+
     def has_privacy_functions(self, sql_text: str) -> bool:
         """Check if SQL contains privacy functions.
-        
+
         Args:
             sql_text: SQL query text
-            
+
         Returns:
             True if privacy functions are found, False otherwise
         """
         matches = self.detect_by_category(sql_text, "privacy_function")
         return len(matches) > 0
-    
+
     def _parse_function_args(self, args_text: str) -> Dict[str, str]:
         """Parse function arguments from text.
-        
+
         Args:
             args_text: Arguments text
-            
+
         Returns:
             Dictionary of argument name-value pairs
         """
         if not args_text:
             return {}
-            
+
         args = {}
-        
+
         # Handle key=value arguments
-        for arg_pair in args_text.split(','):
-            if '=' in arg_pair:
-                key, value = arg_pair.split('=', 1)
+        for arg_pair in args_text.split(","):
+            if "=" in arg_pair:
+                key, value = arg_pair.split("=", 1)
                 args[key.strip()] = value.strip().strip("'\"")
             else:
                 # Positional arguments
                 args[f"arg{len(args) + 1}"] = arg_pair.strip().strip("'\"")
-                
+
         return args

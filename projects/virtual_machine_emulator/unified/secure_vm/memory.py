@@ -22,7 +22,8 @@ from common.core.exceptions import (
     MemoryException, SegmentationFault, ProtectionFault, InvalidAddressException
 )
 from common.extensions.security.memory_protection import (
-    MemoryProtection, MemoryProtectionException, DEPViolationException, StackCanaryException
+    MemoryProtection as BaseMemoryProtection,
+    MemoryProtectionException, DEPViolationException, StackCanaryException
 )
 
 
@@ -30,7 +31,7 @@ from common.extensions.security.memory_protection import (
 MemoryPermission = MemoryPermission
 MemoryProtectionLevel = MemoryProtectionLevel
 # Re-export MemoryProtection for backward compatibility
-MemoryProtection = MemoryProtection
+MemoryProtection = BaseMemoryProtection
 
 
 class ProtectionBypassAttempt:
@@ -177,6 +178,15 @@ class Memory(BaseMemorySystem):
             aslr_entropy: Bits of randomness for ASLR
         """
         super().__init__(size, protection_level)
+        
+        # Create protection configuration using common library
+        self.memory_protection = BaseMemoryProtection(
+            level=protection_level,
+            dep_enabled=enable_dep,
+            aslr_enabled=enable_aslr
+        )
+        
+        # Maintain compatibility fields
         self.enable_dep = enable_dep
         self.enable_aslr = enable_aslr
         self.aslr_entropy = aslr_entropy
@@ -204,8 +214,20 @@ class Memory(BaseMemorySystem):
         Returns:
             The added segment
         """
+        # Safety check to make sure segment is the right type
+        if not isinstance(segment, MemorySegment):
+            # Convert if needed - this might be a BaseMemorySegment
+            new_segment = MemorySegment(
+                base_address=segment.base_address,
+                size=segment.size,
+                permission=segment.permission,
+                name=segment.name
+            )
+            new_segment.data = segment.data
+            segment = new_segment
+        
         # Apply ASLR if enabled and requested
-        if self.enable_aslr and apply_aslr:
+        if hasattr(self, 'enable_aslr') and self.enable_aslr and apply_aslr:
             # Get or create an ASLR offset for this segment type
             if segment.name not in self.aslr_offsets:
                 max_offset = (1 << self.aslr_entropy) - 1
@@ -246,6 +268,17 @@ class Memory(BaseMemorySystem):
             context=context,
         )
         self.protection_events.append(event)
+        
+        # Also record in common framework for compatibility
+        super()._record_protection_event(
+            address=address,
+            access_type=MemoryAccessType.READ if access_type == "read" else 
+                       MemoryAccessType.WRITE if access_type == "write" else
+                       MemoryAccessType.EXECUTE,
+            current_permission=current_permission,
+            required_permission=required_permission,
+            context=context
+        )
     
     def read_byte(self, address: int, context: Dict[str, Any] = None) -> int:
         """

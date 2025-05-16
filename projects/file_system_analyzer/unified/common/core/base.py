@@ -32,6 +32,25 @@ M = TypeVar('M', bound=BaseScanMatch)
 R = TypeVar('R', bound=ScanResult)
 
 
+class Serializable(abc.ABC):
+    """Interface for objects that can be serialized to and from dictionaries.
+    
+    This interface is used by objects that need to be serialized to JSON or
+    other formats for storage or transmission.
+    """
+    
+    @abc.abstractmethod
+    def to_dict(self) -> dict:
+        """Convert the object to a dictionary suitable for serialization."""
+        pass
+        
+    @classmethod
+    @abc.abstractmethod
+    def from_dict(cls, data: dict) -> 'Serializable':
+        """Create an object from a dictionary representation."""
+        pass
+
+
 class PatternMatcher(abc.ABC, Generic[P, M]):
     """Base class for pattern matching against file content."""
     

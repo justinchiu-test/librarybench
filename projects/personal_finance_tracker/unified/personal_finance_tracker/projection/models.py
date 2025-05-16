@@ -7,6 +7,15 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, validator
 
+# Import from common library
+from common.core.analysis.financial_projector import (
+    ProjectionScenario,
+    ProjectionParameters,
+    CashFlow,
+    Projection,
+    ProjectionResult,
+)
+
 
 class SpendingLevel(str, Enum):
     """Spending level for cash runway projections."""
@@ -15,15 +24,6 @@ class SpendingLevel(str, Enum):
     REDUCED = "reduced"  # Reduced discretionary spending
     NORMAL = "normal"  # Normal spending patterns
     INCREASED = "increased"  # Higher than normal spending
-
-
-class ProjectionScenario(str, Enum):
-    """Scenario types for financial projections."""
-
-    PESSIMISTIC = "pessimistic"
-    CONSERVATIVE = "conservative"
-    EXPECTED = "expected"
-    OPTIMISTIC = "optimistic"
 
 
 class RevenueSource(BaseModel):
@@ -64,7 +64,7 @@ class CashFlowProjection(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     start_date: datetime
     end_date: datetime
-    scenario: ProjectionScenario = ProjectionScenario.EXPECTED
+    scenario: ProjectionScenario = ProjectionScenario.BASELINE
     starting_balance: float
     ending_balance: float
     total_income: float
@@ -80,6 +80,35 @@ class CashFlowProjection(BaseModel):
         if v < 0 or v > 1:
             raise ValueError("Confidence interval must be between 0 and 1")
         return v
+    
+    @classmethod
+    def from_common_projection(cls, projection: Projection, monthly_breakdown: Dict[str, Dict[str, float]]) -> "CashFlowProjection":
+        """
+        Convert a common Projection to our specialized CashFlowProjection.
+        
+        Args:
+            projection: The common projection to convert
+            monthly_breakdown: Monthly breakdown of income, expenses, and balance
+            
+        Returns:
+            Our specialized CashFlowProjection
+        """
+        # Calculate total income and expenses
+        total_income = sum(cf.income for cf in projection.cash_flows)
+        total_expenses = sum(cf.expenses for cf in projection.cash_flows)
+        
+        return cls(
+            start_date=projection.start_date,
+            end_date=projection.end_date,
+            scenario=projection.scenario,
+            starting_balance=projection.starting_balance,
+            ending_balance=projection.final_balance,
+            total_income=total_income,
+            total_expenses=total_expenses,
+            net_cash_flow=total_income - total_expenses,
+            monthly_breakdown=monthly_breakdown,
+            confidence_interval=projection.confidence_level,
+        )
 
 
 class RunwayProjection(BaseModel):

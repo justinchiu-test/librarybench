@@ -131,7 +131,7 @@ def get_imported_code(file_path, directory):
                 # print(f"[success] Found definition '{fn_name}' in {src_file}")
         if not matches: 
             print(f"[WARN] No definition '{fn_name}' in {files}")
-            breakpoint()
+            #breakpoint()
 
     return imported_code_segments
 
@@ -145,6 +145,8 @@ def compute_metrics(directory, model, enable_logprobs=False, condition_on_codeba
     codes = {}
     for file in directory.rglob("*.py"):
         if file.name.startswith("test_"):
+            continue
+        if ".venv" in str(file):
             continue
         program_name = str(file.relative_to(directory.parent))
         program_names.append(program_name)

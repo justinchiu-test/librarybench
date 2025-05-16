@@ -143,7 +143,7 @@ class ScanSummary(CommonScanSummary):
         )
 
 
-class SensitiveDataScanner:
+class SensitiveDataScanner(ParallelDirectoryScanner):
     """Scanner for detecting sensitive data in files."""
     
     def __init__(self, options: Optional[ScanOptions] = None):
@@ -157,26 +157,19 @@ class SensitiveDataScanner:
         }
         
         # Create pattern matcher
-        self.pattern_matcher = RegexPatternMatcher(
+        pattern_matcher = RegexPatternMatcher(
             patterns=self.options.patterns,
             validators=validators,
             context_lines=self.options.context_lines
         )
         
-        # Create common scanner - use ParallelDirectoryScanner for better performance
-        self.common_scanner = ParallelDirectoryScanner(
-            pattern_matcher=self.pattern_matcher,
-            options=self.options
-        )
-    
-    def should_ignore_file(self, file_path: Union[str, Path]) -> bool:
-        """Check if a file should be ignored based on options."""
-        return self.common_scanner.should_ignore_file(file_path)
+        # Initialize the base scanner with our matcher and options
+        super().__init__(pattern_matcher=pattern_matcher, options=self.options)
     
     def scan_file(self, file_path: Union[str, Path]) -> ScanResult:
         """Scan a single file for sensitive data."""
         try:
-            common_result = self.common_scanner.scan_file(file_path)
+            common_result = super().scan_file(file_path)
             result = ScanResult.from_generic_result(common_result)
             
             # Set error for non-existent files
@@ -214,8 +207,8 @@ class SensitiveDataScanner:
                     yield self.scan_file(str(entry))
                     return  # Return after first scan - this helps with mock testing
             
-        # If no files scanned or directory doesn't exist, use common scanner
-        for common_result in self.common_scanner.scan_directory(directory_path):
+        # If no files scanned or directory doesn't exist, use common scanner's implementation
+        for common_result in super().scan_directory(directory_path):
             yield ScanResult.from_generic_result(common_result)
     
     def parallel_scan_directory(
@@ -233,7 +226,8 @@ class SensitiveDataScanner:
         Returns:
             List of scan results
         """
-        common_results = self.common_scanner.parallel_scan_directory(
+        # Leverage the parent class's implementation for parallel scanning
+        common_results = super().parallel_scan_directory(
             directory_path=directory_path,
             max_workers=max_workers or self.options.num_threads
         )

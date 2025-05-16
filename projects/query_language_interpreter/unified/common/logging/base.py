@@ -11,6 +11,7 @@ from common.logging.formatter import LogFormatter
 
 class LogLevel:
     """Log levels."""
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"
@@ -40,26 +41,26 @@ class BaseLogger:
         self.log_file = log_file
         self.console = console
         self.level = level
-        
+
         # Create the logger
         self.logger = logging.getLogger(name)
         self.logger.setLevel(self._get_log_level(level))
         self.logger.handlers = []  # Clear any existing handlers
-        
+
         # Create formatter
         formatter = LogFormatter().get_formatter()
-        
+
         # Add file handler if log_file is specified
         if log_file:
             # Ensure directory exists
             log_dir = os.path.dirname(log_file)
             if log_dir and not os.path.exists(log_dir):
                 os.makedirs(log_dir)
-            
+
             file_handler = logging.FileHandler(log_file)
             file_handler.setFormatter(formatter)
             self.logger.addHandler(file_handler)
-        
+
         # Add console handler if console is True
         if console:
             console_handler = logging.StreamHandler(sys.stdout)
@@ -93,12 +94,12 @@ class BaseLogger:
             **kwargs: Additional log context
         """
         log_method = getattr(self.logger, level.lower(), self.logger.info)
-        
+
         # Format with kwargs if provided
         if kwargs:
             context_str = " ".join(f"{k}={v}" for k, v in kwargs.items())
             message = f"{message} [{context_str}]"
-        
+
         log_method(message)
 
     def debug(self, message: str, **kwargs) -> None:
@@ -145,7 +146,7 @@ class BaseLogger:
             **kwargs: Additional log context
         """
         self.log(LogLevel.CRITICAL, message, **kwargs)
-        
+
     def set_level(self, level: str) -> None:
         """Set the log level.
 

@@ -11,7 +11,7 @@ from typing import Dict, Any, List, Optional, Set, Tuple, Union, TypeVar, Generi
 from datetime import datetime
 import copy
 
-from common.core.versioning import Version as CommonVersion, ChangeTracker
+from common.core.versioning import Version as CommonVersion, ChangeTracker, ChangeType
 from common.core.base import BaseRecord
 from common.core.serialization import Serializable
 
@@ -211,6 +211,9 @@ class VersionManager:
         # Optional limit on the number of versions to retain
         self._max_versions = max_versions_per_feature
         
+        # Underlying change tracker from common library
+        self._change_tracker = ChangeTracker()
+        
     def add_version(
         self,
         entity_id: str,
@@ -255,6 +258,33 @@ class VersionManager:
             
         if feature_name not in self._versions[entity_id]:
             self._versions[entity_id][feature_name] = []
+            # This is a new feature, record a CREATE change
+            feature_record_id = f"{entity_id}:{feature_name}"
+            # Create a mock record for the change tracker
+            feature_record = type('FeatureRecord', (BaseRecord, Serializable), {
+                'id': feature_record_id,
+                'to_dict': lambda self: {'id': self.id, 'value': value, 'entity_id': entity_id, 'feature_name': feature_name}
+            })()
+            # Record the create operation in the change tracker
+            self._change_tracker.record_create(feature_record)
+        else:
+            # This is an update to an existing feature, record an UPDATE change
+            feature_record_id = f"{entity_id}:{feature_name}"
+            old_value = self._versions[entity_id][feature_name][0].value if self._versions[entity_id][feature_name] else None
+            
+            # Create mock records for the change tracker
+            old_feature_record = type('FeatureRecord', (BaseRecord, Serializable), {
+                'id': feature_record_id,
+                'to_dict': lambda self: {'id': self.id, 'value': old_value, 'entity_id': entity_id, 'feature_name': feature_name}
+            })()
+            
+            new_feature_record = type('FeatureRecord', (BaseRecord, Serializable), {
+                'id': feature_record_id,
+                'to_dict': lambda self: {'id': self.id, 'value': value, 'entity_id': entity_id, 'feature_name': feature_name}
+            })()
+            
+            # Record the update operation in the change tracker
+            self._change_tracker.record_update(old_feature_record, new_feature_record)
         
         # Add to version history (most recent first)
         self._versions[entity_id][feature_name].insert(0, version)
@@ -466,6 +496,20 @@ class VersionManager:
         if feature_name is not None:
             # Delete a specific feature
             if feature_name in self._versions[entity_id]:
+                # Record deletion in the change tracker
+                feature_record_id = f"{entity_id}:{feature_name}"
+                # Get the current value
+                current_value = self._versions[entity_id][feature_name][0].value if self._versions[entity_id][feature_name] else None
+                
+                # Create a mock record for the change tracker
+                feature_record = type('FeatureRecord', (BaseRecord, Serializable), {
+                    'id': feature_record_id,
+                    'to_dict': lambda self: {'id': self.id, 'value': current_value, 'entity_id': entity_id, 'feature_name': feature_name}
+                })()
+                
+                # Record the delete operation in the change tracker
+                self._change_tracker.record_delete(feature_record)
+                
                 deleted_count = len(self._versions[entity_id][feature_name])
                 del self._versions[entity_id][feature_name]
                 
@@ -478,8 +522,21 @@ class VersionManager:
                     del self._current_versions[entity_id]
         else:
             # Delete all features for the entity
-            for features in self._versions[entity_id].values():
-                deleted_count += len(features)
+            for feature_name, versions in self._versions[entity_id].items():
+                # Record deletion in the change tracker for each feature
+                feature_record_id = f"{entity_id}:{feature_name}"
+                current_value = versions[0].value if versions else None
+                
+                # Create a mock record for the change tracker
+                feature_record = type('FeatureRecord', (BaseRecord, Serializable), {
+                    'id': feature_record_id,
+                    'to_dict': lambda self: {'id': self.id, 'value': current_value, 'entity_id': entity_id, 'feature_name': feature_name}
+                })()
+                
+                # Record the delete operation in the change tracker
+                self._change_tracker.record_delete(feature_record)
+                
+                deleted_count += len(versions)
                 
             del self._versions[entity_id]
             del self._current_versions[entity_id]
@@ -522,3 +579,40 @@ class VersionManager:
             True if the feature exists, False otherwise
         """
         return entity_id in self._versions and feature_name in self._versions[entity_id]
+        
+    def get_changes_since(self, since_timestamp: float) -> List[Dict[str, Any]]:
+        """
+        Get all feature changes since the specified timestamp.
+        
+        Args:
+            since_timestamp: Timestamp to filter changes from
+            
+        Returns:
+            List of change information dictionaries
+        """
+        # Use the common ChangeTracker to get changes
+        common_changes = self._change_tracker.get_changes_since(since_timestamp)
+        
+        # Transform common changes to feature-specific format
+        feature_changes = []
+        for change in common_changes:
+            # Parse entity_id and feature_name from record_id
+            if change.record_id and ":" in change.record_id:
+                entity_id, feature_name = change.record_id.split(":", 1)
+                
+                feature_change = {
+                    "change_id": change.change_id,
+                    "entity_id": entity_id,
+                    "feature_name": feature_name,
+                    "change_type": change.change_type.value if change.change_type else None,
+                    "timestamp": change.timestamp
+                }
+                
+                # Add value data if available
+                if change.change_type == ChangeType.CREATE or change.change_type == ChangeType.UPDATE:
+                    if change.after_data and "value" in change.after_data:
+                        feature_change["value"] = change.after_data["value"]
+                
+                feature_changes.append(feature_change)
+                
+        return feature_changes

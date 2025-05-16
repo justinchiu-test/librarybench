@@ -14,9 +14,17 @@ from typing import Dict, List, Set, Optional, Any, Union, Tuple
 
 from pydantic import BaseModel, Field
 
+# Import from common library
+from common.core.base import Serializable
+from common.core.analysis import DifferentialAnalyzer as CommonDifferentialAnalyzer, AnalysisResult
+from common.utils.crypto import CryptoProvider
+from common.utils.types import ScanResult as CommonScanResult
+from common.utils.types import ScanSummary as CommonScanSummary
+from common.utils.types import FileMetadata as CommonFileMetadata
+
+# Import from local package
 from file_system_analyzer.detection.scanner import ScanResult, SensitiveDataMatch, FileMetadata
 from file_system_analyzer.detection.patterns import ComplianceCategory, SensitivityLevel
-from file_system_analyzer.utils.crypto import CryptoProvider
 
 
 class ChangeType(str, Enum):
@@ -29,16 +37,50 @@ class ChangeType(str, Enum):
     FILE_UNCHANGED = "file_unchanged"
 
 
-class BaselineEntry(BaseModel):
+class BaselineEntry(BaseModel, Serializable):
     """Entry in a baseline for a single file."""
     file_path: str
     file_hash: str
     last_modified: datetime
     matches: List[SensitiveDataMatch] = Field(default_factory=list)
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["last_modified"] = data["last_modified"].isoformat()
+        
+        # Convert matches
+        matches_list = []
+        for match in self.matches:
+            if hasattr(match, "to_dict") and callable(match.to_dict):
+                matches_list.append(match.to_dict())
+            else:
+                match_dict = match.model_dump()
+                matches_list.append(match_dict)
+                
+        data["matches"] = matches_list
+        return data
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'BaselineEntry':
+        """Create a BaselineEntry from a dictionary."""
+        # Convert datetime strings
+        if "last_modified" in data and isinstance(data["last_modified"], str):
+            data["last_modified"] = datetime.fromisoformat(data["last_modified"])
+            
+        # Convert matches
+        if "matches" in data:
+            matches = []
+            for match_data in data["matches"]:
+                matches.append(SensitiveDataMatch(**match_data))
+            data["matches"] = matches
+            
+        return cls(**data)
 
 
-class ScanBaseline(BaseModel):
+class ScanBaseline(BaseModel, Serializable):
     """Baseline of a previous scan for differential analysis."""
     baseline_id: str
     creation_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -84,9 +126,39 @@ class ScanBaseline(BaseModel):
         # Verify the signature
         signature = self.verification_info.get("signature", {})
         return crypto_provider.verify_timestamped_signature(baseline_json, signature)
+        
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["creation_time"] = data["creation_time"].isoformat()
+        
+        # Convert files
+        files_dict = {}
+        for file_path, entry in self.files.items():
+            files_dict[file_path] = entry.to_dict()
+        data["files"] = files_dict
+        
+        return data
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'ScanBaseline':
+        """Create a ScanBaseline from a dictionary."""
+        # Convert datetime strings
+        if "creation_time" in data and isinstance(data["creation_time"], str):
+            data["creation_time"] = datetime.fromisoformat(data["creation_time"])
+            
+        # Convert files
+        if "files" in data:
+            files = {}
+            for file_path, entry_data in data["files"].items():
+                files[file_path] = BaselineEntry.from_dict(entry_data)
+            data["files"] = files
+            
+        return cls(**data)
 
 
-class FileChange(BaseModel):
+class FileChange(BaseModel, Serializable):
     """Changes detected in a file between baseline and current scan."""
     file_path: str
     change_type: ChangeType
@@ -101,9 +173,65 @@ class FileChange(BaseModel):
     def has_sensitive_changes(self) -> bool:
         """Check if there are sensitive data changes in this file."""
         return len(self.new_matches) > 0 or len(self.removed_matches) > 0
+    
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        
+        # Convert datetimes
+        if self.baseline_modified:
+            data["baseline_modified"] = self.baseline_modified.isoformat()
+        if self.current_modified:
+            data["current_modified"] = self.current_modified.isoformat()
+        
+        # Convert matches
+        new_matches_list = []
+        for match in self.new_matches:
+            if hasattr(match, "to_dict") and callable(match.to_dict):
+                new_matches_list.append(match.to_dict())
+            else:
+                match_dict = match.model_dump()
+                new_matches_list.append(match_dict)
+        data["new_matches"] = new_matches_list
+        
+        removed_matches_list = []
+        for match in self.removed_matches:
+            if hasattr(match, "to_dict") and callable(match.to_dict):
+                removed_matches_list.append(match.to_dict())
+            else:
+                match_dict = match.model_dump()
+                removed_matches_list.append(match_dict)
+        data["removed_matches"] = removed_matches_list
+        
+        return data
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'FileChange':
+        """Create a FileChange from a dictionary."""
+        # Convert datetime strings
+        if "baseline_modified" in data and isinstance(data["baseline_modified"], str):
+            data["baseline_modified"] = datetime.fromisoformat(data["baseline_modified"])
+        if "current_modified" in data and isinstance(data["current_modified"], str):
+            data["current_modified"] = datetime.fromisoformat(data["current_modified"])
+            
+        # Convert matches
+        if "new_matches" in data:
+            new_matches = []
+            for match_data in data["new_matches"]:
+                new_matches.append(SensitiveDataMatch(**match_data))
+            data["new_matches"] = new_matches
+            
+        if "removed_matches" in data:
+            removed_matches = []
+            for match_data in data["removed_matches"]:
+                removed_matches.append(SensitiveDataMatch(**match_data))
+            data["removed_matches"] = removed_matches
+            
+        return cls(**data)
 
 
-class DifferentialScanResult(BaseModel):
+class DifferentialScanResult(BaseModel, Serializable):
     """Results of a differential scan comparing current results to a baseline."""
     baseline_id: str
     scan_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -153,10 +281,45 @@ class DifferentialScanResult(BaseModel):
     def total_removed_matches(self) -> int:
         """Get the total number of removed sensitive data matches."""
         return sum(len(c.removed_matches) for c in self.changes)
+    
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["scan_time"] = self.scan_time.isoformat()
+        
+        # Convert changes
+        changes_list = []
+        for change in self.changes:
+            changes_list.append(change.to_dict())
+        data["changes"] = changes_list
+        
+        return data
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'DifferentialScanResult':
+        """Create a DifferentialScanResult from a dictionary."""
+        # Convert datetime strings
+        if "scan_time" in data and isinstance(data["scan_time"], str):
+            data["scan_time"] = datetime.fromisoformat(data["scan_time"])
+            
+        # Convert changes
+        if "changes" in data:
+            changes = []
+            for change_data in data["changes"]:
+                changes.append(FileChange.from_dict(change_data))
+            data["changes"] = changes
+            
+        return cls(**data)
 
 
-class DifferentialAnalyzer:
+class DifferentialAnalyzer(CommonDifferentialAnalyzer):
     """Analyzer for comparing scan results to a baseline."""
+    
+    def __init__(self, crypto_provider: Optional[CryptoProvider] = None):
+        """Initialize the analyzer."""
+        super().__init__()
+        self.crypto_provider = crypto_provider
     
     def create_baseline(
         self, 
@@ -202,34 +365,17 @@ class DifferentialAnalyzer:
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
-        # Save as JSON for interoperability
+        # Save as JSON using Serializable interface
         with open(file_path, 'w') as f:
-            f.write(json.dumps(baseline.model_dump(), default=str))
+            f.write(json.dumps(baseline.to_dict(), default=str))
     
     def load_baseline(self, file_path: str) -> ScanBaseline:
         """Load a baseline from a file."""
         with open(file_path, 'r') as f:
             data = json.loads(f.read())
         
-        # Convert dates back to datetime objects
-        data["creation_time"] = datetime.fromisoformat(data["creation_time"])
-        
-        # Convert file entries
-        files = {}
-        for file_path, entry_data in data["files"].items():
-            entry_data["last_modified"] = datetime.fromisoformat(entry_data["last_modified"])
-            
-            # Convert matches
-            matches = []
-            for match_data in entry_data["matches"]:
-                matches.append(SensitiveDataMatch(**match_data))
-            
-            entry_data["matches"] = matches
-            files[file_path] = BaselineEntry(**entry_data)
-        
-        data["files"] = files
-        
-        return ScanBaseline(**data)
+        # Use Serializable interface to create the baseline
+        return ScanBaseline.from_dict(data)
     
     def compare_to_baseline(
         self, 
@@ -328,3 +474,59 @@ class DifferentialAnalyzer:
                 diff_result.changes.append(change)
         
         return diff_result
+    
+    # Implement CommonDifferentialAnalyzer interface methods
+    def analyze(self, data: Any, options: Optional[Dict[str, Any]] = None) -> AnalysisResult:
+        """Analyze data with specified options (CommonDifferentialAnalyzer interface)."""
+        if not options:
+            options = {}
+            
+        # Check if required data is present
+        if not isinstance(data, dict) or "current" not in data or "baseline" not in data:
+            raise ValueError("Data must contain 'current' and 'baseline' keys")
+            
+        current_results = data["current"]
+        baseline = data["baseline"]
+        
+        # Perform differential analysis
+        diff_result = self.compare_to_baseline(baseline, current_results)
+        
+        # Convert to AnalysisResult
+        result = AnalysisResult(
+            timestamp=datetime.now(timezone.utc),
+            analysis_duration_seconds=0.0,  # Would be set by timing the actual analysis
+            scan_status="completed"
+        )
+        
+        # Add differential-specific data
+        result.metadata = {
+            "baseline_id": diff_result.baseline_id,
+            "new_files_count": len(diff_result.new_files),
+            "modified_files_count": len(diff_result.modified_files),
+            "removed_files_count": len(diff_result.removed_files),
+            "unchanged_files_count": len(diff_result.unchanged_files),
+            "new_matches_count": diff_result.total_new_matches,
+            "removed_matches_count": diff_result.total_removed_matches,
+            "has_sensitive_changes": diff_result.has_sensitive_changes
+        }
+        
+        # Add the differential result for access by callers
+        result.raw_data = diff_result
+        
+        return result
+    
+    def can_analyze(self, data: Any) -> bool:
+        """Check if the analyzer can analyze the given data."""
+        return (isinstance(data, dict) and 
+                "current" in data and 
+                "baseline" in data and
+                isinstance(data["current"], list) and
+                isinstance(data["baseline"], ScanBaseline))
+    
+    def to_common_baseline(self, baseline: ScanBaseline) -> dict:
+        """Convert a ScanBaseline to a format compatible with common library."""
+        return baseline.to_dict()
+    
+    def from_common_baseline(self, data: dict) -> ScanBaseline:
+        """Create a ScanBaseline from a common format dictionary."""
+        return ScanBaseline.from_dict(data)

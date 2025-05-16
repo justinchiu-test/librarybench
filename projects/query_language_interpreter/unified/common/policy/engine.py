@@ -81,15 +81,17 @@ class BasePolicyEngine:
         # Convert dict to PolicyContext if needed
         if not isinstance(context, PolicyContext):
             context = PolicyContext(context)
-        
+
         # Check all rules
         for rule in self.rules.values():
             if rule.applies_to_action(action) and not rule.evaluate(context):
                 return False
-        
+
         return True
 
-    def get_violations(self, action: str, context: Dict[str, Any]) -> List[PolicyViolation]:
+    def get_violations(
+        self, action: str, context: Dict[str, Any]
+    ) -> List[PolicyViolation]:
         """Get policy violations for an action in the given context.
 
         Args:
@@ -100,11 +102,11 @@ class BasePolicyEngine:
             List[PolicyViolation]: List of policy violations
         """
         violations = []
-        
+
         # Convert dict to PolicyContext if needed
         if not isinstance(context, PolicyContext):
             context = PolicyContext(context)
-        
+
         # Check all rules
         for rule in self.rules.values():
             if rule.applies_to_action(action) and not rule.evaluate(context):
@@ -112,8 +114,8 @@ class BasePolicyEngine:
                     rule_id=rule.rule_id,
                     severity=rule.severity,
                     message=rule.get_violation_message(context),
-                    details={"action": action}
+                    details={"action": action},
                 )
                 violations.append(violation)
-        
+
         return violations

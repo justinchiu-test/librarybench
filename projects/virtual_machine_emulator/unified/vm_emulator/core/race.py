@@ -1,7 +1,18 @@
-"""Race condition detection for the VM."""
+"""Race condition detection for the VM.
+
+This module reexports functionality from the common.extensions.parallel.race_detection module
+to maintain backward compatibility with the vm_emulator package.
+"""
 
 from enum import Enum, auto
 from typing import Dict, List, Optional, Set, Tuple, Any
+
+from common.extensions.parallel.race_detection import (
+    AccessType,
+    MemoryAccess,
+    RaceCondition,
+    RaceDetector as CommonRaceDetector,
+)
 
 
 class RaceType(Enum):
@@ -15,27 +26,33 @@ class RaceType(Enum):
     STARVATION = auto()      # Starvation
 
 
+# Mapping between vm_emulator's RaceType and common's AccessType
+_access_type_map = {
+    "read": AccessType.READ,
+    "write": AccessType.WRITE,
+    "read_write": AccessType.READ_WRITE
+}
+
+
 class RaceDetector:
-    """Race condition detector for the VM."""
+    """
+    Race condition detector for the VM.
+    
+    This is a compatibility wrapper around the common.extensions.parallel.race_detection.RaceDetector
+    to maintain backward compatibility with the vm_emulator package.
+    """
     
     def __init__(self):
         """Initialize the race detector."""
-        # Track memory accesses by address
+        # Use the common race detector
+        self.detector = CommonRaceDetector(enabled=True)
+        
+        # Backward compatibility attributes
         self.memory_accesses: Dict[int, List[Dict[str, Any]]] = {}
-        
-        # Track synchronization operations
         self.sync_operations: Dict[str, List[Dict[str, Any]]] = {}
-        
-        # Detected race conditions
         self.race_conditions: List[Dict[str, Any]] = []
-        
-        # Thread happens-before relationships
         self.happens_before: Dict[str, Set[str]] = {}
-        
-        # For tracking thread locks
         self.thread_locks: Dict[str, Set[int]] = {}
-        
-        # Atomicity violations (expected atomic regions)
         self.atomic_regions: Dict[str, List[Tuple[int, int]]] = {}
     
     def record_memory_access(
@@ -60,11 +77,23 @@ class RaceDetector:
             value: Value read or written (for writes)
             lock_set: Set of lock IDs held during access
         """
-        # Initialize address entry if needed
+        # Convert to common format
+        is_write = access_type == "write"
+        
+        # Record in common detector
+        self.detector.record_access(
+            thread_id=thread_id,
+            processor_id=processor_id,
+            timestamp=timestamp,
+            address=address,
+            is_write=is_write,
+            value=value
+        )
+        
+        # Also maintain backward compatibility data structures
         if address not in self.memory_accesses:
             self.memory_accesses[address] = []
         
-        # Record the access
         access = {
             "address": address,
             "type": access_type,
@@ -77,8 +106,8 @@ class RaceDetector:
         
         self.memory_accesses[address].append(access)
         
-        # Check for race conditions
-        self._check_races(access)
+        # Check for race conditions after each access
+        self._check_for_races(address)
     
     def record_sync_operation(
         self,
@@ -104,7 +133,7 @@ class RaceDetector:
         if thread_id not in self.sync_operations:
             self.sync_operations[thread_id] = []
         
-        # Record the operation
+        # Record in backward compatibility structure
         op = {
             "operation": operation,
             "thread_id": thread_id,
@@ -116,57 +145,51 @@ class RaceDetector:
         
         self.sync_operations[thread_id].append(op)
         
-        # Update thread lock set
-        if sync_type == "lock":
-            if thread_id not in self.thread_locks:
-                self.thread_locks[thread_id] = set()
+        # Record in common detector for release/acquire operations
+        if operation == "release" or operation == "acquire":
+            from_thread = thread_id if operation == "release" else None
+            to_thread = thread_id if operation == "acquire" else None
             
-            if operation == "acquire":
-                self.thread_locks[thread_id].add(sync_object_id)
-            elif operation == "release":
-                if sync_object_id in self.thread_locks[thread_id]:
+            if operation == "release" and sync_type == "lock":
+                # Record that this thread released a lock, potentially establishing
+                # a happens-before relationship with future acquirers
+                if thread_id not in self.happens_before:
+                    self.happens_before[thread_id] = set()
+                
+                # Remove the lock from thread's held locks
+                if thread_id in self.thread_locks and sync_object_id in self.thread_locks[thread_id]:
                     self.thread_locks[thread_id].remove(sync_object_id)
-        
-        # Update happens-before relationships
-        if operation == "release":
-            # Create thread entry in happens-before if it doesn't exist
-            if thread_id not in self.happens_before:
-                self.happens_before[thread_id] = set()
-                
-            # Track this release operation for future reference
-            release_op = {
-                "thread_id": thread_id,
-                "sync_object_id": sync_object_id,
-                "sync_type": sync_type,
-                "timestamp": timestamp
-            }
             
-            # Store in a structure for later matching with acquire operations
-            if "releases" not in self.__dict__:
-                self.__dict__["releases"] = []
-            self.__dict__["releases"].append(release_op)
+            elif operation == "acquire" and sync_type == "lock":
+                # Add to thread's held locks
+                if thread_id not in self.thread_locks:
+                    self.thread_locks[thread_id] = set()
+                self.thread_locks[thread_id].add(sync_object_id)
                 
-        elif operation == "acquire":
-            # Check for any prior releases of this sync object
-            if "releases" in self.__dict__:
-                for release in self.__dict__["releases"]:
-                    if (release["sync_object_id"] == sync_object_id and
-                            release["sync_type"] == sync_type and
-                            release["timestamp"] < timestamp and
-                            release["thread_id"] != thread_id):
-                        
-                        # Establish happens-before relationship from releaser to acquirer
-                        release_thread = release["thread_id"]
-                        if release_thread not in self.happens_before:
-                            self.happens_before[release_thread] = set()
-                        self.happens_before[release_thread].add(thread_id)
-                        
-                        # Also establish the inverse relationship for easy lookup
-                        if "happens_after" not in self.__dict__:
-                            self.__dict__["happens_after"] = {}
-                        if thread_id not in self.__dict__["happens_after"]:
-                            self.__dict__["happens_after"][thread_id] = set()
-                        self.__dict__["happens_after"][thread_id].add(release_thread)
+                # Check for any release operations on this lock and establish happens-before
+                for t_id, ops in self.sync_operations.items():
+                    if t_id == thread_id:
+                        continue
+                    
+                    for op in reversed(ops):  # Start from most recent
+                        if (op["operation"] == "release" and 
+                                op["sync_object_id"] == sync_object_id and
+                                op["sync_type"] == sync_type and
+                                op["timestamp"] < timestamp):
+                            # Found a release of this lock before this acquisition
+                            # Establish happens-before: t_id -> thread_id
+                            if t_id not in self.happens_before:
+                                self.happens_before[t_id] = set()
+                            self.happens_before[t_id].add(thread_id)
+                            
+                            # Record in common detector
+                            self.detector.record_synchronization(
+                                from_thread=t_id,
+                                to_thread=thread_id,
+                                timestamp=timestamp
+                            )
+                            
+                            break  # Stop after finding the most recent release
     
     def define_atomic_region(
         self,
@@ -186,93 +209,9 @@ class RaceDetector:
             self.atomic_regions[thread_id] = []
         
         self.atomic_regions[thread_id].append((start_address, end_address))
-    
-    def _check_races(self, access: Dict[str, Any]) -> None:
-        """
-        Check for race conditions based on the new access.
         
-        Args:
-            access: The new memory access
-        """
-        address = access["address"]
-        thread_id = access["thread_id"]
-        access_type = access["type"]
-        timestamp = access["timestamp"]
-        lock_set = access.get("lock_set", set())
-        
-        # Get previous accesses to this address
-        prev_accesses = self.memory_accesses[address][:-1]  # All except the last (current) access
-        
-        for prev in prev_accesses:
-            prev_thread_id = prev["thread_id"]
-            prev_type = prev["type"]
-            prev_timestamp = prev["timestamp"]
-            prev_lock_set = prev.get("lock_set", set())
-            
-            # Skip if same thread
-            if thread_id == prev_thread_id:
-                continue
-            
-            # Check happens-before relationship
-            has_happens_before = False
-            # Direct happens-before relation
-            if prev_thread_id in self.happens_before and thread_id in self.happens_before[prev_thread_id]:
-                has_happens_before = True
-            # Reverse happens-before relation (happens-after)
-            elif hasattr(self, "happens_after") and thread_id in self.__dict__["happens_after"] and prev_thread_id in self.__dict__["happens_after"][thread_id]:
-                has_happens_before = True
-            
-            # Check if the accesses are protected by a common lock
-            has_common_lock = bool(lock_set & prev_lock_set)
-            
-            # Detect race conditions
-            race_found = False
-            race_type = None
-            race_description = None
-            
-            # Read-write race
-            if (access_type == "read" and prev_type == "write") or (access_type == "write" and prev_type == "read"):
-                if not has_happens_before and not has_common_lock:
-                    race_type = RaceType.READ_WRITE
-                    race_description = f"Read-write race condition at address {address:#x}"
-                    race_found = True
-            
-            # Write-write race
-            elif access_type == "write" and prev_type == "write":
-                if not has_happens_before and not has_common_lock:
-                    race_type = RaceType.WRITE_WRITE
-                    race_description = f"Write-write race condition at address {address:#x}"
-                    race_found = True
-            
-            # Check for atomicity violations in defined atomic regions
-            if prev_thread_id in self.atomic_regions:
-                for start_addr, end_addr in self.atomic_regions[prev_thread_id]:
-                    if start_addr <= address <= end_addr:
-                        # Another thread accessed an address within an atomic region
-                        race_type = RaceType.ATOMICITY_VIOLATION
-                        race_description = (
-                            f"Atomicity violation: Thread {thread_id} accessed address "
-                            f"{address:#x} which is within an atomic region of thread {prev_thread_id}"
-                        )
-                        race_found = True
-                        break
-            
-            if race_found:
-                # Record the race condition
-                race = {
-                    "type": race_type.name,
-                    "description": race_description,
-                    "address": address,
-                    "thread1": prev_thread_id,
-                    "thread2": thread_id,
-                    "access1": prev,
-                    "access2": access,
-                    "has_happens_before": has_happens_before,
-                    "has_common_lock": has_common_lock,
-                    "detected_at": timestamp,
-                }
-                
-                self.race_conditions.append(race)
+        # Check for existing violations in this atomic region
+        self._check_atomicity_violation(thread_id, start_address, end_address)
     
     def check_deadlocks(self, waiting_graph: Dict[str, List[Tuple[str, int]]]) -> None:
         """
@@ -333,8 +272,180 @@ class RaceDetector:
                 if dfs(thread_id):
                     break
     
+    def _check_atomicity_violation(self, thread_id: str, start_address: int, end_address: int) -> None:
+        """
+        Check for atomicity violations in a given region.
+        
+        Args:
+            thread_id: Thread ID that owns the atomic region
+            start_address: Start address of the atomic region
+            end_address: End address of the atomic region
+        """
+        # Find all accesses in this region
+        for addr in range(start_address, end_address + 1):
+            if addr not in self.memory_accesses:
+                continue
+                
+            # Find thread's accesses in this region
+            thread_accesses = [a for a in self.memory_accesses[addr] if a["thread_id"] == thread_id]
+            if not thread_accesses:
+                continue
+                
+            # Find other threads' accesses in this region
+            for access in self.memory_accesses[addr]:
+                if access["thread_id"] == thread_id:
+                    continue
+                    
+                # Check if this access constitutes an atomicity violation
+                for thread_access in thread_accesses:
+                    # Skip if no conflict
+                    if access["type"] == "read" and thread_access["type"] == "read":
+                        continue
+                        
+                    # Check if this violation already exists
+                    violation_exists = False
+                    for race in self.race_conditions:
+                        if (race["type"] == RaceType.ATOMICITY_VIOLATION.name and
+                                race["address"] == addr and
+                                ((race["thread1"] == thread_id and race["thread2"] == access["thread_id"]) or
+                                 (race["thread1"] == access["thread_id"] and race["thread2"] == thread_id))):
+                            violation_exists = True
+                            break
+                            
+                    if not violation_exists:
+                        self.race_conditions.append({
+                            "type": RaceType.ATOMICITY_VIOLATION.name,
+                            "description": f"Atomicity violation at address {addr} in region {start_address}-{end_address}",
+                            "address": addr,
+                            "thread1": thread_id,
+                            "thread2": access["thread_id"],
+                            "has_happens_before": False,
+                            "has_common_lock": False,
+                            "detected_at": max(access["timestamp"], thread_access["timestamp"]),
+                        })
+    
+    def _check_for_races(self, address: int) -> None:
+        """
+        Check for race conditions at a specific address.
+        
+        Args:
+            address: Memory address to check
+        """
+        if address not in self.memory_accesses:
+            return
+            
+        accesses = self.memory_accesses[address]
+        if len(accesses) < 2:
+            return
+            
+        # Get the latest access
+        latest_access = accesses[-1]
+        latest_thread = latest_access["thread_id"]
+        latest_type = latest_access["type"]
+        
+        # Check for conflicts with previous accesses from different threads
+        for prev_access in accesses[:-1]:
+            prev_thread = prev_access["thread_id"]
+            prev_type = prev_access["type"]
+            
+            # Skip if same thread
+            if prev_thread == latest_thread:
+                continue
+                
+            # Skip if both are reads
+            if prev_type == "read" and latest_type == "read":
+                continue
+                
+            # Check for atomic region violations
+            is_atomicity_violation = False
+            if prev_thread in self.atomic_regions:
+                for start_addr, end_addr in self.atomic_regions[prev_thread]:
+                    if start_addr <= address <= end_addr:
+                        is_atomicity_violation = True
+                        break
+                        
+            if latest_thread in self.atomic_regions:
+                for start_addr, end_addr in self.atomic_regions[latest_thread]:
+                    if start_addr <= address <= end_addr:
+                        is_atomicity_violation = True
+                        break
+                        
+            # Check if this access is protected by a common lock
+            has_common_lock = False
+            if "lock_set" in prev_access and "lock_set" in latest_access:
+                prev_locks = prev_access["lock_set"]
+                latest_locks = latest_access["lock_set"]
+                common_locks = prev_locks.intersection(latest_locks)
+                if common_locks:
+                    has_common_lock = True
+                    
+            # Check for happens-before relationship
+            has_happens_before = False
+            if prev_thread in self.happens_before and latest_thread in self.happens_before[prev_thread]:
+                has_happens_before = True
+                
+            # If protected by locks or happens-before, don't report a race
+            if has_common_lock or has_happens_before:
+                continue
+                
+            # Determine race type
+            if is_atomicity_violation:
+                race_type = RaceType.ATOMICITY_VIOLATION.name
+            elif prev_type == "write" and latest_type == "write":
+                race_type = RaceType.WRITE_WRITE.name
+            else:
+                race_type = RaceType.READ_WRITE.name
+                
+            # Check if this race already exists
+            race_exists = False
+            for race in self.race_conditions:
+                if (race.get("address") == address and
+                        ((race.get("thread1") == prev_thread and race.get("thread2") == latest_thread) or
+                         (race.get("thread1") == latest_thread and race.get("thread2") == prev_thread))):
+                    race_exists = True
+                    break
+                    
+            if not race_exists:
+                self.race_conditions.append({
+                    "type": race_type,
+                    "description": f"Race condition at address {address}",
+                    "address": address,
+                    "thread1": prev_thread,
+                    "thread2": latest_thread,
+                    "has_happens_before": has_happens_before,
+                    "has_common_lock": has_common_lock,
+                    "detected_at": max(latest_access["timestamp"], 0),
+                })
+    
     def check_order_violations(self) -> None:
         """Check for order violations between threads."""
+        # Update race_conditions with results from common detector
+        common_races = self.detector.get_race_conditions()
+        
+        # Convert common race conditions to vm_emulator format
+        for race in common_races:
+            # Skip races already recorded
+            if any(r.get("address") == race["address"] and 
+                   r.get("thread1") == race["thread1"] and
+                   r.get("thread2") == race["thread2"] 
+                   for r in self.race_conditions):
+                continue
+                
+            race_type = RaceType.READ_WRITE.name
+            if race["access_type1"] == "WRITE" and race["access_type2"] == "WRITE":
+                race_type = RaceType.WRITE_WRITE.name
+                
+            self.race_conditions.append({
+                "type": race_type,
+                "description": f"Race condition at address {race['address']}",
+                "address": race["address"],
+                "thread1": race["thread1"],
+                "thread2": race["thread2"],
+                "has_happens_before": False,
+                "has_common_lock": False,
+                "detected_at": max(race["timestamp"], 0),
+            })
+        
         # Get all memory addresses that have been accessed
         for address, accesses in self.memory_accesses.items():
             # Get all threads that have accessed this address
@@ -356,27 +467,42 @@ class RaceDetector:
                     t1_accesses = sorted(thread_accesses[thread1], key=lambda a: a["timestamp"])
                     t2_accesses = sorted(thread_accesses[thread2], key=lambda a: a["timestamp"])
                     
+                    # Skip if no accesses
+                    if not t1_accesses or not t2_accesses:
+                        continue
+                    
                     # Look for patterns like init-read-write instead of init-write-read
                     # This is a simplified example - in practice you'd look for specific patterns
                     if (len(t1_accesses) >= 1 and len(t2_accesses) >= 2 and
                             t1_accesses[0]["type"] == "write" and  # Init
                             t2_accesses[0]["type"] == "read" and   # Read
-                            t2_accesses[1]["type"] == "write" and  # Write
-                            t2_accesses[0]["timestamp"] < t1_accesses[0]["timestamp"] < t2_accesses[1]["timestamp"]):
+                            t2_accesses[0]["timestamp"] < t1_accesses[0]["timestamp"]):
                         
-                        # This is a potential order violation
-                        self.race_conditions.append({
-                            "type": RaceType.ORDER_VIOLATION.name,
-                            "description": (
-                                f"Order violation at address {address:#x}: "
-                                f"Thread {thread2} read uninitialized data before thread {thread1} wrote it"
-                            ),
-                            "address": address,
-                            "thread1": thread1,
-                            "thread2": thread2,
-                            "accesses": t2_accesses[0:2] + [t1_accesses[0]],
-                            "detected_at": t2_accesses[1]["timestamp"],
-                        })
+                        # This is a potential order violation - thread2 read before thread1 initialized
+                        race_found = True
+                        
+                        # Check if this race is already in the list
+                        for race in self.race_conditions:
+                            if (race["type"] == RaceType.ORDER_VIOLATION.name and
+                                    race["address"] == address and
+                                    race["thread1"] == thread1 and
+                                    race["thread2"] == thread2):
+                                race_found = False
+                                break
+                        
+                        if race_found:
+                            self.race_conditions.append({
+                                "type": RaceType.ORDER_VIOLATION.name,
+                                "description": (
+                                    f"Order violation at address {address:#x}: "
+                                    f"Thread {thread2} read uninitialized data before thread {thread1} wrote it"
+                                ),
+                                "address": address,
+                                "thread1": thread1,
+                                "thread2": thread2,
+                                "accesses": t2_accesses[0:2] + [t1_accesses[0]],
+                                "detected_at": t1_accesses[0]["timestamp"],
+                            })
     
     def check_livelock(self, thread_stats: Dict[str, Dict[str, Any]]) -> None:
         """
@@ -386,7 +512,6 @@ class RaceDetector:
             thread_stats: Dictionary of thread statistics
         """
         # Look for threads that are active but not making progress
-        # This is a simplified implementation
         suspicious_threads = []
         
         for thread_id, stats in thread_stats.items():
@@ -445,6 +570,9 @@ class RaceDetector:
         Returns:
             List of race conditions
         """
+        # Update race conditions from the common detector
+        self.check_order_violations()
+        
         result = self.race_conditions
         
         if race_type:
@@ -526,6 +654,12 @@ class RaceDetector:
         Returns:
             Dictionary of statistics
         """
+        # Combine statistics from common detector
+        common_stats = {
+            "shared_addresses": len(self.detector.get_shared_addresses()),
+            "race_conditions": len(self.detector.get_race_conditions()),
+        }
+        
         # Count race conditions by type
         race_counts = {}
         for race in self.race_conditions:
@@ -550,10 +684,12 @@ class RaceDetector:
             "read_accesses": read_count,
             "write_accesses": write_count,
             "threads_monitored": len(self.sync_operations),
+            **common_stats
         }
     
     def reset(self) -> None:
         """Reset the race detector."""
+        self.detector.clear()
         self.memory_accesses = {}
         self.sync_operations = {}
         self.race_conditions = []

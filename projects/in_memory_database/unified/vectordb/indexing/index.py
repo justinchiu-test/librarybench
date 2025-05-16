@@ -12,7 +12,7 @@ from typing import List, Dict, Tuple, Callable, Optional, Set, Any, Iterator, Un
 import random
 import uuid
 
-from common.core import InMemoryStorage
+from common.core.storage import InMemoryStorage
 from vectordb.core.vector import Vector
 from vectordb.core.distance import get_distance_function, euclidean_distance
 
@@ -54,7 +54,7 @@ class VectorIndex(InMemoryStorage[Vector]):
     @property
     def last_modified(self) -> float:
         """Get the timestamp of the last modification to the index."""
-        return self._last_modified
+        return self.get_last_modified()
     
     def add(self, vector: Vector, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -99,13 +99,18 @@ class VectorIndex(InMemoryStorage[Vector]):
         """
         if metadatas is not None and len(vectors) != len(metadatas):
             raise ValueError("Number of vectors and metadata dictionaries must match")
-            
-        ids = []
-        for i, vector in enumerate(vectors):
-            metadata = metadatas[i] if metadatas is not None else None
-            ids.append(self.add(vector, metadata))
-            
-        return ids
+        
+        # Apply metadata to vectors before batch adding
+        if metadatas is not None:
+            for i, vector in enumerate(vectors):
+                if vector.id is None:
+                    vector_id = str(uuid.uuid4())
+                    # Create a new vector with the generated ID
+                    vectors[i] = Vector(vector.values, vector_id)
+                vectors[i].metadata.update(metadatas[i])
+                
+        # Use the common batch_add method
+        return self.batch_add(vectors)
     
     def get(self, record_id: str) -> Optional[Vector]:
         """
@@ -285,13 +290,8 @@ class VectorIndex(InMemoryStorage[Vector]):
         Returns:
             True if the vector was removed, False if it wasn't in the index
         """
-        # Use the underlying InMemoryStorage's removal method
-        vector = self.get(record_id)
-        if vector is None:
-            return False
-            
-        self.delete(record_id)
-        return True
+        # Directly use the InMemoryStorage's delete method
+        return self.delete(record_id)
     
     def remove_batch(self, record_ids: List[str]) -> Union[List[bool], int]:
         """
@@ -304,10 +304,8 @@ class VectorIndex(InMemoryStorage[Vector]):
             Either the count of successfully removed vectors (for backward compatibility)
             or a list of booleans indicating whether each vector was removed
         """
-        results = []
-        for record_id in record_ids:
-            result = self.remove(record_id)
-            results.append(result)
-            
+        # Use the common batch_delete method
+        results = self.batch_delete(record_ids)
+        
         # Return the count of True values for backward compatibility
         return sum(1 for r in results if r)

@@ -1,35 +1,27 @@
-"""
-Core interfaces for the unified concurrent task scheduler.
-
-This module defines abstract interfaces that are shared between 
-the render farm manager and scientific computing implementations.
-"""
+"""Core interfaces for concurrent task scheduling."""
 
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Set, Tuple, Union, Any
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from common.core.models import (
     AuditLogEntry,
     BaseJob,
     BaseNode,
-    Checkpoint, 
+    Checkpoint,
     CheckpointType,
     Dependency,
-    DependencyState,
     DependencyType,
     JobStatus,
-    NodeStatus,
+    LogLevel,
     Priority,
     ResourceRequirement,
-    ResourceType,
     Result,
-    TimeRange,
 )
 
 
 class SchedulerInterface(ABC):
-    """Interface for the job scheduling component."""
+    """Interface for job scheduling components."""
     
     @abstractmethod
     def schedule_jobs(self, jobs: List[BaseJob], nodes: List[BaseNode]) -> Dict[str, str]:
@@ -88,35 +80,33 @@ class SchedulerInterface(ABC):
 
 
 class ResourceManagerInterface(ABC):
-    """Interface for the resource management component."""
+    """Interface for resource management components."""
     
     @abstractmethod
-    def allocate_resources(
-        self, owners: List[str], nodes: List[BaseNode]
-    ) -> Dict[str, Dict[ResourceType, float]]:
+    def allocate_resources(self, 
+                          user_resources: Dict[str, List[ResourceRequirement]],
+                          nodes: List[BaseNode]) -> Dict[str, List[str]]:
         """
-        Allocate resources to owners based on requirements and current demands.
+        Allocate resources to users based on requirements and available nodes.
         
         Args:
-            owners: List of job/simulation owners
+            user_resources: Dictionary mapping user IDs to their resource requirements
             nodes: List of available nodes
             
         Returns:
-            Dictionary mapping owner IDs to their resource allocations
+            Dictionary mapping user IDs to lists of allocated node IDs
         """
         pass
     
     @abstractmethod
-    def can_borrow_resources(
-        self, from_owner: str, to_owner: str, amounts: Dict[ResourceType, float]
-    ) -> bool:
+    def can_borrow_resources(self, from_user: str, to_user: str, amount: float) -> bool:
         """
-        Determine if resources can be borrowed from one owner to another.
+        Determine if resources can be borrowed from one user to another.
         
         Args:
-            from_owner: The owner lending resources
-            to_owner: The owner borrowing resources
-            amounts: The resources to borrow by type
+            from_user: The user lending resources
+            to_user: The user borrowing resources
+            amount: The percentage of resources to borrow
             
         Returns:
             True if resources can be borrowed, False otherwise
@@ -124,111 +114,150 @@ class ResourceManagerInterface(ABC):
         pass
     
     @abstractmethod
-    def calculate_resource_usage(
-        self, owner_id: str, jobs: List[BaseJob], nodes: List[BaseNode]
-    ) -> Dict[ResourceType, float]:
+    def calculate_resource_usage(self, user_id: str, jobs: List[BaseJob], nodes: List[BaseNode]) -> float:
         """
-        Calculate the current resource usage for an owner.
+        Calculate the current resource usage for a user.
         
         Args:
-            owner_id: ID of the owner
+            user_id: ID of the user
             jobs: List of jobs
             nodes: List of nodes
             
         Returns:
-            Dictionary mapping resource types to usage percentages
+            Percentage of resources currently used by the user
+        """
+        pass
+
+
+class ResourceForecastingInterface(ABC):
+    """Interface for resource forecasting components."""
+    
+    @abstractmethod
+    def forecast_usage(self, user_id: str, 
+                     start_time: datetime, 
+                     end_time: datetime) -> Dict[str, List[float]]:
+        """
+        Forecast resource usage for a specified time period.
+        
+        Args:
+            user_id: ID of the user
+            start_time: Start time for the forecast
+            end_time: End time for the forecast
+            
+        Returns:
+            Dictionary mapping resource types to lists of forecasted values
+        """
+        pass
+    
+    @abstractmethod
+    def update_forecast_model(self, 
+                            historical_usage: Dict[str, List[Tuple[datetime, float]]]) -> Result[bool]:
+        """
+        Update the forecasting model with historical usage data.
+        
+        Args:
+            historical_usage: Dictionary mapping resource types to lists of 
+                             (timestamp, usage) tuples
+            
+        Returns:
+            Result indicating success or failure of the update
+        """
+        pass
+    
+    @abstractmethod
+    def predict_resource_requirements(self, job: BaseJob) -> List[ResourceRequirement]:
+        """
+        Predict resource requirements for a job based on historical data.
+        
+        Args:
+            job: The job to predict requirements for
+            
+        Returns:
+            Predicted resource requirements
         """
         pass
 
 
 class DependencyTrackerInterface(ABC):
-    """Interface for the dependency tracking component."""
+    """Interface for dependency tracking components."""
     
     @abstractmethod
-    def add_dependency(
-        self, from_id: str, to_id: str, dependency_type: DependencyType = DependencyType.SEQUENTIAL
-    ) -> Result[bool]:
+    def register_dependency(self, 
+                           from_job_id: str, 
+                           to_job_id: str, 
+                           dependency_type: DependencyType = DependencyType.SEQUENTIAL,
+                           condition: Optional[str] = None) -> Result[bool]:
         """
-        Add a dependency between two jobs or stages.
+        Register a dependency between two jobs.
         
         Args:
-            from_id: ID of the prerequisite job/stage
-            to_id: ID of the dependent job/stage
+            from_job_id: ID of the job that must complete first
+            to_job_id: ID of the job that depends on the first
             dependency_type: Type of dependency
+            condition: Optional condition for conditional dependencies
             
         Returns:
-            Result with success status
+            Result indicating success or failure of the registration
         """
         pass
     
     @abstractmethod
-    def remove_dependency(self, from_id: str, to_id: str) -> Result[bool]:
+    def check_dependency(self, 
+                        from_job_id: str, 
+                        to_job_id: str) -> Result[bool]:
         """
-        Remove a dependency between two jobs or stages.
+        Check if a dependency is satisfied.
         
         Args:
-            from_id: ID of the prerequisite job/stage
-            to_id: ID of the dependent job/stage
+            from_job_id: ID of the job that must complete first
+            to_job_id: ID of the job that depends on the first
             
         Returns:
-            Result with success status
+            Result with True if the dependency is satisfied, False otherwise
         """
         pass
     
     @abstractmethod
-    def is_ready_to_run(self, job_id: str, completed_ids: Set[str]) -> bool:
+    def get_dependencies(self, job_id: str, as_source: bool = False) -> Result[List[Dependency]]:
         """
-        Check if a job/stage is ready to run based on its dependencies.
+        Get dependencies for a job.
         
         Args:
-            job_id: ID of the job/stage to check
-            completed_ids: Set of IDs that have been completed
+            job_id: ID of the job
+            as_source: If True, return dependencies where this job is the source,
+                     otherwise return dependencies where this job is the target
             
         Returns:
-            True if ready to run, False otherwise
+            Result with a list of dependencies
         """
         pass
     
     @abstractmethod
-    def get_dependencies_for(self, job_id: str) -> List[Dependency]:
+    def has_cycle(self) -> Result[Optional[List[str]]]:
         """
-        Get all dependencies for a job/stage.
+        Check if there's a cycle in the dependency graph.
         
-        Args:
-            job_id: ID of the job/stage
-            
         Returns:
-            List of dependencies
-        """
-        pass
-    
-    @abstractmethod
-    def get_dependents_for(self, job_id: str) -> List[Dependency]:
-        """
-        Get all jobs/stages that depend on the given job/stage.
-        
-        Args:
-            job_id: ID of the job/stage
-            
-        Returns:
-            List of dependencies
+            Result with a list of job IDs forming a cycle, or None if no cycle exists
         """
         pass
 
 
 class CheckpointManagerInterface(ABC):
-    """Interface for the checkpoint management component."""
+    """Interface for checkpoint management components."""
     
     @abstractmethod
-    def create_checkpoint(
-        self, job_id: str, checkpoint_type: CheckpointType = CheckpointType.FULL
-    ) -> Result[Checkpoint]:
+    def create_checkpoint(self, 
+                        job_id: str, 
+                        checkpoint_type: CheckpointType = CheckpointType.FULL,
+                        metadata: Optional[Dict[str, Any]] = None) -> Result[Checkpoint]:
         """
-        Create a checkpoint for a job/simulation.
+        Create a checkpoint for a job.
         
         Args:
-            job_id: ID of the job/simulation
-            checkpoint_type: Type of checkpoint to create
+            job_id: ID of the job
+            checkpoint_type: Type of checkpoint
+            metadata: Optional metadata for the checkpoint
             
         Returns:
             Result with the created checkpoint
@@ -236,58 +265,67 @@ class CheckpointManagerInterface(ABC):
         pass
     
     @abstractmethod
+    def list_checkpoints(self, job_id: str) -> Result[List[Checkpoint]]:
+        """
+        List checkpoints for a job.
+        
+        Args:
+            job_id: ID of the job
+            
+        Returns:
+            Result with a list of checkpoints
+        """
+        pass
+    
+    @abstractmethod
     def restore_checkpoint(self, checkpoint_id: str) -> Result[bool]:
         """
-        Restore a job/simulation from a checkpoint.
+        Restore a job from a checkpoint.
         
         Args:
             checkpoint_id: ID of the checkpoint
             
         Returns:
-            Result with success status
+            Result indicating success or failure of the restoration
         """
         pass
     
     @abstractmethod
-    def get_latest_checkpoint(self, job_id: str) -> Optional[Checkpoint]:
+    def delete_checkpoint(self, checkpoint_id: str) -> Result[bool]:
         """
-        Get the latest checkpoint for a job/simulation.
+        Delete a checkpoint.
         
         Args:
-            job_id: ID of the job/simulation
+            checkpoint_id: ID of the checkpoint
             
         Returns:
-            The latest checkpoint, or None if no checkpoints exist
-        """
-        pass
-    
-    @abstractmethod
-    def list_checkpoints(self, job_id: str) -> List[Checkpoint]:
-        """
-        List all checkpoints for a job/simulation.
-        
-        Args:
-            job_id: ID of the job/simulation
-            
-        Returns:
-            List of checkpoints
+            Result indicating success or failure of the deletion
         """
         pass
 
 
 class AuditLogInterface(ABC):
-    """Interface for the audit logging component."""
+    """Interface for audit logging components."""
     
     @abstractmethod
-    def log_event(
-        self, event_type: str, description: str, **details
-    ) -> AuditLogEntry:
+    def log_event(self, 
+                event_type: str, 
+                description: str, 
+                level: LogLevel = LogLevel.INFO,
+                job_id: Optional[str] = None,
+                node_id: Optional[str] = None,
+                user_id: Optional[str] = None,
+                **details) -> AuditLogEntry:
         """
         Log an event in the audit trail.
         
         Args:
             event_type: Type of event
             description: Human-readable description of the event
+            level: Log level
+            job_id: Optional ID of the related job
+            node_id: Optional ID of the related node
+            user_id: Optional ID of the related user
             **details: Additional details about the event
             
         Returns:
@@ -296,91 +334,27 @@ class AuditLogInterface(ABC):
         pass
     
     @abstractmethod
-    def get_events(
-        self, 
-        job_id: Optional[str] = None,
-        node_id: Optional[str] = None,
-        owner_id: Optional[str] = None,
-        event_type: Optional[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
-    ) -> List[AuditLogEntry]:
+    def get_job_history(self, job_id: str) -> List[AuditLogEntry]:
         """
-        Get events from the audit log with optional filtering.
+        Get the audit history for a specific job.
         
         Args:
-            job_id: Optional filter by job ID
-            node_id: Optional filter by node ID
-            owner_id: Optional filter by owner ID
-            event_type: Optional filter by event type
-            start_time: Optional filter by start time
-            end_time: Optional filter by end time
+            job_id: ID of the job
             
         Returns:
-            List of matching audit log entries
-        """
-        pass
-
-
-class ResourceForecastingInterface(ABC):
-    """Interface for the resource forecasting component."""
-    
-    @abstractmethod
-    def generate_forecast(
-        self,
-        owner_id: str,
-        resource_type: ResourceType,
-        start_date: datetime,
-        end_date: datetime,
-    ) -> Result[Dict[datetime, float]]:
-        """
-        Generate a resource usage forecast.
-        
-        Args:
-            owner_id: ID of the owner/project
-            resource_type: Type of resource to forecast
-            start_date: Start date for the forecast
-            end_date: End date for the forecast
-            
-        Returns:
-            Result with dictionary mapping dates to forecasted values
+            List of audit log entries related to the job
         """
         pass
     
     @abstractmethod
-    def train_model(
-        self,
-        owner_id: str,
-        resource_type: ResourceType,
-        training_days: int = 30,
-    ) -> Result[bool]:
+    def get_node_history(self, node_id: str) -> List[AuditLogEntry]:
         """
-        Train a forecasting model for a specific owner and resource type.
+        Get the audit history for a specific node.
         
         Args:
-            owner_id: ID of the owner/project
-            resource_type: Type of resource to forecast
-            training_days: Number of days of historical data to use
+            node_id: ID of the node
             
         Returns:
-            Result with success status
-        """
-        pass
-    
-    @abstractmethod
-    def evaluate_accuracy(
-        self,
-        owner_id: str,
-        resource_type: ResourceType,
-    ) -> Result[Dict[str, float]]:
-        """
-        Evaluate the accuracy of the forecasting model.
-        
-        Args:
-            owner_id: ID of the owner/project
-            resource_type: Type of resource to evaluate
-            
-        Returns:
-            Result with dictionary of accuracy metrics
+            List of audit log entries related to the node
         """
         pass

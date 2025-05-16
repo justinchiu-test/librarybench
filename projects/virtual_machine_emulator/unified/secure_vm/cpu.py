@@ -21,6 +21,12 @@ from common.core.instruction import Instruction, InstructionType
 from common.core.exceptions import (
     ProcessorException, InvalidInstructionException, PrivilegeViolationException
 )
+from common.extensions.security.control_flow import (
+    ControlFlowMonitor,
+    ControlFlowRecord,
+    ControlFlowException,
+    ControlFlowEventType
+)
 
 from secure_vm.memory import Memory, MemoryPermission
 
@@ -68,34 +74,6 @@ class InstructionType(Enum):
     CONTROL = InstructionType.BRANCH
     SYSTEM = InstructionType.SYSTEM
     SPECIAL = InstructionType.SPECIAL
-
-
-class ControlFlowRecord:
-    """Records a control flow event for integrity monitoring."""
-    
-    def __init__(
-        self,
-        from_address: int,
-        to_address: int,
-        event_type: str,
-        instruction: str,
-        legitimate: bool = True,
-        context: Dict[str, Any] = None,
-    ):
-        self.from_address = from_address
-        self.to_address = to_address
-        self.event_type = event_type
-        self.instruction = instruction
-        self.legitimate = legitimate
-        self.context = context or {}
-        self.timestamp = time.time()
-    
-    def __str__(self) -> str:
-        return (
-            f"Control flow: {self.event_type} from 0x{self.from_address:x} "
-            f"to 0x{self.to_address:x} via {self.instruction} "
-            f"{'(legitimate)' if self.legitimate else '(HIJACKED)'}"
-        )
 
 
 class CPURegisters(RegisterSet):
@@ -288,9 +266,12 @@ class CPU(BaseProcessor):
         self.execution_time = 0
         self.cycles = 0  # For backward compatibility with tests
         
-        # Control flow integrity
-        self.control_flow_records: List[ControlFlowRecord] = []
-        self.shadow_stack: List[int] = []  # For control flow integrity
+        # Initialize control flow monitor from common library
+        self.control_flow_monitor = ControlFlowMonitor(enable_shadow_stack=True)
+        
+        # For backwards compatibility with tests
+        self.control_flow_records = []
+        self.shadow_stack = []  # Test compatibility
         
         # Syscall handling
         self.syscall_table: Dict[int, Callable] = {}
@@ -313,8 +294,13 @@ class CPU(BaseProcessor):
     def reset(self) -> None:
         """Reset the CPU state."""
         super().reset()
-        self.control_flow_records = []
-        self.shadow_stack = []
+        self.control_flow_monitor.clear()
+        self.control_flow_records.clear()  # Clear the backward compatibility list
+        
+        # Clear shadow stack for backward compatibility with tests
+        if hasattr(self, 'shadow_stack'):
+            self.shadow_stack.clear()
+            
         self.running = False
         self.halted = False
         self.execution_start_time = 0
@@ -410,6 +396,39 @@ class CPU(BaseProcessor):
             # Convert memory exceptions to CPU exceptions
             raise SegmentationFault(f"Failed to pop value: {str(e)}")
     
+    def _record_control_flow(
+        self,
+        from_address: int,
+        to_address: int,
+        event_type: str,
+        instruction: str,
+        legitimate: bool = True,
+        context: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Record a control flow event using the control flow monitor.
+        
+        Args:
+            from_address: Source address
+            to_address: Destination address
+            event_type: Type of control flow event
+            instruction: Instruction that caused the control flow
+            legitimate: Whether the control flow is legitimate
+            context: Additional context
+        """
+        record = self.control_flow_monitor.record_control_flow(
+            from_address=from_address,
+            to_address=to_address,
+            event_type=event_type,
+            instruction=instruction,
+            legitimate=legitimate,
+            context=context
+        )
+        
+        # Also add to control_flow_records for backwards compatibility with tests
+        # Create a compatible record from the one returned by the monitor
+        self.control_flow_records.append(record)
+    
     def _handle_syscall(
         self,
         instruction: Instruction,
@@ -426,7 +445,7 @@ class CPU(BaseProcessor):
             (increment_pc, side_effects) tuple
         """
         # Get syscall number from register R0
-        syscall_num = self.registers.get(0)
+        syscall_num = self.registers.get("R0")
         
         # Record control flow event
         self._record_control_flow(
@@ -464,7 +483,7 @@ class CPU(BaseProcessor):
                 result = -1
         
         # Store result in R0
-        self.registers.set(0, result)
+        self.registers.set("R0", result)
         
         # Add side effect for VM to handle
         side_effects["syscall_executed"] = {
@@ -530,7 +549,7 @@ class CPU(BaseProcessor):
             (increment_pc, side_effects) tuple
         """
         # Get target privilege level from register R0
-        target_level = self.registers.get(0)
+        target_level = self.registers.get("R0")
         
         # Check if target level is valid
         if 0 <= target_level <= 2:
@@ -577,7 +596,7 @@ class CPU(BaseProcessor):
             (increment_pc, side_effects) tuple
         """
         # Get target privilege level from register R0
-        target_level = self.registers.get(0)
+        target_level = self.registers.get("R0")
         current_level = self.registers.privilege_level.value
         
         # Can only lower privilege, not elevate
@@ -629,24 +648,21 @@ class CPU(BaseProcessor):
             (increment_pc, side_effects) tuple
         """
         # Get target address from register R0
-        target_reg = 0  # First register contains target
+        target_reg = "R0"  # First register contains target
         target = self.registers.get(target_reg)
         return_addr = self.registers.get_ip()
         
-        # Record return address in shadow stack for control flow integrity
-        self.shadow_stack.append(return_addr)
+        # Record call with shadow stack tracking
+        self.control_flow_monitor.record_call(
+            call_site=self.registers.get_ip() - 1,
+            target=target,
+            return_addr=return_addr,
+            instruction="CALL",
+            context={"register": target_reg}
+        )
         
         # Push return address onto the stack
         self.push(return_addr)
-        
-        # Record the control flow event
-        self._record_control_flow(
-            self.registers.get_ip() - 1,
-            target,
-            "call",
-            "CALL",
-            True
-        )
         
         # Set the new PC
         self.registers.set_ip(target)
@@ -678,47 +694,12 @@ class CPU(BaseProcessor):
         # Pop return address from stack
         return_addr = self.pop()
         
-        # Control flow integrity check using shadow stack
-        shadow_valid = True
-        expected_return = None
-        
-        if self.shadow_stack:
-            expected_return = self.shadow_stack.pop()
-            if expected_return != return_addr:
-                shadow_valid = False
-                # Record control flow violation
-                self._record_control_flow(
-                    self.registers.get_ip() - 1,
-                    return_addr,
-                    "return",
-                    "RET",
-                    False,
-                    {
-                        "expected": expected_return,
-                        "actual": return_addr
-                    }
-                )
-        else:
-            shadow_valid = False
-            # Record control flow violation - shadow stack empty
-            self._record_control_flow(
-                self.registers.get_ip() - 1,
-                return_addr,
-                "return",
-                "RET",
-                False,
-                {"error": "Shadow stack empty"}
-            )
-        
-        if shadow_valid:
-            # Record legitimate control flow
-            self._record_control_flow(
-                self.registers.get_ip() - 1,
-                return_addr,
-                "return",
-                "RET",
-                True
-            )
+        # Record return with shadow stack checking
+        record = self.control_flow_monitor.record_return(
+            return_site=self.registers.get_ip() - 1,
+            target=return_addr,
+            instruction="RET"
+        )
         
         # Set the new PC
         self.registers.set_ip(return_addr)
@@ -726,42 +707,15 @@ class CPU(BaseProcessor):
         # Add side effect for VM to handle
         side_effects["ret"] = {
             "return_addr": return_addr,
-            "shadow_valid": shadow_valid,
-            "expected_return": expected_return
+            "shadow_valid": record.legitimate
         }
+        
+        # Check if there's expected return information in the context
+        if not record.legitimate and record.context and "expected_return" in record.context:
+            side_effects["ret"]["expected_return"] = record.context["expected_return"]
         
         # Don't increment PC
         return False, side_effects
-    
-    def _record_control_flow(
-        self,
-        from_address: int,
-        to_address: int,
-        event_type: str,
-        instruction: str,
-        legitimate: bool = True,
-        context: Optional[Dict[str, Any]] = None
-    ) -> None:
-        """
-        Record a control flow event for integrity monitoring.
-        
-        Args:
-            from_address: Source address
-            to_address: Destination address
-            event_type: Type of control flow event
-            instruction: Instruction that caused the event
-            legitimate: Whether the control flow is legitimate
-            context: Additional context for the event
-        """
-        record = ControlFlowRecord(
-            from_address=from_address,
-            to_address=to_address,
-            event_type=event_type,
-            instruction=instruction,
-            legitimate=legitimate,
-            context=context,
-        )
-        self.control_flow_records.append(record)
     
     def register_syscall(self, syscall_num: int, handler: Callable) -> None:
         """
@@ -873,6 +827,24 @@ class CPU(BaseProcessor):
                 
                 instructions_executed += 1
         
+        except ControlFlowException as e:
+            self.running = False
+            # Record the control flow exception
+            self._record_control_flow(
+                e.from_address,
+                e.to_address,
+                "exception",
+                str(e),
+                False,
+                {"expected_address": e.expected_address}
+            )
+            
+            # Convert to appropriate CPU exception
+            if "Shadow stack underflow" in str(e):
+                raise SegmentationFault(f"Control flow integrity violation: {str(e)}")
+            else:
+                raise ProtectionFault(f"Control flow integrity violation: {str(e)}")
+                
         except Exception as e:
             self.running = False
             # Record the exception
@@ -896,7 +868,7 @@ class CPU(BaseProcessor):
         Returns:
             List of control flow records
         """
-        return self.control_flow_records
+        return self.control_flow_monitor.records
     
     def get_performance_stats(self) -> Dict[str, Any]:
         """
@@ -905,9 +877,16 @@ class CPU(BaseProcessor):
         Returns:
             Dictionary of performance statistics
         """
-        return {
+        # Basic performance stats
+        stats = {
             "cycles": self.cycle_count,
             "execution_time": self.execution_time,
             "instructions_per_second": self.cycle_count / max(self.execution_time, 0.001),
-            "control_flow_events": len(self.control_flow_records),
         }
+        
+        # Add control flow statistics from the monitor
+        cf_stats = self.control_flow_monitor.get_statistics()
+        stats["control_flow_events"] = cf_stats.get("total_events", 0)
+        stats.update(cf_stats)
+        
+        return stats

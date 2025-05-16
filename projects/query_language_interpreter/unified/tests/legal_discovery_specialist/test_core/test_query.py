@@ -19,7 +19,7 @@ from legal_discovery_interpreter.core.query import (
     CompositeQuery,
     QueryResult,
     LegalDiscoveryQuery,
-    LegalQueryResult
+    LegalQueryResult,
 )
 
 
@@ -53,11 +53,9 @@ def test_query_types():
 def test_full_text_query():
     """Test creating a full text query."""
     query = FullTextQuery(
-        terms=["contract", "agreement"],
-        operator=QueryOperator.AND,
-        expand_terms=True
+        terms=["contract", "agreement"], operator=QueryOperator.AND, expand_terms=True
     )
-    
+
     assert query.query_type == QueryType.FULL_TEXT
     assert query.terms == ["contract", "agreement"]
     assert query.operator == QueryOperator.AND
@@ -69,11 +67,9 @@ def test_full_text_query():
 def test_metadata_query():
     """Test creating a metadata query."""
     query = MetadataQuery(
-        field="document_type",
-        operator=QueryOperator.EQUALS,
-        value="contract"
+        field="document_type", operator=QueryOperator.EQUALS, value="contract"
     )
-    
+
     assert query.query_type == QueryType.METADATA
     assert query.field == "document_type"
     assert query.operator == QueryOperator.EQUALS
@@ -83,12 +79,9 @@ def test_metadata_query():
 def test_proximity_query():
     """Test creating a proximity query."""
     query = ProximityQuery(
-        terms=["breach", "contract"],
-        distance=5,
-        unit=DistanceUnit.WORDS,
-        ordered=True
+        terms=["breach", "contract"], distance=5, unit=DistanceUnit.WORDS, ordered=True
     )
-    
+
     assert query.query_type == QueryType.PROXIMITY
     assert query.terms == ["breach", "contract"]
     assert query.distance == 5
@@ -102,9 +95,9 @@ def test_communication_query():
     query = CommunicationQuery(
         participants=["john@example.com", "jane@example.com"],
         direction="between",
-        date_range={"start": datetime(2020, 1, 1), "end": datetime(2020, 12, 31)}
+        date_range={"start": datetime(2020, 1, 1), "end": datetime(2020, 12, 31)},
     )
-    
+
     assert query.query_type == QueryType.COMMUNICATION
     assert query.participants == ["john@example.com", "jane@example.com"]
     assert query.direction == "between"
@@ -120,9 +113,9 @@ def test_temporal_query():
     query = TemporalQuery(
         date_field="date_created",
         operator=QueryOperator.GREATER_THAN,
-        value=datetime(2020, 1, 1)
+        value=datetime(2020, 1, 1),
     )
-    
+
     assert query.query_type == QueryType.TEMPORAL
     assert query.date_field == "date_created"
     assert query.operator == QueryOperator.GREATER_THAN
@@ -136,9 +129,9 @@ def test_privilege_query():
     query = PrivilegeQuery(
         privilege_type="attorney_client",
         threshold=0.7,
-        attorneys=["john.lawyer@example.com"]
+        attorneys=["john.lawyer@example.com"],
     )
-    
+
     assert query.query_type == QueryType.PRIVILEGE
     assert query.privilege_type == "attorney_client"
     assert query.threshold == 0.7
@@ -148,22 +141,14 @@ def test_privilege_query():
 
 def test_composite_query():
     """Test creating a composite query."""
-    query1 = FullTextQuery(
-        terms=["contract"],
-        operator=QueryOperator.AND
-    )
-    
+    query1 = FullTextQuery(terms=["contract"], operator=QueryOperator.AND)
+
     query2 = MetadataQuery(
-        field="document_type",
-        operator=QueryOperator.EQUALS,
-        value="agreement"
+        field="document_type", operator=QueryOperator.EQUALS, value="agreement"
     )
-    
-    composite = CompositeQuery(
-        operator=QueryOperator.AND,
-        clauses=[query1, query2]
-    )
-    
+
+    composite = CompositeQuery(operator=QueryOperator.AND, clauses=[query1, query2])
+
     assert composite.query_type == QueryType.COMPOSITE
     assert composite.operator == QueryOperator.AND
     assert len(composite.clauses) == 2
@@ -174,18 +159,13 @@ def test_composite_query():
 def test_query_result():
     """Test creating a query result."""
     query_id = str(uuid.uuid4())
-    
+
     # Create a mock query
     query = LegalDiscoveryQuery(
         query_id=query_id,
-        clauses=[
-            FullTextQuery(
-                terms=["test"],
-                operator=QueryOperator.AND
-            )
-        ]
+        clauses=[FullTextQuery(terms=["test"], operator=QueryOperator.AND)],
     )
-    
+
     # Create the result
     result = LegalQueryResult(
         query=query,
@@ -198,48 +178,44 @@ def test_query_result():
             "document_ids": ["doc001", "doc002"],
             "total_hits": 2,
             "relevance_scores": {"doc001": 0.8, "doc002": 0.6},
-            "execution_time": 0.05
-        }
+            "execution_time": 0.05,
+        },
     )
-    
+
     assert result.query_id == query_id
     assert result.document_ids == ["doc001", "doc002"]
     assert result.total_hits == 2
     assert result.relevance_scores["doc001"] == 0.8
     assert result.relevance_scores["doc002"] == 0.6
     assert result.metadata.get("execution_time") == 0.05
-    assert result.privilege_status == {}  # Empty dict instead of None with the new implementation
+    assert (
+        result.privilege_status == {}
+    )  # Empty dict instead of None with the new implementation
     assert result.pagination == {}  # Empty dict instead of None
 
 
 def test_legal_discovery_query():
     """Test creating a legal discovery query."""
     query_id = str(uuid.uuid4())
-    query1 = FullTextQuery(
-        terms=["contract", "breach"],
-        operator=QueryOperator.AND
-    )
-    
+    query1 = FullTextQuery(terms=["contract", "breach"], operator=QueryOperator.AND)
+
     query2 = TemporalQuery(
         date_field="date_created",
         operator=QueryOperator.GREATER_THAN,
-        value=datetime(2020, 1, 1)
+        value=datetime(2020, 1, 1),
     )
-    
-    sort_field = SortField(
-        field="relevance",
-        order=SortOrder.DESC
-    )
-    
+
+    sort_field = SortField(field="relevance", order=SortOrder.DESC)
+
     query = LegalDiscoveryQuery(
         query_id=query_id,
         clauses=[query1, query2],
         sort=[sort_field],
         limit=10,
         offset=0,
-        highlight=True
+        highlight=True,
     )
-    
+
     assert query.query_id == query_id
     assert len(query.clauses) == 2
     assert isinstance(query.clauses[0], FullTextQuery)
@@ -257,32 +233,24 @@ def test_legal_discovery_query():
 def test_legal_discovery_query_to_sql_like():
     """Test converting a legal discovery query to a SQL-like string."""
     query_id = str(uuid.uuid4())
-    query1 = FullTextQuery(
-        terms=["contract", "breach"],
-        operator=QueryOperator.AND
-    )
-    
+    query1 = FullTextQuery(terms=["contract", "breach"], operator=QueryOperator.AND)
+
     query2 = MetadataQuery(
-        field="document_type",
-        operator=QueryOperator.EQUALS,
-        value="agreement"
+        field="document_type", operator=QueryOperator.EQUALS, value="agreement"
     )
-    
-    sort_field = SortField(
-        field="date_created",
-        order=SortOrder.DESC
-    )
-    
+
+    sort_field = SortField(field="date_created", order=SortOrder.DESC)
+
     query = LegalDiscoveryQuery(
         query_id=query_id,
         clauses=[query1, query2],
         sort=[sort_field],
         limit=10,
-        offset=0
+        offset=0,
     )
-    
+
     sql_like = query.to_sql_like()
-    
+
     # Check that the SQL-like string contains the expected components
     assert "CONTAINS" in sql_like
     assert "'contract'" in sql_like

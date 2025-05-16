@@ -18,6 +18,8 @@ from common.core.memory import MemoryPermission
 
 from secure_vm.memory import Memory, MemorySegment
 from secure_vm.cpu import CPU, ControlFlowRecord
+# Remove circular import
+# We'll handle this differently in the code
 
 
 class ExecutionResult:
@@ -71,9 +73,17 @@ class VirtualMachine(SecureVirtualMachine):
             random_seed=random_seed
         )
         
+        # Set up memory layout if not already done in base class
+        if not hasattr(self, 'code_segment') or not self.memory.segments:
+            self.setup_memory_layout(memory_size)
+        
         # Track loaded programs
         self.program_loaded = False
         self.program_name = ""
+        
+        # Create a control flow monitor
+        from common.extensions.security.control_flow import ControlFlowMonitor
+        self.control_flow_monitor = ControlFlowMonitor(enable_shadow_stack=True)
     
     def _create_memory_system(self, memory_size: int) -> Memory:
         """
@@ -91,6 +101,70 @@ class VirtualMachine(SecureVirtualMachine):
             enable_dep=self.protection.dep_enabled if hasattr(self, 'protection') else True,
             enable_aslr=self.protection.aslr_enabled if hasattr(self, 'protection') else False,
         )
+        
+    def setup_memory_layout(self, memory_size: int) -> None:
+        """
+        Set up the standard memory layout for the VM.
+        
+        Args:
+            memory_size: Total memory size
+        """
+        # Check if the memory system exists
+        if not hasattr(self, 'memory'):
+            self.memory = self._create_memory_system(memory_size)
+            
+        # Clear any existing segments
+        if hasattr(self.memory, 'segments'):
+            self.memory.segments = []
+        
+        # Calculate segment sizes
+        code_size = memory_size // 4
+        data_size = memory_size // 4
+        heap_size = memory_size // 4
+        stack_size = memory_size - code_size - data_size - heap_size
+        
+        # Add memory segments
+        self.code_segment = self.memory.add_segment(
+            MemorySegment(
+                base_address=0x10000,
+                size=code_size,
+                permission=MemoryPermission.READ_EXECUTE,
+                name="code"
+            )
+        )
+        
+        self.data_segment = self.memory.add_segment(
+            MemorySegment(
+                base_address=0x20000,
+                size=data_size,
+                permission=MemoryPermission.READ_WRITE,
+                name="data"
+            )
+        )
+        
+        self.heap_segment = self.memory.add_segment(
+            MemorySegment(
+                base_address=0x30000,
+                size=heap_size,
+                permission=MemoryPermission.READ_WRITE,
+                name="heap"
+            )
+        )
+        
+        self.stack_segment = self.memory.add_segment(
+            MemorySegment(
+                base_address=0x70000,
+                size=stack_size,
+                permission=MemoryPermission.READ_WRITE,
+                name="stack"
+            )
+        )
+        
+        # Only initialize processors if they exist
+        if hasattr(self, 'processors') and self.processors:
+            # Initialize stack pointer to top of stack
+            self.processors[0].registers.sp = self.stack_segment.base_address + self.stack_segment.size - 4
+            self.processors[0].registers.bp = self.processors[0].registers.sp
     
     def _create_processors(self, num_processors: int) -> List[CPU]:
         """
@@ -103,7 +177,25 @@ class VirtualMachine(SecureVirtualMachine):
             List of processor instances
         """
         # Secure VM uses a single CPU
-        return [CPU(self.memory)]
+        cpu = CPU(self.memory)
+        
+        # Patch CPU's _record_control_flow method to update control_flow_monitor
+        original_record_method = cpu._record_control_flow
+        
+        def patched_record_control_flow(from_address, to_address, event_type, instruction, legitimate=True, context=None):
+            # Call original method
+            original_record_method(from_address, to_address, event_type, instruction, legitimate, context)
+            
+            # Also update the control flow monitor if it exists
+            if hasattr(self, 'control_flow_monitor'):
+                self.control_flow_monitor.record_control_flow(
+                    from_address, to_address, event_type, instruction, legitimate, context
+                )
+        
+        # Replace the method
+        cpu._record_control_flow = patched_record_control_flow
+        
+        return [cpu]
     
     @property
     def cpu(self) -> CPU:
@@ -112,6 +204,10 @@ class VirtualMachine(SecureVirtualMachine):
     
     def load_program(self, program: List[int], entry_point: Optional[int] = None) -> None:
         """Load a program (instruction bytes) into the code segment."""
+        # Ensure memory segments are set up
+        if not hasattr(self, 'code_segment') or not self.memory.segments:
+            self.setup_memory_layout(self.memory.size)
+            
         if len(program) > self.code_segment.size:
             raise ValueError(f"Program size {len(program)} exceeds code segment size {self.code_segment.size}")
 
@@ -144,14 +240,15 @@ class VirtualMachine(SecureVirtualMachine):
         main_thread_id = self.create_thread(entry_point)
         
         # Log program load
-        self.forensic_log.log_system_event(
-            "program_load",
-            {
-                "size": len(program),
-                "entry_point": entry_point,
-                "main_thread_id": main_thread_id,
-            }
-        )
+        if hasattr(self, 'forensic_log'):
+            self.forensic_log.log_system_event(
+                "program_load",
+                {
+                    "size": len(program),
+                    "entry_point": entry_point,
+                    "main_thread_id": main_thread_id,
+                }
+            )
     
     def load_program_from_file(self, filename: str, entry_point: Optional[int] = None) -> None:
         """Load a program from a binary file."""
@@ -328,9 +425,42 @@ class VirtualMachine(SecureVirtualMachine):
                     result["error"] = f"Address 0x{address:08x} not in any memory segment"
                     return result
                 
+                # Check if the entire buffer fits in the segment
+                if address + size > segment.end_address:
+                    # Adjust size to fit within segment bounds
+                    adjusted_size = segment.end_address - address
+                    if adjusted_size <= 0:
+                        result["error"] = f"Address 0x{address:08x} is at or beyond the end of segment"
+                        return result
+                    
+                    # Log the adjustment
+                    self.forensic_log.log_system_event(
+                        "vulnerability_adjustment",
+                        {
+                            "type": vuln_type,
+                            "original_size": size,
+                            "adjusted_size": adjusted_size,
+                            "reason": "segment_boundary",
+                        }
+                    )
+                    size = adjusted_size
+                    
+                    # Also adjust payload if provided
+                    if payload and len(payload) > size:
+                        payload = payload[:size]
+                
                 # Write beyond intended buffer size
                 data = payload or bytes([0x41] * size)  # Default to 'A's if no payload
-                self.memory.write_bytes(address, data, {"vulnerability": "buffer_overflow"})
+                
+                # Try to write the data in smaller chunks to avoid segmentation faults
+                try:
+                    for i in range(0, len(data), 16):
+                        chunk = data[i:min(i+16, len(data))]
+                        self.memory.write_bytes(address + i, chunk, {"vulnerability": "buffer_overflow"})
+                except Exception as e:
+                    result["error"] = f"Failed to write buffer overflow data: {str(e)}"
+                    return result
+                
                 result["success"] = True
                 
             elif vuln_type == "use_after_free":
@@ -448,3 +578,98 @@ class VirtualMachine(SecureVirtualMachine):
             })
         
         return results
+        
+    def get_control_flow_visualization(self, format_type: str = "dict") -> Union[Dict[str, Any], str]:
+        """
+        Generate a visualization of the control flow.
+        
+        Args:
+            format_type: Output format ('dict' or 'json')
+            
+        Returns:
+            Control flow visualization in the requested format
+        """
+        # Use the control flow monitor's method
+        if hasattr(self, 'control_flow_monitor'):
+            return self.control_flow_monitor.get_control_flow_visualization(format_type)
+            
+        # Fallback implementation if control_flow_monitor is not available
+        nodes = set()
+        edges = []
+        
+        # Use the CPU's control flow records instead
+        for record in self.cpu.control_flow_records:
+            nodes.add(record.from_address)
+            nodes.add(record.to_address)
+            
+            edge = {
+                "source": record.from_address,
+                "target": record.to_address,
+                "type": record.event_type,
+                "legitimate": record.legitimate,
+                "instruction": record.instruction,
+            }
+            edges.append(edge)
+        
+        nodes_list = [{"address": addr} for addr in sorted(nodes)]
+        
+        visualization = {
+            "nodes": nodes_list,
+            "edges": edges,
+        }
+        
+        if format_type == "dict":
+            return visualization
+        elif format_type == "json":
+            import json
+            return json.dumps(visualization, indent=2)
+        else:
+            raise ValueError(f"Unsupported format: {format_type}")
+            
+    def get_forensic_logs(self) -> List[Dict[str, Any]]:
+        """
+        Get forensic logs from the VM execution.
+        
+        Returns:
+            List of forensic log entries
+        """
+        if hasattr(self, 'forensic_log'):
+            return self.forensic_log.get_logs()
+        return []
+        
+    def reset(self) -> None:
+        """Reset the VM to its initial state."""
+        # Reset control flow monitor
+        if hasattr(self, 'control_flow_monitor'):
+            self.control_flow_monitor.clear()
+        else:
+            # Create control flow monitor if it doesn't exist
+            from common.extensions.security.control_flow import ControlFlowMonitor
+            self.control_flow_monitor = ControlFlowMonitor(enable_shadow_stack=True)
+            
+        # Reset forensic logs
+        if hasattr(self, 'forensic_log'):
+            self.forensic_log.clear()
+        
+        # Reset cycles count for tests
+        self.global_clock = 0
+        if hasattr(self, 'start_time'):
+            self.start_time = 0
+        if hasattr(self, 'end_time'):
+            self.end_time = 0
+            
+        # Reset base VM
+        super().reset()
+        
+        # Ensure CPU has access to the control flow monitor
+        if hasattr(self, 'processors') and self.processors and hasattr(self, 'control_flow_monitor'):
+            for processor in self.processors:
+                if hasattr(processor, 'control_flow_monitor'):
+                    processor.control_flow_monitor = self.control_flow_monitor
+                # Also reset processor cycles
+                if hasattr(processor, 'cycles'):
+                    processor.cycles = 0
+        
+        # Reset VM-specific state
+        self.program_loaded = False
+        self.program_name = ""

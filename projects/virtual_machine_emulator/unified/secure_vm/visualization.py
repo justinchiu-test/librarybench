@@ -11,7 +11,8 @@ import time
 from typing import Dict, List, Optional, Set, Tuple, Union, Any
 
 from secure_vm.cpu import ControlFlowRecord
-from secure_vm.emulator import ExecutionResult, VirtualMachine
+# Use type hints with strings to avoid circular imports
+# We'll use type checking to handle this correctly
 
 
 class ControlFlowVisualizer:
@@ -324,10 +325,11 @@ class MemoryAccessVisualizer:
 class ForensicAnalyzer:
     """Analyzes forensic data to detect and explain attacks."""
     
-    def __init__(self, vm: VirtualMachine):
+    def __init__(self, vm: 'VirtualMachine'):
+        # Use string for type hint to avoid circular imports
         self.vm = vm
     
-    def analyze_execution(self, execution_result: ExecutionResult) -> Dict[str, Any]:
+    def analyze_execution(self, execution_result: Any) -> Dict[str, Any]:
         """
         Perform forensic analysis on an execution result.
         

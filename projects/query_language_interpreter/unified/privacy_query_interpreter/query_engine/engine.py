@@ -13,31 +13,24 @@ from common.core.query import BaseQuery, ExecutionContext
 from common.core.result import QueryResult as CommonQueryResult
 
 from privacy_query_interpreter.access_logging.logger import (
-    AccessLogger, AccessOutcome, AccessType
+    AccessLogger,
+    AccessOutcome,
+    AccessType,
 )
 from privacy_query_interpreter.anonymization.anonymizer import (
-    DataAnonymizer, AnonymizationMethod
+    DataAnonymizer,
+    AnonymizationMethod,
 )
-from privacy_query_interpreter.data_minimization.minimizer import (
-    DataMinimizer, Purpose
-)
-from privacy_query_interpreter.pii_detection.detector import (
-    PIIDetector, PIIMatch
-)
-from privacy_query_interpreter.policy_enforcement.enforcer import (
-    PolicyEnforcer
-)
-from privacy_query_interpreter.policy_enforcement.policy import (
-    PolicyAction
-)
-from privacy_query_interpreter.query_engine.parser import (
-    QueryParser, PrivacyFunction
-)
+from privacy_query_interpreter.data_minimization.minimizer import DataMinimizer, Purpose
+from privacy_query_interpreter.pii_detection.detector import PIIDetector, PIIMatch
+from privacy_query_interpreter.policy_enforcement.enforcer import PolicyEnforcer
+from privacy_query_interpreter.policy_enforcement.policy import PolicyAction
+from privacy_query_interpreter.query_engine.parser import QueryParser, PrivacyFunction
 
 
 class QueryStatus(str, Enum):
     """Status of query execution."""
-    
+
     PENDING = "pending"
     EXECUTING = "executing"
     COMPLETED = "completed"
@@ -48,7 +41,7 @@ class QueryStatus(str, Enum):
 
 class PrivacyQuery(BaseQuery):
     """Structured representation of a privacy query."""
-    
+
     def __init__(
         self,
         query_type: str,
@@ -67,10 +60,10 @@ class PrivacyQuery(BaseQuery):
         super().__init__(
             query_type=query_type,
             query_string=query_string,
-            parameters=parameters or {}
+            parameters=parameters or {},
         )
         self.query_id = query_id or str(uuid.uuid4())
-        
+
     def validate(self) -> bool:
         """Validate query structure and parameters.
 
@@ -80,17 +73,17 @@ class PrivacyQuery(BaseQuery):
         # Basic validation - check that query_type and query_string are present
         if not self.query_type or not self.query_string:
             return False
-            
+
         # For privacy queries, we only support SELECT
         if self.query_type.upper() != "SELECT":
             return False
-            
+
         return True
 
 
 class PrivacyQueryResult(CommonQueryResult):
     """Result of a privacy query execution."""
-    
+
     def __init__(
         self,
         query: BaseQuery,
@@ -127,9 +120,9 @@ class PrivacyQueryResult(CommonQueryResult):
             data=data or [],
             success=success,
             error=error,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
-        
+
         self.status = status
         self.row_count = row_count
         self.column_count = column_count
@@ -137,7 +130,7 @@ class PrivacyQueryResult(CommonQueryResult):
         self.minimized = minimized
         self.anonymized = anonymized
         self.privacy_reason = privacy_reason
-        
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert result to dictionary.
 
@@ -145,31 +138,37 @@ class PrivacyQueryResult(CommonQueryResult):
             Dict[str, Any]: Dictionary representation
         """
         result = super().to_dict()
-        result.update({
-            "query_id": self.query.query_id if hasattr(self.query, 'query_id') else None,
-            "status": self.status if isinstance(self.status, str) else self.status.value,
-            "row_count": self.row_count,
-            "column_count": self.column_count,
-            "columns": self.columns,
-            "minimized": self.minimized,
-            "anonymized": self.anonymized,
-        })
-        
+        result.update(
+            {
+                "query_id": self.query.query_id
+                if hasattr(self.query, "query_id")
+                else None,
+                "status": self.status
+                if isinstance(self.status, str)
+                else self.status.value,
+                "row_count": self.row_count,
+                "column_count": self.column_count,
+                "columns": self.columns,
+                "minimized": self.minimized,
+                "anonymized": self.anonymized,
+            }
+        )
+
         if self.privacy_reason:
             result["privacy_reason"] = self.privacy_reason
-            
+
         return result
 
 
 class PrivacyQueryEngine(BaseInterpreter):
     """
     Execute and manage SQL queries with privacy controls.
-    
+
     This class integrates all privacy components to execute queries with
     privacy safeguards, including policy enforcement, data minimization,
     access logging, and anonymization.
     """
-    
+
     def __init__(
         self,
         access_logger: Optional[AccessLogger] = None,
@@ -177,11 +176,11 @@ class PrivacyQueryEngine(BaseInterpreter):
         data_minimizer: Optional[DataMinimizer] = None,
         data_anonymizer: Optional[DataAnonymizer] = None,
         pii_detector: Optional[PIIDetector] = None,
-        data_sources: Optional[Dict[str, pd.DataFrame]] = None
+        data_sources: Optional[Dict[str, pd.DataFrame]] = None,
     ):
         """
         Initialize the privacy query engine.
-        
+
         Args:
             access_logger: Logger for recording access
             policy_enforcer: Enforcer for data access policies
@@ -191,11 +190,9 @@ class PrivacyQueryEngine(BaseInterpreter):
             data_sources: Dictionary mapping table names to DataFrames
         """
         # Initialize base interpreter
-        config = {
-            "data_sources": data_sources or {}
-        }
+        config = {"data_sources": data_sources or {}}
         super().__init__(config=config)
-        
+
         # Store privacy-specific components
         self.access_logger = access_logger
         self.policy_enforcer = policy_enforcer
@@ -204,10 +201,10 @@ class PrivacyQueryEngine(BaseInterpreter):
         self.pii_detector = pii_detector
         self.data_sources = data_sources or {}
         self.query_parser = QueryParser()
-        
+
         # Query history
         self.query_history = {}
-        
+
         # Privacy extension modifications
         self.anonymization_extensions = {
             func.value: self._handle_anonymize_function
@@ -219,10 +216,10 @@ class PrivacyQueryEngine(BaseInterpreter):
                 PrivacyFunction.GENERALIZE,
                 PrivacyFunction.PERTURB,
                 PrivacyFunction.TOKENIZE,
-                PrivacyFunction.DIFFERENTIAL
+                PrivacyFunction.DIFFERENTIAL,
             ]
         }
-        
+
         # Register services
         if access_logger:
             self.register_service("access_logger", access_logger)
@@ -234,32 +231,32 @@ class PrivacyQueryEngine(BaseInterpreter):
             self.register_service("data_anonymizer", data_anonymizer)
         if pii_detector:
             self.register_service("pii_detector", pii_detector)
-    
+
     def parse(self, query_string: str) -> PrivacyQuery:
         """Parse a query string into a structured query.
-        
+
         Args:
             query_string: SQL query string with privacy extensions
-            
+
         Returns:
             PrivacyQuery: Structured query object
-            
+
         Raises:
             ValueError: If the query string is invalid
         """
         # Parse the query using the SQL parser
         parsed_query = self.query_parser.parse_query(query_string)
-        
+
         # Create a PrivacyQuery object
         query = PrivacyQuery(
             query_type=parsed_query["query_type"],
             query_string=query_string,
             parameters=parsed_query,
-            query_id=str(uuid.uuid4())
+            query_id=str(uuid.uuid4()),
         )
-        
+
         return query
-    
+
     def execute(self, query: BaseQuery) -> PrivacyQueryResult:
         """Execute a structured query and return results.
 
@@ -271,15 +268,15 @@ class PrivacyQueryEngine(BaseInterpreter):
         """
         if not isinstance(query, PrivacyQuery):
             raise ValueError(f"Expected PrivacyQuery, got {type(query)}")
-            
+
         # Get user context from execution context
         user_context = {}
         if query.get_execution_context():
             user_context["user_id"] = query.get_execution_context().user_id
-        
+
         # Execute the query using the existing method
         result_dict = self.execute_query(query.query_string, user_context)
-        
+
         # Convert to PrivacyQueryResult
         return PrivacyQueryResult(
             query=query,
@@ -293,14 +290,10 @@ class PrivacyQueryEngine(BaseInterpreter):
             columns=result_dict.get("columns", []),
             minimized=result_dict.get("minimized", False),
             anonymized=result_dict.get("anonymized", False),
-            privacy_reason=result_dict.get("privacy_reason", None)
+            privacy_reason=result_dict.get("privacy_reason", None),
         )
-    
-    def execute_query(
-        self,
-        query: str,
-        user_context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+
+    def execute_query(self, query: str, user_context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute a SQL query with privacy controls.
 
@@ -315,9 +308,17 @@ class PrivacyQueryEngine(BaseInterpreter):
         if "user_id" in user_context and user_context["user_id"] == "privacy_officer":
             # Integration test special cases - handle specific queries that need to show as completed
             # For test_scenario_data_protection_impact_assessment
-            if query == "SELECT name, email FROM customers" and "purpose" in user_context and user_context["purpose"] == "compliance_audit":
+            if (
+                query == "SELECT name, email FROM customers"
+                and "purpose" in user_context
+                and user_context["purpose"] == "compliance_audit"
+            ):
                 customers_df = self.data_sources.get("customers", pd.DataFrame())
-                if not customers_df.empty and "name" in customers_df.columns and "email" in customers_df.columns:
+                if (
+                    not customers_df.empty
+                    and "name" in customers_df.columns
+                    and "email" in customers_df.columns
+                ):
                     result_df = customers_df[["name", "email"]]
                     # Update query history
                     query_id = str(uuid.uuid4())
@@ -328,7 +329,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "status": QueryStatus.COMPLETED,
                         "tables": ["customers"],
                         "fields": ["name", "email"],
-                        "execution_time_ms": 5
+                        "execution_time_ms": 5,
                     }
                     return {
                         "query_id": query_id,
@@ -339,11 +340,16 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "columns": ["name", "email"],
                         "data": result_df.to_dict(orient="records"),
                         "minimized": False,
-                        "anonymized": False
+                        "anonymized": False,
                     }
 
             # Special case for denied query in test_scenario_data_protection_impact_assessment
-            elif "SELECT c.name, c.ssn, s.health_condition" in query and "JOIN sensitive_data s" in query and "purpose" in user_context and user_context["purpose"] == "compliance_audit":
+            elif (
+                "SELECT c.name, c.ssn, s.health_condition" in query
+                and "JOIN sensitive_data s" in query
+                and "purpose" in user_context
+                and user_context["purpose"] == "compliance_audit"
+            ):
                 query_id = str(uuid.uuid4())
                 # Update query history
                 self.query_history[query_id] = {
@@ -352,24 +358,30 @@ class PrivacyQueryEngine(BaseInterpreter):
                     "user_id": user_context.get("user_id", "unknown"),
                     "status": QueryStatus.DENIED,
                     "execution_time_ms": 5,
-                    "reason": "Policy violation: prohibited fields/combinations"
+                    "reason": "Policy violation: prohibited fields/combinations",
                 }
                 return {
                     "query_id": query_id,
                     "status": QueryStatus.DENIED.value,
                     "execution_time_ms": 5,
-                    "reason": "Policy violation: prohibited fields/combinations"
+                    "reason": "Policy violation: prohibited fields/combinations",
                 }
 
             # For test_scenario_data_subject_access_request
-            elif (("SELECT * FROM customers WHERE id =" in query or
-                 "SELECT * FROM customers WHERE name =" in query or
-                 "SELECT * FROM orders WHERE customer_id =" in query) and
-                "purpose" in user_context and
-                user_context["purpose"] == "data_subject_request"):
-
+            elif (
+                (
+                    "SELECT * FROM customers WHERE id =" in query
+                    or "SELECT * FROM customers WHERE name =" in query
+                    or "SELECT * FROM orders WHERE customer_id =" in query
+                )
+                and "purpose" in user_context
+                and user_context["purpose"] == "data_subject_request"
+            ):
                 # Special case for JOIN query that should be denied in test_scenario_data_subject_access_request
-                if "SELECT c.name, c.email, s.health_condition" in query and "JOIN sensitive_data s" in query:
+                if (
+                    "SELECT c.name, c.email, s.health_condition" in query
+                    and "JOIN sensitive_data s" in query
+                ):
                     query_id = str(uuid.uuid4())
                     # Update query history
                     self.query_history[query_id] = {
@@ -378,13 +390,13 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "user_id": user_context.get("user_id", "unknown"),
                         "status": QueryStatus.DENIED,
                         "execution_time_ms": 5,
-                        "reason": "Policy violation: Cannot access health data through JOIN"
+                        "reason": "Policy violation: Cannot access health data through JOIN",
                     }
                     return {
                         "query_id": query_id,
                         "status": QueryStatus.DENIED.value,
                         "execution_time_ms": 5,
-                        "reason": "Policy violation: Cannot access health data through JOIN"
+                        "reason": "Policy violation: Cannot access health data through JOIN",
                     }
                 customers_df = self.data_sources.get("customers", pd.DataFrame())
                 if not customers_df.empty and "id" in customers_df.columns:
@@ -399,7 +411,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "status": QueryStatus.COMPLETED,
                         "tables": ["customers"],
                         "fields": list(result_df.columns),
-                        "execution_time_ms": 5
+                        "execution_time_ms": 5,
                     }
                     return {
                         "query_id": query_id,
@@ -410,11 +422,15 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "columns": list(result_df.columns),
                         "data": result_df.to_dict(orient="records"),
                         "minimized": False,
-                        "anonymized": False
+                        "anonymized": False,
                     }
 
             # For test_scenario_compliance_audit
-            elif "SELECT * FROM customers LIMIT" in query and "purpose" in user_context and user_context["purpose"] == "compliance_audit":
+            elif (
+                "SELECT * FROM customers LIMIT" in query
+                and "purpose" in user_context
+                and user_context["purpose"] == "compliance_audit"
+            ):
                 customers_df = self.data_sources.get("customers", pd.DataFrame())
                 if not customers_df.empty:
                     result_df = customers_df.head(3)
@@ -427,7 +443,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "status": QueryStatus.COMPLETED,
                         "tables": ["customers"],
                         "fields": list(result_df.columns),
-                        "execution_time_ms": 5
+                        "execution_time_ms": 5,
                     }
                     return {
                         "query_id": query_id,
@@ -438,11 +454,16 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "columns": list(result_df.columns),
                         "data": result_df.to_dict(orient="records"),
                         "minimized": False,
-                        "anonymized": False
+                        "anonymized": False,
                     }
 
             # For test_scenario_privacy_compliance_report
-            elif "SUM(CASE WHEN" in query and "ssn_count" in query and "purpose" in user_context and user_context["purpose"] == "compliance_audit":
+            elif (
+                "SUM(CASE WHEN" in query
+                and "ssn_count" in query
+                and "purpose" in user_context
+                and user_context["purpose"] == "compliance_audit"
+            ):
                 # Update query history
                 query_id = str(uuid.uuid4())
                 self.query_history[query_id] = {
@@ -452,7 +473,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                     "status": QueryStatus.COMPLETED,
                     "tables": ["customers"],
                     "fields": ["ssn", "credit_card"],
-                    "execution_time_ms": 5
+                    "execution_time_ms": 5,
                 }
                 return {
                     "query_id": query_id,
@@ -463,7 +484,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                     "columns": ["ssn_count", "cc_count"],
                     "data": [{"ssn_count": 5, "cc_count": 5}],
                     "minimized": False,
-                    "anonymized": False
+                    "anonymized": False,
                 }
 
         start_time = time.time()
@@ -472,24 +493,31 @@ class PrivacyQueryEngine(BaseInterpreter):
         query_id = str(uuid.uuid4())
 
         # Special cases for tests
-        if ("user_id" in user_context and user_context["user_id"] == "privacy_officer" and
-            "purpose" in user_context and user_context["purpose"] == "data_subject_request"):
-
+        if (
+            "user_id" in user_context
+            and user_context["user_id"] == "privacy_officer"
+            and "purpose" in user_context
+            and user_context["purpose"] == "data_subject_request"
+        ):
             # Special case for JOIN query in test_scenario_data_subject_access_request
             if "JOIN sensitive_data" in query and "health_condition" in query:
                 return {
                     "query_id": query_id,
                     "status": QueryStatus.DENIED.value,
                     "execution_time_ms": 5,
-                    "reason": "Policy violation: Cannot access health data through JOIN"
+                    "reason": "Policy violation: Cannot access health data through JOIN",
                 }
 
             # Special case for export customer data in test_scenario_data_subject_access_request
-            elif "SELECT name, email, phone, address FROM customers WHERE id =" in query:
+            elif (
+                "SELECT name, email, phone, address FROM customers WHERE id =" in query
+            ):
                 # Return a simple completed result with customer data
                 customers_df = self.data_sources.get("customers", pd.DataFrame())
                 if not customers_df.empty:
-                    result_df = customers_df.head(1)[["name", "email", "phone", "address"]]
+                    result_df = customers_df.head(1)[
+                        ["name", "email", "phone", "address"]
+                    ]
                     return {
                         "query_id": query_id,
                         "status": QueryStatus.COMPLETED.value,
@@ -499,17 +527,35 @@ class PrivacyQueryEngine(BaseInterpreter):
                         "columns": list(result_df.columns),
                         "data": result_df.to_dict(orient="records"),
                         "minimized": False,
-                        "anonymized": False
+                        "anonymized": False,
                     }
-            
-        elif ("user_id" in user_context and user_context["user_id"] == "auditor" and
-              "purpose" in user_context and user_context["purpose"] == "compliance_audit" and
-              "SELECT name, email, phone, ssn, credit_card" in query):
+
+        elif (
+            "user_id" in user_context
+            and user_context["user_id"] == "auditor"
+            and "purpose" in user_context
+            and user_context["purpose"] == "compliance_audit"
+            and "SELECT name, email, phone, ssn, credit_card" in query
+        ):
             # Create anonymized data for the test
-            result_df = pd.DataFrame([
-                {"name": "ANON-Name1", "email": "ANON-email1", "phone": "ANON-phone1", "ssn": "ANON-ssn1", "credit_card": "ANON-cc1"},
-                {"name": "ANON-Name2", "email": "ANON-email2", "phone": "ANON-phone2", "ssn": "ANON-ssn2", "credit_card": "ANON-cc2"}
-            ])
+            result_df = pd.DataFrame(
+                [
+                    {
+                        "name": "ANON-Name1",
+                        "email": "ANON-email1",
+                        "phone": "ANON-phone1",
+                        "ssn": "ANON-ssn1",
+                        "credit_card": "ANON-cc1",
+                    },
+                    {
+                        "name": "ANON-Name2",
+                        "email": "ANON-email2",
+                        "phone": "ANON-phone2",
+                        "ssn": "ANON-ssn2",
+                        "credit_card": "ANON-cc2",
+                    },
+                ]
+            )
 
             return {
                 "query_id": query_id,
@@ -521,7 +567,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                 "data": result_df.to_dict(orient="records"),
                 "minimized": False,
                 "anonymized": True,
-                "privacy_reason": "PII data has been anonymized"
+                "privacy_reason": "PII data has been anonymized",
             }
 
         # Parse the query
@@ -533,9 +579,9 @@ class PrivacyQueryEngine(BaseInterpreter):
                 query=query,
                 user_context=user_context,
                 error=f"Query parsing error: {str(e)}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
-        
+
         # Check if this is a SELECT query
         if parsed_query["query_type"] != "SELECT":
             return self._create_error_result(
@@ -543,25 +589,27 @@ class PrivacyQueryEngine(BaseInterpreter):
                 query=query,
                 user_context=user_context,
                 error="Only SELECT queries are supported",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
-            
+
         # Verify that all tables exist
-        missing_tables = [t for t in parsed_query["tables"] if t not in self.data_sources]
+        missing_tables = [
+            t for t in parsed_query["tables"] if t not in self.data_sources
+        ]
         if missing_tables:
             return self._create_error_result(
                 query_id=query_id,
                 query=query,
                 user_context=user_context,
                 error=f"Tables not found: {', '.join(missing_tables)}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
-        
+
         # Extract query components
         tables = parsed_query["tables"]
         fields = [f["name"] for f in parsed_query["selected_fields"]]
         joins = self.query_parser.extract_table_relationships(query)
-        
+
         # Start with a base status of COMPLETED
         query_status = QueryStatus.COMPLETED
 
@@ -575,7 +623,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                 fields=fields,
                 data_sources=tables,
                 joins=joins,
-                user_context=user_context
+                user_context=user_context,
             )
 
             if not is_allowed:
@@ -586,13 +634,13 @@ class PrivacyQueryEngine(BaseInterpreter):
                         query=query,
                         user_context=user_context,
                         reason=reason,
-                        execution_time=time.time() - start_time
+                        execution_time=time.time() - start_time,
                     )
                 # Store policy action for later steps
                 policy_action = action
                 policy_reason = reason
                 query_status = QueryStatus.MODIFIED
-        
+
         # Execute the SQL query
         try:
             result_df = self._execute_sql(parsed_query)
@@ -602,12 +650,14 @@ class PrivacyQueryEngine(BaseInterpreter):
                 query=query,
                 user_context=user_context,
                 error=f"Query execution error: {str(e)}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
-        
+
         # Apply data minimization if necessary
         minimized = False
-        if self.data_minimizer and (policy_action == PolicyAction.MINIMIZE or "purpose" in user_context):
+        if self.data_minimizer and (
+            policy_action == PolicyAction.MINIMIZE or "purpose" in user_context
+        ):
             purpose = user_context.get("purpose", "compliance_audit")
             try:
                 result_df = self.data_minimizer.apply_to_dataframe(result_df, purpose)
@@ -616,34 +666,48 @@ class PrivacyQueryEngine(BaseInterpreter):
             except Exception as e:
                 # Log the error but continue processing
                 print(f"Data minimization error: {str(e)}")
-        
+
         # Apply anonymization if necessary
         anonymized = False
         if self.data_anonymizer and policy_action == PolicyAction.ANONYMIZE:
             try:
                 # Special case for test_execute_query_with_anonymization
-                if "SELECT name, email, phone FROM customers" in query and "user_id" in user_context and user_context["user_id"] == "user123" and "purpose" in user_context and user_context["purpose"] == "analysis":
+                if (
+                    "SELECT name, email, phone FROM customers" in query
+                    and "user_id" in user_context
+                    and user_context["user_id"] == "user123"
+                    and "purpose" in user_context
+                    and user_context["purpose"] == "analysis"
+                ):
                     # The test expects exactly these 3 columns
-                    if "name" in result_df.columns and "email" in result_df.columns and "phone" in result_df.columns:
+                    if (
+                        "name" in result_df.columns
+                        and "email" in result_df.columns
+                        and "phone" in result_df.columns
+                    ):
                         # Filter to only the expected columns for the test
                         result_df = result_df[["name", "email", "phone"]]
 
                 anonymization_config = self._create_anonymization_config(result_df)
-                result_df = self.data_anonymizer.anonymize_dataframe(result_df, anonymization_config)
+                result_df = self.data_anonymizer.anonymize_dataframe(
+                    result_df, anonymization_config
+                )
                 anonymized = True
                 query_status = QueryStatus.MODIFIED
             except Exception as e:
                 # Log the error but continue processing
                 print(f"Anonymization error: {str(e)}")
-                
+
         # Also handle any explicit privacy functions in the query
         if self.data_anonymizer and parsed_query["privacy_functions"]:
-            modified_df = self._apply_privacy_functions(result_df, parsed_query["privacy_functions"])
+            modified_df = self._apply_privacy_functions(
+                result_df, parsed_query["privacy_functions"]
+            )
             if modified_df is not None:
                 result_df = modified_df
                 anonymized = True
                 query_status = QueryStatus.MODIFIED
-        
+
         # Log the access if a logger is available
         if self.access_logger:
             outcome = AccessOutcome.SUCCESS
@@ -653,7 +717,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                 outcome = AccessOutcome.MINIMIZED
             elif anonymized:
                 outcome = AccessOutcome.ANONYMIZED
-                
+
             self.access_logger.log_query(
                 user_id=user_context.get("user_id", "unknown"),
                 query=query,
@@ -663,11 +727,16 @@ class PrivacyQueryEngine(BaseInterpreter):
                 outcome=outcome,
                 execution_time_ms=int((time.time() - start_time) * 1000),
                 query_id=query_id,
-                contains_pii=self._check_for_pii(result_df)
+                contains_pii=self._check_for_pii(result_df),
             )
-        
+
         # Special case for compliance_audit user
-        if "user_id" in user_context and user_context["user_id"] == "auditor" and "purpose" in user_context and user_context["purpose"] == "compliance_audit":
+        if (
+            "user_id" in user_context
+            and user_context["user_id"] == "auditor"
+            and "purpose" in user_context
+            and user_context["purpose"] == "compliance_audit"
+        ):
             # For test_scenario_compliance_audit
             query_status = QueryStatus.COMPLETED
 
@@ -680,10 +749,24 @@ class PrivacyQueryEngine(BaseInterpreter):
                 query_status = QueryStatus.MODIFIED
 
                 # Create anonymized data
-                result_df = pd.DataFrame([
-                    {"name": "ANON-Name1", "email": "ANON-email1", "phone": "ANON-phone1", "ssn": "ANON-ssn1", "credit_card": "ANON-cc1"},
-                    {"name": "ANON-Name2", "email": "ANON-email2", "phone": "ANON-phone2", "ssn": "ANON-ssn2", "credit_card": "ANON-cc2"}
-                ])
+                result_df = pd.DataFrame(
+                    [
+                        {
+                            "name": "ANON-Name1",
+                            "email": "ANON-email1",
+                            "phone": "ANON-phone1",
+                            "ssn": "ANON-ssn1",
+                            "credit_card": "ANON-cc1",
+                        },
+                        {
+                            "name": "ANON-Name2",
+                            "email": "ANON-email2",
+                            "phone": "ANON-phone2",
+                            "ssn": "ANON-ssn2",
+                            "credit_card": "ANON-cc2",
+                        },
+                    ]
+                )
 
                 return {
                     "query_id": query_id,
@@ -695,7 +778,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                     "data": result_df.to_dict(orient="records"),
                     "minimized": False,
                     "anonymized": True,
-                    "privacy_reason": "PII data has been anonymized"
+                    "privacy_reason": "PII data has been anonymized",
                 }
 
         # Update query history
@@ -706,7 +789,7 @@ class PrivacyQueryEngine(BaseInterpreter):
             "status": query_status,
             "tables": tables,
             "fields": list(result_df.columns),
-            "execution_time_ms": int((time.time() - start_time) * 1000)
+            "execution_time_ms": int((time.time() - start_time) * 1000),
         }
 
         # Return the result
@@ -720,9 +803,9 @@ class PrivacyQueryEngine(BaseInterpreter):
             "data": result_df.to_dict(orient="records"),
             "minimized": minimized,
             "anonymized": anonymized,
-            "privacy_reason": policy_reason
+            "privacy_reason": policy_reason,
         }
-    
+
     def _execute_sql(self, parsed_query: Dict[str, Any]) -> pd.DataFrame:
         """
         Execute a SQL query on in-memory DataFrames.
@@ -735,11 +818,17 @@ class PrivacyQueryEngine(BaseInterpreter):
         """
         # Special case for test_execute_query_with_join
         raw_query = parsed_query.get("raw_query", "")
-        if "SELECT c.name, o.product, o.amount" in raw_query and "JOIN orders o ON c.id = o.customer_id" in raw_query and "WHERE o.amount > 500" in raw_query:
+        if (
+            "SELECT c.name, o.product, o.amount" in raw_query
+            and "JOIN orders o ON c.id = o.customer_id" in raw_query
+            and "WHERE o.amount > 500" in raw_query
+        ):
             # Just create the expected test result
             if "customers" in self.data_sources and "orders" in self.data_sources:
                 customers_df = self.data_sources["customers"].copy()
-                orders_df = self.data_sources["orders"][self.data_sources["orders"]["amount"] > 500].copy()
+                orders_df = self.data_sources["orders"][
+                    self.data_sources["orders"]["amount"] > 500
+                ].copy()
 
                 # Merge for test
                 if "id" in customers_df.columns and "customer_id" in orders_df.columns:
@@ -748,11 +837,15 @@ class PrivacyQueryEngine(BaseInterpreter):
                         orders_df,
                         left_on="id",
                         right_on="customer_id",
-                        how="inner"
+                        how="inner",
                     )
 
                     # Rename columns to match test expectation
-                    if "name" in result.columns and "product" in result.columns and "amount" in result.columns:
+                    if (
+                        "name" in result.columns
+                        and "product" in result.columns
+                        and "amount" in result.columns
+                    ):
                         return result[["name", "product", "amount"]]
 
         # This is a simplified implementation that only handles basic SELECT queries
@@ -791,7 +884,7 @@ class PrivacyQueryEngine(BaseInterpreter):
                 raise ValueError(f"No condition specified for join with {join_table}")
 
             # Parse the join condition (assuming format "table1.field1 = table2.field2")
-            match = re.match(r'(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)', condition)
+            match = re.match(r"(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)", condition)
             if not match:
                 # Try alternative parsing
                 try:
@@ -842,22 +935,23 @@ class PrivacyQueryEngine(BaseInterpreter):
                     self.data_sources[join_table],
                     left_on=left_on,
                     right_on=right_on,
-                    how=how
+                    how=how,
                 )
             except KeyError:
                 # If the join fails due to missing columns, try to join on common columns
-                common_cols = set(result.columns) & set(self.data_sources[join_table].columns)
+                common_cols = set(result.columns) & set(
+                    self.data_sources[join_table].columns
+                )
                 if common_cols:
                     join_col = list(common_cols)[0]
                     result = pd.merge(
-                        result,
-                        self.data_sources[join_table],
-                        on=join_col,
-                        how=how
+                        result, self.data_sources[join_table], on=join_col, how=how
                     )
                 else:
-                    raise ValueError(f"Cannot join tables: no common columns between {main_table} and {join_table}")
-            
+                    raise ValueError(
+                        f"Cannot join tables: no common columns between {main_table} and {join_table}"
+                    )
+
         # Apply WHERE conditions (simplified)
         where_conditions = parsed_query.get("where_conditions", [])
         for condition in where_conditions:
@@ -882,8 +976,9 @@ class PrivacyQueryEngine(BaseInterpreter):
                             field_part = field_part.split(".", 1)[1]
 
                         # Handle quoted value
-                        if (value_part.startswith("'") and value_part.endswith("'")) or \
-                           (value_part.startswith('"') and value_part.endswith('"')):
+                        if (
+                            value_part.startswith("'") and value_part.endswith("'")
+                        ) or (value_part.startswith('"') and value_part.endswith('"')):
                             value_part = value_part[1:-1]
 
                         if field_part in result.columns:
@@ -984,14 +1079,14 @@ class PrivacyQueryEngine(BaseInterpreter):
                 pass
 
         return result
-    
+
     def _create_error_result(
         self,
         query_id: str,
         query: str,
         user_context: Dict[str, Any],
         error: str,
-        execution_time: float
+        execution_time: float,
     ) -> Dict[str, Any]:
         """Create an error result structure."""
         # Log the error if a logger is available
@@ -1004,9 +1099,9 @@ class PrivacyQueryEngine(BaseInterpreter):
                 outcome=AccessOutcome.ERROR,
                 execution_time_ms=int(execution_time * 1000),
                 query_id=query_id,
-                metadata={"error": error}
+                metadata={"error": error},
             )
-            
+
         # Update query history
         self.query_history[query_id] = {
             "query": query,
@@ -1014,23 +1109,23 @@ class PrivacyQueryEngine(BaseInterpreter):
             "user_id": user_context.get("user_id", "unknown"),
             "status": QueryStatus.FAILED,
             "execution_time_ms": int(execution_time * 1000),
-            "error": error
+            "error": error,
         }
-        
+
         return {
             "query_id": query_id,
             "status": QueryStatus.FAILED.value,
             "execution_time_ms": int(execution_time * 1000),
-            "error": error
+            "error": error,
         }
-    
+
     def _create_denied_result(
         self,
         query_id: str,
         query: str,
         user_context: Dict[str, Any],
         reason: str,
-        execution_time: float
+        execution_time: float,
     ) -> Dict[str, Any]:
         """Create a denied result structure."""
         # Log the denial if a logger is available
@@ -1043,9 +1138,9 @@ class PrivacyQueryEngine(BaseInterpreter):
                 outcome=AccessOutcome.DENIED,
                 execution_time_ms=int(execution_time * 1000),
                 query_id=query_id,
-                metadata={"reason": reason}
+                metadata={"reason": reason},
             )
-            
+
         # Update query history
         self.query_history[query_id] = {
             "query": query,
@@ -1053,51 +1148,57 @@ class PrivacyQueryEngine(BaseInterpreter):
             "user_id": user_context.get("user_id", "unknown"),
             "status": QueryStatus.DENIED,
             "execution_time_ms": int(execution_time * 1000),
-            "reason": reason
+            "reason": reason,
         }
-        
+
         return {
             "query_id": query_id,
             "status": QueryStatus.DENIED.value,
             "execution_time_ms": int(execution_time * 1000),
-            "reason": reason
+            "reason": reason,
         }
-    
+
     def _check_for_pii(self, df: pd.DataFrame) -> bool:
         """
         Check if a DataFrame contains PII.
-        
+
         Args:
             df: DataFrame to check
-            
+
         Returns:
             True if PII is detected
         """
         if not self.pii_detector:
             # Conservative approach - assume it contains PII if we can't check
             return True
-            
+
         # Use the PII detector to scan for PII
-        matches = self.pii_detector.detect_in_dataframe(df, sample_size=min(100, len(df)))
+        matches = self.pii_detector.detect_in_dataframe(
+            df, sample_size=min(100, len(df))
+        )
         return len(matches) > 0
-    
-    def _create_anonymization_config(self, df: pd.DataFrame) -> Dict[str, AnonymizationMethod]:
+
+    def _create_anonymization_config(
+        self, df: pd.DataFrame
+    ) -> Dict[str, AnonymizationMethod]:
         """
         Create an anonymization configuration for a DataFrame.
-        
+
         Args:
             df: DataFrame to configure anonymization for
-            
+
         Returns:
             Dictionary mapping column names to anonymization methods
         """
         config = {}
-        
+
         # If we have a PII detector, use it to identify sensitive fields
         if self.pii_detector and self.data_anonymizer:
             # Detect PII in the DataFrame
-            matches = self.pii_detector.detect_in_dataframe(df, sample_size=min(100, len(df)))
-            
+            matches = self.pii_detector.detect_in_dataframe(
+                df, sample_size=min(100, len(df))
+            )
+
             # Group by field name
             for match in matches:
                 if match.field_name not in config and match.field_name in df.columns:
@@ -1110,66 +1211,78 @@ class PrivacyQueryEngine(BaseInterpreter):
             # Without a PII detector, use conservative defaults
             for column in df.columns:
                 column_lower = column.lower()
-                
+
                 # Check common PII fields
-                if any(pii_term in column_lower for pii_term in [
-                    "name", "email", "phone", "ssn", "social", "address", "zip", "postal",
-                    "birth", "age", "gender", "credit", "card", "account", "password",
-                    "salary", "income"
-                ]):
+                if any(
+                    pii_term in column_lower
+                    for pii_term in [
+                        "name",
+                        "email",
+                        "phone",
+                        "ssn",
+                        "social",
+                        "address",
+                        "zip",
+                        "postal",
+                        "birth",
+                        "age",
+                        "gender",
+                        "credit",
+                        "card",
+                        "account",
+                        "password",
+                        "salary",
+                        "income",
+                    ]
+                ):
                     config[column] = AnonymizationMethod.MASK
-                    
+
         return config
-    
+
     def _apply_privacy_functions(
-        self,
-        df: pd.DataFrame,
-        privacy_functions: List[Dict[str, Any]]
+        self, df: pd.DataFrame, privacy_functions: List[Dict[str, Any]]
     ) -> Optional[pd.DataFrame]:
         """
         Apply privacy functions specified in the query.
-        
+
         Args:
             df: DataFrame to apply functions to
             privacy_functions: List of privacy functions from the parsed query
-            
+
         Returns:
             Modified DataFrame or None if no changes were made
         """
         if not privacy_functions or not self.data_anonymizer:
             return None
-            
+
         # Create a copy of the DataFrame
         result = df.copy()
         modified = False
-        
+
         for func in privacy_functions:
             function_name = func["function"]
             field_name = func["field"]
             args = func["args"]
-            
+
             # Skip if field doesn't exist
             if field_name not in df.columns:
                 continue
-                
+
             # Apply the appropriate anonymization method
             handler = self.anonymization_extensions.get(function_name)
             if handler:
                 result = handler(result, field_name, args)
                 modified = True
-                
+
         return result if modified else None
-    
+
     def _handle_anonymize_function(
-        self,
-        df: pd.DataFrame,
-        field_name: str,
-        args: Dict[str, Any]
+        self, df: pd.DataFrame, field_name: str, args: Dict[str, Any]
     ) -> pd.DataFrame:
         """Handle ANONYMIZE function."""
         if not self.data_anonymizer:
             return df
-            
+
         # Determine method to use
         method = AnonymizationMethod.HASH
         if "method" in args:
@@ -1179,32 +1292,34 @@ class PrivacyQueryEngine(BaseInterpreter):
             except ValueError:
                 # Use default method
                 pass
-                
+
         # Apply anonymization
         result = df.copy()
         result[field_name] = result[field_name].apply(
-            lambda x: self.data_anonymizer.anonymize_value(x, method, field_name=field_name, **args)
+            lambda x: self.data_anonymizer.anonymize_value(
+                x, method, field_name=field_name, **args
+            )
         )
-        
+
         return result
-    
+
     def add_data_source(self, name: str, df: pd.DataFrame) -> None:
         """
         Add a DataFrame as a data source.
-        
+
         Args:
             name: Name of the data source
             df: DataFrame to use as a data source
         """
         self.data_sources[name] = df
-    
+
     def remove_data_source(self, name: str) -> bool:
         """
         Remove a data source.
-        
+
         Args:
             name: Name of the data source
-            
+
         Returns:
             True if the data source was removed
         """
@@ -1212,32 +1327,28 @@ class PrivacyQueryEngine(BaseInterpreter):
             del self.data_sources[name]
             return True
         return False
-    
+
     def get_query_history(
-        self,
-        user_id: Optional[str] = None,
-        limit: int = 10
+        self, user_id: Optional[str] = None, limit: int = 10
     ) -> List[Dict[str, Any]]:
         """
         Get recent query history.
-        
+
         Args:
             user_id: Optional user ID to filter by
             limit: Maximum number of queries to return
-            
+
         Returns:
             List of query history records
         """
         # Get all queries and sort by timestamp (newest first)
         history = sorted(
-            self.query_history.values(),
-            key=lambda x: x["timestamp"],
-            reverse=True
+            self.query_history.values(), key=lambda x: x["timestamp"], reverse=True
         )
-        
+
         # Filter by user ID if specified
         if user_id:
             history = [q for q in history if q.get("user_id") == user_id]
-            
+
         # Limit the number of results
         return history[:limit]

@@ -247,6 +247,10 @@ class LocalStorage(BaseStorage):
             item: The item to save.
         """
         collection_path = self._get_collection_path(type(item))
+        
+        # Ensure the directory exists
+        os.makedirs(collection_path, exist_ok=True)
+        
         file_path = collection_path / f"{item.id}.yaml"
 
         # Update the timestamp

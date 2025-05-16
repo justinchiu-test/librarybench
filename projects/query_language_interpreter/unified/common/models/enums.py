@@ -5,6 +5,7 @@ from enum import Enum, auto
 
 class QueryType(str, Enum):
     """Types of queries."""
+
     SELECT = "SELECT"
     INSERT = "INSERT"
     UPDATE = "UPDATE"
@@ -16,6 +17,7 @@ class QueryType(str, Enum):
 
 class LogLevel(str, Enum):
     """Log levels."""
+
     DEBUG = "DEBUG"
     INFO = "INFO"
     WARNING = "WARNING"
@@ -25,6 +27,7 @@ class LogLevel(str, Enum):
 
 class PatternType(str, Enum):
     """Types of patterns."""
+
     REGEX = "REGEX"
     KEYWORD = "KEYWORD"
     DICTIONARY = "DICTIONARY"
@@ -33,6 +36,7 @@ class PatternType(str, Enum):
 
 class PolicySeverity(str, Enum):
     """Policy violation severity levels."""
+
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
@@ -41,6 +45,7 @@ class PolicySeverity(str, Enum):
 
 class ExecutionStatus(str, Enum):
     """Query execution status."""
+
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -50,6 +55,7 @@ class ExecutionStatus(str, Enum):
 
 class DataCategory(str, Enum):
     """Data categories."""
+
     PERSONAL = "PERSONAL"
     SENSITIVE = "SENSITIVE"
     CONFIDENTIAL = "CONFIDENTIAL"
@@ -59,6 +65,7 @@ class DataCategory(str, Enum):
 
 class SensitivityLevel(str, Enum):
     """Data sensitivity levels."""
+
     NONE = "NONE"
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -68,6 +75,7 @@ class SensitivityLevel(str, Enum):
 
 class AccessType(str, Enum):
     """Types of data access."""
+
     READ = "READ"
     WRITE = "WRITE"
     DELETE = "DELETE"
@@ -77,6 +85,7 @@ class AccessType(str, Enum):
 
 class Purpose(str, Enum):
     """Purposes for data access."""
+
     BUSINESS = "BUSINESS"
     COMPLIANCE = "COMPLIANCE"
     LEGAL = "LEGAL"
@@ -89,6 +98,7 @@ class Purpose(str, Enum):
 
 class PrivacyFunction(str, Enum):
     """Privacy-specific SQL functions."""
+
     ANONYMIZE = "ANONYMIZE"
     PSEUDONYMIZE = "PSEUDONYMIZE"
     MASK = "MASK"
@@ -106,9 +116,10 @@ class PrivacyFunction(str, Enum):
 
 class PIICategory(str, Enum):
     """Categories of PII for classification and policy enforcement."""
+
     DIRECT_IDENTIFIER = "direct_identifier"
     QUASI_IDENTIFIER = "quasi_identifier"
-    SENSITIVE = "sensitive" 
+    SENSITIVE = "sensitive"
     CONTACT = "contact"
     FINANCIAL = "financial"
     HEALTH = "health"

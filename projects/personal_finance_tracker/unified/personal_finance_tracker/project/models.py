@@ -1,6 +1,6 @@
 """Project profitability analysis models."""
 
-# Import models from common library
+# Import models directly from common library
 from common.core.models.project_metrics import (
     ProjectMetricType,
     ProfitabilityMetric,
@@ -9,3 +9,12 @@ from common.core.models.project_metrics import (
     TrendPoint,
     TrendAnalysis
 )
+from common.core.models.project import (
+    Project,
+    Client,
+    TimeEntry,
+    Invoice,
+    ProjectStatus,
+    BillingType
+)
+from common.core.models.transaction import BusinessTransaction, TransactionType

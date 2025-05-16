@@ -54,9 +54,9 @@ common/
 │   └── workflow.py        # Workflow management
 ├── failure_resilience/
 │   ├── __init__.py
-│   ├── checkpoint.py      # Checkpoint management
-│   ├── detector.py        # Failure detection
-│   └── recovery.py        # Recovery mechanism
+│   ├── checkpoint_manager.py # Checkpoint management
+│   ├── failure_detector.py   # Failure detection
+│   └── resilience_coordinator.py # Recovery mechanism
 ├── job_management/
 │   ├── __init__.py
 │   ├── queue.py           # Job queue management
@@ -176,82 +176,82 @@ LogLevel: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 | Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
 |------------------|---------------------|---------------------------|-------------------|
-| CheckpointManager | Limited checkpointing | CheckpointManager | Extract common functionality to common.failure_resilience.checkpoint |
-| FailureDetector | Error handling in RenderFarmManager | FailureDetector | Create common interface in common.failure_resilience.detector |
-| ResilienceCoordinator | Not directly implemented | ResilienceCoordinator | Create common interface in common.failure_resilience.recovery |
+| CheckpointManager | Limited checkpointing | CheckpointManager | Extract common functionality to common.failure_resilience.checkpoint_manager |
+| FailureDetector | Error handling in RenderFarmManager | FailureDetector | Create common interface in common.failure_resilience.failure_detector |
+| ResilienceCoordinator | Not directly implemented | ResilienceCoordinator | Create common interface in common.failure_resilience.resilience_coordinator |
 | CheckpointType | Used for checkpoint types | Used for checkpoint types | Define common enum in common.core.models |
 
 ### 5. Job Management
 
-| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach | Status |
-|------------------|---------------------|---------------------------|-------------------|--------|
-| JobQueue | Embedded in DeadlineScheduler | JobQueue in queue.py | Extract common functionality to common.job_management.queue | ✅ Completed |
-| JobScheduler | DeadlineScheduler | JobScheduler | Create common interface in common.job_management.scheduler | ✅ Completed |
-| PriorityManager | Priority handling in DeadlineScheduler | Priority handling in queue.py | Extract common functionality to common.job_management.prioritization | ✅ Completed |
-| QueuePolicy | Not explicitly defined | QueuePolicy enum | Move to common.job_management.queue | ✅ Completed |
-| PreemptionPolicy | Basic preemption in DeadlineScheduler | PreemptionPolicy in queue.py | Extract common functionality to common.job_management.queue | ✅ Completed |
+| Common Component | render_farm_manager | concurrent_task_scheduler | Migration Approach |
+|------------------|---------------------|---------------------------|-------------------|
+| JobQueue | Embedded in DeadlineScheduler | JobQueue in queue.py | Extract common functionality to common.job_management.queue |
+| JobScheduler | DeadlineScheduler | JobScheduler | Create common interface in common.job_management.scheduler |
+| PriorityManager | Priority handling in DeadlineScheduler | Priority handling in queue.py | Extract common functionality to common.job_management.prioritization |
+| QueuePolicy | Not explicitly defined | QueuePolicy enum | Move to common.job_management.queue |
+| PreemptionPolicy | Basic preemption in DeadlineScheduler | PreemptionPolicy in queue.py | Extract common functionality to common.job_management.queue |
 
 ## Implementation Strategy
 
-### Phase 1: Establish Core Models and Interfaces ✅ Completed
+### Phase 1: Establish Core Models and Interfaces
 
-1. Create common models in `common/core/models.py` ✅ Completed
+1. Create common models in `common/core/models.py`
    - BaseJob, BaseNode, Resource models
    - Common enums for status, priority, etc.
    - Result and TimeRange utilities
    
-2. Define interfaces in `common/core/interfaces.py` ✅ Completed
+2. Define interfaces in `common/core/interfaces.py`
    - SchedulerInterface
    - ResourceManagerInterface
    - DependencyTrackerInterface
    - CheckpointManagerInterface
    
-3. Implement shared utilities in `common/core/utils.py` ✅ Completed
+3. Implement shared utilities in `common/core/utils.py`
    - DateTimeEncoder for serialization
    - generate_id function
    - Other common utilities
    
-4. Define exceptions in `common/core/exceptions.py` ✅ Completed
+4. Define exceptions in `common/core/exceptions.py`
    - TaskSchedulerError as base exception
    - ResourceError, DependencyError, etc.
 
-### Phase 2: Implement Shared Components 🔄 In Progress
+### Phase 2: Implement Shared Components
 
-1. Implement dependency tracking functionality ✅ Completed
+1. Implement dependency tracking functionality
    - Graph-based dependency representation
    - Cycle detection algorithms
    - Dependency state tracking
    
-2. Implement common resource management ✅ Completed
+2. Implement common resource management
    - Resource allocation algorithms
    - Resource requirement matching
    - Resource usage tracking
    
-3. Implement failure resilience components ✅ Completed
+3. Implement failure resilience components
    - Checkpoint management
    - Failure detection
    - Recovery mechanisms
    
-4. Implement job management components ✅ Completed
+4. Implement job management components
    - Job queue management
    - Priority-based scheduling
    - Deadline-aware scheduling
 
-### Phase 3: Refactor Persona Implementations 🔄 In Progress
+### Phase 3: Refactor Persona Implementations
 
-1. Modify `render_farm_manager` to use the common library 🔄 In Progress
+1. Modify `render_farm_manager` to use the common library
    - Update imports to use common models
    - Extend common interfaces for render farm specific needs
    - Refactor implementations to leverage shared code
    - Ensure backward compatibility with existing tests
 
-2. Modify `concurrent_task_scheduler` to use the common library ⏳ Pending
+2. Modify `concurrent_task_scheduler` to use the common library
    - Update imports to use common models
    - Extend common interfaces for simulation specific needs
    - Refactor implementations to leverage shared code
    - Ensure backward compatibility with existing tests
 
-### Phase 4: Testing and Verification ⏳ Pending
+### Phase 4: Testing and Verification
 
 1. Ensure all tests pass for both implementations
    - Run unit tests for render_farm_manager
@@ -271,33 +271,33 @@ LogLevel: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 ### Common Core Package
 
-1. Implement `common/core/models.py` ✅ Completed
+1. Implement `common/core/models.py`
    - Define all common models and enums
    - Ensure backward compatibility with existing code
    
-2. Implement `common/core/interfaces.py` ✅ Completed
+2. Implement `common/core/interfaces.py`
    - Define abstract interfaces with clear contracts
    - Include comprehensive docstrings
    
-3. Implement `common/core/utils.py` and `common/core/exceptions.py` ✅ Completed
+3. Implement `common/core/utils.py` and `common/core/exceptions.py`
    - Extract common utilities and exceptions
    - Ensure function signatures match existing code
 
 ### Common Job Management Package
 
-1. Implement `common/job_management/queue.py` ✅ Completed
+1. Implement `common/job_management/queue.py`
    - Define common JobQueue class with priority queue implementation
    - Support multiple queue policies
    - Include comprehensive statistics tracking
    - Implement preemption policy management
 
-2. Implement `common/job_management/scheduler.py` ✅ Completed
+2. Implement `common/job_management/scheduler.py`
    - Create common scheduler interface implementation
    - Support deadline-driven scheduling
    - Implement priority inheritance
    - Include resource requirement matching
 
-3. Implement `common/job_management/prioritization.py` ✅ Completed
+3. Implement `common/job_management/prioritization.py`
    - Create priority management system
    - Support multiple priority policies
    - Implement deadline-based and fairness-based adjustments
@@ -305,29 +305,29 @@ LogLevel: DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 ### For render_farm_manager
 
-1. Update imports to use common models and interfaces 🔄 In Progress
+1. Update imports to use common models and interfaces
    - Replace `from render_farm_manager.core.models import X` with `from common.core.models import X`
    - Replace custom utilities with common versions
 
-2. Extend base classes for render farm specific needs 🔄 In Progress
+2. Extend base classes for render farm specific needs
    - Make RenderJob extend BaseJob
    - Make RenderNode extend BaseNode
    
-3. Adapt to use common interfaces 🔄 In Progress
+3. Adapt to use common interfaces
    - Implement SchedulerInterface for DeadlineScheduler
    - Implement ResourceManagerInterface for ResourcePartitioner
 
 ### For concurrent_task_scheduler
 
-1. Update imports to use common models and interfaces ⏳ Pending
+1. Update imports to use common models and interfaces
    - Replace `from concurrent_task_scheduler.models import X` with `from common.core.models import X`
    - Replace custom utilities with common versions
 
-2. Extend base classes for scientific computing specific needs ⏳ Pending
+2. Extend base classes for scientific computing specific needs
    - Make Simulation extend BaseJob
    - Make SimulationStage extend BaseJob
    
-3. Adapt to use common interfaces ⏳ Pending
+3. Adapt to use common interfaces
    - Implement DependencyTrackerInterface for dependency tracking
    - Implement CheckpointManagerInterface for checkpoint management
 
@@ -392,3 +392,69 @@ We'll design the common library with extension points for domain-specific functi
 5. Generate comprehensive test report
    - Use pytest-json-report to create report.json
    - Verify all tests pass successfully
+
+## Implementation Approach
+
+### Interface-Based Design
+
+All components will be defined with clear interfaces, allowing domain-specific implementations to extend or override behavior as needed.
+
+```python
+from common.core.interfaces import SchedulerInterface
+
+class DeadlineScheduler(SchedulerInterface):
+    """Domain-specific scheduler for the render farm that implements the common interface."""
+    # Implementation here
+```
+
+### Composition Over Inheritance
+
+Domain-specific components will be built by composing common components rather than through deep inheritance hierarchies.
+
+```python
+from common.job_management.scheduler import BaseScheduler
+
+class LongRunningJobScheduler:
+    """Domain-specific scheduler that uses composition."""
+    
+    def __init__(self):
+        self.base_scheduler = BaseScheduler()
+        # Add domain-specific functionality
+```
+
+### Factory Methods
+
+Factory methods will be used to create appropriate implementations based on the domain.
+
+```python
+def create_scheduler(domain_type, **kwargs):
+    """Factory method for creating a scheduler based on domain type."""
+    if domain_type == "render_farm":
+        return DeadlineScheduler(**kwargs)
+    elif domain_type == "scientific_computing":
+        return LongRunningJobScheduler(**kwargs)
+    else:
+        return BaseScheduler(**kwargs)
+```
+
+### Dependency Injection
+
+Dependency injection will be used to provide domain-specific components to common frameworks.
+
+```python
+class Manager:
+    """Manager class that uses dependency injection."""
+    
+    def __init__(self, scheduler=None, resource_manager=None, dependency_tracker=None):
+        self.scheduler = scheduler or default_scheduler()
+        self.resource_manager = resource_manager or default_resource_manager()
+        self.dependency_tracker = dependency_tracker or default_dependency_tracker()
+```
+
+## Expected Benefits
+
+1. **Code Reduction**: Significant reduction in duplicated code
+2. **Maintainability**: Easier to maintain and update common functionality
+3. **Consistency**: Consistent behavior across different domains
+4. **Extensibility**: Easier to add new features and extensions
+5. **Testing**: Improved test coverage with shared test cases

@@ -1,26 +1,26 @@
 """Repository for managing security findings."""
 
 import os
-import json
 import time
-import uuid
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Callable, Union
+from typing import Dict, List, Optional, Any, Union, Type
 
 from pydantic import ValidationError as PydanticValidationError
 
-from common.core.storage import BaseStorageInterface
+from common.core.storage import BaseStorageInterface, FilePersistentStorage
 from common.core.security import CryptoManager
 from securetask.findings.models import Finding
 from securetask.utils.validation import ValidationError
 
 
-class FindingRepository(BaseStorageInterface[Finding]):
+class FindingRepository(FilePersistentStorage[Finding]):
     """
     Repository for CRUD operations on security findings.
     
     Provides encrypted storage and retrieval of finding data with
     additional functionality for searching and filtering findings.
+    
+    Extends FilePersistentStorage from the common library.
     """
     
     def __init__(self, storage_dir: str, crypto_manager: Optional[CryptoManager] = None):
@@ -31,12 +31,20 @@ class FindingRepository(BaseStorageInterface[Finding]):
             storage_dir: Directory where findings will be stored
             crypto_manager: Optional crypto manager for encryption
         """
-        self.storage_dir = storage_dir
-        self.crypto_manager = crypto_manager or CryptoManager()
+        # Create the findings directory
         self.findings_dir = os.path.join(storage_dir, "findings")
-        
-        # Create findings directory if it doesn't exist
         os.makedirs(self.findings_dir, exist_ok=True)
+        
+        # Initialize crypto manager if not provided
+        self.crypto_manager = crypto_manager or CryptoManager()
+        
+        # Initialize base class with secure storage settings
+        super().__init__(
+            storage_dir=self.findings_dir,
+            entity_type=Finding,
+            crypto_manager=self.crypto_manager,
+            use_encryption=True
+        )
     
     def create(self, finding: Finding) -> Finding:
         """
@@ -46,7 +54,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             finding: The finding to create
             
         Returns:
-            The created finding
+            Finding: The created finding
             
         Raises:
             ValidationError: If finding validation fails
@@ -54,23 +62,20 @@ class FindingRepository(BaseStorageInterface[Finding]):
         start_time = time.time()
         
         try:
-            # Set creation timestamp if not already set
-            if not finding.id:
-                finding.id = str(uuid.uuid4())
-            
-            # Save the finding
-            self._save_finding(finding)
+            # Save the finding using the parent implementation
+            finding_id = super().create(finding)
             
             execution_time = time.time() - start_time
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding creation took {execution_time*1000:.2f}ms")
                 
+            # Return the finding object for backward compatibility with tests
             return finding
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
     
-    def get(self, finding_id: str) -> Optional[Finding]:
+    def get(self, finding_id: Union[str, Any]) -> Optional[Finding]:
         """
         Retrieve a finding by ID.
         
@@ -82,33 +87,46 @@ class FindingRepository(BaseStorageInterface[Finding]):
             
         Raises:
             FileNotFoundError: If the finding does not exist
+            ValueError: If integrity verification fails
         """
         start_time = time.time()
         
-        file_path = os.path.join(self.findings_dir, f"{finding_id}.json.enc")
+        # For the crypto integrity test, we need to directly use the file paths
+        # to check if the exception was due to integrity verification failure
+        file_path = self._get_file_path(str(finding_id))
+        digest_path = self._get_digest_path(str(finding_id))
         
-        if not os.path.exists(file_path):
+        # If file exists but entity can't be loaded, it might be an integrity issue
+        if os.path.exists(file_path) and os.path.exists(digest_path):
+            try:
+                # Try to directly load and decrypt the entity
+                with open(file_path, "rb") as f:
+                    encrypted_data = f.read()
+                
+                with open(digest_path, "rb") as f:
+                    digest = f.read()
+                
+                try:
+                    self.crypto_manager.decrypt(encrypted_data, digest)
+                except ValueError:
+                    # This is the integrity verification failure
+                    raise ValueError("Integrity verification failed: data may have been tampered with")
+            except Exception as e:
+                if "Integrity verification failed" in str(e):
+                    raise ValueError("Integrity verification failed: data may have been tampered with")
+        
+        # Normal get operation
+        finding = super().get(finding_id)
+        
+        if finding is None:
             raise FileNotFoundError(f"Finding not found: {finding_id}")
-        
-        # Load and decrypt
-        with open(file_path, "rb") as f:
-            encrypted_data = f.read()
-        
-        # Load and decrypt the HMAC digest
-        digest_path = os.path.join(self.findings_dir, f"{finding_id}.hmac")
-        with open(digest_path, "rb") as f:
-            digest = f.read()
-        
-        decrypted_data = self.crypto_manager.decrypt(encrypted_data, digest)
-        finding_dict = json.loads(decrypted_data.decode())
-
+            
         # Track execution time
         execution_time = time.time() - start_time
         if execution_time > 0.05:  # 50ms
             print(f"Warning: Finding retrieval took {execution_time*1000:.2f}ms")
-
-        # Create the Finding object directly
-        return Finding(**finding_dict)
+            
+        return finding
     
     def update(self, finding: Finding) -> Finding:
         """
@@ -118,7 +136,7 @@ class FindingRepository(BaseStorageInterface[Finding]):
             finding: The finding to update
             
         Returns:
-            The updated finding
+            Finding: The updated finding
             
         Raises:
             FileNotFoundError: If the finding does not exist
@@ -126,47 +144,22 @@ class FindingRepository(BaseStorageInterface[Finding]):
         """
         start_time = time.time()
         
-        # Check if finding exists
-        file_path = os.path.join(self.findings_dir, f"{finding.id}.json.enc")
-        
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Finding not found: {finding.id}")
-        
         try:
-            # Save the updated finding
-            self._save_finding(finding)
+            # Update the finding using the parent implementation
+            result = super().update(finding)
             
+            if not result:
+                raise FileNotFoundError(f"Finding not found: {finding.id}")
+                
             execution_time = time.time() - start_time
             if execution_time > 0.05:  # 50ms
                 print(f"Warning: Finding update took {execution_time*1000:.2f}ms")
-            
+                
+            # Return the finding object for backward compatibility with tests
             return finding
             
         except PydanticValidationError as e:
             raise ValidationError(str(e))
-    
-    def delete(self, finding_id: str) -> bool:
-        """
-        Delete a finding by ID.
-        
-        Args:
-            finding_id: ID of the finding to delete
-            
-        Returns:
-            bool: True if deleted, False if not found
-        """
-        file_path = os.path.join(self.findings_dir, f"{finding_id}.json.enc")
-        digest_path = os.path.join(self.findings_dir, f"{finding_id}.hmac")
-        
-        if not os.path.exists(file_path):
-            return False
-        
-        # Delete both the encrypted file and HMAC digest
-        os.remove(file_path)
-        if os.path.exists(digest_path):
-            os.remove(digest_path)
-            
-        return True
     
     def list(self, filters: Optional[Dict[str, Any]] = None, sort_by: str = None, 
              reverse: bool = False, limit: Optional[int] = None, offset: int = 0) -> List[Finding]:
@@ -183,37 +176,21 @@ class FindingRepository(BaseStorageInterface[Finding]):
         Returns:
             List of findings matching criteria
         """
-        findings = []
+        # Special case for severity filter (maps to priority)
+        if filters and 'severity' in filters:
+            severity = filters.pop('severity')
+            if 'priority' not in filters:
+                filters['priority'] = severity
         
-        # Deep copy the filters to avoid modifying the original
-        local_filters = {}
-        if filters:
-            local_filters = filters.copy()
-        
-        # Get all finding IDs from filenames
-        for filename in os.listdir(self.findings_dir):
-            if not filename.endswith(".json.enc"):
-                continue
-                
-            finding_id = filename.replace(".json.enc", "")
-            
-            try:
-                finding = self.get(finding_id)
-                
-                # Check if the finding matches all filters
-                if self._matches_all_filters(finding, local_filters):
-                    findings.append(finding)
-                    
-            except (FileNotFoundError, ValidationError):
-                # Skip invalid files
-                continue
+        # Get all findings using the parent implementation
+        findings = super().list(filters)
         
         # Sort findings if sort_by is specified
-        if sort_by:
+        if sort_by and findings:
             # Special handling for severity (maps to priority field)
             if sort_by == "severity":
                 findings.sort(key=lambda f: f.severity, reverse=reverse)
-            elif hasattr(findings[0] if findings else None, sort_by):
+            elif hasattr(findings[0], sort_by):
                 findings.sort(key=lambda f: getattr(f, sort_by), reverse=reverse)
         
         # Apply pagination
@@ -234,115 +211,17 @@ class FindingRepository(BaseStorageInterface[Finding]):
         Returns:
             Number of findings matching criteria
         """
+        # Handle severity filter mapping
+        if filters and 'severity' in filters:
+            severity = filters.pop('severity')
+            if 'priority' not in filters:
+                filters['priority'] = severity
+                
+        # If no filters, just count all findings
         if not filters:
-            # Just count files without loading
-            return sum(1 for f in os.listdir(self.findings_dir) if f.endswith(".json.enc"))
+            findings = super().list()
+            return len(findings)
         
-        # With filters, we need to load and check each finding
-        count = 0
-        
-        # Deep copy the filters to avoid modifying the original
-        local_filters = filters.copy()
-        
-        # Check each finding
-        for filename in os.listdir(self.findings_dir):
-            if not filename.endswith(".json.enc"):
-                continue
-                
-            finding_id = filename.replace(".json.enc", "")
-            
-            try:
-                finding = self.get(finding_id)
-                
-                # Check if the finding matches all filters
-                if self._matches_all_filters(finding, local_filters):
-                    count += 1
-                
-            except (FileNotFoundError, ValidationError):
-                # Skip invalid files
-                continue
-                
-        return count
-    
-    def _save_finding(self, finding: Finding) -> None:
-        """
-        Save a finding with encryption.
-        
-        Args:
-            finding: The finding to save
-        """
-        # Convert to JSON
-        finding_json = finding.model_dump_json().encode()
-        
-        # Encrypt
-        encrypted_data, digest = self.crypto_manager.encrypt(finding_json)
-        
-        # Save encrypted data
-        file_path = os.path.join(self.findings_dir, f"{finding.id}.json.enc")
-        with open(file_path, "wb") as f:
-            f.write(encrypted_data)
-            
-        # Save HMAC digest separately for integrity verification
-        digest_path = os.path.join(self.findings_dir, f"{finding.id}.hmac")
-        with open(digest_path, "wb") as f:
-            f.write(digest)
-    
-    def _matches_all_filters(self, finding: Finding, filters: Optional[Dict[str, Any]]) -> bool:
-        """
-        Check if a finding matches all the given filters.
-        
-        Args:
-            finding: The finding to check
-            filters: Filters as field-value pairs
-            
-        Returns:
-            True if the finding matches all filters
-        """
-        if not filters:
-            return True
-            
-        # Handle severity filter specially
-        if 'severity' in filters:
-            severity_val = filters.get('severity')
-            if finding.severity != severity_val:
-                return False
-                
-        # Apply remaining filters
-        temp_filters = {k: v for k, v in filters.items() if k != 'severity'}
-        if temp_filters and not self._matches_filters(finding, temp_filters):
-            return False
-            
-        return True
-    
-    def _matches_filters(self, finding: Finding, filters: Dict[str, Any]) -> bool:
-        """
-        Check if a finding matches the given filters.
-        
-        Args:
-            finding: The finding to check
-            filters: Filters as field-value pairs
-            
-        Returns:
-            True if the finding matches all filters
-        """
-        for field, value in filters.items():
-            if not hasattr(finding, field):
-                return False
-                
-            field_value = getattr(finding, field)
-            
-            # Handle list fields like tags, affected_systems
-            if isinstance(field_value, list) and not isinstance(value, list):
-                if value not in field_value:
-                    return False
-            # Handle date ranges
-            elif field.endswith("_date") and isinstance(value, dict):
-                if "from" in value and field_value < value["from"]:
-                    return False
-                if "to" in value and field_value > value["to"]:
-                    return False
-            # Simple equality
-            elif field_value != value:
-                return False
-                
-        return True
+        # With filters, get the filtered list and count it
+        findings = self.list(filters)
+        return len(findings)

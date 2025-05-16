@@ -1,14 +1,18 @@
-"""
-Core data models for the ProductMind knowledge management system.
+"""Core data models for the ProductMind knowledge management system.
+
+This module defines the domain-specific data models for the ProductMind
+knowledge management system, building on the common KnowledgeNode base class
+from the unified library.
 """
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
-from common.core.models import KnowledgeNode, Priority, NodeType, Relation, RelationType
+# Import base models from common library
+from common.core.models import KnowledgeNode, Priority, NodeType, Relation, RelationType, Status
 
 
 class Sentiment(str, Enum):
@@ -77,7 +81,7 @@ class Theme(KnowledgeNode):
 
 class FeedbackCluster(KnowledgeNode):
     """Cluster of related feedback items."""
-    cluster_id: int
+    cluster_numeric_id: int  # Store the numeric ID as a separate field
     name: str
     description: Optional[str] = None
     centroid: List[float] = Field(default_factory=list)
@@ -85,6 +89,26 @@ class FeedbackCluster(KnowledgeNode):
     themes: List[str] = Field(default_factory=list)
     sentiment_distribution: Dict[str, int] = Field(default_factory=dict)
     node_type: NodeType = NodeType.OTHER
+    
+    def __init__(self, **data):
+        # If cluster_id is provided in the constructor, use it as cluster_numeric_id
+        if 'cluster_id' in data and 'cluster_numeric_id' not in data:
+            data['cluster_numeric_id'] = data.pop('cluster_id')
+        # If id is provided as an integer, convert to cluster_numeric_id
+        elif 'id' in data and isinstance(data['id'], int):
+            data['cluster_numeric_id'] = data['id']
+            data['id'] = uuid4()  # Generate a proper UUID for id
+        
+        super().__init__(**data)
+    
+    @property
+    def cluster_id(self) -> int:
+        """Maintain compatibility with old code."""
+        return self.cluster_numeric_id
+        
+    @cluster_id.setter
+    def cluster_id(self, value: int):
+        self.cluster_numeric_id = value
 
 
 class StrategicGoal(KnowledgeNode):
@@ -150,9 +174,8 @@ class MarketGap(KnowledgeNode):
     node_type: NodeType = NodeType.OTHER
 
 
-class Alternative(BaseModel):
+class Alternative(KnowledgeNode):
     """Alternative option for a decision."""
-    id: UUID = Field(default_factory=uuid4)
     name: str
     description: str
     pros: List[str] = Field(default_factory=list)
@@ -161,6 +184,7 @@ class Alternative(BaseModel):
     estimated_benefit: Optional[float] = None
     estimated_risk: Optional[float] = None
     score: Optional[float] = None
+    node_type: NodeType = NodeType.OTHER
 
 
 class Decision(KnowledgeNode):
@@ -206,29 +230,59 @@ class Stakeholder(KnowledgeNode):
     node_type: NodeType = NodeType.PERSON
 
 
-class StakeholderRelationship(Relation):
+class StakeholderRelationship(BaseModel):
     """Relationship between stakeholders."""
+    id: UUID = Field(default_factory=uuid4)
     stakeholder1_id: UUID
     stakeholder2_id: UUID
     relationship_type: str = "stakeholder_relationship"
     alignment_level: float = 0.0
     notes: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+    
+    # Fields needed for compatibility with Relation
+    source_id: UUID = None
+    target_id: UUID = None
+    relation_type: Union[RelationType, str] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
     
     def __init__(self, **data):
-        # Initialize the base Relation with the stakeholders
-        super().__init__(
-            source_id=data.get("stakeholder1_id"),
-            target_id=data.get("stakeholder2_id"),
-            relation_type=data.get("relationship_type", "stakeholder_relationship"),
-            metadata={
-                "alignment_level": data.get("alignment_level", 0.0),
-                "notes": data.get("notes")
-            }
-        )
+        # Extract and process fields first
+        relation_id = data.get("id", uuid4())
+        stakeholder1_id = data.get("stakeholder1_id")
+        stakeholder2_id = data.get("stakeholder2_id")
+        relation_type = data.get("relationship_type", "stakeholder_relationship")
+        alignment_level = data.get("alignment_level", 0.0)
+        notes = data.get("notes")
         
-        # Keep the original attributes for backward compatibility
-        self.stakeholder1_id = data.get("stakeholder1_id")
-        self.stakeholder2_id = data.get("stakeholder2_id")
-        self.relationship_type = data.get("relationship_type", "stakeholder_relationship")
-        self.alignment_level = data.get("alignment_level", 0.0)
-        self.notes = data.get("notes")
+        # Convert to RelationType if possible
+        if isinstance(relation_type, str):
+            try:
+                relation_type_enum = RelationType(relation_type)
+            except ValueError:
+                # Keep as string if not a valid RelationType
+                relation_type_enum = relation_type
+        else:
+            relation_type_enum = relation_type
+        
+        # Prepare the metadata
+        metadata = {
+            "alignment_level": alignment_level,
+            "notes": notes
+        }
+        
+        # Initialize the model with all fields
+        super().__init__(
+            id=relation_id,
+            stakeholder1_id=stakeholder1_id,
+            stakeholder2_id=stakeholder2_id,
+            relationship_type=relation_type if isinstance(relation_type, str) else relation_type.value,
+            alignment_level=alignment_level,
+            notes=notes,
+            # Relation compatibility fields
+            source_id=stakeholder1_id,
+            target_id=stakeholder2_id,
+            relation_type=relation_type_enum,
+            metadata=metadata
+        )

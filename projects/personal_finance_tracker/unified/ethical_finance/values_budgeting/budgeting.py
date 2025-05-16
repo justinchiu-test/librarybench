@@ -2,16 +2,23 @@
 
 from typing import Dict, List, Optional, Any, Tuple, Set
 from datetime import date, datetime, timedelta
+from uuid import UUID, uuid4
 import time
 from dataclasses import dataclass
 import pandas as pd
 import numpy as np
+from pydantic import BaseModel, Field, validator
+
+# Import from common library
+from common.core.analysis.analyzer import BaseAnalyzer, AnalysisParameters, AnalysisResult
+from common.core.utils.performance import Timer
+from common.core.utils.cache_utils import memoize
+from common.core.utils.validation import validate_date_range
 
 from ethical_finance.models import Transaction
 
 
-@dataclass
-class ValueCategory:
+class ValueCategory(BaseModel):
     """Definition of a values-based category for expenses."""
     
     id: str
@@ -20,39 +27,108 @@ class ValueCategory:
     tags: List[str]
     alignment: str  # "aligned", "neutral", or "misaligned"
     impact_level: int  # 1-5, with 5 being highest impact
-    alternatives: List[str]  # IDs of alternative categories
+    alternatives: List[str] = Field(default_factory=list)  # IDs of alternative categories
+    
+    @validator('alignment')
+    def validate_alignment(cls, v):
+        """Validate alignment value."""
+        valid_values = ["aligned", "neutral", "misaligned"]
+        if v not in valid_values:
+            raise ValueError(f"Alignment must be one of: {', '.join(valid_values)}")
+        return v
+    
+    @validator('impact_level')
+    def validate_impact_level(cls, v):
+        """Validate impact level is between 1 and 5."""
+        if v < 1 or v > 5:
+            raise ValueError("Impact level must be between 1 and 5")
+        return v
 
 
-@dataclass
-class ValueAlignment:
+class ValueAlignment(BaseModel):
     """Alignment of a transaction with personal values."""
     
     transaction_id: str
-    value_categories: List[str]
+    value_categories: List[str] = Field(default_factory=list)
     alignment_score: float  # -1.0 to 1.0
     impact_level: int  # 1-5
-    reasons: List[str]
-    alternatives: List[Dict[str, Any]]
+    reasons: List[str] = Field(default_factory=list)
+    alternatives: List[Dict[str, Any]] = Field(default_factory=list)
+    
+    @validator('alignment_score')
+    def validate_alignment_score(cls, v):
+        """Validate alignment score is between -1.0 and 1.0."""
+        if v < -1.0 or v > 1.0:
+            raise ValueError("Alignment score must be between -1.0 and 1.0")
+        return v
+    
+    @validator('impact_level')
+    def validate_impact_level(cls, v):
+        """Validate impact level is between 1 and 5."""
+        if v < 1 or v > 5:
+            raise ValueError("Impact level must be between 1 and 5")
+        return v
 
 
-@dataclass
-class SpendingAnalysisResult:
+class SpendingAnalysisResult(AnalysisResult):
     """Result of analyzing spending patterns against values."""
     
-    analysis_date: date
     period_start: date
     period_end: date
     total_spending: float
-    spending_by_category: Dict[str, float]
-    spending_by_alignment: Dict[str, float]
-    high_impact_areas: List[Dict[str, Any]]
-    improvement_opportunities: List[Dict[str, Any]]
+    spending_by_category: Dict[str, float] = Field(default_factory=dict)
+    spending_by_alignment: Dict[str, float] = Field(default_factory=dict)
+    high_impact_areas: List[Dict[str, Any]] = Field(default_factory=list)
+    improvement_opportunities: List[Dict[str, Any]] = Field(default_factory=list)
     aligned_percentage: float
     consistency_score: float  # 0-100
-    processing_time_ms: float = 0
+    
+    @classmethod
+    def from_analysis(cls, 
+                     start_date: date,
+                     end_date: date,
+                     total_spending: float,
+                     spending_by_category: Dict[str, float],
+                     spending_by_alignment: Dict[str, float],
+                     high_impact_areas: List[Dict[str, Any]],
+                     improvement_opportunities: List[Dict[str, Any]],
+                     aligned_percentage: float,
+                     consistency_score: float,
+                     processing_time_ms: float = 0) -> "SpendingAnalysisResult":
+        """Create a SpendingAnalysisResult from analysis data."""
+        return cls(
+            id=uuid4(),
+            subject_id="spending_analysis",  # Generic subject ID since this is for overall spending
+            subject_type="spending_pattern",
+            analysis_type="values_alignment",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "period_start": start_date.isoformat(),
+                "period_end": end_date.isoformat(),
+                "total_spending": total_spending,
+                "aligned_percentage": aligned_percentage,
+                "consistency_score": consistency_score
+            },
+            detailed_results={
+                "spending_by_category": spending_by_category,
+                "spending_by_alignment": spending_by_alignment,
+                "high_impact_areas": high_impact_areas,
+                "improvement_opportunities": improvement_opportunities
+            },
+            period_start=start_date,
+            period_end=end_date,
+            total_spending=total_spending,
+            spending_by_category=spending_by_category,
+            spending_by_alignment=spending_by_alignment,
+            high_impact_areas=high_impact_areas,
+            improvement_opportunities=improvement_opportunities,
+            aligned_percentage=aligned_percentage,
+            consistency_score=consistency_score
+        )
 
 
-class ValuesAlignedBudgeting:
+class ValuesAlignedBudgeting(BaseAnalyzer[Transaction, ValueAlignment]):
     """System for categorizing and analyzing expenses according to ethical values."""
     
     def __init__(self, value_categories: List[ValueCategory]):
@@ -61,6 +137,7 @@ class ValuesAlignedBudgeting:
         Args:
             value_categories: List of ValueCategory objects defining the values framework
         """
+        super().__init__()
         self.categories = {cat.id: cat for cat in value_categories}
         
         # Build tag index for faster categorization
@@ -70,6 +147,22 @@ class ValuesAlignedBudgeting:
                 if tag not in self.tag_index:
                     self.tag_index[tag] = []
                 self.tag_index[tag].append(cat_id)
+    
+    def analyze(
+        self, subject: Transaction, parameters: Optional[AnalysisParameters] = None
+    ) -> ValueAlignment:
+        """
+        Analyze a single transaction's value alignment.
+        
+        Args:
+            subject: The transaction to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            Analysis result with value alignment details
+        """
+        # Use the categorize_transaction method for implementation
+        return self.categorize_transaction(subject)
     
     def categorize_transaction(self, transaction: Transaction) -> ValueAlignment:
         """Categorize a single transaction according to value alignment.
@@ -155,6 +248,26 @@ class ValuesAlignedBudgeting:
             alternatives=alternatives
         )
     
+    def analyze_batch(
+        self, subjects: List[Transaction], parameters: Optional[AnalysisParameters] = None
+    ) -> List[ValueAlignment]:
+        """
+        Analyze multiple transactions in batch using the common BaseAnalyzer method.
+        
+        Args:
+            subjects: List of transactions to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            List of ValueAlignment results
+        """
+        # Use the common method with timer
+        with Timer("analyze_batch") as timer:
+            results = super().analyze_batch(subjects, parameters)
+            
+            return results
+    
+    @memoize
     def batch_categorize_transactions(self, transactions: List[Transaction]) -> Dict[str, ValueAlignment]:
         """Categorize multiple transactions in batch.
         
@@ -164,17 +277,24 @@ class ValuesAlignedBudgeting:
         Returns:
             Dict mapping transaction IDs to their ValueAlignment results
         """
-        start_time = time.time()
-        results = {}
-        
-        for transaction in transactions:
-            results[transaction.id] = self.categorize_transaction(transaction)
-        
-        total_time = time.time() - start_time
-        print(f"Categorized {len(transactions)} transactions in {total_time:.2f} seconds")
-        
-        return results
+        # Use the Timer utility from common library
+        with Timer("batch_categorize_transactions") as timer:
+            results = {}
+            
+            for transaction in transactions:
+                # Check if we already have this transaction in cache
+                cached_result = self._get_from_cache(transaction.id)
+                if cached_result:
+                    results[transaction.id] = cached_result
+                else:
+                    # Analyze and cache the result
+                    alignment = self.categorize_transaction(transaction)
+                    results[transaction.id] = alignment
+                    self._save_to_cache(transaction.id, alignment)
+            
+            return results
     
+    @memoize
     def analyze_spending_patterns(
         self,
         transactions: List[Transaction],
@@ -191,10 +311,10 @@ class ValuesAlignedBudgeting:
         Returns:
             SpendingAnalysisResult with the analysis findings
         """
-        start_time = time.time()
-        
-        # Filter transactions by date if specified
-        filtered_transactions = transactions
+        # Use the Timer utility from common library
+        with Timer("analyze_spending_patterns") as timer:
+            # Filter transactions by date if specified
+            filtered_transactions = transactions
         if start_date or end_date:
             filtered_transactions = []
             for tx in transactions:
@@ -335,13 +455,10 @@ class ValuesAlignedBudgeting:
             
             consistency_score = (weighted_sum / total_spending) * 100
         
-        # Calculate processing time
-        processing_time = (time.time() - start_time) * 1000
-        
-        return SpendingAnalysisResult(
-            analysis_date=date.today(),
-            period_start=start_date,
-            period_end=end_date,
+        # Create the result using the factory method
+        return SpendingAnalysisResult.from_analysis(
+            start_date=start_date,
+            end_date=end_date,
             total_spending=total_spending,
             spending_by_category=category_spending,
             spending_by_alignment=alignment_spending,
@@ -349,7 +466,7 @@ class ValuesAlignedBudgeting:
             improvement_opportunities=improvement_opportunities[:5],  # Top 5
             aligned_percentage=aligned_percentage,
             consistency_score=consistency_score,
-            processing_time_ms=processing_time
+            processing_time_ms=timer.elapsed_milliseconds
         )
     
     def suggest_alternative_vendors(
@@ -1020,6 +1137,7 @@ def create_default_value_categories() -> List[ValueCategory]:
     Returns:
         List of default ValueCategory objects
     """
+    # Create default categories using pydantic BaseModel
     return [
         ValueCategory(
             id="sustainable_food",

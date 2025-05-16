@@ -41,7 +41,7 @@ class PolicyRule(ABC):
         # If no actions specified, applies to all
         if not self.actions:
             return True
-        
+
         return action in self.actions
 
     @abstractmethod
@@ -202,7 +202,7 @@ class RoleRule(PolicyRule):
             bool: True if roles satisfy the rule, False otherwise
         """
         user_roles = context.get("roles", [])
-        
+
         if self.require_all:
             return all(role in user_roles for role in self.allowed_roles)
         else:

@@ -137,7 +137,8 @@ class TableRecord(BaseRecord, Serializable):
         # Update the data
         self.data.update(new_data)
         
-        # Update the updated_at timestamp
-        current_time = time.time()
-        self.updated_at = current_time
-        self.data['updated_at'] = current_time
+        # Use BaseRecord's update method to update metadata and timestamps
+        super().update()
+        
+        # Ensure updated_at is synchronized with BaseRecord
+        self.data['updated_at'] = self.updated_at

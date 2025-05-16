@@ -17,7 +17,10 @@ from typing import Dict, List, Optional, Any, Union, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
-from file_system_analyzer.utils.crypto import CryptoProvider
+# Import from common library instead of local
+from common.utils.crypto import CryptoProvider
+from common.core.base import Serializable
+from common.utils.types import ScanStatus
 
 
 class AuditEventType(str, Enum):
@@ -37,7 +40,7 @@ class AuditEventType(str, Enum):
     CHAIN_VERIFICATION = "chain_verification"
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(BaseModel, Serializable):
     """A single audit log entry with integrity protection."""
     entry_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -76,9 +79,18 @@ class AuditEntry(BaseModel):
         data = self.model_dump()
         data["timestamp"] = data["timestamp"].isoformat()
         return data
+        
+    # Implementing Serializable interface
+    @classmethod
+    def from_dict(cls, data: dict) -> 'AuditEntry':
+        """Create an AuditEntry from a dictionary."""
+        # Convert ISO format timestamp back to datetime
+        if "timestamp" in data and isinstance(data["timestamp"], str):
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        return cls(**data)
 
 
-class AuditLog(BaseModel):
+class AuditLog(BaseModel, Serializable):
     """A collection of audit log entries with integrity verification."""
     log_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     creation_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -156,6 +168,33 @@ class AuditLog(BaseModel):
         data["creation_time"] = data["creation_time"].isoformat()
         data["last_modified"] = data["last_modified"].isoformat()
         return json.dumps(data, default=lambda o: o.model_dump() if hasattr(o, "model_dump") else str(o))
+        
+    # Implementing Serializable interface
+    def to_dict(self) -> dict:
+        """Convert the audit log to a dictionary."""
+        data = self.model_dump()
+        data["creation_time"] = data["creation_time"].isoformat()
+        data["last_modified"] = data["last_modified"].isoformat()
+        data["entries"] = [entry.to_dict() for entry in self.entries]
+        return data
+        
+    @classmethod
+    def from_dict(cls, data: dict) -> 'AuditLog':
+        """Create an AuditLog from a dictionary."""
+        # Convert ISO format timestamps back to datetime
+        if "creation_time" in data and isinstance(data["creation_time"], str):
+            data["creation_time"] = datetime.fromisoformat(data["creation_time"])
+        if "last_modified" in data and isinstance(data["last_modified"], str):
+            data["last_modified"] = datetime.fromisoformat(data["last_modified"])
+        
+        # Convert entries
+        if "entries" in data:
+            entries = []
+            for entry_data in data["entries"]:
+                entries.append(AuditEntry.from_dict(entry_data))
+            data["entries"] = entries
+            
+        return cls(**data)
 
 
 class AuditLogger:
@@ -178,18 +217,8 @@ class AuditLogger:
         try:
             with open(self.log_file, 'r') as f:
                 data = json.load(f)
-                
-            # Convert timestamps back to datetime objects
-            data["creation_time"] = datetime.fromisoformat(data["creation_time"])
-            data["last_modified"] = datetime.fromisoformat(data["last_modified"])
-            
-            entries = []
-            for entry_data in data["entries"]:
-                entry_data["timestamp"] = datetime.fromisoformat(entry_data["timestamp"])
-                entries.append(AuditEntry(**entry_data))
-                
-            data["entries"] = entries
-            return AuditLog(**data)
+            # Use the Serializable interface
+            return AuditLog.from_dict(data)
         except Exception as e:
             # If there's any error loading the log, create a new one and log the error
             new_log = AuditLog()

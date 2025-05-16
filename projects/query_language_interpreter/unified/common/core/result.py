@@ -31,7 +31,7 @@ class QueryResult:
         self.success = success
         self.error = error
         self.metadata = metadata or {}
-        
+
         # Extract execution time if available
         self.execution_time = -1
         context = query.get_execution_context()
@@ -94,7 +94,7 @@ class QueryResult:
 
 class LegalQueryResult(QueryResult):
     """Result of a legal discovery query execution."""
-    
+
     def __init__(
         self,
         query: BaseQuery,
@@ -126,17 +126,17 @@ class LegalQueryResult(QueryResult):
             error=error,
             metadata=metadata or {},
         )
-        
+
         # Add legal-specific metadata
         if document_ids:
             self.metadata["document_ids"] = document_ids
-        
+
         if relevance_scores:
             self.metadata["relevance_scores"] = relevance_scores
-        
+
         if privilege_info:
             self.metadata["privilege_info"] = privilege_info
-    
+
     def get_document_ids(self) -> List[str]:
         """Get IDs of matching documents.
 
@@ -144,7 +144,7 @@ class LegalQueryResult(QueryResult):
             List[str]: Document IDs
         """
         return self.metadata.get("document_ids", [])
-    
+
     def get_relevance_score(self, doc_id: str) -> float:
         """Get relevance score for a document.
 
@@ -156,7 +156,7 @@ class LegalQueryResult(QueryResult):
         """
         scores = self.metadata.get("relevance_scores", {})
         return scores.get(doc_id, 0.0)
-    
+
     def get_privilege_status(self, doc_id: str) -> str:
         """Get privilege status for a document.
 
@@ -169,7 +169,7 @@ class LegalQueryResult(QueryResult):
         privilege_info = self.metadata.get("privilege_info", {})
         doc_info = privilege_info.get(doc_id, {})
         return doc_info.get("status", "unknown")
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert result to dictionary.
 
@@ -177,10 +177,10 @@ class LegalQueryResult(QueryResult):
             Dict[str, Any]: Dictionary representation
         """
         result = super().to_dict()
-        
+
         # Add legal-specific fields
         result["document_count"] = len(self.get_document_ids())
-        
+
         return result
 
 
@@ -210,6 +210,7 @@ class ResultFormatter:
             str: JSON-formatted result
         """
         import json
+
         return json.dumps(result.to_dict(), default=str)
 
     @staticmethod
@@ -227,22 +228,18 @@ class ResultFormatter:
 
         # Get all column names
         columns = list(result.data[0].keys())
-        
+
         # Calculate column widths
         col_widths = {col: len(col) for col in columns}
         for row in result.data:
             for col in columns:
                 width = len(str(row.get(col, "")))
                 col_widths[col] = max(col_widths[col], width)
-        
+
         # Build header
-        header = " | ".join(
-            col.ljust(col_widths[col]) for col in columns
-        )
-        separator = "-+-".join(
-            "-" * col_widths[col] for col in columns
-        )
-        
+        header = " | ".join(col.ljust(col_widths[col]) for col in columns)
+        separator = "-+-".join("-" * col_widths[col] for col in columns)
+
         # Build rows
         rows = []
         for row in result.data:
@@ -250,6 +247,6 @@ class ResultFormatter:
                 str(row.get(col, "")).ljust(col_widths[col]) for col in columns
             )
             rows.append(row_str)
-        
+
         # Combine all parts
         return "\n".join([header, separator] + rows)

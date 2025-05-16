@@ -31,7 +31,7 @@ class AuditLogger(BaseLogger):
             level: Minimum log level
         """
         super().__init__(name, log_file, console, level)
-        self.hmac_key = hmac_key.encode('utf-8') if hmac_key else None
+        self.hmac_key = hmac_key.encode("utf-8") if hmac_key else None
 
     def _create_signature(self, data: str) -> str:
         """Create HMAC signature for audit log entry.
@@ -44,17 +44,12 @@ class AuditLogger(BaseLogger):
         """
         if not self.hmac_key:
             return ""
-        
-        h = hmac.new(self.hmac_key, data.encode('utf-8'), hashlib.sha256)
+
+        h = hmac.new(self.hmac_key, data.encode("utf-8"), hashlib.sha256)
         return h.hexdigest()
 
     def audit(
-        self,
-        action: str,
-        user: str,
-        resource: str,
-        status: str = "success",
-        **details
+        self, action: str, user: str, resource: str, status: str = "success", **details
     ) -> None:
         """Log an audit event.
 
@@ -66,7 +61,7 @@ class AuditLogger(BaseLogger):
             **details: Additional audit details
         """
         timestamp = datetime.now().isoformat()
-        
+
         # Create audit entry
         audit_entry = {
             "timestamp": timestamp,
@@ -75,20 +70,20 @@ class AuditLogger(BaseLogger):
             "resource": resource,
             "status": status,
         }
-        
+
         # Add details
         if details:
             audit_entry["details"] = details
-        
+
         # Convert to JSON
         audit_json = json.dumps(audit_entry)
-        
+
         # Add signature if hmac_key is provided
         if self.hmac_key:
             signature = self._create_signature(audit_json)
             audit_entry["signature"] = signature
             audit_json = json.dumps(audit_entry)
-        
+
         # Log the audit entry
         self.logger.info(audit_json)
 
@@ -103,22 +98,22 @@ class AuditLogger(BaseLogger):
         """
         if not self.hmac_key:
             return True  # No integrity check if no hmac_key
-        
+
         try:
             # Parse the audit entry
             entry_data = json.loads(audit_entry)
-            
+
             # Extract the signature
             signature = entry_data.pop("signature", None)
             if not signature:
                 return False
-            
+
             # Re-create JSON without signature
             entry_json = json.dumps(entry_data)
-            
+
             # Verify signature
             expected_signature = self._create_signature(entry_json)
             return hmac.compare_digest(signature, expected_signature)
-        
+
         except (json.JSONDecodeError, KeyError, TypeError):
             return False

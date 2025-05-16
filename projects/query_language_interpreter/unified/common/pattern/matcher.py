@@ -73,7 +73,7 @@ class PatternMatcher:
         self.threshold = threshold
         self.category = category
         self.metadata = metadata or {}
-        
+
         # Compile the regular expression
         try:
             self.regex = re.compile(regex, re.IGNORECASE)
@@ -95,7 +95,7 @@ class PatternMatcher:
             groups = {}
             if match.groupdict():
                 groups = match.groupdict()
-            
+
             # Create pattern match
             pattern_match = PatternMatch(
                 pattern_id=self.pattern_id,
@@ -106,9 +106,9 @@ class PatternMatcher:
                 category=self.category,
                 metadata=self.metadata,
             )
-            
+
             matches.append(pattern_match)
-        
+
         return matches
 
     def has_match(self, content: str) -> bool:

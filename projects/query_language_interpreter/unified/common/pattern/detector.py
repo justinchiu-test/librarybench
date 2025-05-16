@@ -60,7 +60,7 @@ class BasePatternDetector(ABC):
         }
         if metadata:
             pattern_def.update(metadata)
-        
+
         self.patterns[pattern_id] = pattern_def
         self.matchers[pattern_id] = PatternMatcher(
             pattern_id=pattern_id,
@@ -127,7 +127,7 @@ class BasePatternDetector(ABC):
             bool: True if any pattern matches, False otherwise
         """
         return any(matcher.has_match(content) for matcher in self.matchers.values())
-        
+
     def calculate_confidence(self, match: PatternMatch) -> float:
         """Calculate confidence score for a match.
 

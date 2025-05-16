@@ -119,39 +119,82 @@ class Cache:
         return len(expired_keys)
 
 
-def memoize(func: F) -> F:
+def memoize(func: F = None, *, max_size: int = 1000, ttl_seconds: Optional[int] = None) -> F:
     """
-    Decorator to memoize a function's return value.
+    Decorator to memoize a function's return value with optional max size and TTL.
+    
+    Can be used with or without arguments:
+    @memoize  # No arguments
+    def func():
+        ...
+        
+    @memoize(max_size=100, ttl_seconds=3600)  # With arguments
+    def func():
+        ...
     
     Args:
-        func: The function to memoize
+        func: The function to memoize (when used without arguments)
+        max_size: Maximum number of items to store in cache (default: 1000)
+        ttl_seconds: Time-to-live in seconds (default: None, meaning no expiration)
         
     Returns:
         Memoized function
     """
-    cache: Dict[str, Any] = {}
-    
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        # Create a cache key from the function arguments
-        key = _create_cache_key(func, args, kwargs)
+    def decorator(f: F) -> F:
+        # Cache stores tuples of (result, timestamp) if TTL is specified, otherwise just result
+        cache: Dict[str, Union[Any, Tuple[Any, float]]] = {}
         
-        # Check if result is in cache
-        if key in cache:
-            return cache[key]
+        @functools.wraps(f)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # Create a cache key from the function arguments
+            key = _create_cache_key(f, args, kwargs)
+            
+            # Check if we need to enforce max size
+            if len(cache) >= max_size and key not in cache:
+                # Remove oldest item (simple implementation)
+                if ttl_seconds is not None:
+                    # If using TTL, find oldest by timestamp
+                    oldest_key = min(cache.items(), key=lambda x: x[1][1])[0]
+                else:
+                    # Otherwise just remove the first key
+                    oldest_key = next(iter(cache))
+                del cache[oldest_key]
+            
+            # Check if result is in cache
+            if key in cache:
+                if ttl_seconds is not None:
+                    # Check if expired when using TTL
+                    result, timestamp = cache[key]  # type: ignore
+                    if time.time() - timestamp < ttl_seconds:
+                        return result
+                    # If expired, remove from cache and recalculate
+                else:
+                    # No TTL, just return cached result
+                    return cache[key]
+            
+            # Call the function and cache the result
+            result = f(*args, **kwargs)
+            
+            if ttl_seconds is not None:
+                # Store with timestamp if using TTL
+                cache[key] = (result, time.time())
+            else:
+                # Store just the result otherwise
+                cache[key] = result
+            
+            return result
         
-        # Call the function and cache the result
-        result = func(*args, **kwargs)
-        cache[key] = result
+        # Add cache management functions
+        wrapper.cache = cache  # type: ignore
+        wrapper.cache_clear = cache.clear  # type: ignore
+        wrapper.cache_size = lambda: len(cache)  # type: ignore
         
-        return result
+        return cast(F, wrapper)
     
-    # Add cache management functions
-    wrapper.cache = cache  # type: ignore
-    wrapper.cache_clear = cache.clear  # type: ignore
-    wrapper.cache_size = lambda: len(cache)  # type: ignore
-    
-    return cast(F, wrapper)
+    # Handle both @memoize and @memoize(args) syntax
+    if func is None:
+        return decorator
+    return decorator(func)
 
 
 def memoize_with_expiry(expiration_seconds: int) -> Callable[[F], F]:

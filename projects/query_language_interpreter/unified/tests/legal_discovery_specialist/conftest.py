@@ -20,8 +20,8 @@ def sample_documents() -> List[Dict[str, Any]]:
                 "type": "contract",
                 "date": "2020-05-15T10:30:00",
                 "author": "Legal Department",
-                "parties": ["Company X", "Company Y"]
-            }
+                "parties": ["Company X", "Company Y"],
+            },
         },
         {
             "id": "doc002",
@@ -31,8 +31,8 @@ def sample_documents() -> List[Dict[str, Any]]:
                 "type": "minutes",
                 "date": "2020-07-10T14:00:00",
                 "author": "Secretary",
-                "participants": ["CEO", "General Counsel", "Board Members"]
-            }
+                "participants": ["CEO", "General Counsel", "Board Members"],
+            },
         },
         {
             "id": "doc003",
@@ -42,9 +42,9 @@ def sample_documents() -> List[Dict[str, Any]]:
                 "type": "memorandum",
                 "date": "2020-09-22T09:15:00",
                 "author": "External Counsel",
-                "recipients": ["General Counsel", "CEO"]
-            }
-        }
+                "recipients": ["General Counsel", "CEO"],
+            },
+        },
     ]
 
 
@@ -60,7 +60,7 @@ def sample_emails() -> List[Dict[str, Any]]:
             "subject": "Re: Proposed Settlement Terms",
             "body": "Bob, I've reviewed the settlement terms you proposed. Let's schedule a call to discuss the liability limits. - Alice",
             "date": "2021-03-15T10:23:45",
-            "thread_id": "thread123"
+            "thread_id": "thread123",
         },
         {
             "id": "email002",
@@ -71,7 +71,7 @@ def sample_emails() -> List[Dict[str, Any]]:
             "body": "Alice, I agree we should discuss. How about tomorrow at 2pm? - Bob",
             "date": "2021-03-15T11:05:22",
             "thread_id": "thread123",
-            "in_reply_to": "email001"
+            "in_reply_to": "email001",
         },
         {
             "id": "email003",
@@ -81,8 +81,8 @@ def sample_emails() -> List[Dict[str, Any]]:
             "subject": "Legal Advice on Contract",
             "body": "Alice, As your legal counsel, my advice is to reject the current proposal. The indemnification clause is too broad. Let's discuss alternative language. - John Smith, Esq.",
             "date": "2021-03-16T09:30:10",
-            "thread_id": "thread456"
-        }
+            "thread_id": "thread456",
+        },
     ]
 
 
@@ -90,11 +90,43 @@ def sample_emails() -> List[Dict[str, Any]]:
 def legal_ontology() -> Dict[str, Set[str]]:
     """Sample legal ontology mapping terms to related concepts."""
     return {
-        "liability": {"indemnification", "responsibility", "obligation", "accountability", "duty", "fault"},
-        "settlement": {"resolution", "agreement", "compromise", "arrangement", "accord", "negotiation"},
-        "statute of limitations": {"time limit", "time bar", "limitation period", "prescription period", "expiry date"},
-        "litigation": {"lawsuit", "legal action", "court case", "legal proceeding", "suit", "case"},
-        "privilege": {"attorney-client privilege", "legal professional privilege", "confidential communication", "work product"}
+        "liability": {
+            "indemnification",
+            "responsibility",
+            "obligation",
+            "accountability",
+            "duty",
+            "fault",
+        },
+        "settlement": {
+            "resolution",
+            "agreement",
+            "compromise",
+            "arrangement",
+            "accord",
+            "negotiation",
+        },
+        "statute of limitations": {
+            "time limit",
+            "time bar",
+            "limitation period",
+            "prescription period",
+            "expiry date",
+        },
+        "litigation": {
+            "lawsuit",
+            "legal action",
+            "court case",
+            "legal proceeding",
+            "suit",
+            "case",
+        },
+        "privilege": {
+            "attorney-client privilege",
+            "legal professional privilege",
+            "confidential communication",
+            "work product",
+        },
     }
 
 
@@ -105,22 +137,22 @@ def legal_timeframes() -> Dict[str, Dict[str, Any]]:
         "standard_contract_limitations": {
             "jurisdiction": "NY",
             "period": {"years": 6},
-            "description": "New York statute of limitations for written contracts"
+            "description": "New York statute of limitations for written contracts",
         },
         "securities_litigation": {
             "jurisdiction": "Federal",
             "period": {"years": 5},
-            "description": "Federal securities fraud claims limitation"
+            "description": "Federal securities fraud claims limitation",
         },
         "employment_discrimination": {
             "jurisdiction": "Federal",
             "period": {"days": 300},
-            "description": "EEOC filing deadline from date of incident"
+            "description": "EEOC filing deadline from date of incident",
         },
         "ipo_quiet_period": {
             "period": {"days": 40},
-            "description": "SEC-mandated quiet period following an IPO"
-        }
+            "description": "SEC-mandated quiet period following an IPO",
+        },
     }
 
 
@@ -134,7 +166,7 @@ def privilege_indicators() -> Dict[str, float]:
         "work product": 0.8,
         "prepared at the request of counsel": 0.75,
         "confidential legal communication": 0.85,
-        "do not forward": 0.5
+        "do not forward": 0.5,
     }
 
 
@@ -142,8 +174,24 @@ def privilege_indicators() -> Dict[str, float]:
 def attorneys_list() -> List[Dict[str, Any]]:
     """Sample list of attorneys for privilege detection testing."""
     return [
-        {"email": "john.lawyer@lawfirm.com", "name": "John Smith", "role": "External Counsel"},
-        {"email": "jane.doe@lawfirm.com", "name": "Jane Doe", "role": "External Counsel"},
-        {"email": "general.counsel@companyA.com", "name": "Sarah Johnson", "role": "General Counsel"},
-        {"email": "legal.department@companyB.com", "name": "Legal Department", "role": "Internal Legal"}
+        {
+            "email": "john.lawyer@lawfirm.com",
+            "name": "John Smith",
+            "role": "External Counsel",
+        },
+        {
+            "email": "jane.doe@lawfirm.com",
+            "name": "Jane Doe",
+            "role": "External Counsel",
+        },
+        {
+            "email": "general.counsel@companyA.com",
+            "name": "Sarah Johnson",
+            "role": "General Counsel",
+        },
+        {
+            "email": "legal.department@companyB.com",
+            "name": "Legal Department",
+            "role": "Internal Legal",
+        },
     ]

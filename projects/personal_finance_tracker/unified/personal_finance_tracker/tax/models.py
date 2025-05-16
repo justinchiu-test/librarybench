@@ -2,11 +2,15 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, validator
 
+# Import common tax models
+from common.core.models.tax import (
+    TaxLiability as CommonTaxLiability,
+)
 from personal_finance_tracker.models.common import TaxRate, TaxPayment, TaxDeduction
 
 
@@ -80,6 +84,37 @@ class TaxLiability(BaseModel):
         if v < 0 or v > 100:
             raise ValueError("Rates must be between 0 and 100")
         return v
+        
+    @classmethod
+    def from_common_liability(cls, common_liability: CommonTaxLiability, filing_status: FilingStatus, 
+                            effective_rate: float, marginal_rate: float,
+                            breakdown: Dict[str, float]) -> "TaxLiability":
+        """
+        Convert a common TaxLiability to our specialized version.
+        
+        Args:
+            common_liability: The common liability to convert
+            filing_status: Filing status for this liability
+            effective_rate: Effective tax rate
+            marginal_rate: Marginal tax rate
+            breakdown: Detailed breakdown of tax components
+            
+        Returns:
+            Our specialized TaxLiability
+        """
+        return cls(
+            jurisdiction=TaxJurisdiction(common_liability.jurisdiction),
+            tax_year=common_liability.tax_year,
+            income=common_liability.income,
+            deductions=common_liability.deductions,
+            taxable_income=common_liability.taxable_income,
+            tax_amount=common_liability.tax_amount,
+            effective_rate=effective_rate,
+            marginal_rate=marginal_rate,
+            filing_status=filing_status,
+            calculation_date=common_liability.calculation_date,
+            breakdown=breakdown
+        )
 
 
 class EstimatedPayment(BaseModel):

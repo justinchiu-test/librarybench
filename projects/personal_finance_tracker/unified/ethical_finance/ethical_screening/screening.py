@@ -1,32 +1,66 @@
 """Ethical screening framework for investment evaluation."""
 
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Tuple, Any, Optional, Union
 import time
-from dataclasses import dataclass
+from datetime import datetime
+from uuid import UUID, uuid4
+
+from pydantic import BaseModel, Field
 
 # Import from common library
-from common.core.analysis.analyzer import BaseAnalyzer
+from common.core.analysis.analyzer import BaseAnalyzer, AnalysisParameters, AnalysisResult
 from common.core.utils.performance import Timer
 
 from ethical_finance.models import Investment, EthicalCriteria
 
 
-@dataclass
-class ScreeningResult:
+class ScreeningResult(AnalysisResult):
     """Result of screening an investment against ethical criteria."""
     
-    investment_id: str
     passed: bool
     overall_score: float
     environmental_score: float
     social_score: float
     governance_score: float
-    exclusion_flags: List[str]
-    inclusion_flags: List[str]
-    details: Dict[str, Any]
+    exclusion_flags: List[str] = Field(default_factory=list)
+    inclusion_flags: List[str] = Field(default_factory=list)
+    
+    @classmethod
+    def from_screening(cls, investment_id: str, passed: bool, overall_score: float,
+                      environmental_score: float, social_score: float, governance_score: float,
+                      exclusion_flags: List[str], inclusion_flags: List[str], 
+                      details: Dict[str, Any], processing_time_ms: float) -> "ScreeningResult":
+        """Create a ScreeningResult from screening data."""
+        return cls(
+            id=uuid4(),
+            subject_id=investment_id,
+            subject_type="investment",
+            analysis_type="ethical_screening",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "passed": passed,
+                "overall_score": overall_score,
+                "environmental_score": environmental_score,
+                "social_score": social_score,
+                "governance_score": governance_score,
+            },
+            detailed_results=details,
+            passed=passed,
+            overall_score=overall_score,
+            environmental_score=environmental_score,
+            social_score=social_score,
+            governance_score=governance_score,
+            exclusion_flags=exclusion_flags,
+            inclusion_flags=inclusion_flags
+        )
+    
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
-class EthicalScreener(BaseAnalyzer):
+class EthicalScreener(BaseAnalyzer[Investment, ScreeningResult]):
     """Evaluates investments against customizable ethical criteria."""
     
     def __init__(self, criteria: EthicalCriteria):
@@ -37,6 +71,42 @@ class EthicalScreener(BaseAnalyzer):
         """
         super().__init__()
         self.criteria = criteria
+    
+    def analyze(
+        self, subject: Investment, parameters: Optional[AnalysisParameters] = None
+    ) -> ScreeningResult:
+        """
+        Analyze a single investment.
+        
+        Args:
+            subject: The investment to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            Analysis result
+        """
+        # Use the screen_investment method that implements the screening logic
+        return self.screen_investment(subject)
+    
+    def analyze_batch(
+        self, subjects: List[Investment], parameters: Optional[AnalysisParameters] = None
+    ) -> List[ScreeningResult]:
+        """
+        Analyze multiple investments.
+        
+        Args:
+            subjects: List of investments to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            List of analysis results
+        """
+        # Use the common method with timer
+        with Timer("analyze_batch") as timer:
+            results = super().analyze_batch(subjects, parameters)
+            
+            # Add custom processing if needed
+            return results
         
     @staticmethod
     def generate_criteria_from_survey(survey_responses: Dict[str, Any]) -> EthicalCriteria:
@@ -126,53 +196,73 @@ class EthicalScreener(BaseAnalyzer):
         """
         # Use the Timer utility from common library for performance measurement
         with Timer("screen_investment") as timer:
-            # Check for exclusions (immediate disqualification)
-            exclusion_flags = self._check_exclusions(investment)
-            
-            # Check for inclusions (positive attributes)
-            inclusion_flags = self._check_inclusions(investment)
-            
-            # Evaluate environmental criteria
-            env_score, env_details = self._evaluate_environmental_criteria(investment)
-            
-            # Evaluate social criteria
-            social_score, social_details = self._evaluate_social_criteria(investment)
-            
-            # Evaluate governance criteria
-            gov_score, gov_details = self._evaluate_governance_criteria(investment)
-            
-            # Calculate weighted overall score
-            overall_score = (
-                env_score * self.criteria.environmental["weight"] +
-                social_score * self.criteria.social["weight"] +
-                gov_score * self.criteria.governance["weight"]
-            )
-            
-            # Determine if the investment passes the screening
-            passes = (
-                len(exclusion_flags) == 0 and  # No exclusion criteria violated
-                overall_score >= self.criteria.min_overall_score
-            )
-            
-            # Compile detailed results
-            details = {
-                "environmental": env_details,
-                "social": social_details,
-                "governance": gov_details,
-                "processing_time_ms": timer.elapsed_ms
-            }
-            
-            return ScreeningResult(
-                investment_id=investment.id,
-                passed=passes,
-                overall_score=overall_score,
-                environmental_score=env_score,
-                social_score=social_score,
-                governance_score=gov_score,
-                exclusion_flags=exclusion_flags,
-                inclusion_flags=inclusion_flags,
-                details=details
-            )
+            try:
+                # Check for exclusions (immediate disqualification)
+                exclusion_flags = self._check_exclusions(investment)
+                
+                # Check for inclusions (positive attributes)
+                inclusion_flags = self._check_inclusions(investment)
+                
+                # Evaluate environmental criteria
+                env_score, env_details = self._evaluate_environmental_criteria(investment)
+                
+                # Evaluate social criteria
+                social_score, social_details = self._evaluate_social_criteria(investment)
+                
+                # Evaluate governance criteria
+                gov_score, gov_details = self._evaluate_governance_criteria(investment)
+                
+                # Calculate weighted overall score
+                overall_score = (
+                    env_score * self.criteria.environmental["weight"] +
+                    social_score * self.criteria.social["weight"] +
+                    gov_score * self.criteria.governance["weight"]
+                )
+                
+                # Determine if the investment passes the screening
+                passes = (
+                    len(exclusion_flags) == 0 and  # No exclusion criteria violated
+                    overall_score >= self.criteria.min_overall_score
+                )
+                
+                # Compile detailed results
+                details = {
+                    "environmental": env_details,
+                    "social": social_details,
+                    "governance": gov_details,
+                    "processing_time_ms": timer.elapsed_milliseconds  # Use the correct attribute
+                }
+                
+                # Handle the case where id might be UUID or str
+                investment_id = str(investment.id)
+                
+                # Use the factory method to create a ScreeningResult from the analysis
+                result = ScreeningResult.from_screening(
+                    investment_id=investment_id,
+                    passed=passes,
+                    overall_score=overall_score,
+                    environmental_score=env_score,
+                    social_score=social_score,
+                    governance_score=gov_score,
+                    exclusion_flags=exclusion_flags,
+                    inclusion_flags=inclusion_flags,
+                    details=details,
+                    processing_time_ms=timer.elapsed_milliseconds
+                )
+                
+                # Add to cache for future reuse
+                self._save_to_cache(investment_id, result)
+                
+                return result
+            except Exception as e:
+                # Log the error details using common patterns
+                print(f"Error in screen_investment: {type(e).__name__}: {str(e)}")
+                if isinstance(investment.esg_ratings, dict):
+                    print(f"ESG Ratings (dict): {investment.esg_ratings}")
+                else:
+                    print(f"ESG Ratings (type): {type(investment.esg_ratings)}")
+                print(f"Investment ID: {investment.id}, type: {type(investment.id)}")
+                raise
     
     def screen_investments(self, investments: List[Investment]) -> Dict[str, ScreeningResult]:
         """Screen multiple investments against the ethical criteria.
@@ -183,16 +273,13 @@ class EthicalScreener(BaseAnalyzer):
         Returns:
             Dict mapping investment IDs to their screening results
         """
-        # Use the Timer utility from common library for performance measurement
-        with Timer("screen_investments_batch") as timer:
-            results = {}
-            
-            for investment in investments:
-                results[investment.id] = self.screen_investment(investment)
-            
-            self.log_performance(f"Screened {len(investments)} investments in {timer.elapsed_seconds:.2f} seconds")
-            
-            return results
+        # Use the analyze_batch method inherited from BaseAnalyzer
+        results_list = self.analyze_batch(investments)
+        
+        # Convert to a dict keyed by investment ID
+        results_dict = {str(result.subject_id): result for result in results_list}
+        
+        return results_dict
     
     def _check_exclusions(self, investment: Investment) -> List[str]:
         """Check if the investment violates any exclusion criteria.
@@ -286,7 +373,12 @@ class EthicalScreener(BaseAnalyzer):
         details = {}
         
         # Start with the ESG environmental score
-        base_score = investment.esg_ratings.environmental
+        # Handle both dict and ESGRating object cases
+        if isinstance(investment.esg_ratings, dict):
+            base_score = investment.esg_ratings["environmental"]
+        else:
+            base_score = investment.esg_ratings.environmental
+        
         details["base_score"] = base_score
         
         # Adjust for carbon footprint
@@ -340,7 +432,12 @@ class EthicalScreener(BaseAnalyzer):
         details = {}
         
         # Start with the ESG social score
-        base_score = investment.esg_ratings.social
+        # Handle both dict and ESGRating object cases
+        if isinstance(investment.esg_ratings, dict):
+            base_score = investment.esg_ratings["social"]
+        else:
+            base_score = investment.esg_ratings.social
+            
         details["base_score"] = base_score
         
         # Adjust for diversity score
@@ -390,7 +487,12 @@ class EthicalScreener(BaseAnalyzer):
         details = {}
         
         # Start with the ESG governance score
-        base_score = investment.esg_ratings.governance
+        # Handle both dict and ESGRating object cases
+        if isinstance(investment.esg_ratings, dict):
+            base_score = investment.esg_ratings["governance"]
+        else:
+            base_score = investment.esg_ratings.governance
+            
         details["base_score"] = base_score
         
         # Adjust for board independence
@@ -425,8 +527,11 @@ def create_default_criteria() -> EthicalCriteria:
     Returns:
         A default EthicalCriteria object
     """
-    return EthicalCriteria(
-        criteria_id="default",
+    # Create the criteria using CommonEthicalCriteria and then convert to specialized EthicalCriteria
+    from common.core.models.investment import EthicalCriteria as CommonEthicalCriteria
+    
+    common_criteria = CommonEthicalCriteria(
+        id="default",
         name="Default Ethical Criteria",
         environmental={
             "min_environmental_score": 60,
@@ -462,3 +567,6 @@ def create_default_criteria() -> EthicalCriteria:
         ],
         min_overall_score=65
     )
+    
+    # Convert to specialized ethical criteria
+    return EthicalCriteria.from_common_criteria(common_criteria)

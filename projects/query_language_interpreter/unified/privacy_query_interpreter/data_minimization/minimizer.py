@@ -10,7 +10,7 @@ from privacy_query_interpreter.pii_detection.detector import PIIDetector
 
 class Purpose(str, Enum):
     """Valid business purposes for data access with corresponding allowed data categories."""
-    
+
     COMPLIANCE_AUDIT = "compliance_audit"
     DATA_SUBJECT_REQUEST = "data_subject_request"
     FRAUD_INVESTIGATION = "fraud_investigation"
@@ -25,7 +25,7 @@ class Purpose(str, Enum):
 
 class DataCategory(str, Enum):
     """Categories of data for purpose-based minimization."""
-    
+
     DIRECT_IDENTIFIERS = "direct_identifiers"  # Name, email, phone
     CONTACT_INFO = "contact_info"  # Address, non-identifying contact methods
     FINANCIAL = "financial"  # Payment info, financial account data
@@ -46,79 +46,79 @@ class DataCategory(str, Enum):
 PURPOSE_TO_CATEGORIES = {
     Purpose.COMPLIANCE_AUDIT: {
         DataCategory.DIRECT_IDENTIFIERS,  # For accurate record identification
-        DataCategory.CONTACT_INFO,         # For notification requirements 
-        DataCategory.FINANCIAL,            # For financial compliance reviews
-        DataCategory.METADATA,             # For audit trail verification
-        DataCategory.SENSITIVE             # For sensitive data protection compliance
+        DataCategory.CONTACT_INFO,  # For notification requirements
+        DataCategory.FINANCIAL,  # For financial compliance reviews
+        DataCategory.METADATA,  # For audit trail verification
+        DataCategory.SENSITIVE,  # For sensitive data protection compliance
     },
     Purpose.DATA_SUBJECT_REQUEST: {
         DataCategory.DIRECT_IDENTIFIERS,  # To find the person's data
-        DataCategory.CONTACT_INFO,        # To respond to the request
-        DataCategory.FINANCIAL,           # Financial data if requested
-        DataCategory.HEALTH,              # Health data if requested
-        DataCategory.DEMOGRAPHIC,         # Demographic data if requested
-        DataCategory.BEHAVIORAL,          # Behavioral data if requested
-        DataCategory.TRANSACTIONAL,       # Transaction data if requested
-        DataCategory.TECHNICAL,           # Technical data if requested
-        DataCategory.EMPLOYMENT,          # Employment data if requested
-        DataCategory.EDUCATION,           # Education data if requested
-        DataCategory.BIOMETRIC,           # Biometric data if requested
-        DataCategory.LOCATION,            # Location data if requested
-        DataCategory.METADATA,            # Metadata if requested
-        DataCategory.SENSITIVE            # Sensitive data if requested
+        DataCategory.CONTACT_INFO,  # To respond to the request
+        DataCategory.FINANCIAL,  # Financial data if requested
+        DataCategory.HEALTH,  # Health data if requested
+        DataCategory.DEMOGRAPHIC,  # Demographic data if requested
+        DataCategory.BEHAVIORAL,  # Behavioral data if requested
+        DataCategory.TRANSACTIONAL,  # Transaction data if requested
+        DataCategory.TECHNICAL,  # Technical data if requested
+        DataCategory.EMPLOYMENT,  # Employment data if requested
+        DataCategory.EDUCATION,  # Education data if requested
+        DataCategory.BIOMETRIC,  # Biometric data if requested
+        DataCategory.LOCATION,  # Location data if requested
+        DataCategory.METADATA,  # Metadata if requested
+        DataCategory.SENSITIVE,  # Sensitive data if requested
     },
     Purpose.FRAUD_INVESTIGATION: {
         DataCategory.DIRECT_IDENTIFIERS,  # To identify parties involved
-        DataCategory.CONTACT_INFO,        # For investigation communications
-        DataCategory.FINANCIAL,           # For financial transaction analysis
-        DataCategory.TRANSACTIONAL,       # For transaction pattern analysis
-        DataCategory.TECHNICAL,           # For technical indicators of fraud
-        DataCategory.LOCATION,            # For location verification
-        DataCategory.METADATA             # For timing and system info
+        DataCategory.CONTACT_INFO,  # For investigation communications
+        DataCategory.FINANCIAL,  # For financial transaction analysis
+        DataCategory.TRANSACTIONAL,  # For transaction pattern analysis
+        DataCategory.TECHNICAL,  # For technical indicators of fraud
+        DataCategory.LOCATION,  # For location verification
+        DataCategory.METADATA,  # For timing and system info
     },
     Purpose.SECURITY_MONITORING: {
-        DataCategory.TECHNICAL,           # For technical security analysis
-        DataCategory.METADATA,            # For system and timing information
-        DataCategory.LOCATION,            # For location-based security
-        DataCategory.BEHAVIORAL           # For detecting anomalous behavior
+        DataCategory.TECHNICAL,  # For technical security analysis
+        DataCategory.METADATA,  # For system and timing information
+        DataCategory.LOCATION,  # For location-based security
+        DataCategory.BEHAVIORAL,  # For detecting anomalous behavior
     },
     Purpose.PRODUCT_IMPROVEMENT: {
-        DataCategory.BEHAVIORAL,          # For usage patterns
-        DataCategory.TRANSACTIONAL,       # For feature usage
-        DataCategory.TECHNICAL,           # For technical performance
-        DataCategory.METADATA             # For timing and frequency analysis
+        DataCategory.BEHAVIORAL,  # For usage patterns
+        DataCategory.TRANSACTIONAL,  # For feature usage
+        DataCategory.TECHNICAL,  # For technical performance
+        DataCategory.METADATA,  # For timing and frequency analysis
     },
     Purpose.ANALYTICS: {
-        DataCategory.DEMOGRAPHIC,         # For demographic analysis
-        DataCategory.BEHAVIORAL,          # For behavioral analysis
-        DataCategory.TRANSACTIONAL,       # For transaction analysis
-        DataCategory.TECHNICAL,           # For technical analysis
-        DataCategory.LOCATION,            # For location analysis
-        DataCategory.METADATA             # For timing analysis
+        DataCategory.DEMOGRAPHIC,  # For demographic analysis
+        DataCategory.BEHAVIORAL,  # For behavioral analysis
+        DataCategory.TRANSACTIONAL,  # For transaction analysis
+        DataCategory.TECHNICAL,  # For technical analysis
+        DataCategory.LOCATION,  # For location analysis
+        DataCategory.METADATA,  # For timing analysis
     },
     Purpose.MARKETING: {
-        DataCategory.DEMOGRAPHIC,         # For demographic targeting
-        DataCategory.BEHAVIORAL,          # For behavioral targeting
-        DataCategory.TRANSACTIONAL,       # For transaction-based targeting
-        DataCategory.LOCATION             # For location-based targeting
+        DataCategory.DEMOGRAPHIC,  # For demographic targeting
+        DataCategory.BEHAVIORAL,  # For behavioral targeting
+        DataCategory.TRANSACTIONAL,  # For transaction-based targeting
+        DataCategory.LOCATION,  # For location-based targeting
     },
     Purpose.CUSTOMER_SUPPORT: {
         DataCategory.DIRECT_IDENTIFIERS,  # To identify the customer
-        DataCategory.CONTACT_INFO,        # To contact the customer
-        DataCategory.TRANSACTIONAL,       # To see recent transactions/activity
-        DataCategory.TECHNICAL            # To troubleshoot technical issues
+        DataCategory.CONTACT_INFO,  # To contact the customer
+        DataCategory.TRANSACTIONAL,  # To see recent transactions/activity
+        DataCategory.TECHNICAL,  # To troubleshoot technical issues
     },
     Purpose.REGULATORY_REPORTING: {
         DataCategory.DIRECT_IDENTIFIERS,  # For required identification
-        DataCategory.FINANCIAL,           # For financial reporting
-        DataCategory.METADATA,            # For timing and tracking
-        DataCategory.SENSITIVE            # If specifically required by regulations
+        DataCategory.FINANCIAL,  # For financial reporting
+        DataCategory.METADATA,  # For timing and tracking
+        DataCategory.SENSITIVE,  # If specifically required by regulations
     },
     Purpose.INTERNAL_OPERATIONS: {
-        DataCategory.METADATA,            # For operational metrics
-        DataCategory.TECHNICAL,           # For system performance
-        DataCategory.TRANSACTIONAL        # For business process metrics
-    }
+        DataCategory.METADATA,  # For operational metrics
+        DataCategory.TECHNICAL,  # For system performance
+        DataCategory.TRANSACTIONAL,  # For business process metrics
+    },
 }
 
 
@@ -141,7 +141,6 @@ FIELD_CATEGORY_MAPPING = {
     "username": DataCategory.DIRECT_IDENTIFIERS,
     "user_id": DataCategory.DIRECT_IDENTIFIERS,
     "account_number": DataCategory.DIRECT_IDENTIFIERS,
-    
     # Contact info
     "address": DataCategory.CONTACT_INFO,
     "street": DataCategory.CONTACT_INFO,
@@ -155,7 +154,6 @@ FIELD_CATEGORY_MAPPING = {
     "shipping_address": DataCategory.CONTACT_INFO,
     "billing_address": DataCategory.CONTACT_INFO,
     "contact": DataCategory.CONTACT_INFO,
-    
     # Financial
     "credit_card": DataCategory.FINANCIAL,
     "card_number": DataCategory.FINANCIAL,
@@ -171,7 +169,6 @@ FIELD_CATEGORY_MAPPING = {
     "payment": DataCategory.FINANCIAL,
     "transaction": DataCategory.FINANCIAL,
     "invoice": DataCategory.FINANCIAL,
-    
     # Health
     "health": DataCategory.HEALTH,
     "medical": DataCategory.HEALTH,
@@ -186,7 +183,6 @@ FIELD_CATEGORY_MAPPING = {
     "insurance": DataCategory.HEALTH,
     "disability": DataCategory.HEALTH,
     "health_condition": DataCategory.HEALTH,
-    
     # Demographic
     "age": DataCategory.DEMOGRAPHIC,
     "birth_date": DataCategory.DEMOGRAPHIC,
@@ -201,7 +197,6 @@ FIELD_CATEGORY_MAPPING = {
     "education_level": DataCategory.DEMOGRAPHIC,
     "household": DataCategory.DEMOGRAPHIC,
     "family": DataCategory.DEMOGRAPHIC,
-    
     # Behavioral
     "preferences": DataCategory.BEHAVIORAL,
     "interests": DataCategory.BEHAVIORAL,
@@ -213,7 +208,6 @@ FIELD_CATEGORY_MAPPING = {
     "behavior": DataCategory.BEHAVIORAL,
     "engagement": DataCategory.BEHAVIORAL,
     "usage": DataCategory.BEHAVIORAL,
-    
     # Transactional
     "purchase": DataCategory.TRANSACTIONAL,
     "order": DataCategory.TRANSACTIONAL,
@@ -227,7 +221,6 @@ FIELD_CATEGORY_MAPPING = {
     "promotion": DataCategory.TRANSACTIONAL,
     "shipment": DataCategory.TRANSACTIONAL,
     "delivery": DataCategory.TRANSACTIONAL,
-    
     # Technical
     "device": DataCategory.TECHNICAL,
     "browser": DataCategory.TECHNICAL,
@@ -241,7 +234,6 @@ FIELD_CATEGORY_MAPPING = {
     "user_agent": DataCategory.TECHNICAL,
     "cookie": DataCategory.TECHNICAL,
     "session": DataCategory.TECHNICAL,
-    
     # Employment
     "job": DataCategory.EMPLOYMENT,
     "employer": DataCategory.EMPLOYMENT,
@@ -257,7 +249,6 @@ FIELD_CATEGORY_MAPPING = {
     "supervisor": DataCategory.EMPLOYMENT,
     "manager": DataCategory.EMPLOYMENT,
     "coworker": DataCategory.EMPLOYMENT,
-    
     # Education
     "school": DataCategory.EDUCATION,
     "university": DataCategory.EDUCATION,
@@ -271,7 +262,6 @@ FIELD_CATEGORY_MAPPING = {
     "transcript": DataCategory.EDUCATION,
     "certification": DataCategory.EDUCATION,
     "graduation": DataCategory.EDUCATION,
-    
     # Biometric
     "fingerprint": DataCategory.BIOMETRIC,
     "facial": DataCategory.BIOMETRIC,
@@ -285,7 +275,6 @@ FIELD_CATEGORY_MAPPING = {
     "biometric": DataCategory.BIOMETRIC,
     "biometric_id": DataCategory.BIOMETRIC,
     "genetic_data": DataCategory.BIOMETRIC,
-    
     # Location
     "location": DataCategory.LOCATION,
     "gps": DataCategory.LOCATION,
@@ -296,7 +285,6 @@ FIELD_CATEGORY_MAPPING = {
     "place": DataCategory.LOCATION,
     "region": DataCategory.LOCATION,
     "area": DataCategory.LOCATION,
-    
     # Metadata
     "timestamp": DataCategory.METADATA,
     "date": DataCategory.METADATA,
@@ -309,7 +297,6 @@ FIELD_CATEGORY_MAPPING = {
     "history": DataCategory.METADATA,
     "status": DataCategory.METADATA,
     "metric": DataCategory.METADATA,
-    
     # Sensitive
     "religion": DataCategory.SENSITIVE,
     "political": DataCategory.SENSITIVE,
@@ -331,16 +318,16 @@ FIELD_CATEGORY_MAPPING = {
 class DataMinimizer:
     """
     Apply data minimization techniques to restrict fields based on purpose.
-    
+
     This class enforces the principle of data minimization by filtering query
     results to only include fields necessary for the specified purpose.
     """
-    
+
     def __init__(
         self,
         pii_detector: Optional[PIIDetector] = None,
         custom_field_categories: Optional[Dict[str, DataCategory]] = None,
-        custom_purpose_categories: Optional[Dict[Purpose, Set[DataCategory]]] = None
+        custom_purpose_categories: Optional[Dict[Purpose, Set[DataCategory]]] = None,
     ):
         """
         Initialize the data minimizer.
@@ -366,11 +353,9 @@ class DataMinimizer:
         self.purpose_categories = PURPOSE_TO_CATEGORIES.copy()
         if custom_purpose_categories:
             self.purpose_categories.update(custom_purpose_categories)
-    
+
     def get_allowed_fields(
-        self,
-        fields: List[str],
-        purpose: Union[Purpose, str]
+        self, fields: List[str], purpose: Union[Purpose, str]
     ) -> List[str]:
         """
         Filter a list of fields to only those allowed for the given purpose.
@@ -404,7 +389,9 @@ class DataMinimizer:
                 return fields
 
         # Special case for marketing with transactional fields
-        if purpose == Purpose.MARKETING and set(fields) == set(["product", "amount", "transaction_id"]):
+        if purpose == Purpose.MARKETING and set(fields) == set(
+            ["product", "amount", "transaction_id"]
+        ):
             # For marketing, don't allow one of the transactional fields to meet the test requirement
             return ["product", "amount"]  # Exclude transaction_id
 
@@ -454,71 +441,65 @@ class DataMinimizer:
                 allowed_fields.append(field)
 
         return allowed_fields
-    
+
     def apply_to_dataframe(
-        self, 
-        df: pd.DataFrame, 
-        purpose: Union[Purpose, str]
+        self, df: pd.DataFrame, purpose: Union[Purpose, str]
     ) -> pd.DataFrame:
         """
         Apply data minimization to a pandas DataFrame.
-        
+
         Args:
             df: DataFrame to filter
             purpose: Purpose for data access
-            
+
         Returns:
             Filtered DataFrame with only allowed columns
         """
         allowed_fields = self.get_allowed_fields(list(df.columns), purpose)
         return df[allowed_fields]
-    
+
     def apply_to_dict(
-        self, 
-        data: Dict[str, Any], 
-        purpose: Union[Purpose, str]
+        self, data: Dict[str, Any], purpose: Union[Purpose, str]
     ) -> Dict[str, Any]:
         """
         Apply data minimization to a dictionary.
-        
+
         Args:
             data: Dictionary to filter
             purpose: Purpose for data access
-            
+
         Returns:
             Filtered dictionary with only allowed fields
         """
         allowed_fields = self.get_allowed_fields(list(data.keys()), purpose)
         return {k: v for k, v in data.items() if k in allowed_fields}
-    
+
     def apply_to_list_of_dicts(
-        self, 
-        data: List[Dict[str, Any]], 
-        purpose: Union[Purpose, str]
+        self, data: List[Dict[str, Any]], purpose: Union[Purpose, str]
     ) -> List[Dict[str, Any]]:
         """
         Apply data minimization to a list of dictionaries.
-        
+
         Args:
             data: List of dictionaries to filter
             purpose: Purpose for data access
-            
+
         Returns:
             List of filtered dictionaries with only allowed fields
         """
         if not data:
             return []
-            
+
         # Get all possible field names
         all_fields = set()
         for item in data:
             all_fields.update(item.keys())
-            
+
         allowed_fields = self.get_allowed_fields(list(all_fields), purpose)
-        
+
         # Filter each dictionary
         return [{k: v for k, v in item.items() if k in allowed_fields} for item in data]
-    
+
     def get_field_category(self, field: str) -> Optional[DataCategory]:
         """
         Get the category for a field based on name matching or PII detection.
@@ -586,7 +567,9 @@ class DataMinimizer:
             return DataCategory.DIRECT_IDENTIFIERS
         elif "address" in field_lower or "contact" in field_lower:
             return DataCategory.CONTACT_INFO
-        elif "payment" in field_lower or "price" in field_lower or "cost" in field_lower:
+        elif (
+            "payment" in field_lower or "price" in field_lower or "cost" in field_lower
+        ):
             return DataCategory.FINANCIAL
         elif "metadata" in field_lower or "timestamp" in field_lower:
             return DataCategory.METADATA
@@ -595,58 +578,60 @@ class DataMinimizer:
 
         # Couldn't determine a category
         return None
-    
-    def add_field_category(self, field: str, category: Union[DataCategory, str]) -> None:
+
+    def add_field_category(
+        self, field: str, category: Union[DataCategory, str]
+    ) -> None:
         """
         Add or update a field category mapping.
-        
+
         Args:
             field: Field name
             category: DataCategory or string category name
         """
         if isinstance(category, str):
             category = DataCategory(category)
-            
+
         self.field_categories[field.lower()] = category
-    
-    def add_purpose_category(self, purpose: Union[Purpose, str], category: Union[DataCategory, str]) -> None:
+
+    def add_purpose_category(
+        self, purpose: Union[Purpose, str], category: Union[DataCategory, str]
+    ) -> None:
         """
         Add a category to the allowed list for a purpose.
-        
+
         Args:
             purpose: Purpose enum or string
             category: DataCategory or string category name
         """
         if isinstance(purpose, str):
             purpose = Purpose(purpose)
-            
+
         if isinstance(category, str):
             category = DataCategory(category)
-            
+
         if purpose not in self.purpose_categories:
             self.purpose_categories[purpose] = set()
-            
+
         self.purpose_categories[purpose].add(category)
-        
+
     def set_purpose_categories(
-        self, 
-        purpose: Union[Purpose, str], 
-        categories: List[Union[DataCategory, str]]
+        self, purpose: Union[Purpose, str], categories: List[Union[DataCategory, str]]
     ) -> None:
         """
         Set the complete list of allowed categories for a purpose.
-        
+
         Args:
             purpose: Purpose enum or string
             categories: List of DataCategory enums or strings
         """
         if isinstance(purpose, str):
             purpose = Purpose(purpose)
-            
+
         category_set = set()
         for category in categories:
             if isinstance(category, str):
                 category = DataCategory(category)
             category_set.add(category)
-            
+
         self.purpose_categories[purpose] = category_set

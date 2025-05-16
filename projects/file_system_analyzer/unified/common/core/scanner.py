@@ -207,6 +207,7 @@ class DirectoryScanner(FileSystemScanner[GenericScanResult]):
             skip_hidden=not self.options.include_hidden,
             follow_symlinks=self.options.follow_symlinks,
             max_depth=self.options.max_depth,
+            max_files=self.options.max_files,
         ))
         
         # Filter files based on scanner options

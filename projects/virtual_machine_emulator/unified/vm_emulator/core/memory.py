@@ -10,8 +10,9 @@ from common.core.memory import (
     MemorySegment,
     MemoryProtectionLevel
 )
-from common.core.exceptions import MemoryException, SegmentationFault
-
+from common.core.exceptions import MemoryException, SegmentationFault, InvalidAddressException
+from common.extensions.parallel.race_detection import RaceDetector
+from common.extensions.parallel.coherence import CoherenceController, CoherenceState
 
 # Re-export common types
 MemoryAccessType = MemoryAccessType
@@ -42,11 +43,9 @@ class MemorySystem(BaseMemorySystem):
         """
         super().__init__(size, protection_level)
         
-        # Race detection
+        # Use the RaceDetector from common extensions
         self.enable_race_detection = enable_race_detection
-        self.shared_addresses: Set[int] = set()
-        self.last_writer: Dict[int, Tuple[str, int]] = {}  # addr -> (thread_id, timestamp)
-        self.race_conditions: List[Dict[str, Any]] = []
+        self.race_detector = RaceDetector(enabled=enable_race_detection)
     
     def read(
         self,
@@ -71,22 +70,16 @@ class MemorySystem(BaseMemorySystem):
         """
         value = super().read(address, processor_id, thread_id, timestamp, context)
         
-        # Check for race conditions if enabled
-        if self.enable_race_detection and thread_id is not None and timestamp is not None:
-            if address in self.shared_addresses:
-                if address in self.last_writer:
-                    last_thread, last_time = self.last_writer[address]
-                    if last_thread != thread_id:
-                        # Potential race condition (read after write)
-                        self.race_conditions.append({
-                            "type": "read_after_write",
-                            "address": address,
-                            "reader_thread": thread_id,
-                            "reader_processor": processor_id,
-                            "writer_thread": last_thread,
-                            "read_time": timestamp,
-                            "write_time": last_time,
-                        })
+        # Record the access for race detection
+        if self.enable_race_detection and thread_id is not None and timestamp is not None and processor_id is not None:
+            self.race_detector.record_access(
+                thread_id=thread_id,
+                processor_id=processor_id,
+                timestamp=timestamp,
+                address=address,
+                is_write=False,
+                value=value
+            )
         
         return value
     
@@ -112,28 +105,59 @@ class MemorySystem(BaseMemorySystem):
         """
         super().write(address, value, processor_id, thread_id, timestamp, context)
         
-        # Race detection if enabled
-        if self.enable_race_detection and thread_id is not None and timestamp is not None:
-            # Mark as shared address if accessed by multiple threads
-            if address in self.last_writer and self.last_writer[address][0] != thread_id:
-                self.shared_addresses.add(address)
+        # Record the access for race detection
+        if self.enable_race_detection and thread_id is not None and timestamp is not None and processor_id is not None:
+            self.race_detector.record_access(
+                thread_id=thread_id,
+                processor_id=processor_id,
+                timestamp=timestamp,
+                address=address,
+                is_write=True,
+                value=value
+            )
+    
+    def compare_and_swap(
+        self,
+        address: int,
+        expected: int,
+        new_value: int,
+        processor_id: Optional[int] = None,
+        thread_id: Optional[str] = None,
+        timestamp: Optional[int] = None,
+        context: Optional[Dict[str, Any]] = None
+    ) -> bool:
+        """
+        Perform atomic compare-and-swap with race detection.
+        
+        Args:
+            address: Memory address to operate on
+            expected: Expected current value
+            new_value: New value to set if expected matches current
+            processor_id: ID of the processor performing the operation
+            thread_id: ID of the thread performing the operation
+            timestamp: Current timestamp
+            context: Additional context for the operation
             
-            # Update last writer
-            self.last_writer[address] = (thread_id, timestamp)
-            
-            # Check for write-write races
-            if address in self.shared_addresses:
-                for last_thread, last_time in self.last_writer.values():
-                    if last_thread != thread_id and last_time == timestamp:
-                        # Potential race condition (concurrent write)
-                        self.race_conditions.append({
-                            "type": "concurrent_write",
-                            "address": address,
-                            "writer1_thread": thread_id,
-                            "writer1_processor": processor_id,
-                            "writer2_thread": last_thread,
-                            "time": timestamp,
-                        })
+        Returns:
+            True if swap was performed, False otherwise
+        """
+        success = super().compare_and_swap(
+            address, expected, new_value, 
+            processor_id, thread_id, timestamp, context
+        )
+        
+        # Record the access for race detection (as a write if successful)
+        if self.enable_race_detection and thread_id is not None and timestamp is not None and processor_id is not None:
+            self.race_detector.record_access(
+                thread_id=thread_id,
+                processor_id=processor_id,
+                timestamp=timestamp,
+                address=address,
+                is_write=success,  # Only counts as a write if successful
+                value=new_value if success else None
+            )
+        
+        return success
     
     def get_race_conditions(self) -> List[Dict[str, Any]]:
         """
@@ -142,11 +166,20 @@ class MemorySystem(BaseMemorySystem):
         Returns:
             List of race condition details
         """
-        return self.race_conditions
+        return self.race_detector.get_race_conditions()
+    
+    def get_shared_addresses(self) -> Set[int]:
+        """
+        Get all shared memory addresses.
+        
+        Returns:
+            Set of shared memory addresses
+        """
+        return self.race_detector.get_shared_addresses()
     
     def clear_race_conditions(self) -> None:
         """Clear detected race conditions."""
-        self.race_conditions = []
+        self.race_detector.clear()
 
 
 class CoherentMemorySystem(MemorySystem):
@@ -162,7 +195,7 @@ class CoherentMemorySystem(MemorySystem):
         size: int = 2**16,
         protection_level: MemoryProtectionLevel = MemoryProtectionLevel.STANDARD,
         enable_race_detection: bool = True,
-        coherence_protocol: str = "MESI"
+        num_processors: int = 4
     ):
         """
         Initialize the coherent memory system.
@@ -171,22 +204,18 @@ class CoherentMemorySystem(MemorySystem):
             size: Size of memory in words
             protection_level: Level of memory protection
             enable_race_detection: Whether to enable race detection
-            coherence_protocol: Cache coherence protocol to use
+            num_processors: Number of processors in the system
         """
         super().__init__(size, protection_level, enable_race_detection)
-        self.coherence_protocol = coherence_protocol
-        self.caches: Dict[int, Any] = {}  # processor_id -> Cache
-        self.bus_operations: List[Dict[str, Any]] = []
-    
-    def add_cache(self, processor_id: int, cache: Any) -> None:
-        """
-        Add a cache for a processor.
         
-        Args:
-            processor_id: ID of the processor
-            cache: Cache instance
-        """
-        self.caches[processor_id] = cache
+        # Initialize the coherence controller from common extensions
+        self.coherence_controller = CoherenceController(
+            num_processors=num_processors,
+            memory_size=size
+        )
+        
+        # Synchronize memory arrays
+        self.coherence_controller.memory = self.memory
     
     def read(
         self,
@@ -209,52 +238,43 @@ class CoherentMemorySystem(MemorySystem):
         Returns:
             Value read from memory
         """
-        # Check if this processor has a cache
-        if processor_id is not None and processor_id in self.caches:
-            cache = self.caches[processor_id]
-            value, hit = cache.read(address)
+        # Basic bounds checking (inherited from base class)
+        if not self.check_address(address):
+            raise InvalidAddressException(f"Memory address out of bounds: 0x{address:08x}")
+        
+        # Use coherence controller if processor_id is provided
+        if processor_id is not None and timestamp is not None:
+            value, _ = self.coherence_controller.read(
+                address=address,
+                processor_id=processor_id,
+                timestamp=timestamp
+            )
             
-            if hit:
-                # Cache hit, just record the access
-                access = MemoryAccess(
-                    address=address,
-                    access_type=MemoryAccessType.READ,
-                    processor_id=processor_id,
+            # Log the access in the base system too
+            access = MemoryAccess(
+                address=address,
+                access_type=MemoryAccessType.READ,
+                processor_id=processor_id,
+                thread_id=thread_id,
+                timestamp=timestamp,
+                context=context
+            )
+            self._log_access(access)
+            
+            # Record the access for race detection
+            if self.enable_race_detection and thread_id is not None:
+                self.race_detector.record_access(
                     thread_id=thread_id,
+                    processor_id=processor_id,
                     timestamp=timestamp,
-                    context=context
+                    address=address,
+                    is_write=False,
+                    value=value
                 )
-                self._log_access(access)
-                
-                # Also check for race conditions
-                if self.enable_race_detection and thread_id is not None and timestamp is not None:
-                    if address in self.shared_addresses:
-                        if address in self.last_writer:
-                            last_thread, last_time = self.last_writer[address]
-                            if last_thread != thread_id:
-                                # Potential race condition (read after write)
-                                self.race_conditions.append({
-                                    "type": "read_after_write",
-                                    "address": address,
-                                    "reader_thread": thread_id,
-                                    "reader_processor": processor_id,
-                                    "writer_thread": last_thread,
-                                    "read_time": timestamp,
-                                    "write_time": last_time,
-                                })
-                
-                return value
-            else:
-                # Cache miss, need to go to memory
-                # This will generate bus traffic in a real system
-                value = super().read(address, processor_id, thread_id, timestamp, context)
-                
-                # Update the cache
-                cache.update(address, value)
-                
-                return value
+            
+            return value
         else:
-            # No cache, just go straight to memory
+            # Fall back to basic memory access without coherence
             return super().read(address, processor_id, thread_id, timestamp, context)
     
     def write(
@@ -277,12 +297,20 @@ class CoherentMemorySystem(MemorySystem):
             timestamp: Current timestamp
             context: Additional context for the operation
         """
-        # Check if this processor has a cache
-        if processor_id is not None and processor_id in self.caches:
-            cache = self.caches[processor_id]
-            hit = cache.write(address, value)
+        # Basic bounds checking (inherited from base class)
+        if not self.check_address(address):
+            raise InvalidAddressException(f"Memory address out of bounds: 0x{address:08x}")
+        
+        # Use coherence controller if processor_id is provided
+        if processor_id is not None and timestamp is not None:
+            _ = self.coherence_controller.write(
+                address=address,
+                value=value,
+                processor_id=processor_id,
+                timestamp=timestamp
+            )
             
-            # Record the access
+            # Log the access in the base system too
             access = MemoryAccess(
                 address=address,
                 access_type=MemoryAccessType.WRITE,
@@ -294,18 +322,57 @@ class CoherentMemorySystem(MemorySystem):
             )
             self._log_access(access)
             
-            # Update memory directly for simplicity
-            # In a real system this would happen on cache eviction or based on coherence protocol
-            super().memory[address] = value
-            
-            # Race detection
-            if self.enable_race_detection and thread_id is not None and timestamp is not None:
-                # Mark as shared address if accessed by multiple threads
-                if address in self.last_writer and self.last_writer[address][0] != thread_id:
-                    self.shared_addresses.add(address)
-                
-                # Update last writer
-                self.last_writer[address] = (thread_id, timestamp)
+            # Record the access for race detection
+            if self.enable_race_detection and thread_id is not None:
+                self.race_detector.record_access(
+                    thread_id=thread_id,
+                    processor_id=processor_id,
+                    timestamp=timestamp,
+                    address=address,
+                    is_write=True,
+                    value=value
+                )
         else:
-            # No cache, just go straight to memory
+            # Fall back to basic memory access without coherence
             super().write(address, value, processor_id, thread_id, timestamp, context)
+    
+    def get_coherence_events(self) -> List[Dict[str, Any]]:
+        """
+        Get coherence events from the controller.
+        
+        Returns:
+            List of coherence events
+        """
+        return self.coherence_controller.get_all_events()
+    
+    def get_cache_statistics(self) -> Dict[str, Any]:
+        """
+        Get statistics about the cache system.
+        
+        Returns:
+            Dictionary with cache statistics
+        """
+        return self.coherence_controller.get_coherence_statistics()
+    
+    def flush_cache(self, processor_id: int, timestamp: int) -> None:
+        """
+        Flush a processor's cache.
+        
+        Args:
+            processor_id: ID of the processor
+            timestamp: Current timestamp
+        """
+        _ = self.coherence_controller.flush_cache(processor_id, timestamp)
+    
+    def reset(self) -> None:
+        """Reset the memory system to initial state."""
+        super().reset()
+        
+        # Re-initialize the coherence controller
+        self.coherence_controller = CoherenceController(
+            num_processors=len(self.coherence_controller.caches),
+            memory_size=self.size
+        )
+        
+        # Synchronize memory arrays
+        self.coherence_controller.memory = self.memory

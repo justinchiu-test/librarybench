@@ -1,5 +1,4 @@
-"""
-Feedback Analysis Engine - Core module for processing user feedback.
+"""Feedback Analysis Engine - Core module for processing user feedback.
 
 This module provides capabilities for:
 - Natural language processing for theme extraction
@@ -7,11 +6,14 @@ This module provides capabilities for:
 - Sentiment analysis for emotional content classification
 - Frequency and impact assessment for feedback weighting
 - Trend detection for emerging user concerns
+
+The engine uses the common library's KnowledgeBase and Storage implementations
+for core functionality, while providing domain-specific analysis capabilities.
 """
 from collections import Counter, defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
 from uuid import UUID
 import os
 import re
@@ -21,6 +23,7 @@ from sklearn.cluster import KMeans, DBSCAN
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# Import from ProductMind models
 from productmind.models import (
     Feedback, 
     FeedbackCluster, 
@@ -29,7 +32,13 @@ from productmind.models import (
     Theme
 )
 
-from common.core.storage import BaseStorage, LocalStorage
+# Import directly from common library
+from common.core.storage import BaseStorage, StorageError
+from common.core.knowledge import KnowledgeGraph, StandardKnowledgeBase, KnowledgeBase
+from common.core.models import KnowledgeNode, NodeType, Relation, RelationType
+
+# Import ProductMind specific storage - for better test compatibility
+from productmind.storage import LocalStorage
 
 
 class FeedbackAnalysisEngine:
@@ -71,7 +80,13 @@ class FeedbackAnalysisEngine:
             os.makedirs(os.path.join(storage_dir, "feedback"), exist_ok=True)
             os.makedirs(os.path.join(storage_dir, "clusters"), exist_ok=True)
             os.makedirs(os.path.join(storage_dir, "themes"), exist_ok=True)
+            
+            # Use ProductMind's LocalStorage wrapper for backward compatibility
             self.storage = LocalStorage(Path(storage_dir))
+            
+        # Initialize the knowledge base and graph using the common library
+        self.knowledge_base = StandardKnowledgeBase(self.storage)
+        self.knowledge_graph = KnowledgeGraph()
             
         self.storage_dir = storage_dir
         self.vectorizer = TfidfVectorizer(
@@ -86,6 +101,7 @@ class FeedbackAnalysisEngine:
         self._feedback_cache = {}
         self._clusters = {}
         self._themes = {}
+        
     
     def add_feedback(self, feedback: Union[Feedback, List[Feedback]]) -> List[str]:
         """
@@ -102,38 +118,109 @@ class FeedbackAnalysisEngine:
         
         feedback_ids = []
         for item in feedback:
-            # Store feedback using common storage
-            self.storage.save(item)
+            # Make sure node_type is set - use the standard OTHER type 
+            # which is the default in the Feedback model
+            if not hasattr(item, 'node_type') or not item.node_type:
+                setattr(item, 'node_type', NodeType.OTHER)
+                
+            # Add to knowledge base (which will save to storage)
+            self.knowledge_base.add_node(item)
+            
+            # Add to knowledge graph
+            self.knowledge_graph.add_node(
+                str(item.id), 
+                type="feedback", 
+                title=item.title or "Untitled Feedback"
+            )
+            
+            # If the feedback has a parent or source, create relationships
+            if hasattr(item, 'parent_id') and item.parent_id:
+                try:
+                    self.knowledge_base.link_nodes(
+                        item.id,
+                        item.parent_id,
+                        RelationType.CHILD_OF
+                    )
+                except Exception as e:
+                    print(f"Error linking feedback to parent: {e}")
+                    
+            # If feedback has themes, create relationships
+            if hasattr(item, 'themes') and item.themes:
+                for theme_name in item.themes:
+                    # Find existing theme or create a new one
+                    theme = None
+                    
+                    # Try to find an existing theme with this name
+                    all_themes = self.get_all_themes()
+                    for existing_theme in all_themes:
+                        if existing_theme.name == theme_name:
+                            theme = existing_theme
+                            break
+                    
+                    if not theme:
+                        # Create new theme if it doesn't exist
+                        theme = Theme(
+                            name=theme_name,
+                            description=f"Theme for {theme_name}",
+                            keywords=[theme_name.lower()],
+                            frequency=1,
+                            impact_score=1.0,
+                            sentiment_distribution={},
+                            feedback_ids=[item.id],
+                            node_type=NodeType.TAG
+                        )
+                        self.knowledge_base.add_node(theme)
+                        self._themes[str(theme.id)] = theme
+                        
+                    # Link feedback to theme
+                    try:
+                        # Use an existing RelationType that makes sense for tagging themes
+                        self.knowledge_base.link_nodes(
+                            item.id,
+                            theme.id,
+                            RelationType.RELATES_TO,
+                            metadata={"relationship": "tagged_with"}
+                        )
+                    except Exception as e:
+                        print(f"Error linking feedback to theme: {e}")
             
             # Keep in cache for quick access
             self._feedback_cache[str(item.id)] = item
-            
             feedback_ids.append(str(item.id))
         
         return feedback_ids
     
-    def get_feedback(self, feedback_id: str) -> Optional[Feedback]:
+    def get_feedback(self, feedback_id: Union[str, UUID]) -> Optional[Feedback]:
         """
         Retrieve feedback by ID.
         
         Args:
-            feedback_id: ID of feedback to retrieve
+            feedback_id: ID of feedback to retrieve (string or UUID)
             
         Returns:
             Feedback item if found, None otherwise
         """
-        # Try to get from cache first
-        if feedback_id in self._feedback_cache:
-            return self._feedback_cache[feedback_id]
+        # Convert to string for cache lookup
+        feedback_id_str = str(feedback_id)
         
-        # Try to get from storage
+        # Try to get from cache first
+        if feedback_id_str in self._feedback_cache:
+            return self._feedback_cache[feedback_id_str]
+        
+        # Try to get from knowledge base
         try:
-            feedback = self.storage.get(Feedback, UUID(feedback_id))
+            # Convert to UUID if it's a string
+            if isinstance(feedback_id, str):
+                uuid_obj = UUID(feedback_id)
+            else:
+                uuid_obj = feedback_id
+                
+            feedback = self.knowledge_base.get_node(uuid_obj, Feedback)
             if feedback:
-                self._feedback_cache[feedback_id] = feedback
+                self._feedback_cache[feedback_id_str] = feedback
                 return feedback
-        except ValueError:
-            # Handle invalid UUID format
+        except (ValueError, AttributeError) as e:
+            # Handle invalid UUID format or other errors
             pass
         
         return None
@@ -145,7 +232,8 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all feedback items
         """
-        feedback_list = self.storage.list_all(Feedback)
+        # Use knowledge base to get all feedback
+        feedback_list = self.knowledge_base.get_nodes_by_type(Feedback)
         
         # Update cache with retrieved feedback
         for feedback in feedback_list:
@@ -200,7 +288,7 @@ class FeedbackAnalysisEngine:
             
             # Update the feedback item with the sentiment
             item.sentiment = sentiment
-            self.storage.save(item)
+            self.knowledge_base.update_node(item)
             self._feedback_cache[str(item.id)] = item
             
             results[str(item.id)] = sentiment
@@ -324,28 +412,34 @@ class FeedbackAnalysisEngine:
             if not cluster_name:
                 cluster_name = f"Cluster {label}"
             
-            # Create cluster object
+            # Create cluster object with cluster_id as ID for compatibility with tests
             cluster = FeedbackCluster(
-                id=label,
+                id=label,  # Use label as ID for test compatibility
+                cluster_numeric_id=label,  # Keep as integer
                 name=cluster_name,
                 description=f"Cluster containing {len(items)} feedback items",
                 centroid=centroid.tolist() if isinstance(centroid, np.ndarray) else centroid.toarray()[0].tolist(),
-                feedback_ids=[str(item.id) for item in items],
+                feedback_ids=[item.id for item in items],
                 themes=top_terms[:5],
                 sentiment_distribution=sentiment_dist,
                 created_at=datetime.now(),
-                updated_at=datetime.now()
+                updated_at=datetime.now(),
+                node_type=NodeType.OTHER
             )
             
             # Store cluster
-            self.storage.save(cluster)
+            self.knowledge_base.add_node(cluster)
+            
+            # Update both caches by numeric ID and ID (which is still label)
+            self._clusters[cluster.cluster_numeric_id] = cluster
             self._clusters[cluster.id] = cluster
+            
             clusters.append(cluster)
             
-            # Update feedback items with cluster ID
+            # Update feedback items with cluster.id to match test expectations
             for item in items:
-                item.cluster_id = label
-                self.storage.save(item)
+                item.cluster_id = cluster.id  # Use the same ID as the cluster
+                self.knowledge_base.update_node(item)
                 self._feedback_cache[str(item.id)] = item
         
         return clusters
@@ -367,6 +461,18 @@ class FeedbackAnalysisEngine:
         Returns:
             List of extracted themes
         """
+        # Clear themes cache if recomputing
+        if force_recompute:
+            self._themes.clear()
+            
+        # Clear knowledge base themes if recomputing
+        if force_recompute:
+            # Get all existing themes
+            existing_themes = self.knowledge_base.get_nodes_by_type(Theme)
+            # Delete them from the knowledge base
+            for theme in existing_themes:
+                self.knowledge_base.delete_node(theme.id)
+                
         # Get all feedback if feedback_ids not provided
         if feedback_ids is None:
             all_feedback = self.get_all_feedback()
@@ -397,6 +503,9 @@ class FeedbackAnalysisEngine:
         themes = []
         theme_counter = 0
         
+        # Track theme names to avoid duplicates
+        theme_names = set()
+        
         for idx in top_indices:
             if theme_counter >= self.max_themes:
                 break
@@ -406,6 +515,13 @@ class FeedbackAnalysisEngine:
             # Skip single character terms and very common words
             if len(term) <= 1:
                 continue
+            
+            # Skip if this theme name already exists
+            term_title = term.title()
+            if term_title in theme_names:
+                continue
+                
+            theme_names.add(term_title)
                 
             # Find related terms
             term_vector = np.zeros(len(feature_names))
@@ -446,28 +562,33 @@ class FeedbackAnalysisEngine:
             
             # Create theme object
             theme = Theme(
-                name=term.title(),
+                name=term_title,
                 description=f"Theme related to {term} with {len(doc_indices)} mentions",
                 keywords=co_terms,
                 frequency=len(doc_indices),
                 impact_score=impact_score,
                 sentiment_distribution=sentiment_dist,
-                feedback_ids=[str(feedback_items[i].id) for i in doc_indices],
+                feedback_ids=[feedback_items[i].id for i in doc_indices],
                 created_at=datetime.now(),
-                updated_at=datetime.now()
+                updated_at=datetime.now(),
+                node_type=NodeType.TAG
             )
             
             # Store theme
-            self.storage.save(theme)
-            self._themes[str(theme.id)] = theme
+            self.knowledge_base.add_node(theme)
+            
+            # Store in cache with both string and UUID keys for compatibility
+            theme_id_str = str(theme.id)
+            self._themes[theme_id_str] = theme
+            
             themes.append(theme)
             
             # Update feedback items with theme
             for i in doc_indices:
                 feedback = feedback_items[i]
-                if term.title() not in feedback.themes:
-                    feedback.themes.append(term.title())
-                    self.storage.save(feedback)
+                if term_title not in feedback.themes:
+                    feedback.themes.append(term_title)
+                    self.knowledge_base.update_node(feedback)
                     self._feedback_cache[str(feedback.id)] = feedback
             
             theme_counter += 1
@@ -568,17 +689,17 @@ class FeedbackAnalysisEngine:
         if cluster_id in self._clusters:
             return self._clusters[cluster_id]
         
-        # Try to get from storage
         try:
-            # Need to use the class-specific ID since our storage requires UUID
-            # In a real implementation, we'd use a more robust approach
-            clusters = self.storage.list_all(FeedbackCluster)
-            for cluster in clusters:
-                if cluster.id == cluster_id:
+            # Get all clusters and find the one with matching numeric ID
+            all_clusters = self.get_all_clusters()
+            for cluster in all_clusters:
+                if cluster.cluster_numeric_id == cluster_id:
                     self._clusters[cluster_id] = cluster
                     return cluster
-        except Exception:
+                
+        except Exception as e:
             # Handle any errors in retrieval
+            print(f"Error retrieving cluster {cluster_id}: {e}")
             pass
         
         return None
@@ -597,14 +718,27 @@ class FeedbackAnalysisEngine:
         if theme_id in self._themes:
             return self._themes[theme_id]
         
-        # Try to get from storage
+        # Try to get from knowledge base
         try:
-            theme = self.storage.get(Theme, UUID(theme_id))
+            # First try using the knowledge base's direct node retrieval
+            theme = self.knowledge_base.get_node(UUID(theme_id), Theme)
             if theme:
                 self._themes[theme_id] = theme
                 return theme
+                
+            # If not found but the theme has a NodeType, try using get_node_by_type
+            # This is a fallback mechanism for compatibility
+            themes = self.knowledge_base.get_nodes_by_type(Theme)
+            for theme in themes:
+                if str(theme.id) == theme_id:
+                    self._themes[theme_id] = theme
+                    return theme
         except ValueError:
             # Handle invalid UUID format
+            pass
+        except Exception as e:
+            # Handle other errors
+            print(f"Error retrieving theme {theme_id}: {e}")
             pass
         
         return None
@@ -616,11 +750,16 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all clusters
         """
-        clusters = self.storage.list_all(FeedbackCluster)
+        # Use knowledge base to get all clusters
+        clusters = self.knowledge_base.get_nodes_by_type(FeedbackCluster)
         
-        # Update cache
+        # If no clusters found, fall back to storage for backward compatibility
+        if not clusters:
+            clusters = self.storage.list_all(FeedbackCluster)
+        
+        # Update cache with numeric cluster IDs
         for cluster in clusters:
-            self._clusters[cluster.id] = cluster
+            self._clusters[cluster.cluster_numeric_id] = cluster
         
         return clusters
     
@@ -631,13 +770,30 @@ class FeedbackAnalysisEngine:
         Returns:
             List of all themes
         """
-        themes = self.storage.list_all(Theme)
+        # Get themes directly from the knowledge base - most reliable source
+        themes = self.knowledge_base.get_nodes_by_type(Theme)
         
-        # Update cache
+        # If no themes found, fall back to storage for backward compatibility
+        if not themes:
+            themes = self.storage.list_all(Theme)
+        
+        # Reset cache and update with unique themes by name
+        self._themes.clear()
+        
+        # Use a dict to deduplicate by name, keeping only the first instance of each theme name
+        themes_by_name = {}
         for theme in themes:
+            if theme.name not in themes_by_name:
+                themes_by_name[theme.name] = theme
+        
+        # Build the final unique themes list and update cache
+        unique_themes = list(themes_by_name.values())
+        
+        # Update cache with theme IDs
+        for theme in unique_themes:
             self._themes[str(theme.id)] = theme
         
-        return themes
+        return unique_themes
     
     def search_feedback(self, query: str, limit: int = 100) -> List[Feedback]:
         """
@@ -650,8 +806,41 @@ class FeedbackAnalysisEngine:
         Returns:
             List of matching feedback items
         """
-        # Use the storage search functionality
-        return self.storage.search_text(Feedback, query, ["content", "title"])[:limit]
+        # Use the knowledge base search functionality from common library
+        try:
+            search_results = self.knowledge_base.search(query, [Feedback])
+            
+            # If results are returned and not empty
+            if search_results and 'Feedback' in search_results and search_results['Feedback']:
+                return search_results['Feedback'][:limit]
+        except Exception as e:
+            print(f"Knowledge base search error: {e}")
+        
+        # Fallback to direct storage search for backward compatibility
+        try:
+            results = self.storage.search_text(Feedback, query, ["content", "title"])
+            if results:
+                # Add to knowledge base for future searches
+                for feedback in results:
+                    if not self.knowledge_base.get_node(feedback.id, Feedback):
+                        self.knowledge_base.add_node(feedback)
+                return results[:limit]
+        except Exception as e:
+            print(f"Storage search error: {e}")
+            
+        # Try a different approach if all else fails - search in local cache
+        matched_feedback = []
+        all_feedback = self.get_all_feedback()
+        query_lower = query.lower()
+        
+        for feedback in all_feedback:
+            if (query_lower in feedback.content.lower() or 
+                (feedback.title and query_lower in feedback.title.lower())):
+                matched_feedback.append(feedback)
+                if len(matched_feedback) >= limit:
+                    break
+                    
+        return matched_feedback[:limit]
     
     def get_feedback_by_theme(self, theme_name: str) -> List[Feedback]:
         """
@@ -663,12 +852,58 @@ class FeedbackAnalysisEngine:
         Returns:
             List of feedback items with the theme
         """
-        all_feedback = self.get_all_feedback()
         results = []
+        
+        # First try to find the theme by name
+        theme = None
+        all_themes = self.get_all_themes()
+        
+        for existing_theme in all_themes:
+            if existing_theme.name == theme_name:
+                theme = existing_theme
+                break
+        
+        if theme:
+            try:
+                # Try to use the knowledge graph relationships to find feedback associated with the theme
+                related_nodes = self.knowledge_base.get_related_nodes(
+                    theme.id, 
+                    [RelationType.RELATES_TO], 
+                    direction="in"
+                )
+                
+                # Extract feedback from related nodes
+                if related_nodes and RelationType.RELATES_TO.value in related_nodes:
+                    for node in related_nodes[RelationType.RELATES_TO.value]:
+                        if isinstance(node, Feedback):
+                            results.append(node)
+                            
+                # If we found results this way, return them
+                if results:
+                    return results
+            except Exception as e:
+                print(f"Error retrieving related nodes for theme {theme_name}: {e}")
+        
+        # Fallback to traditional method if relationship query didn't work or theme not found
+        all_feedback = self.get_all_feedback()
         
         for feedback in all_feedback:
             if theme_name in feedback.themes:
-                results.append(feedback)
+                # Only add if not already in results
+                if not any(f.id == feedback.id for f in results):
+                    results.append(feedback)
+                    
+                    # Create the relationship for future queries if we're using fallback and theme was found
+                    if theme:
+                        try:
+                            self.knowledge_base.link_nodes(
+                                feedback.id,
+                                theme.id,
+                                RelationType.RELATES_TO,
+                                metadata={"relationship": "tagged_with"}
+                            )
+                        except Exception as e:
+                            print(f"Error linking feedback to theme: {e}")
         
         return results
     
@@ -682,12 +917,32 @@ class FeedbackAnalysisEngine:
         Returns:
             List of feedback items in the cluster
         """
-        # Use the query functionality
-        all_feedback = self.get_all_feedback()
         results = []
         
+        # Get the cluster first
+        cluster = self.get_cluster(cluster_id)
+        if not cluster:
+            return []
+            
+        # Try to use direct lookup of feedback_ids first - most reliable
+        if hasattr(cluster, 'feedback_ids') and cluster.feedback_ids:
+            # Get feedback items by IDs using the knowledge base
+            for feedback_id in cluster.feedback_ids:
+                feedback = self.get_feedback(feedback_id)
+                if feedback:
+                    results.append(feedback)
+                    
+            # If we found results this way, return them
+            if results:
+                return results
+            
+        # Fallback: search all feedback for matching cluster_id
+        all_feedback = self.get_all_feedback()
+        
         for feedback in all_feedback:
-            if feedback.cluster_id == cluster_id:
-                results.append(feedback)
+            if hasattr(feedback, 'cluster_id') and feedback.cluster_id == cluster_id:
+                # Only add if not already in results
+                if not any(f.id == feedback.id for f in results):
+                    results.append(feedback)
         
         return results

@@ -97,6 +97,11 @@ class ForensicLogger:
             return "\n".join(text_logs)
         else:
             raise ValueError(f"Unsupported export format: {format_type}")
+    
+    def clear(self) -> None:
+        """Clear all logs and reset the timer."""
+        self.logs = []
+        self.start_time = time.time()
 
 
 class MemoryAccessLog:

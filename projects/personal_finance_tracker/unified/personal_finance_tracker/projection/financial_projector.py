@@ -1,14 +1,26 @@
 """Financial projection system for freelancers."""
 
 import calendar
+import math
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple, Union
-import math
 
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel
+
+from common.core.analysis.analyzer import AnalysisResult, AnalysisParameters
+from common.core.analysis.financial_projector import (
+    FinancialProjector as CommonFinancialProjector,
+    ProjectionScenario,
+    ProjectionParameters,
+    ProjectionResult,
+    CashFlow,
+    Projection
+)
+from common.core.analysis.time_series import TimeSeriesData
+from common.core.utils.performance import Timer
 
 from personal_finance_tracker.models.common import (
     AccountBalance,
@@ -21,7 +33,6 @@ from personal_finance_tracker.income.models import RevenueForecast, SmoothedInco
 
 from personal_finance_tracker.projection.models import (
     SpendingLevel,
-    ProjectionScenario,
     RevenueSource,
     ExpenseItem,
     CashFlowProjection,
@@ -43,6 +54,8 @@ class FinancialProjector:
     def __init__(self):
         """Initialize the financial projector."""
         self._projection_cache = {}
+        self._common_projector = CommonFinancialProjector()
+        self.timer = Timer()
 
     def project_cash_flow(
         self,
@@ -51,7 +64,7 @@ class FinancialProjector:
         months_ahead: int,
         revenue_sources: List[RevenueSource],
         expense_items: List[ExpenseItem],
-        scenario: ProjectionScenario = ProjectionScenario.EXPECTED,
+        scenario: ProjectionScenario = ProjectionScenario.BASELINE,
         historical_transactions: Optional[List[Transaction]] = None,
         confidence_interval: float = 0.8,
     ) -> CashFlowProjection:
@@ -71,8 +84,8 @@ class FinancialProjector:
         Returns:
             CashFlowProjection object with detailed cash flow projection
         """
-        # Performance measurement
-        start_time = time.time()
+        # Start performance timer
+        self.timer.start()
 
         # Calculate dates
         start_date = datetime(current_date.year, current_date.month, 1)
@@ -83,86 +96,129 @@ class FinancialProjector:
             end_year, end_month, calendar.monthrange(end_year, end_month)[1]
         )
 
-        # Generate month strings for the projection period
-        months = []
+        # Create historical time series data if provided
+        historical_data = None
+        if historical_transactions:
+            # Extract dates and net cash flow values from transactions
+            dates = []
+            values = []
+            
+            for tx in sorted(historical_transactions, key=lambda t: t.date):
+                dates.append(tx.date)
+                # Income adds to cash flow, expenses subtract
+                value = tx.amount if tx.transaction_type == TransactionType.INCOME else -tx.amount
+                values.append(value)
+            
+            historical_data = TimeSeriesData(dates=dates, values=values)
+        else:
+            # Create minimal historical data with just the starting balance
+            historical_data = TimeSeriesData(
+                dates=[current_date],
+                values=[starting_balance]
+            )
+
+        # Create projection parameters
+        params = ProjectionParameters(
+            projection_length=months_ahead,
+            scenario=scenario,
+            income_growth_rate=0.0,  # Will be handled in revenue sources
+            expense_growth_rate=0.0,  # Will be handled in expense items
+        )
+
+        # Prepare income and expenses for the common projector
+        # This is needed to convert our revenue sources and expense items format
+        # to the common library's expected format
+        monthly_income = {}
+        monthly_expenses = {}
+        
+        # Process revenue sources
+        for revenue in revenue_sources:
+            if revenue.recurring:
+                self._add_recurring_item_to_dict(
+                    monthly_dict=monthly_income,
+                    item=revenue,
+                    start_date=start_date,
+                    end_date=end_date,
+                    multiplier=self._get_scenario_income_multiplier(scenario)
+                )
+            elif revenue.expected_date:
+                month_key = revenue.expected_date.strftime("%Y-%m")
+                adjusted_amount = revenue.amount * (revenue.probability / 100) * self._get_scenario_income_multiplier(scenario)
+                monthly_income[month_key] = monthly_income.get(month_key, 0) + adjusted_amount
+
+        # Process expenses
+        for expense in expense_items:
+            if expense.recurring:
+                self._add_recurring_item_to_dict(
+                    monthly_dict=monthly_expenses,
+                    item=expense,
+                    start_date=start_date,
+                    end_date=end_date,
+                    multiplier=self._get_scenario_expense_multiplier(scenario)
+                )
+            elif expense.due_date:
+                month_key = expense.due_date.strftime("%Y-%m")
+                adjusted_amount = expense.amount * self._get_scenario_expense_multiplier(scenario)
+                monthly_expenses[month_key] = monthly_expenses.get(month_key, 0) + adjusted_amount
+
+        # Convert to time series format
+        month_strings = []
         current_month = start_date
         while current_month <= end_date:
-            months.append(current_month.strftime("%Y-%m"))
-
+            month_strings.append(current_month.strftime("%Y-%m"))
             # Move to next month
             month = current_month.month + 1
             year = current_month.year + (month - 1) // 12
             month = ((month - 1) % 12) + 1
             current_month = datetime(year, month, 1)
 
-        # Initialize monthly breakdown
-        monthly_breakdown = {
-            month: {"income": 0.0, "expenses": 0.0, "balance": 0.0} for month in months
-        }
+        # Generate all dates for the projection period
+        projection_dates = []
+        projection_income = []
+        projection_expenses = []
+        
+        for month in month_strings:
+            year, month_num = map(int, month.split('-'))
+            projection_date = datetime(year, int(month_num), 1)
+            projection_dates.append(projection_date)
+            projection_income.append(monthly_income.get(month, 0))
+            projection_expenses.append(monthly_expenses.get(month, 0))
 
-        # Apply scenario adjustments
-        income_multiplier = self._get_scenario_income_multiplier(scenario)
-        expense_multiplier = self._get_scenario_expense_multiplier(scenario)
+        # Use the common financial projector to create projections
+        # We create our own custom projection from the results
+        projection_result = self._create_custom_projection(
+            starting_balance=starting_balance,
+            projection_dates=projection_dates,
+            projection_income=projection_income,
+            projection_expenses=projection_expenses,
+            scenario=scenario
+        )
 
-        # Process revenue sources
-        for revenue in revenue_sources:
-            if revenue.recurring:
-                # Add recurring revenue to each month
-                self._add_recurring_item(
-                    monthly_breakdown,
-                    revenue,
-                    start_date,
-                    end_date,
-                    "income",
-                    income_multiplier,
-                )
-            elif revenue.expected_date:
-                # Add one-time revenue
-                month_key = revenue.expected_date.strftime("%Y-%m")
-                if month_key in monthly_breakdown:
-                    # Apply probability and scenario adjustment
-                    adjusted_amount = (
-                        revenue.amount * (revenue.probability / 100) * income_multiplier
-                    )
-                    monthly_breakdown[month_key]["income"] += adjusted_amount
+        # Calculate totals
+        total_income = sum(monthly_income.get(month, 0) for month in month_strings)
+        total_expenses = sum(monthly_expenses.get(month, 0) for month in month_strings)
+        net_cash_flow = total_income - total_expenses
+        ending_balance = starting_balance + net_cash_flow
 
-        # Process expenses
-        for expense in expense_items:
-            if expense.recurring:
-                # Add recurring expense to each month
-                self._add_recurring_item(
-                    monthly_breakdown,
-                    expense,
-                    start_date,
-                    end_date,
-                    "expenses",
-                    expense_multiplier,
-                )
-            elif expense.due_date:
-                # Add one-time expense
-                month_key = expense.due_date.strftime("%Y-%m")
-                if month_key in monthly_breakdown:
-                    # Apply scenario adjustment
-                    adjusted_amount = expense.amount * expense_multiplier
-                    monthly_breakdown[month_key]["expenses"] += adjusted_amount
+        # Create monthly breakdown structure for compatibility
+        monthly_breakdown = {}
+        for i, month in enumerate(month_strings):
+            monthly_breakdown[month] = {
+                "income": projection_income[i],
+                "expenses": projection_expenses[i],
+                "balance": 0  # Will be calculated below
+            }
 
-        # Calculate balances for each month
+        # Calculate running balance for each month
         running_balance = starting_balance
-
-        for month in months:
+        for month in month_strings:
             income = monthly_breakdown[month]["income"]
             expenses = monthly_breakdown[month]["expenses"]
             net = income - expenses
             running_balance += net
             monthly_breakdown[month]["balance"] = running_balance
 
-        # Calculate totals
-        total_income = sum(monthly_breakdown[month]["income"] for month in months)
-        total_expenses = sum(monthly_breakdown[month]["expenses"] for month in months)
-        net_cash_flow = total_income - total_expenses
-        ending_balance = starting_balance + net_cash_flow
-
-        # Create projection
+        # Create projection for return
         projection = CashFlowProjection(
             start_date=start_date,
             end_date=end_date,
@@ -176,23 +232,114 @@ class FinancialProjector:
             confidence_interval=confidence_interval,
         )
 
-        # Verify performance
-        elapsed_time = time.time() - start_time
+        # Stop timer
+        elapsed_time = self.timer.stop()
 
         return projection
 
-    def _add_recurring_item(
+    def _create_custom_projection(
         self,
-        monthly_breakdown: Dict[str, Dict[str, float]],
+        starting_balance: float,
+        projection_dates: List[datetime],
+        projection_income: List[float],
+        projection_expenses: List[float],
+        scenario: ProjectionScenario
+    ) -> Projection:
+        """
+        Create a custom projection using the common library.
+        
+        Args:
+            starting_balance: Current cash balance
+            projection_dates: List of dates for projection
+            projection_income: List of income values
+            projection_expenses: List of expense values
+            scenario: Projection scenario
+            
+        Returns:
+            Projection object
+        """
+        # Create cash flows
+        cash_flows = []
+        cumulative_balance = starting_balance
+        lowest_balance = starting_balance
+        highest_balance = starting_balance
+        
+        for i, date in enumerate(projection_dates):
+            income = projection_income[i]
+            expenses = projection_expenses[i]
+            net = income - expenses
+            cumulative_balance += net
+            
+            # Track min/max balances
+            lowest_balance = min(lowest_balance, cumulative_balance)
+            highest_balance = max(highest_balance, cumulative_balance)
+            
+            # Create cash flow
+            cash_flow = CashFlow(
+                date=date,
+                income=income,
+                expenses=expenses,
+                net=net,
+                cumulative=cumulative_balance
+            )
+            cash_flows.append(cash_flow)
+        
+        # Calculate runway months
+        runway_months = None
+        avg_expenses = sum(projection_expenses) / len(projection_expenses) if projection_expenses else 0
+        
+        if avg_expenses > 0:
+            for i, cf in enumerate(cash_flows):
+                if cf.cumulative <= 0:
+                    runway_months = i
+                    break
+            
+            if runway_months is None and lowest_balance > 0:
+                if cash_flows[-1].net < 0:
+                    runway_months = len(projection_dates) + (cash_flows[-1].cumulative / -cash_flows[-1].net)
+                else:
+                    runway_months = float('inf')  # Sustainable cash flow
+        
+        # Determine emergency fund status
+        emergency_fund_months = 6  # Default value
+        emergency_fund_status = "insufficient"
+        if lowest_balance >= avg_expenses * emergency_fund_months:
+            emergency_fund_status = "adequate"
+        elif lowest_balance >= avg_expenses * (emergency_fund_months / 2):
+            emergency_fund_status = "partial"
+            
+        # Create the projection
+        return Projection(
+            scenario=scenario,
+            start_date=projection_dates[0],
+            end_date=projection_dates[-1],
+            starting_balance=starting_balance,
+            cash_flows=cash_flows,
+            final_balance=cash_flows[-1].cumulative if cash_flows else starting_balance,
+            lowest_balance=lowest_balance,
+            highest_balance=highest_balance,
+            runway_months=runway_months,
+            emergency_fund_status=emergency_fund_status,
+            tax_liability={},  # Not used in this implementation
+            confidence_level=0.8,
+            metadata={
+                "avg_monthly_income": sum(projection_income) / len(projection_income) if projection_income else 0,
+                "avg_monthly_expenses": avg_expenses,
+            }
+        )
+
+    def _add_recurring_item_to_dict(
+        self,
+        monthly_dict: Dict[str, float],
         item: Union[RevenueSource, ExpenseItem],
         start_date: datetime,
         end_date: datetime,
-        item_type: str,  # "income" or "expenses"
         multiplier: float = 1.0,
     ) -> None:
-        """Add a recurring item to monthly breakdown."""
+        """Add a recurring item to monthly dictionary."""
         # Handle different recurrence frequencies
         months_interval = 1  # Default to monthly
+        frequency_multiplier = 1.0
 
         if item.recurrence_frequency == "quarterly":
             months_interval = 3
@@ -202,14 +349,13 @@ class FinancialProjector:
             months_interval = 12
         elif item.recurrence_frequency == "biweekly":
             # Approximate biweekly as 2.17 payments per month
-            months_interval = 1
-            multiplier *= 2.17
+            frequency_multiplier = 2.17
         elif item.recurrence_frequency == "weekly":
             # Approximate weekly as 4.33 payments per month
-            months_interval = 1
-            multiplier *= 4.33
+            frequency_multiplier = 4.33
 
         # Determine start month (use expected_date if available)
+        current_month = None
         if hasattr(item, "expected_date") and item.expected_date:
             current_month = item.expected_date
         else:
@@ -219,16 +365,13 @@ class FinancialProjector:
         while current_month <= end_date:
             month_key = current_month.strftime("%Y-%m")
 
-            if month_key in monthly_breakdown:
-                # Apply probability adjustment for revenue
-                if item_type == "income" and hasattr(item, "probability"):
-                    adjusted_amount = (
-                        item.amount * (item.probability / 100) * multiplier
-                    )
-                else:
-                    adjusted_amount = item.amount * multiplier
+            # Apply probability adjustment for revenue
+            if hasattr(item, "probability"):
+                adjusted_amount = item.amount * (item.probability / 100) * multiplier * frequency_multiplier
+            else:
+                adjusted_amount = item.amount * multiplier * frequency_multiplier
 
-                monthly_breakdown[month_key][item_type] += adjusted_amount
+            monthly_dict[month_key] = monthly_dict.get(month_key, 0) + adjusted_amount
 
             # Move to next applicable month
             month = current_month.month + months_interval
@@ -238,11 +381,11 @@ class FinancialProjector:
 
     def _get_scenario_income_multiplier(self, scenario: ProjectionScenario) -> float:
         """Get income multiplier based on scenario."""
-        if scenario == ProjectionScenario.PESSIMISTIC:
+        if scenario == ProjectionScenario.STRESS_TEST:
             return 0.7  # 70% of expected income
         elif scenario == ProjectionScenario.CONSERVATIVE:
             return 0.85  # 85% of expected income
-        elif scenario == ProjectionScenario.EXPECTED:
+        elif scenario == ProjectionScenario.BASELINE:
             return 1.0  # 100% of expected income
         elif scenario == ProjectionScenario.OPTIMISTIC:
             return 1.15  # 115% of expected income
@@ -250,11 +393,11 @@ class FinancialProjector:
 
     def _get_scenario_expense_multiplier(self, scenario: ProjectionScenario) -> float:
         """Get expense multiplier based on scenario."""
-        if scenario == ProjectionScenario.PESSIMISTIC:
+        if scenario == ProjectionScenario.STRESS_TEST:
             return 1.15  # 115% of expected expenses
         elif scenario == ProjectionScenario.CONSERVATIVE:
             return 1.05  # 105% of expected expenses
-        elif scenario == ProjectionScenario.EXPECTED:
+        elif scenario == ProjectionScenario.BASELINE:
             return 1.0  # 100% of expected expenses
         elif scenario == ProjectionScenario.OPTIMISTIC:
             return 0.95  # 95% of expected expenses
@@ -284,7 +427,7 @@ class FinancialProjector:
             RunwayProjection with detailed runway information
         """
         # Performance measurement
-        start_time = time.time()
+        self.timer.start()
 
         # Determine monthly expense rate
         monthly_expense_rate = 0.0
@@ -401,7 +544,7 @@ class FinancialProjector:
         )
 
         # Verify performance
-        elapsed_time = time.time() - start_time
+        elapsed_time = self.timer.stop()
 
         return result
 

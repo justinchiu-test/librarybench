@@ -1,4 +1,9 @@
-"""Core data models for the ResearchBrain knowledge management system."""
+"""Core data models for the ResearchBrain knowledge management system.
+
+This module defines the domain-specific data models for the ResearchBrain
+knowledge management system, building on the common KnowledgeNode base class
+from the unified library.
+"""
 
 from datetime import datetime
 from enum import Enum
@@ -8,6 +13,7 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field, field_validator
 
+# Import base models from common library
 from common.core.models import (
     KnowledgeNode, NodeType, Priority, Status, 
     Annotation as CommonAnnotation, RelationType
@@ -353,16 +359,24 @@ class Collaborator(KnowledgeNode):
 
 
 class Annotation(CommonAnnotation):
-    """Represents an annotation or comment on a knowledge node."""
+    """Represents an annotation or comment on a knowledge node.
+    
+    This class extends the CommonAnnotation from the common library,
+    but adds ResearchBrain-specific fields and behavior.
+    """
 
     collaborator_id: UUID  # Who made the annotation
     # Rename from parent CommonAnnotation class
-    author_id: Optional[UUID] = None  # Compatibility with CommonAnnotation
     
     def __init__(self, **data):
         # Map collaborator_id to author_id for compatibility with CommonAnnotation
         if 'collaborator_id' in data and 'author_id' not in data:
             data['author_id'] = data['collaborator_id']
         super().__init__(**data)
+    
+    @property
+    def author_id(self) -> Optional[UUID]:
+        # Compatibility with brain.py
+        return self.collaborator_id
         
     node_type: NodeType = NodeType.ANNOTATION

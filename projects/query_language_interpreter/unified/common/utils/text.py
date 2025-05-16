@@ -26,26 +26,27 @@ def normalize_text(
     """
     if not text:
         return ""
-    
+
     # Lowercase
     if lowercase:
         text = text.lower()
-    
+
     # Remove accents
     if remove_accents:
-        text = ''.join(
-            c for c in unicodedata.normalize('NFKD', text)
+        text = "".join(
+            c
+            for c in unicodedata.normalize("NFKD", text)
             if not unicodedata.combining(c)
         )
-    
+
     # Remove punctuation
     if remove_punctuation:
-        text = re.sub(r'[^\w\s]', '', text)
-    
+        text = re.sub(r"[^\w\s]", "", text)
+
     # Remove whitespace
     if remove_whitespace:
-        text = re.sub(r'\s+', '', text)
-    
+        text = re.sub(r"\s+", "", text)
+
     return text
 
 
@@ -66,21 +67,21 @@ def tokenize(
     """
     if not text:
         return []
-    
+
     # Lowercase
     if lowercase:
         text = text.lower()
-    
+
     # Split on whitespace and punctuation
     if keep_punctuation:
         # Add spaces around punctuation
-        text = re.sub(r'([^\w\s])', r' \1 ', text)
+        text = re.sub(r"([^\w\s])", r" \1 ", text)
         # Split on whitespace
         tokens = text.split()
     else:
         # Split on non-word characters
-        tokens = re.findall(r'\w+', text)
-    
+        tokens = re.findall(r"\w+", text)
+
     return tokens
 
 
@@ -102,23 +103,23 @@ def find_keywords(
         Dict[str, List[int]]: Dictionary mapping keywords to positions
     """
     results = {}
-    
+
     if not text or not keywords:
         return results
-    
+
     # Prepare text for search
     search_text = text if case_sensitive else text.lower()
-    
+
     for keyword in keywords:
         # Prepare keyword for search
         search_keyword = keyword if case_sensitive else keyword.lower()
-        
+
         # Find positions
         positions = []
-        
+
         if whole_word:
             # Match whole words only
-            pattern = r'\b' + re.escape(search_keyword) + r'\b'
+            pattern = r"\b" + re.escape(search_keyword) + r"\b"
             for match in re.finditer(pattern, search_text):
                 positions.append(match.start())
         else:
@@ -129,10 +130,10 @@ def find_keywords(
                 if pos == -1:
                     break
                 positions.append(pos)
-        
+
         if positions:
             results[keyword] = positions
-    
+
     return results
 
 
@@ -148,32 +149,32 @@ def text_distance(text1: str, text2: str) -> float:
     """
     if text1 == text2:
         return 0.0
-    
+
     if not text1 or not text2:
         return 1.0
-    
+
     # Levenshtein distance calculation
     len1, len2 = len(text1), len(text2)
-    
+
     # Initialize distance matrix
     dp = [[0 for _ in range(len2 + 1)] for _ in range(len1 + 1)]
-    
+
     # Fill first row and column
     for i in range(len1 + 1):
         dp[i][0] = i
     for j in range(len2 + 1):
         dp[0][j] = j
-    
+
     # Fill the rest of the matrix
     for i in range(1, len1 + 1):
         for j in range(1, len2 + 1):
-            cost = 0 if text1[i-1] == text2[j-1] else 1
+            cost = 0 if text1[i - 1] == text2[j - 1] else 1
             dp[i][j] = min(
-                dp[i-1][j] + 1,      # Deletion
-                dp[i][j-1] + 1,      # Insertion
-                dp[i-1][j-1] + cost  # Substitution
+                dp[i - 1][j] + 1,  # Deletion
+                dp[i][j - 1] + 1,  # Insertion
+                dp[i - 1][j - 1] + cost,  # Substitution
             )
-    
+
     # Normalize distance
     max_len = max(len1, len2)
     return dp[len1][len2] / max_len if max_len > 0 else 0.0

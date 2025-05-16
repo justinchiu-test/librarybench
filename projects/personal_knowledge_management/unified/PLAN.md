@@ -1,26 +1,8 @@
-# Architecture and Design Plan for Unified Personal Knowledge Management Library
+# Unified Personal Knowledge Management System Architecture Plan
 
 ## Overview
-This directory contains a unified implementation of personal knowledge management functionality
-that preserves the original package names from the following persona implementations:
 
-- personal_knowledge_management_product_manager (productmind)
-- personal_knowledge_management_academic_researcher (researchbrain)
-
-## Directory Structure
-```
-unified/
-├── common/          # Common functionality across all implementations
-│   ├── core/        # Core data structures and algorithms
-│   └── utils/       # Utility functions and helpers
-├── productmind/     # Product manager persona implementation
-├── researchbrain/   # Academic researcher persona implementation
-├── tests/
-│   ├── product_manager/   # Tests for product manager persona
-│   └── academic_researcher/  # Tests for academic researcher persona
-├── pyproject.toml
-└── setup.py
-```
+The Unified Personal Knowledge Management System aims to provide a shared foundation for specialized knowledge management systems tailored to different personas. This document outlines the architecture, components, interfaces, and migration strategy for creating a common library that can be used across all persona implementations.
 
 ## 1. Analysis of Common Patterns
 
@@ -49,221 +31,253 @@ After analyzing both the `productmind` and `researchbrain` implementations, seve
 
 ## 2. Core Components and Responsibilities
 
-The unified library is organized into the following core components:
+### 1. Common Core Models (`common/core/models.py`)
+- **KnowledgeNode**: Base class for all knowledge entities with common attributes:
+  - id (UUID)
+  - created_at/updated_at timestamps
+  - tags
+  - node_type
+- **RelationType**: Enum defining standard relationship types between nodes
+- **Relation**: Class representing relationships between knowledge nodes
+- **Status/Priority**: Common enums for status and priority values
+- **Annotation**: Shared model for annotations on knowledge items
 
-### 1. Models Module (`common.core.models`)
-- Base model classes for all knowledge objects
-- Common fields, validators, and behaviors
-- Extensible through inheritance for persona-specific models
+### 2. Storage System (`common/core/storage.py`)
+- **BaseStorage**: Abstract interface for all storage implementations
+  - save/get/delete/list/query operations
+  - attachment handling
+  - backup/restore functionality
+  - search capabilities
+- **LocalStorage**: File-based implementation using YAML/JSON
+  - Caching mechanisms for performance
+  - Concurrent access safety via locks
+  - Search indexing
+  - Serialization/deserialization helpers
 
-### 2. Storage Module (`common.core.storage`)
-- Abstract storage interface (BaseStorage)
-- File system implementation (LocalStorage)
-- Operations for CRUD, search, and query
-- Serialization/deserialization utilities
-- Cache management
+### 3. Knowledge Management (`common/core/knowledge.py`)
+- **KnowledgeGraph**: Graph representation of knowledge nodes and their relationships
+  - Node and edge management
+  - Neighbor and path finding
+  - Import/export functionality
+- **KnowledgeBase**: Abstract base class for knowledge system implementations  
+- **StandardKnowledgeBase**: Common implementation with core operations
+  - Node CRUD operations
+  - Relationship management
+  - Search and filtering
 
-### 3. Knowledge Management Module (`common.core.knowledge`)
-- Core functionality for managing knowledge objects
-- Relationship management between objects
-- Graph representation of knowledge relationships
-- Traversal and query capabilities
-
-### 4. Utilities Module (`common.utils`)
-- Common utility functions
-- Type conversions
-- File operations
-- Search helpers
+### 4. Utility Functions (`common/utils/`)
+- **conversion.py**: Data format conversion utilities
+- **file_ops.py**: File operations and helpers
+- **search.py**: Advanced search algorithms and helpers
 
 ## 3. Interface Definitions and Abstractions
 
-### BaseModel Interface
+### 1. KnowledgeNode Interface
 ```python
 class KnowledgeNode(BaseModel):
-    """Base class for all knowledge nodes in the system."""
-    id: UUID = Field(default_factory=uuid4)
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
-    tags: Set[str] = Field(default_factory=set)
+    id: UUID
+    created_at: datetime
+    updated_at: datetime
+    tags: Set[str]
+    node_type: NodeType
     
     def update(self) -> None:
         """Update the last modified timestamp."""
-        self.updated_at = datetime.now()
 ```
 
-### Storage Interface
+### 2. Storage Interface
 ```python
 class BaseStorage(ABC):
-    """Abstract base class for storage implementations."""
-    
     @abstractmethod
     def save(self, item: T) -> None:
         """Save an item to storage."""
-        pass
-    
+        
     @abstractmethod
     def get(self, model_type: Type[T], item_id: UUID) -> Optional[T]:
         """Retrieve an item by ID."""
-        pass
-    
+        
     @abstractmethod
     def delete(self, model_type: Type[T], item_id: UUID) -> bool:
         """Delete an item by ID."""
-        pass
-    
+        
     @abstractmethod
     def list_all(self, model_type: Type[T]) -> List[T]:
         """List all items of a specific type."""
-        pass
-    
+        
     @abstractmethod
     def query(self, model_type: Type[T], **filters) -> List[T]:
         """Query items of a specific type with filters."""
-        pass
-    
+        
     @abstractmethod
     def search_text(self, model_type: Type[T], search_text: str, fields: List[str]) -> List[T]:
         """Search for items containing specific text in certain fields."""
-        pass
 ```
 
-### Knowledge Management Interface
+### 3. Knowledge Management Interface
 ```python
 class KnowledgeBase(ABC):
-    """Abstract base class for knowledge management system."""
-    
     @abstractmethod
     def __init__(self, storage: BaseStorage):
         """Initialize with a storage implementation."""
-        pass
-    
+        
     @abstractmethod
     def add_node(self, node: KnowledgeNode) -> UUID:
         """Add a knowledge node to the system."""
-        pass
-    
+        
     @abstractmethod
-    def get_node(self, node_id: UUID) -> Optional[KnowledgeNode]:
+    def get_node(self, node_id: UUID, node_type: Optional[Type[T]] = None) -> Optional[KnowledgeNode]:
         """Get a knowledge node by ID."""
-        pass
-    
+        
     @abstractmethod
     def update_node(self, node: KnowledgeNode) -> bool:
         """Update a knowledge node."""
-        pass
-    
+        
     @abstractmethod
     def delete_node(self, node_id: UUID) -> bool:
         """Delete a knowledge node."""
-        pass
-    
+        
     @abstractmethod
-    def link_nodes(self, source_id: UUID, target_id: UUID, relation_type: str) -> bool:
+    def link_nodes(self, source_id: UUID, target_id: UUID, relation_type: RelationType, 
+                 metadata: Optional[Dict[str, Any]] = None) -> Relation:
         """Create a relationship between two nodes."""
-        pass
-    
+        
     @abstractmethod
-    def get_related_nodes(self, node_id: UUID, relation_types: Optional[List[str]] = None) -> Dict[str, List[Any]]:
+    def get_related_nodes(self, node_id: UUID, relation_types: Optional[List[RelationType]] = None,
+                        direction: str = "both") -> Dict[str, List[KnowledgeNode]]:
         """Get nodes related to a specific knowledge node."""
-        pass
-    
+        
     @abstractmethod
-    def search(self, query: str, node_types: Optional[List[str]] = None) -> Dict[str, List[Any]]:
+    def search(self, query: str, node_types: Optional[List[Type[T]]] = None) -> Dict[str, List[KnowledgeNode]]:
         """Search for knowledge nodes containing a specific text."""
-        pass
 ```
 
 ## 4. Extension Points for Persona-Specific Functionality
 
-### 1. Model Extensions
-- Persona-specific models can inherit from common base models
-- Custom fields and behaviors can be added
-- Domain-specific validation logic can be implemented
+1. **Domain-Specific Node Types**: Personas can extend KnowledgeNode with specific attributes:
+   - ResearchBrain extends with Citation, ResearchQuestion, Experiment, etc.
+   - ProductMind extends with Feedback, Competitor, Feature, etc.
 
-### 2. Storage Extensions
-- Custom serialization formats
-- Specialized indexing for domain-specific search
-- Additional persistence mechanisms
+2. **Specialized Services**: Personas can implement domain-specific services:
+   - ResearchBrain: citation management, experiment templates
+   - ProductMind: feedback clustering, prioritization frameworks
 
-### 3. Knowledge Graph Extensions
-- Domain-specific relationship types
-- Custom traversal and query algorithms
-- Specialized visualization methods
+3. **Custom Relationship Types**: Personas can define additional relation types for domain-specific connections
 
-### 4. Search Extensions
-- Domain-specific search algorithms
-- Custom relevance scoring
-- Specialized indexing strategies
+4. **Storage Extensions**: Personas can extend storage with domain-specific queries and indexes
+
+5. **Custom Knowledge Operations**: Personas can create specialized knowledge operations:
+   - ResearchBrain: managing evidence, citations
+   - ProductMind: clustering feedback, analyzing stakeholder perspectives
 
 ## 5. Component Relationships
 
+- **KnowledgeNode ↔ BaseStorage**: Storage persists knowledge nodes
+- **KnowledgeNode ↔ Relation**: Relations connect knowledge nodes
+- **KnowledgeGraph ↔ StandardKnowledgeBase**: Knowledge base uses graph for relationships
+- **StandardKnowledgeBase ↔ BaseStorage**: Knowledge base uses storage for persistence
+- **Domain Models ↔ KnowledgeNode**: Domain models extend base knowledge node
+- **Domain Services ↔ KnowledgeBase**: Domain services extend knowledge base
+
 ```
-+----------------+     +-----------------+
-|                |     |                 |
-| KnowledgeBase  +---->+   BaseStorage   |
-|                |     |                 |
-+-------+--------+     +--------+--------+
-        |                       |
-        |                       |
-        v                       v
-+-------+--------+     +--------+--------+
-|                |     |                 |
-|  Knowledge     |     |  LocalStorage   |
-|  Graph         |     |                 |
-|                |     |                 |
-+----------------+     +-----------------+
-        ^                       ^
-        |                       |
-        |                       |
-+-------+--------+     +--------+--------+
-|                |     |                 |
-| KnowledgeNode  +---->+  Serialization  |
-|                |     |  Utilities      |
-+----------------+     +-----------------+
+┌─────────────────────────────────────┐
+│ Persona-Specific Implementations    │
+│                                     │
+│  ┌─────────────┐    ┌─────────────┐ │
+│  │ ResearchBrain│    │ ProductMind │ │
+│  │             │    │             │ │
+│  └──────┬──────┘    └──────┬──────┘ │
+└─────────┼─────────────────┼─────────┘
+          │                 │
+          ▼                 ▼
+┌─────────────────────────────────────┐
+│ Common Library                      │
+│                                     │
+│  ┌─────────────┐    ┌─────────────┐ │
+│  │ KnowledgeBase│◄───┤KnowledgeGraph│ │
+│  │             │    │             │ │
+│  └──────┬──────┘    └─────────────┘ │
+│         │                          │
+│         ▼                          │
+│  ┌─────────────┐    ┌─────────────┐ │
+│  │ BaseStorage │    │ KnowledgeNode│ │
+│  │             │    │             │ │
+│  └─────────────┘    └─────────────┘ │
+└─────────────────────────────────────┘
 ```
 
-## 6. Implementation Status and Remaining Migration
+## 6. Migration Strategy
 
-### Current Status:
-1. ✅ Core Components in `common/` have been implemented with:
-   - Base models (KnowledgeNode) in `common.core.models`
-   - Storage system in `common.core.storage`
-   - Knowledge Graph in `common.core.knowledge`
-   - Utilities in `common.utils`
+### ResearchBrain Migration
 
-2. ✅ ProductMind has been migrated to use the common library:
-   - Models inherit from common base models
-   - Uses common storage system
-   - Uses common knowledge graph
+1. **Models Migration**:
+   - Keep domain-specific model classes (Citation, ResearchQuestion, etc.)
+   - Update to inherit from common KnowledgeNode
+   - Align with common attributes and interfaces
 
-3. ❌ ResearchBrain still needs migration:
-   - Currently uses custom models
-   - Has custom storage implementation
-   - Uses custom knowledge graph implementation
+2. **Storage Migration**:
+   - Replace custom storage with common BaseStorage implementation
+   - Update serialization/deserialization to use common patterns
+   - Map legacy paths to new structure for backward compatibility
 
-### ResearchBrain Migration Plan:
+3. **Knowledge Graph Migration**:
+   - Replace custom graph with common KnowledgeGraph
+   - Map domain-specific relationships to common patterns
+   - Use StandardKnowledgeBase for core operations
 
-#### 1. Model Migration
-- Refactor `researchbrain.core.models` to inherit from `common.core.models.KnowledgeNode`
-- Preserve all existing fields and validation logic
-- Standardize common fields (id, created_at, updated_at, tags)
+4. **Services Migration**:
+   - Keep domain-specific services (citation formatting, grant exports)
+   - Update to use common interfaces for knowledge operations
+   - Add domain-specific extensions where needed
 
-#### 2. Storage Migration
-- Replace `researchbrain.core.storage.LocalStorage` with `common.core.storage.LocalStorage`
-- Adapt serialization/deserialization logic to maintain backward compatibility
-- Update all storage-related calls in the codebase
+### ProductMind Migration
 
-#### 3. Knowledge Graph Migration
-- Replace `researchbrain.core.brain._knowledge_graph` with `common.core.knowledge.KnowledgeGraph`
-- Update graph building and traversal logic
-- Preserve specialized relationship types and edge attributes
+1. **Models Migration**:
+   - Refactor domain models (Feedback, Stakeholder, etc.) to inherit from KnowledgeNode
+   - Align relationship models with common Relation class
+   - Preserve specific attributes for domain functionality
 
-#### 4. ResearchBrain Class Refactoring
-- Refactor `ResearchBrain` class to use common components
-- Adapt all methods to use the common interfaces
-- Preserve all existing functionality and behavior
+2. **Storage Migration**:
+   - Update to use common BaseStorage implementation
+   - Migrate existing persistence logic to common patterns
+   - Preserve domain-specific query functionality
 
-## 7. Detailed Migration Steps for ResearchBrain
+3. **Analysis Engine Migration**:
+   - Keep specialized analysis engines (feedback clustering, trend detection)
+   - Update to use common knowledge base for persistence and relationships
+   - Preserve algorithmic components while standardizing interfaces
+
+4. **Utility Migration**:
+   - Replace custom utility functions with common implementations
+   - Standardize conversion and search operations
+   - Keep domain-specific utilities as extensions
+
+## 7. Implementation Plan
+
+1. **Phase 1: Common Library Implementation**
+   - Implement core models and enums
+   - Implement storage system
+   - Implement knowledge graph and base
+   - Implement utility functions
+
+2. **Phase 2: ResearchBrain Migration**
+   - Update models to use common base classes
+   - Refactor storage to use common implementation
+   - Migrate knowledge operations to common interfaces
+   - Preserve domain-specific functionality
+
+3. **Phase 3: ProductMind Migration**
+   - Update models to use common base classes
+   - Refactor storage to use common implementation
+   - Migrate knowledge operations to common interfaces
+   - Preserve domain-specific functionality
+
+4. **Phase 4: Testing and Validation**
+   - Run comprehensive tests for each persona
+   - Ensure backward compatibility
+   - Verify performance requirements
+   - Document any issues or limitations
+
+## 8. Detailed Migration Steps for ResearchBrain
 
 ### Phase 1: Model Migration
 
@@ -293,7 +307,36 @@ class KnowledgeBase(ABC):
 3. Refine common components if needed
 4. Ensure performance meets or exceeds original implementation
 
-## 8. Testing Strategy
+## 9. Detailed Migration Steps for ProductMind
+
+### Phase 1: Model Migration
+
+1. Update all models in `productmind.models` to inherit from `common.core.models.KnowledgeNode`
+2. Update imports to use common enums where applicable
+3. Ensure backward compatibility with existing code
+4. Create adapter models where necessary for special cases
+
+### Phase 2: Storage Migration
+
+1. Update all references to storage in the ProductMind modules to use `common.core.storage.LocalStorage`
+2. Adapt directory structure to match common storage patterns
+3. Update serialization/deserialization logic for compatibility
+
+### Phase 3: Engine Migration
+
+1. Refactor `FeedbackAnalysisEngine` to use the common `KnowledgeBase` and `KnowledgeGraph`
+2. Update all references to storage and knowledge management
+3. Preserve specialized clustering and analysis algorithms
+4. Implement any necessary adapter methods
+
+### Phase 4: Testing and Validation
+
+1. Run all ProductMind tests to verify functionality
+2. Fix any integration issues
+3. Refine common components if needed
+4. Ensure performance meets or exceeds original implementation
+
+## 10. Testing Strategy
 
 1. Unit test all common components
 2. Integration test with both persona implementations
@@ -301,13 +344,13 @@ class KnowledgeBase(ABC):
 4. Perform performance benchmarks
 5. Run all tests for both personas to ensure compatibility
 
-## 9. Dependencies
+## 11. Dependencies
 
 - Pydantic: For data modeling
-- NetworkX: For knowledge graph representation
+- NetworkX: For knowledge graph representation (optional fallback implementation provided)
 - Python standard library: For core functionality
 
-## 10. Risks and Mitigations
+## 12. Risks and Mitigations
 
 ### Risk: Breaking existing functionality
 - Mitigation: Incremental migration with continuous testing

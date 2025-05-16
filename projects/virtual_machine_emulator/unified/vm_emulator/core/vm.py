@@ -8,9 +8,10 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from common.extensions.parallel.parallel_vm import ParallelVirtualMachine
-from common.core.vm import VMState
+from common.core.vm import VMState, ExecutionEvent
 from common.core.program import Program
 from common.core.exceptions import VMException, MemoryException, ProcessorException
+from common.core.instruction import InstructionSet
 
 from vm_emulator.core.memory import MemorySystem, CoherentMemorySystem
 from vm_emulator.core.processor import Processor
@@ -118,7 +119,8 @@ class VirtualMachine(ParallelVirtualMachine):
         if self.enable_cache_coherence:
             return CoherentMemorySystem(
                 size=memory_size,
-                enable_race_detection=self.enable_race_detection
+                enable_race_detection=self.enable_race_detection,
+                num_processors=self.num_processors
             )
         else:
             return MemorySystem(

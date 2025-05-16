@@ -8,6 +8,8 @@ import os
 import json
 import csv
 import logging
+import abc
+import enum
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, Tuple
@@ -20,6 +22,51 @@ from ..utils.crypto import CryptoProvider, sign_data, verify_signed_data
 
 
 logger = logging.getLogger(__name__)
+
+
+class ReportFormat(str, enum.Enum):
+    """Enumeration of supported report formats."""
+    JSON = "json"
+    CSV = "csv"
+    HTML = "html"
+    PDF = "pdf"
+    XML = "xml"
+    MARKDOWN = "markdown"
+    TEXT = "text"
+
+
+class BaseReporter(abc.ABC):
+    """Base class for report generators.
+    
+    This abstract class defines the interface for report generators that
+    transform scan results and other data into structured reports in various
+    formats.
+    """
+    
+    @abc.abstractmethod
+    def generate(self, data: Any, options: Optional[Dict[str, Any]] = None) -> Any:
+        """Generate a report from data with the given options.
+        
+        Args:
+            data: The data to generate a report from
+            options: Optional report generation options
+            
+        Returns:
+            Generated report object
+        """
+        pass
+    
+    @abc.abstractmethod
+    def supports_format(self, format_type: str) -> bool:
+        """Check if this reporter supports the given format.
+        
+        Args:
+            format_type: Format type to check support for
+            
+        Returns:
+            True if the format is supported, False otherwise
+        """
+        pass
 
 
 class ReportMetadata(BaseModel):
@@ -49,7 +96,7 @@ class Report(BaseModel):
             crypto_provider: Provider for cryptographic operations
         """
         # Create a copy of the report data without the signature
-        report_data = self.dict(exclude={"metadata": {"signature_info"}})
+        report_data = self.model_dump(exclude={"metadata": {"signature_info"}})
         
         # Sign the report data
         signature_info = sign_data(report_data, crypto_provider)

@@ -3,8 +3,8 @@
 import concurrent.futures
 from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
 
-T = TypeVar('T')
-U = TypeVar('U')
+T = TypeVar("T")
+U = TypeVar("U")
 
 
 def parallel_process(
@@ -30,22 +30,23 @@ def parallel_process(
         concurrent.futures.TimeoutError: If timeout is reached
     """
     executor_class = (
-        concurrent.futures.ProcessPoolExecutor if use_processes
+        concurrent.futures.ProcessPoolExecutor
+        if use_processes
         else concurrent.futures.ThreadPoolExecutor
     )
-    
+
     with executor_class(max_workers=max_workers) as executor:
         # Submit all tasks
-        future_to_item = {
-            executor.submit(process_func, item): item for item in items
-        }
-        
+        future_to_item = {executor.submit(process_func, item): item for item in items}
+
         # Collect results as they complete
         results = []
-        for future in concurrent.futures.as_completed(future_to_item.keys(), timeout=timeout):
+        for future in concurrent.futures.as_completed(
+            future_to_item.keys(), timeout=timeout
+        ):
             result = future.result()
             results.append(result)
-        
+
         return results
 
 
@@ -69,10 +70,11 @@ def parallel_map(
         List[U]: Results
     """
     executor_class = (
-        concurrent.futures.ProcessPoolExecutor if use_processes
+        concurrent.futures.ProcessPoolExecutor
+        if use_processes
         else concurrent.futures.ThreadPoolExecutor
     )
-    
+
     with executor_class(max_workers=max_workers) as executor:
         return list(executor.map(func, items, chunksize=chunk_size))
 
@@ -113,10 +115,10 @@ class BatchProcessor:
         """
         # Split items into batches
         batches = [
-            items[i:i + self.batch_size]
+            items[i : i + self.batch_size]
             for i in range(0, len(items), self.batch_size)
         ]
-        
+
         # Process batches in parallel
         batch_results = parallel_process(
             batches,
@@ -124,10 +126,10 @@ class BatchProcessor:
             max_workers=self.max_workers,
             use_processes=self.use_processes,
         )
-        
+
         # Flatten results
         results = []
         for batch_result in batch_results:
             results.extend(batch_result)
-        
+
         return results

@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Any, Union, Tuple, Callable, ClassVar, 
 import json
 from copy import deepcopy
 
-from common.operations import Operation, Transformer
+from common.operations.transform import Operation, Transformer
 
 
 class BaseOperation(Transformer[Dict[str, Dict[str, Any]], Dict[str, Dict[str, Any]]]):
@@ -20,6 +20,8 @@ class BaseOperation(Transformer[Dict[str, Dict[str, Any]], Dict[str, Dict[str, A
     
     This abstract class defines the interface for all transformation operations
     and provides common functionality for serialization and parameter management.
+    
+    It inherits from the common Transformer interface while adapting to ML feature requirements.
     """
     
     def __init__(self, name: Optional[str] = None):

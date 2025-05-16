@@ -87,16 +87,18 @@ class BaseInterpreter(ABC):
         """
         # Parse the query
         query = self.parse(query_string)
-        
+
         # Create execution context
         context = ExecutionContext(user_id=user_id)
         query.set_execution_context(context)
-        
+
         # Validate the query
         if not self.validate(query):
             context.fail("Query validation failed")
-            return QueryResult(query=query, success=False, error="Query validation failed")
-        
+            return QueryResult(
+                query=query, success=False, error="Query validation failed"
+            )
+
         # Execute the query
         try:
             context.start()

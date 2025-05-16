@@ -339,15 +339,107 @@ class StandardKnowledgeBase(KnowledgeBase):
         self._build_knowledge_graph()
         
     def _build_knowledge_graph(self) -> None:
-        """Build the knowledge graph from the storage system."""
-        # This is a simplified implementation. In a real system, you would:
-        # 1. Load all nodes from storage
-        # 2. Add them to the graph
-        # 3. Load all relations from storage
-        # 4. Add them to the graph
+        """Build the knowledge graph from the storage system.
         
-        # For now, we'll have an empty graph to start
-        pass
+        This method loads all knowledge nodes from storage and builds the graph
+        with their relationships.
+        """
+        from common.core.models import KnowledgeNode, Relation
+        
+        # Get all KnowledgeNode types from models module
+        import inspect
+        import sys
+        from common.core import models
+        
+        # Get all subclasses of KnowledgeNode
+        node_classes = []
+        for name, obj in inspect.getmembers(models):
+            if inspect.isclass(obj) and issubclass(obj, KnowledgeNode) and obj != KnowledgeNode:
+                node_classes.append(obj)
+                
+        # Add additional node classes from both personas if they exist
+        try:
+            from researchbrain.core import models as rb_models
+            for name, obj in inspect.getmembers(rb_models):
+                if inspect.isclass(obj) and issubclass(obj, KnowledgeNode) and obj != KnowledgeNode:
+                    node_classes.append(obj)
+        except ImportError:
+            # ResearchBrain models not available
+            pass
+            
+        try:
+            import productmind.models as pm_models
+            for name, obj in inspect.getmembers(pm_models):
+                if inspect.isclass(obj) and issubclass(obj, KnowledgeNode) and obj != KnowledgeNode:
+                    node_classes.append(obj)
+        except ImportError:
+            # ProductMind models not available
+            pass
+            
+        # Load all nodes of each type and add to graph
+        for node_class in node_classes:
+            try:
+                nodes = self.storage.list_all(node_class)
+                for node in nodes:
+                    # Add node to the graph
+                    node_type = node_class.__name__
+                    self.graph.add_node(str(node.id), 
+                                        type=node_type,
+                                        title=getattr(node, 'title', '') or getattr(node, 'name', '') or str(node.id))
+                    
+                    # Add edges for known relationships if they exist as attributes
+                    self._add_relationships_for_node(node)
+            except Exception as e:
+                # Skip errors for node types that don't exist in this implementation
+                print(f"Warning: Error loading {node_class.__name__} nodes: {e}")
+                
+    def _add_relationships_for_node(self, node: KnowledgeNode) -> None:
+        """Add relationships from a node's attributes to the graph.
+        
+        Args:
+            node: The node to process relationships for.
+        """
+        node_dict = node.model_dump()
+        
+        # Common relationship fields to check
+        rel_fields = {
+            'source_id': RelationType.REFERENCES,
+            'target_id': RelationType.RELATES_TO,
+            'parent_id': RelationType.PART_OF,
+            'node_id': RelationType.ANNOTATES,
+            'author_id': RelationType.AUTHORED_BY,
+            'owner_id': RelationType.CREATED_BY,
+            'research_question_id': RelationType.INVESTIGATES,
+            'collaborator_id': RelationType.CREATED_BY
+        }
+        
+        # Add relationships for common fields
+        for field, rel_type in rel_fields.items():
+            if field in node_dict and node_dict[field] is not None:
+                target_id = node_dict[field]
+                if isinstance(target_id, UUID):
+                    self.graph.add_edge(str(node.id), str(target_id), 
+                                      type=rel_type.value if isinstance(rel_type, RelationType) else rel_type)
+                    
+        # Handle list relationships
+        list_rel_fields = {
+            'citations': RelationType.CITES,
+            'notes': RelationType.CONTAINS,
+            'replies': RelationType.CONTAINS,
+            'related_questions': RelationType.RELATES_TO,
+            'experiments': RelationType.CONTAINS,
+            'collaborators': RelationType.CONTAINS,
+            'research_questions': RelationType.ADDRESSES,
+            'feedback_ids': RelationType.CONTAINS,
+            'themes': RelationType.CONTAINS
+        }
+        
+        for field, rel_type in list_rel_fields.items():
+            if field in node_dict and node_dict[field]:
+                for target_id in node_dict[field]:
+                    if isinstance(target_id, UUID):
+                        self.graph.add_edge(str(node.id), str(target_id), 
+                                          type=rel_type.value if isinstance(rel_type, RelationType) else rel_type)
         
     def add_node(self, node: KnowledgeNode) -> UUID:
         """Add a knowledge node to the system.
@@ -415,6 +507,17 @@ class StandardKnowledgeBase(KnowledgeBase):
         
         return True
         
+    def get_nodes_by_type(self, node_type: Type[T]) -> List[T]:
+        """Get all nodes of a specific type.
+        
+        Args:
+            node_type: The type of nodes to retrieve.
+            
+        Returns:
+            List of nodes of the specified type.
+        """
+        return self.storage.list_all(node_type)
+        
     def delete_node(self, node_id: UUID, node_type: Optional[Type[T]] = None) -> bool:
         """Delete a knowledge node.
         
@@ -465,6 +568,13 @@ class StandardKnowledgeBase(KnowledgeBase):
         Returns:
             The created relation.
         """
+        # Check that both nodes exist
+        source_node = self.get_node(source_id)
+        target_node = self.get_node(target_id)
+        
+        if not source_node or not target_node:
+            raise ValueError(f"Both source and target nodes must exist. Missing: {'' if source_node else 'source'}{'' if target_node else 'target'}")
+        
         # Create the relation object
         relation = Relation(
             source_id=source_id,
@@ -473,10 +583,38 @@ class StandardKnowledgeBase(KnowledgeBase):
             metadata=metadata or {}
         )
         
-        # In a real implementation, you would save the relation to storage
-        # For now, we'll just add it to the graph
+        # Remove any existing edge of the same type between these nodes
+        # to avoid duplicate relationships
         relation_type_str = relation_type.value if isinstance(relation_type, RelationType) else relation_type
-        self.graph.add_edge(str(source_id), str(target_id), type=relation_type_str, metadata=metadata or {})
+        
+        if self.graph.has_edge(str(source_id), str(target_id)):
+            edge_attrs = self.graph.get_edge_attributes(str(source_id), str(target_id))
+            if edge_attrs.get('type') == relation_type_str:
+                # Instead of removing the edge, we'll update its metadata
+                self.graph.add_edge(str(source_id), str(target_id), 
+                                  type=relation_type_str, 
+                                  metadata=metadata or {})
+                return relation
+        
+        # Add new edge to the graph
+        self.graph.add_edge(str(source_id), str(target_id), 
+                          type=relation_type_str, 
+                          metadata=metadata or {})
+        
+        # If the relation types can be bidirectional, add reverse edges for specific types
+        bidirectional_types = {
+            str(RelationType.RELATES_TO): str(RelationType.RELATES_TO),
+            "relates_to": "relates_to",
+            "linked_to": "linked_to",
+            "connected_to": "connected_to"
+        }
+        
+        if relation_type_str in bidirectional_types:
+            # For bidirectional relationships, add the reverse edge
+            reverse_type = bidirectional_types[relation_type_str]
+            self.graph.add_edge(str(target_id), str(source_id), 
+                              type=reverse_type, 
+                              metadata=metadata or {})
         
         return relation
         

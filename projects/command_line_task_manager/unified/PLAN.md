@@ -1,10 +1,10 @@
 # Unified Library Refactoring Plan
 
-This document outlines the architectural design and implementation plan for the unified command-line task manager library that will be shared across all persona implementations.
+This document outlines the architectural design and implementation plan for the unified command-line task manager library that has been shared across all persona implementations.
 
 ## Analysis of Common Patterns
 
-After analyzing both the ResearchTrack and SecureTask implementations, we've identified several common patterns and functionality that can be moved to a shared library:
+After analyzing both the ResearchTrack and SecureTask implementations, we identified several common patterns and functionality that have been moved to a shared library:
 
 ### 1. Data Models and Base Classes
 
@@ -24,6 +24,7 @@ Both implementations have:
 - Filtering and query capabilities
 - In-memory implementations for testing
 - Similar interface definitions
+- File storage with optional encryption
 
 ### 3. Service Layer
 
@@ -40,11 +41,11 @@ Common utilities across both implementations:
 - Data manipulation utilities
 - Security and cryptography functions
 
-## Architectural Design for Common Library
+## Implementation Details
 
-### Overview
+### 1. Common Library Structure
 
-The common library will be organized in the following structure:
+The common library has been organized in the following structure:
 
 ```
 common/
@@ -57,22 +58,28 @@ common/
 │   └── utils.py             # Shared utility functions
 ```
 
-### Core Components and Responsibilities
+### 2. Base Models Implementation (`models.py`)
 
-#### 1. Base Models (`models.py`)
-
-Core models that will be used as base classes for persona-specific implementations:
+Core models implemented as base classes for persona-specific implementations:
 
 ```python
 # Base entity with shared fields
 class BaseEntity(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
+    id: str = Field(default_factory=lambda: str(uuid4()))
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     
     def update(self, **kwargs) -> None:
-        """Common update method for all entities"""
-        # Implementation
+        """
+        Update entity fields with the provided values.
+        
+        Args:
+            **kwargs: Field-value pairs to update
+        """
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.updated_at = datetime.now()
 
 # Common task model with shared fields
 class BaseTask(BaseEntity):
@@ -80,192 +87,117 @@ class BaseTask(BaseEntity):
     description: str
     status: str
     priority: str
+    due_date: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
+    
+    # Organizational attributes
     tags: Set[str] = Field(default_factory=set)
     notes: List[str] = Field(default_factory=list)
-    parent_id: Optional[UUID] = None
     
-    # Common methods for tags, notes, status updates
-
-# Common status enums
-class TaskStatusEnum(str, Enum):
-    """Base status values shared across implementations"""
-    PLANNED = "planned"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    ARCHIVED = "archived"
-
-class TaskPriorityEnum(str, Enum):
-    """Base priority values shared across implementations"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
+    # Task relationships
+    parent_id: Optional[str] = None
+    subtask_ids: Set[str] = Field(default_factory=set)
+    
+    # Custom metadata for extensibility
+    custom_metadata: Dict[str, Union[str, int, float, bool, list, dict]] = Field(
+        default_factory=dict
+    )
 ```
 
-#### 2. Storage Interface (`storage.py`)
+### 3. Storage Interfaces Implementation (`storage.py`)
 
-Common storage patterns and interfaces:
+We implemented the following storage interfaces:
 
-```python
-class BaseStorageInterface(ABC):
-    """Base storage interface for all repositories"""
-    @abstractmethod
-    def create(self, entity) -> UUID:
-        pass
-    
-    @abstractmethod
-    def get(self, entity_id: UUID):
-        pass
-    
-    @abstractmethod
-    def update(self, entity) -> bool:
-        pass
-    
-    @abstractmethod
-    def delete(self, entity_id: UUID) -> bool:
-        pass
-    
-    @abstractmethod
-    def list(self, filters=None, **kwargs) -> List:
-        pass
+1. **BaseStorageInterface**: Generic storage interface for all entities
+2. **InMemoryStorage**: In-memory implementation of the storage interface
+3. **BaseTaskStorageInterface**: Specialized interface for task entities
+4. **InMemoryTaskStorage**: In-memory implementation of task storage
+5. **FilePersistentStorage**: File-based storage with optional encryption
+6. **FileTaskStorage**: File-based implementation of task storage
 
-class InMemoryStorage(BaseStorageInterface):
-    """Common in-memory implementation for testing"""
-    # Implementation
-```
+The FilePersistentStorage class can be used with or without encryption, making it suitable for both regular and security-sensitive data.
 
-#### 3. Service Layer (`service.py`)
+### 4. Service Layer Implementation (`service.py`)
 
-Common service layer patterns:
+We implemented the following service abstractions:
 
-```python
-class BaseService:
-    """Base service with common functionality"""
-    def __init__(self, storage: BaseStorageInterface):
-        self._storage = storage
-    
-    # Common validation methods
-    # Common CRUD operations
-```
+1. **BaseService**: Generic service for entity management
+2. **BaseTaskService**: Specialized service for task management
 
-#### 4. Security Module (`security.py`)
+These services provide common functionality for validator registration, CRUD operations, and task-specific methods like adding tags and notes.
 
-Common security functionality:
+### 5. Security Implementation (`security.py`)
 
-```python
-class CryptoManager:
-    """Shared cryptography utilities"""
-    # Encryption/decryption
-    # Hashing
-    # Key generation
-```
+For security-related functionality, we implemented:
 
-#### 5. Utilities (`utils.py`)
+1. **CryptoManager**: Manages cryptographic operations for secure data handling
+2. **SecureStorageWrapper**: Wrapper for adding encryption to storage systems
 
-Common utility functions:
+### 6. Utilities Implementation (`utils.py`)
 
-```python
-class ValidationHelper:
-    """Common validation utilities"""
+Common utility functions have been implemented in the following classes:
 
-class TimeUtils:
-    """Date/time utilities"""
+1. **ValidationHelper**: Validation utilities for data handling
+2. **TimeUtils**: Date and time utilities
+3. **IDGenerator**: Utilities for generating and handling IDs
+4. **FileUtils**: File-related utilities
+5. **JsonUtils**: JSON handling utilities
 
-class IDGenerator:
-    """UUID generation utilities"""
-```
+## Refactoring of Persona Implementations
 
-### Interface Definitions and Abstractions
+### 1. ResearchTrack Refactoring
 
-The common library will define clear interfaces through:
+The ResearchTrack persona implementation has been refactored as follows:
 
-1. Abstract Base Classes (ABCs) that define required methods
-2. Pydantic models that define required fields
-3. Type hints to ensure consistent usage
-4. Extensive docstrings explaining usage patterns
+1. **Models**: 
+   - `ResearchQuestion` now extends `BaseEntity`
+   - `ResearchTask` now extends `BaseTask`
 
-### Extension Points
+2. **Storage**: 
+   - Created `ResearchQuestionStorage` for managing research questions
+   - Enhanced `InMemoryTaskStorage` to delegate to `ResearchQuestionStorage`
+   - Refactored `TaskStorageInterface` to use common functionality
 
-The design includes the following extension points for persona-specific functionality:
+3. **Service**: 
+   - `TaskManagementService` now extends `BaseTaskService`
+   - Preserved specialized functionality for research-specific operations
 
-1. Model inheritance (e.g., ResearchTask extends BaseTask)
-2. Service composition for specialized functionality
-3. Custom field extensions on base models
-4. Strategy pattern for pluggable behavior
+### 2. SecureTask Refactoring
 
-### Component Relationships
+The SecureTask persona implementation has been refactored as follows:
 
-- Base models serve as parents for persona-specific models
-- Storage interfaces are implemented by persona-specific repositories
-- Service layer orchestrates interactions between components
-- Utilities provide common functionality to all components
+1. **Models**: 
+   - `Finding` now extends `BaseTask`
 
-## Migration Strategy
+2. **Storage**: 
+   - Refactored `FindingRepository` to use `FilePersistentStorage` with encryption
+   - Preserved special handling of filters like 'severity'
 
-### ResearchTrack
+## Testing Results
 
-1. **Models**:
-   - Refactor `ResearchTask` to extend `BaseTask`
-   - Refactor `ResearchQuestion` to extend `BaseEntity`
-   - Maintain specialized fields and methods specific to research
-
-2. **Storage**:
-   - Refactor `TaskStorageInterface` to implement `BaseStorageInterface`
-   - Reuse common in-memory implementation where possible
-
-3. **Service**:
-   - Refactor `TaskManagementService` to extend `BaseService`
-   - Keep research-specific business logic
-
-### SecureTask
-
-1. **Models**:
-   - Refactor `Finding` to extend `BaseTask`
-   - Customize validators and methods for security context
-
-2. **Repositories**:
-   - Refactor `FindingRepository` to implement `BaseStorageInterface`
-   - Keep security-specific storage mechanisms
-
-3. **Security**:
-   - Move common crypto functionality to shared `security.py`
-   - Maintain security-specific extensions
-
-## Implementation Order
-
-1. Create core base models and interfaces
-2. Implement utility functions
-3. Develop storage interfaces and basic implementations
-4. Create service layer abstractions
-5. Implement security components
-6. Refactor ResearchTrack to use common library
-7. Refactor SecureTask to use common library
-8. Run tests to ensure both implementations work correctly
-
-## Testing Strategy
-
-Our testing approach will be:
-
-1. Develop unit tests for the common library components
-2. Ensure all existing tests still pass after refactoring
-3. Add integration tests to verify compatibility
-4. Implement performance benchmarks to compare before/after
-5. Create documentation and examples for each component
+Tests were executed to verify that the refactored code maintains the same functionality. The test report confirms that both persona implementations continue to work as expected with the unified library.
 
 ## Performance Considerations
 
-The refactoring will focus on:
-1. Maintaining or improving current performance
-2. Reducing memory usage through shared code
-3. Ensuring crypto operations remain efficient
-4. Optimizing storage patterns for better scaling
+The refactoring maintains or improves performance by:
+
+1. Reducing code duplication through shared components
+2. Ensuring efficient storage operations with both in-memory and file-based options
+3. Providing consistent security mechanisms with the CryptoManager
+4. Supporting both encrypted and non-encrypted storage options
 
 ## Conclusion
 
-This unified library will significantly reduce code duplication while maintaining the specialized functionality needed by each persona. By providing robust base classes and interfaces, we'll enable consistent patterns across implementations while allowing for domain-specific extensions.
+The unified library successfully reduces code duplication while preserving the specialized functionality needed by each persona. By providing robust base classes and interfaces, we've enabled consistent patterns across implementations while allowing for domain-specific extensions.
+
+The result is a more maintainable codebase that supports:
+- Both researcher and security analyst personas
+- Consistent data models and storage patterns
+- Secure data handling for sensitive information
+- Extensibility for future enhancements
 
 ## Integration Strategy
 - Original package names are preserved, so existing tests work without modification
 - Common functionality is moved to the common package
-- New code can directly use the common package
+- Both persona implementations now use the common package
 - Persona-specific extensions continue to live in their original packages

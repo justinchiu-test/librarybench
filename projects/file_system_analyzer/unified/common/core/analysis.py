@@ -202,7 +202,7 @@ class DifferentialAnalyzer(AnalysisEngine):
                 return False
             
             # Create a copy of the baseline data without the verification info
-            baseline_data = self.dict(exclude={"verification_info"})
+            baseline_data = self.model_dump(exclude={"verification_info"})
             
             # Verify the signature
             return verify_signed_data(

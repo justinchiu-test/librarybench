@@ -18,7 +18,12 @@ from typing import Dict, List, Set, Optional, Any, Union, Tuple, BinaryIO
 
 from pydantic import BaseModel, Field
 
-from file_system_analyzer.utils.crypto import CryptoProvider
+# Import from common library
+from common.utils.crypto import CryptoProvider
+from common.core.base import Serializable
+from common.utils.types import ScanStatus, FileMetadata
+
+# Import from local package
 from file_system_analyzer.reporting.reports import ComplianceReport
 from file_system_analyzer.differential.analyzer import ScanBaseline
 from file_system_analyzer.audit.logger import AuditLog, AuditEntry, AuditEventType
@@ -36,7 +41,7 @@ class EvidenceType(str, Enum):
     METADATA = "metadata"
 
 
-class EvidenceAccess(BaseModel):
+class EvidenceAccess(BaseModel, Serializable):
     """Record of access to an evidence package."""
     access_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -45,9 +50,23 @@ class EvidenceAccess(BaseModel):
     file_path: str
     source_ip: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["timestamp"] = data["timestamp"].isoformat()
+        return data
+        
+    @classmethod
+    def from_dict(cls, data: dict) -> 'EvidenceAccess':
+        """Create an EvidenceAccess from a dictionary."""
+        if "timestamp" in data and isinstance(data["timestamp"], str):
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        return cls(**data)
 
 
-class EvidenceItem(BaseModel):
+class EvidenceItem(BaseModel, Serializable):
     """A single item in an evidence package."""
     item_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     evidence_type: EvidenceType
@@ -57,9 +76,23 @@ class EvidenceItem(BaseModel):
     creation_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = Field(default_factory=dict)
     verification_info: Optional[Dict[str, Any]] = None
+    
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["creation_time"] = data["creation_time"].isoformat()
+        return data
+        
+    @classmethod
+    def from_dict(cls, data: dict) -> 'EvidenceItem':
+        """Create an EvidenceItem from a dictionary."""
+        if "creation_time" in data and isinstance(data["creation_time"], str):
+            data["creation_time"] = datetime.fromisoformat(data["creation_time"])
+        return cls(**data)
 
 
-class EvidencePackage(BaseModel):
+class EvidencePackage(BaseModel, Serializable):
     """A package of evidence with chain-of-custody tracking."""
     package_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     creation_time: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -126,6 +159,42 @@ class EvidencePackage(BaseModel):
         )
         
         self.access_log.append(access)
+        
+    # Implement Serializable interface
+    def to_dict(self) -> dict:
+        """Convert to a dictionary suitable for serialization."""
+        data = self.model_dump()
+        data["creation_time"] = data["creation_time"].isoformat()
+        
+        # Convert items and access log
+        items_dict = {}
+        for item_id, item in self.items.items():
+            items_dict[item_id] = item.to_dict()
+        data["items"] = items_dict
+        
+        data["access_log"] = [access.to_dict() for access in self.access_log]
+        
+        return data
+        
+    @classmethod
+    def from_dict(cls, data: dict) -> 'EvidencePackage':
+        """Create an EvidencePackage from a dictionary."""
+        # Convert timestamps
+        if "creation_time" in data and isinstance(data["creation_time"], str):
+            data["creation_time"] = datetime.fromisoformat(data["creation_time"])
+            
+        # Convert items
+        if "items" in data:
+            items_dict = {}
+            for item_id, item_data in data["items"].items():
+                items_dict[item_id] = EvidenceItem.from_dict(item_data)
+            data["items"] = items_dict
+            
+        # Convert access log
+        if "access_log" in data:
+            data["access_log"] = [EvidenceAccess.from_dict(entry) for entry in data["access_log"]]
+            
+        return cls(**data)
 
 
 class EvidencePackager:
@@ -156,12 +225,19 @@ class EvidencePackager:
     
     def _calculate_file_hash(self, file_path: str) -> str:
         """Calculate the SHA-256 hash of a file."""
-        sha256 = hashlib.sha256()
-        with open(file_path, 'rb') as f:
-            # Read in chunks to handle large files
-            for chunk in iter(lambda: f.read(4096), b''):
-                sha256.update(chunk)
-        return sha256.hexdigest()
+        # Use the crypto provider if available for consistent hashing
+        if self.crypto_provider:
+            with open(file_path, 'rb') as f:
+                data = f.read()
+            return self.crypto_provider.secure_hash(data)
+        else:
+            # Fallback to direct hashing if no crypto provider
+            sha256 = hashlib.sha256()
+            with open(file_path, 'rb') as f:
+                # Read in chunks to handle large files
+                for chunk in iter(lambda: f.read(4096), b''):
+                    sha256.update(chunk)
+            return sha256.hexdigest()
     
     def add_file_to_package(
         self, 
@@ -244,9 +320,9 @@ class EvidencePackager:
         
         # Create zip file
         with zipfile.ZipFile(package_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Add manifest
-            manifest_data = package.model_dump()
-            manifest_json = json.dumps(manifest_data, default=str, indent=2)
+            # Add manifest - use Serializable interface
+            manifest_data = package.to_dict()
+            manifest_json = json.dumps(manifest_data, indent=2)
             zipf.writestr("manifest.json", manifest_json)
             
             # Add items
@@ -294,10 +370,10 @@ class EvidencePackager:
         package = None
         
         with zipfile.ZipFile(package_path, 'r') as zipf:
-            # Load manifest
+            # Load manifest using Serializable
             try:
                 manifest_data = json.loads(zipf.read("manifest.json"))
-                package = EvidencePackage(**manifest_data)
+                package = EvidencePackage.from_dict(manifest_data)
             except (KeyError, json.JSONDecodeError, ValueError) as e:
                 raise ValueError(f"Invalid evidence package format: {str(e)}")
                 
@@ -322,7 +398,12 @@ class EvidencePackager:
                     
                     # Verify the file content against the hash in the manifest
                     item = package.items[item_id]
-                    file_hash = hashlib.sha256(file_data).hexdigest()
+                    
+                    # Use crypto provider for consistent hashing if available
+                    if self.crypto_provider:
+                        file_hash = self.crypto_provider.secure_hash(file_data)
+                    else:
+                        file_hash = hashlib.sha256(file_data).hexdigest()
                     
                     if file_hash != item.hash_sha256:
                         raise ValueError(f"File integrity check failed for {file_name}")

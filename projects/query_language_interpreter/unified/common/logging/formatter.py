@@ -40,28 +40,28 @@ class LogFormatter:
         """
         if self.format_string:
             return logging.Formatter(self.format_string)
-        
+
         if self.json_format:
             return JsonFormatter(
                 include_timestamp=self.include_timestamp,
                 include_level=self.include_level,
                 include_name=self.include_name,
             )
-        
+
         # Build format string
         format_parts = []
-        
+
         if self.include_timestamp:
             format_parts.append("%(asctime)s")
-        
+
         if self.include_level:
             format_parts.append("%(levelname)s")
-        
+
         if self.include_name:
             format_parts.append("%(name)s")
-        
+
         format_parts.append("%(message)s")
-        
+
         format_string = " | ".join(format_parts)
         return logging.Formatter(format_string)
 
@@ -97,32 +97,51 @@ class JsonFormatter(logging.Formatter):
             str: JSON-formatted log message
         """
         log_data: Dict[str, Any] = {}
-        
+
         # Include standard fields if requested
         if self.include_timestamp:
             log_data["timestamp"] = self.formatTime(record)
-        
+
         if self.include_level:
             log_data["level"] = record.levelname
-        
+
         if self.include_name:
             log_data["logger"] = record.name
-        
+
         # Always include the message
         log_data["message"] = record.getMessage()
-        
+
         # Include exception info if present
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
-        
+
         # Include all extra attributes
         for key, value in record.__dict__.items():
             if key not in {
-                "args", "asctime", "created", "exc_info", "exc_text", "filename",
-                "funcName", "id", "levelname", "levelno", "lineno", "module",
-                "msecs", "message", "msg", "name", "pathname", "process",
-                "processName", "relativeCreated", "stack_info", "thread", "threadName"
+                "args",
+                "asctime",
+                "created",
+                "exc_info",
+                "exc_text",
+                "filename",
+                "funcName",
+                "id",
+                "levelname",
+                "levelno",
+                "lineno",
+                "module",
+                "msecs",
+                "message",
+                "msg",
+                "name",
+                "pathname",
+                "process",
+                "processName",
+                "relativeCreated",
+                "stack_info",
+                "thread",
+                "threadName",
             }:
                 log_data[key] = value
-        
+
         return json.dumps(log_data, default=str)

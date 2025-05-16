@@ -2,14 +2,17 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Optional, Pattern, Set, Union
+from typing import Dict, List, Optional, Pattern, Set, Union, Any
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 
+# Import from common library
 from common.core.categorization.categorizer import AuditRecord as CommonAuditRecord
 from common.core.categorization.categorizer import CategorizationResult as CommonCategorizationResult
+from common.core.categorization.transaction_categorizer import MixedUseItem as CommonMixedUseItem
 from common.core.models.transaction import BaseTransaction
+from common.core.models.category import BaseCategory
 
 from personal_finance_tracker.models.common import ExpenseCategory, Transaction
 
@@ -18,22 +21,21 @@ from personal_finance_tracker.models.common import ExpenseCategory, Transaction
 CategorizationRule = None  # Will be imported from rules.py
 
 
-class MixedUseItem(BaseModel):
-    """Item with mixed business and personal use."""
+class MixedUseItem(CommonMixedUseItem):
+    """Item with mixed business and personal use.
+    
+    Extends the common library's MixedUseItem with freelancer-specific functionality.
+    """
 
-    id: UUID = Field(default_factory=uuid4)
-    name: str
+    # Override category field to use ExpenseCategory
     category: ExpenseCategory
-    description: Optional[str] = None
-    business_use_percentage: float
+    
+    # Additional freelancer-specific fields
     documentation: Optional[str] = None
-
-    @validator("business_use_percentage")
-    def validate_percentage(cls, v):
-        """Validate business use percentage is between 0 and 100."""
-        if v < 0 or v > 100:
-            raise ValueError("Business use percentage must be between 0 and 100")
-        return v
+    
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
 
 class CategorizationResult(BaseModel):
@@ -41,13 +43,17 @@ class CategorizationResult(BaseModel):
 
     transaction_id: UUID
     original_transaction: Transaction
-    matched_rule: Optional[CategorizationRule] = None
     assigned_category: Optional[ExpenseCategory] = None
     business_use_percentage: Optional[float] = None
     confidence_score: float = 0.0  # 0-1 confidence in categorization
     is_mixed_use: bool = False
     categorization_date: datetime = Field(default_factory=datetime.now)
     notes: Optional[str] = None
+    matched_rule: Optional[Any] = None  # We don't use the type directly to avoid circular imports
+
+    class Config:
+        """Pydantic configuration."""
+        arbitrary_types_allowed = True
 
     @validator("confidence_score")
     def validate_confidence(cls, v):
@@ -75,14 +81,24 @@ class CategorizationResult(BaseModel):
         Returns:
             Our specialized CategorizationResult
         """
+        # Extract business use percentage from metadata
+        business_use_percentage = None
+        if hasattr(result, 'metadata') and result.metadata:
+            business_use_percentage = result.metadata.get("business_use_percentage")
+        
+        # Extract is_mixed_use from metadata
+        is_mixed_use = False
+        if hasattr(result, 'metadata') and result.metadata:
+            is_mixed_use = result.metadata.get("is_mixed_use", False)
+        
         return cls(
             transaction_id=transaction_id or result.item_id,
             original_transaction=result.original_item,
             matched_rule=result.matched_rule,
             assigned_category=result.assigned_category,
-            business_use_percentage=result.metadata.get("business_use_percentage"),
+            business_use_percentage=business_use_percentage,
             confidence_score=result.confidence_score,
-            is_mixed_use=result.metadata.get("is_mixed_use", False),
+            is_mixed_use=is_mixed_use,
             notes=result.notes,
         )
 

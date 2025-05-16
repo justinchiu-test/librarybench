@@ -20,11 +20,11 @@ from pydantic import BaseModel, Field
 logger = logging.getLogger(__name__)
 
 # Import from common library
-from common.core.base import ScanSession
+from common.core.base import ScanSession, FileSystemScanner
 from common.core.api import BaseAnalyzerAPI, APIResult, NotificationConfig, CacheConfig
-from common.core.analysis import DifferentialAnalyzer, GenericAnalyzer, Finding
+from common.core.analysis import DifferentialAnalyzer as CommonDifferentialAnalyzer
+from common.core.analysis import GenericAnalyzer, Finding
 from common.core.reporting import GenericReportGenerator, Report
-from common.core.scanner import ParallelDirectoryScanner
 from common.utils.crypto import CryptoProvider
 from common.utils.export import export_to_json, export_to_html, export_results
 from common.utils.cache import cache_result, MemoryCache
@@ -101,7 +101,7 @@ class ComplianceScanner:
         )
         
         # Use common differential analyzer with security-specific one as a fallback
-        self.common_diff_analyzer = DifferentialAnalyzer("Security Differential Analyzer")
+        self.common_diff_analyzer = CommonDifferentialAnalyzer("Security Differential Analyzer")
         self.security_diff_analyzer = SecurityDifferentialAnalyzer()
         
         # For backward compatibility with tests
@@ -716,7 +716,7 @@ class ComplianceScannerAPI(BaseAnalyzerAPI[ScanResult, Any]):
         self,
         baseline_path: str,
         scan_results: List[ScanResult]
-    ) -> Union[DifferentialScanResult, DifferentialAnalyzer.DifferentialResult]:
+    ) -> Union[DifferentialScanResult, CommonDifferentialAnalyzer.DifferentialResult]:
         """
         Compare scan results to a baseline.
         

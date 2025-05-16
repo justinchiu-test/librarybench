@@ -16,8 +16,15 @@ import json
 import os
 import math
 import itertools
+from pathlib import Path
 
 import numpy as np
+
+# Import from common library
+from common.core.storage import BaseStorage
+from common.core.storage import LocalStorage as CommonLocalStorage
+from common.core.knowledge import KnowledgeGraph, StandardKnowledgeBase
+from common.core.models import NodeType, RelationType
 
 from productmind.models import (
     Stakeholder,
@@ -40,22 +47,30 @@ class StakeholderInsightManager:
     - Integrate stakeholder insights into decision-making
     """
     
-    def __init__(self, storage_dir: str = "./data"):
+    def __init__(self, storage_dir: str = "./data", storage: Optional[BaseStorage] = None):
         """
         Initialize the stakeholder insight manager.
         
         Args:
-            storage_dir: Directory to store stakeholder data
+            storage_dir: Directory to store stakeholder data (used if storage is not provided)
+            storage: Optional BaseStorage implementation to use
         """
         self.storage_dir = storage_dir
+        
+        # Initialize storage
+        if storage is not None:
+            self.storage = storage
+        else:
+            # Create storage using common library's LocalStorage
+            self.storage = CommonLocalStorage(Path(storage_dir))
+            
+        # Initialize the knowledge base and graph from the common library
+        self.knowledge_base = StandardKnowledgeBase(self.storage)
+            
+        # Initialize caches
         self._stakeholders_cache = {}
         self._perspectives_cache = {}
         self._relationships_cache = {}
-        
-        # Create storage directories
-        os.makedirs(os.path.join(storage_dir, "stakeholders"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "perspectives"), exist_ok=True)
-        os.makedirs(os.path.join(storage_dir, "stakeholder_relationships"), exist_ok=True)
     
     def add_stakeholder(self, stakeholder: Union[Stakeholder, List[Stakeholder]]) -> List[str]:
         """
@@ -79,20 +94,16 @@ class StakeholderInsightManager:
     
     def _store_stakeholder(self, stakeholder: Stakeholder) -> None:
         """
-        Store a stakeholder in cache and on disk.
+        Store a stakeholder in the knowledge base and cache.
         
         Args:
             stakeholder: Stakeholder to store
         """
-        # Store in memory cache
-        self._stakeholders_cache[str(stakeholder.id)] = stakeholder
+        # Store in knowledge base (which will handle adding it to the knowledge graph)
+        self.knowledge_base.add_node(stakeholder)
         
-        # Store on disk
-        stakeholder_path = os.path.join(
-            self.storage_dir, "stakeholders", f"{stakeholder.id}.json"
-        )
-        with open(stakeholder_path, "w") as f:
-            f.write(stakeholder.model_dump_json())
+        # Update cache
+        self._stakeholders_cache[str(stakeholder.id)] = stakeholder
     
     def add_perspective(self, perspective: Union[Perspective, List[Perspective]]) -> List[str]:
         """
@@ -114,10 +125,18 @@ class StakeholderInsightManager:
             # Update stakeholder with perspective ID
             stakeholder = self.get_stakeholder(str(item.stakeholder_id))
             if stakeholder:
-                # Always store the UUID objects for perspective IDs in the stakeholder model
+                # Add relationship to stakeholder
                 if item.id not in stakeholder.perspectives:
                     stakeholder.perspectives.append(item.id)
                     self._store_stakeholder(stakeholder)
+                    
+                # Use the knowledge base to create a relationship between stakeholder and perspective
+                self.knowledge_base.link_nodes(
+                    stakeholder.id, 
+                    item.id, 
+                    RelationType.CREATED_BY,
+                    metadata={"topic": item.topic}
+                )
             
             perspective_ids.append(str(item.id))
         
@@ -125,20 +144,16 @@ class StakeholderInsightManager:
     
     def _store_perspective(self, perspective: Perspective) -> None:
         """
-        Store a perspective in cache and on disk.
+        Store a perspective in the knowledge base and cache.
         
         Args:
             perspective: Perspective to store
         """
+        # Store in knowledge base
+        self.knowledge_base.add_node(perspective)
+        
         # Store in memory cache
         self._perspectives_cache[str(perspective.id)] = perspective
-        
-        # Store on disk
-        perspective_path = os.path.join(
-            self.storage_dir, "perspectives", f"{perspective.id}.json"
-        )
-        with open(perspective_path, "w") as f:
-            f.write(perspective.model_dump_json())
     
     def add_relationship(
         self, 
@@ -159,26 +174,34 @@ class StakeholderInsightManager:
         relationship_ids = []
         for item in relationship:
             self._store_relationship(item)
+            
+            # Use the knowledge base to create a relationship between stakeholders
+            self.knowledge_base.link_nodes(
+                item.stakeholder1_id,
+                item.stakeholder2_id,
+                item.relationship_type,
+                metadata={
+                    "alignment_level": item.alignment_level,
+                    "notes": item.notes
+                }
+            )
+            
             relationship_ids.append(str(item.id))
         
         return relationship_ids
     
     def _store_relationship(self, relationship: StakeholderRelationship) -> None:
         """
-        Store a stakeholder relationship in cache and on disk.
+        Store a stakeholder relationship in the knowledge base and cache.
         
         Args:
             relationship: Stakeholder relationship to store
         """
+        # Store in knowledge base
+        self.knowledge_base.add_node(relationship)
+        
         # Store in memory cache
         self._relationships_cache[str(relationship.id)] = relationship
-        
-        # Store on disk
-        relationship_path = os.path.join(
-            self.storage_dir, "stakeholder_relationships", f"{relationship.id}.json"
-        )
-        with open(relationship_path, "w") as f:
-            f.write(relationship.model_dump_json())
     
     def get_stakeholder(self, stakeholder_id: Union[str, UUID]) -> Optional[Stakeholder]:
         """
@@ -197,16 +220,21 @@ class StakeholderInsightManager:
         if stakeholder_id_str in self._stakeholders_cache:
             return self._stakeholders_cache[stakeholder_id_str]
 
-        # Try to load from disk
-        stakeholder_path = os.path.join(
-            self.storage_dir, "stakeholders", f"{stakeholder_id_str}.json"
-        )
-        if os.path.exists(stakeholder_path):
-            with open(stakeholder_path, "r") as f:
-                stakeholder_data = json.load(f)
-                stakeholder = Stakeholder.model_validate(stakeholder_data)
+        # Try to get from knowledge base
+        try:
+            if isinstance(stakeholder_id, str):
+                stakeholder_id = UUID(stakeholder_id)
+                
+            # Use the knowledge base to get the node
+            stakeholder = self.knowledge_base.get_node(stakeholder_id, Stakeholder)
+            
+            if stakeholder:
+                # Update cache
                 self._stakeholders_cache[stakeholder_id_str] = stakeholder
                 return stakeholder
+        except ValueError:
+            # Not a valid UUID
+            pass
 
         return None
     
@@ -227,16 +255,21 @@ class StakeholderInsightManager:
         if perspective_id_str in self._perspectives_cache:
             return self._perspectives_cache[perspective_id_str]
 
-        # Try to load from disk
-        perspective_path = os.path.join(
-            self.storage_dir, "perspectives", f"{perspective_id_str}.json"
-        )
-        if os.path.exists(perspective_path):
-            with open(perspective_path, "r") as f:
-                perspective_data = json.load(f)
-                perspective = Perspective.model_validate(perspective_data)
+        # Try to get from knowledge base
+        try:
+            if isinstance(perspective_id, str):
+                perspective_id = UUID(perspective_id)
+                
+            # Use the knowledge base to get the node
+            perspective = self.knowledge_base.get_node(perspective_id, Perspective)
+            
+            if perspective:
+                # Update cache
                 self._perspectives_cache[perspective_id_str] = perspective
                 return perspective
+        except ValueError:
+            # Not a valid UUID
+            pass
 
         return None
     
@@ -257,16 +290,21 @@ class StakeholderInsightManager:
         if relationship_id_str in self._relationships_cache:
             return self._relationships_cache[relationship_id_str]
 
-        # Try to load from disk
-        relationship_path = os.path.join(
-            self.storage_dir, "stakeholder_relationships", f"{relationship_id_str}.json"
-        )
-        if os.path.exists(relationship_path):
-            with open(relationship_path, "r") as f:
-                relationship_data = json.load(f)
-                relationship = StakeholderRelationship.model_validate(relationship_data)
+        # Try to get from knowledge base
+        try:
+            if isinstance(relationship_id, str):
+                relationship_id = UUID(relationship_id)
+                
+            # Use the knowledge base to get the node
+            relationship = self.knowledge_base.get_node(relationship_id, StakeholderRelationship)
+            
+            if relationship:
+                # Update cache
                 self._relationships_cache[relationship_id_str] = relationship
                 return relationship
+        except ValueError:
+            # Not a valid UUID
+            pass
 
         return None
     
@@ -277,20 +315,8 @@ class StakeholderInsightManager:
         Returns:
             List of all stakeholders
         """
-        stakeholders = []
-        stakeholders_dir = os.path.join(self.storage_dir, "stakeholders")
-        
-        if not os.path.exists(stakeholders_dir):
-            return stakeholders
-        
-        for filename in os.listdir(stakeholders_dir):
-            if filename.endswith(".json"):
-                stakeholder_id = filename.replace(".json", "")
-                stakeholder = self.get_stakeholder(stakeholder_id)
-                if stakeholder:
-                    stakeholders.append(stakeholder)
-        
-        return stakeholders
+        # Get stakeholders from the knowledge base
+        return self.knowledge_base.get_nodes_by_type(Stakeholder)
     
     def get_all_perspectives(self) -> List[Perspective]:
         """
@@ -299,20 +325,8 @@ class StakeholderInsightManager:
         Returns:
             List of all perspectives
         """
-        perspectives = []
-        perspectives_dir = os.path.join(self.storage_dir, "perspectives")
-        
-        if not os.path.exists(perspectives_dir):
-            return perspectives
-        
-        for filename in os.listdir(perspectives_dir):
-            if filename.endswith(".json"):
-                perspective_id = filename.replace(".json", "")
-                perspective = self.get_perspective(perspective_id)
-                if perspective:
-                    perspectives.append(perspective)
-        
-        return perspectives
+        # Get perspectives from the knowledge base
+        return self.knowledge_base.get_nodes_by_type(Perspective)
     
     def get_all_relationships(self) -> List[StakeholderRelationship]:
         """
@@ -321,20 +335,8 @@ class StakeholderInsightManager:
         Returns:
             List of all stakeholder relationships
         """
-        relationships = []
-        relationships_dir = os.path.join(self.storage_dir, "stakeholder_relationships")
-        
-        if not os.path.exists(relationships_dir):
-            return relationships
-        
-        for filename in os.listdir(relationships_dir):
-            if filename.endswith(".json"):
-                relationship_id = filename.replace(".json", "")
-                relationship = self.get_relationship(relationship_id)
-                if relationship:
-                    relationships.append(relationship)
-        
-        return relationships
+        # Get relationships from the knowledge base
+        return self.knowledge_base.get_nodes_by_type(StakeholderRelationship)
     
     def get_stakeholder_perspectives(self, stakeholder_id: str) -> List[Perspective]:
         """
@@ -349,10 +351,34 @@ class StakeholderInsightManager:
         stakeholder = self.get_stakeholder(stakeholder_id)
         if not stakeholder:
             return []
+            
+        # Use the knowledge base to get related nodes
+        try:
+            related_nodes = self.knowledge_base.get_related_nodes(
+                UUID(stakeholder_id), 
+                [RelationType.CREATED_BY],
+                direction="out"
+            )
+            
+            # Extract perspectives from related nodes
+            perspectives = []
+            for relation_type, nodes in related_nodes.items():
+                for node in nodes:
+                    if isinstance(node, Perspective):
+                        perspectives.append(node)
+            
+            if perspectives:
+                # Update cache with these perspectives
+                for perspective in perspectives:
+                    self._perspectives_cache[str(perspective.id)] = perspective
+                return perspectives
+        except Exception:
+            # Fall back to the list in the stakeholder model
+            pass
         
+        # Fallback: Get perspectives from stakeholder.perspectives list
         perspectives = []
         for pid in stakeholder.perspectives:
-            # Convert UUID to string if necessary
             perspective_id = str(pid)
             perspective = self.get_perspective(perspective_id)
             if perspective:
@@ -370,6 +396,7 @@ class StakeholderInsightManager:
         Returns:
             List of perspectives on the topic
         """
+        # Get all perspectives and filter by topic
         all_perspectives = self.get_all_perspectives()
         return [p for p in all_perspectives if p.topic.lower() == topic.lower()]
     
@@ -383,6 +410,48 @@ class StakeholderInsightManager:
         Returns:
             List of relationships with stakeholder details
         """
+        try:
+            # Use the knowledge base to get related nodes
+            stakeholder_uuid = UUID(stakeholder_id)
+            related_nodes = self.knowledge_base.get_related_nodes(stakeholder_uuid)
+            
+            if related_nodes:
+                relationships = []
+                
+                # Process related stakeholders
+                for relation_type, nodes in related_nodes.items():
+                    for node in nodes:
+                        if isinstance(node, Stakeholder) and str(node.id) != stakeholder_id:
+                            # Get the relationship object
+                            rel = None
+                            for r in self.get_all_relationships():
+                                if ((str(r.stakeholder1_id) == stakeholder_id and str(r.stakeholder2_id) == str(node.id)) or
+                                    (str(r.stakeholder2_id) == stakeholder_id and str(r.stakeholder1_id) == str(node.id))):
+                                    rel = r
+                                    break
+                            
+                            if rel:
+                                relationships.append({
+                                    "relationship_id": str(rel.id),
+                                    "relationship_type": rel.relationship_type,
+                                    "alignment_level": rel.alignment_level,
+                                    "notes": rel.notes,
+                                    "stakeholder": {
+                                        "id": str(node.id),
+                                        "name": node.name,
+                                        "title": node.title,
+                                        "department": node.department,
+                                        "type": node.type
+                                    }
+                                })
+                
+                if relationships:
+                    return relationships
+        except Exception:
+            # Fall back to the direct relationship query
+            pass
+            
+        # Fallback: Direct relationship query
         all_relationships = self.get_all_relationships()
         stakeholder_relationships = []
         

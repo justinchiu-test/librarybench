@@ -109,13 +109,77 @@ class BufferOverflow(Attack):
         # Save the original instruction pointer to restore after our setup
         original_ip = vm.cpu.registers.ip
 
+        # Verify the buffer_address is in a valid memory segment
+        buffer_segment = vm.memory.find_segment(self.buffer_address)
+        if buffer_segment is None:
+            return AttackResult(
+                success=False,
+                attack_type=self.attack_type,
+                execution_trace={
+                    "initial_state": initial_state,
+                    "error": f"Buffer address 0x{self.buffer_address:08x} is not in any memory segment",
+                },
+                detection_events=[],
+                notes=f"Invalid buffer address: 0x{self.buffer_address:08x} is not in any memory segment",
+            )
+
+        # Check if the buffer fits within the segment
+        if not buffer_segment.contains_address(self.buffer_address + len(payload) - 1):
+            # Adjust the payload to fit in the segment
+            adjusted_size = buffer_segment.end_address - self.buffer_address
+            payload = payload[:adjusted_size]
+            
+            if not payload:
+                return AttackResult(
+                    success=False,
+                    attack_type=self.attack_type,
+                    execution_trace={
+                        "initial_state": initial_state,
+                        "error": "Buffer does not fit in the memory segment",
+                    },
+                    detection_events=[],
+                    notes="Buffer does not fit in the memory segment, and could not be adjusted",
+                )
+
         # Modify the stack to simulate a function call with a vulnerable buffer
         # Setup a stack frame with a return address that would be overwritten
         # by a buffer overflow
         vm.cpu.registers.sp -= 4  # Make space for the return address
 
+        # Ensure the stack pointer is in a valid memory segment
+        stack_segment = vm.memory.find_segment(vm.cpu.registers.sp)
+        if stack_segment is None or not stack_segment.check_permission(vm.cpu.registers.sp, MemoryPermission.WRITE):
+            # If the stack segment is invalid, adjust it to a valid location
+            for segment in vm.memory.segments:
+                if segment.permission.value & MemoryPermission.WRITE.value:
+                    vm.cpu.registers.sp = segment.base_address + 16  # Some offset into the segment
+                    break
+            else:
+                return AttackResult(
+                    success=False,
+                    attack_type=self.attack_type,
+                    execution_trace={
+                        "initial_state": initial_state,
+                        "error": "No valid writable memory segment found for stack",
+                    },
+                    detection_events=[],
+                    notes="No valid writable memory segment found for stack operations",
+                )
+
         # We'll put a return address that goes back to original code after the attack
-        vm.memory.write_word(vm.cpu.registers.sp, original_ip, {"operation": "attack_setup"})
+        try:
+            vm.memory.write_word(vm.cpu.registers.sp, original_ip, {"operation": "attack_setup"})
+        except Exception as e:
+            return AttackResult(
+                success=False,
+                attack_type=self.attack_type,
+                execution_trace={
+                    "initial_state": initial_state,
+                    "error": f"Failed to write return address to stack: {str(e)}",
+                },
+                detection_events=[],
+                notes=f"Failed to write return address to stack: {str(e)}",
+            )
 
         # Create a buffer overflow vulnerability
         vulnerability_result = vm.inject_vulnerability(

@@ -19,8 +19,20 @@ The library is structured with these main components:
   - `exceptions.py` - Common exception types
 
 - **`common/extensions`** - Specialized extensions for specific domains:
-  - `security/` - Security-focused extensions
-  - `parallel/` - Parallel computing extensions
+  - `security/` - Security-focused extensions:
+    - `attack_vectors.py` - Simulation of different attack techniques
+    - `control_flow.py` - Control flow integrity monitoring
+    - `forensic_logging.py` - Detailed security event logging
+    - `memory_protection.py` - Memory protection mechanisms
+    - `privilege.py` - Privilege level management
+    - `secure_vm.py` - Security-focused VM extensions
+    - `vulnerability_detection.py` - Detection of security vulnerabilities
+  - `parallel/` - Parallel computing extensions:
+    - `coherence.py` - Memory coherence protocols
+    - `parallel_vm.py` - Parallel-focused VM extensions
+    - `race_detection.py` - Race condition detection
+    - `synchronization.py` - Synchronization primitives
+    - `thread.py` - Thread management
 
 - **`secure_vm`** - Security-focused VM implementation
   - Uses common core components and security extensions
@@ -44,10 +56,10 @@ The architecture follows these key principles:
 
 ```
 BaseVirtualMachine (common.core.vm)
-├── VirtualMachine (vm_emulator.core.vm)
-│   └── [Parallel Features]
+├── ParallelVirtualMachine (common.extensions.parallel.parallel_vm)
+│   └── VirtualMachine (vm_emulator.core.vm)
 └── SecureVirtualMachine (common.extensions.security.secure_vm)
-    └── [Security Features]
+    └── VirtualMachine (secure_vm.emulator)
 
 BaseProcessor (common.core.processor)
 ├── Processor (vm_emulator.core.processor)
@@ -78,6 +90,14 @@ The unified library provides two primary extension categories:
 - **Scheduling**: Thread scheduling and management
 - **Execution Tracing**: Parallel execution tracing and visualization
 
+## Test Status
+
+The current test status shows:
+- **Parallel Computing Tests**: 100% pass rate (all tests pass)
+- **Security Tests**: 84% pass rate (18 out of 114 tests fail)
+
+The parallel computing implementation has been successfully refactored, while the security implementation still has some issues to resolve, primarily related to memory segmentation and control flow integration.
+
 ## Installation
 Install the library in development mode:
 
@@ -99,22 +119,30 @@ from common.core.processor import Processor
 from common.core.vm import VirtualMachine as BaseVM
 
 # Option 3: Import extensions directly
-from common.extensions.security.forensic_logging import ForensicLog
+from common.extensions.security.forensic_logging import ForensicLogger
 from common.extensions.security.control_flow import ControlFlowMonitor
+from common.extensions.parallel.race_detection import RaceDetector
 ```
 
 ### Security-focused Usage Example
 
 ```python
 from secure_vm.emulator import VirtualMachine
+from common.extensions.security.memory_protection import MemoryProtection, MemoryProtectionLevel
 
 # Create a VM with security features enabled
+protection = MemoryProtection(
+    level=MemoryProtectionLevel.MAXIMUM,
+    dep_enabled=True,
+    aslr_enabled=True,
+    stack_canaries=True
+)
+
 vm = VirtualMachine(
     memory_size=65536,
-    enable_dep=True,
-    enable_aslr=True,
-    enable_stack_canaries=True,
-    enable_control_flow_integrity=True
+    protection=protection,
+    enable_forensics=True,
+    detailed_logging=True
 )
 
 # Load a program
@@ -123,9 +151,11 @@ vm.load_program([0x01, 0x02, 0x03, ...])
 # Execute the program and analyze security properties
 result = vm.run()
 
-# Get security analysis
-security_report = vm.get_security_report()
-control_flow_analysis = vm.analyze_control_flow()
+# Get control flow visualization
+control_flow = vm.get_control_flow_visualization()
+
+# Get forensic logs
+forensic_logs = vm.get_forensic_logs()
 ```
 
 ### Parallel Computing Usage Example
@@ -169,3 +199,12 @@ Record test results with:
 ```bash
 pytest --json-report --json-report-file=report.json --continue-on-collection-errors
 ```
+
+## Next Steps
+
+Several issues remain to be addressed:
+
+1. **Memory Segmentation Issues**: Fix segmentation faults in security tests
+2. **Circular Dependencies**: Resolve circular imports between visualization.py and emulator.py
+3. **Security Extensions Integration**: Complete integration of attack simulation with unified memory model
+4. **Documentation Improvements**: Add comprehensive docstrings to all new classes and methods

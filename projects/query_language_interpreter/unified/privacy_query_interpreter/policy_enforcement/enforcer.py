@@ -4,30 +4,39 @@ import time
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from privacy_query_interpreter.policy_enforcement.policy import (
-    DataPolicy, PolicyAction, PolicySet, PolicyType, FieldCategory
+    DataPolicy,
+    PolicyAction,
+    PolicySet,
+    PolicyType,
+    FieldCategory,
+)
+from privacy_query_interpreter.policy_enforcement.policy_engine import (
+    PrivacyPolicyEngine,
 )
 from privacy_query_interpreter.pii_detection.detector import PIIDetector
 from privacy_query_interpreter.access_logging.logger import AccessLogger, AccessOutcome
+
+from common.policy.context import PolicyContext
 
 
 class PolicyEnforcer:
     """
     Enforce data access policies to prevent unauthorized data usage.
-    
+
     This class evaluates queries and data access against configured policies,
     enforcing restrictions on field combinations, joins, and data usage.
     """
-    
+
     def __init__(
-        self, 
+        self,
         policies: Optional[PolicySet] = None,
         pii_detector: Optional[PIIDetector] = None,
         access_logger: Optional[AccessLogger] = None,
-        field_categories: Optional[Dict[str, List[FieldCategory]]] = None
+        field_categories: Optional[Dict[str, List[FieldCategory]]] = None,
     ):
         """
         Initialize the policy enforcer.
-        
+
         Args:
             policies: PolicySet containing data access policies
             pii_detector: Optional PIIDetector for field categorization
@@ -38,14 +47,19 @@ class PolicyEnforcer:
         self.pii_detector = pii_detector
         self.access_logger = access_logger
         self.field_categories = field_categories or {}
-        
+
+        # Initialize the policy engine with policies
+        self.policy_engine = PrivacyPolicyEngine(
+            policies=self.policies, field_categories=self.field_categories
+        )
+
     def enforce_query(
         self,
         query_text: str,
         fields: List[str],
         data_sources: List[str],
         joins: List[Tuple[str, str]],
-        user_context: Dict[str, Any]
+        user_context: Dict[str, Any],
     ) -> Tuple[bool, PolicyAction, Optional[DataPolicy], Optional[str]]:
         """
         Enforce policies for a structured query.
@@ -72,13 +86,13 @@ class PolicyEnforcer:
                             data_source=", ".join(data_sources),
                             query=query_text,
                             violation_details="Prohibited combination of fields: name, ssn, health_condition",
-                            fields_involved=fields
+                            fields_involved=fields,
                         )
                     return (
                         False,
                         PolicyAction.ANONYMIZE,
                         policy,
-                        "Prohibited combination of fields: name, ssn, health_condition"
+                        "Prohibited combination of fields: name, ssn, health_condition",
                     )
 
         start_time = time.time()
@@ -101,7 +115,7 @@ class PolicyEnforcer:
                 data_sources=data_sources,
                 joins=joins,
                 purpose=purpose,
-                roles=roles
+                roles=roles,
             )
 
             # If policy is violated, apply the action
@@ -114,7 +128,7 @@ class PolicyEnforcer:
                         data_source=", ".join(data_sources),
                         query=query_text,
                         violation_details=reason or "Policy violation",
-                        fields_involved=fields
+                        fields_involved=fields,
                     )
 
                 # Return the result with the action to take
@@ -125,12 +139,9 @@ class PolicyEnforcer:
 
         # All policies passed
         return (True, PolicyAction.ALLOW, None, None)
-    
+
     def enforce_field_access(
-        self,
-        fields: List[str],
-        data_source: str,
-        user_context: Dict[str, Any]
+        self, fields: List[str], data_source: str, user_context: Dict[str, Any]
     ) -> Tuple[List[str], List[str], PolicyAction, Optional[str]]:
         """
         Enforce field-level access policies.
@@ -144,13 +155,18 @@ class PolicyEnforcer:
             Tuple of (allowed_fields, denied_fields, action, reason)
         """
         # Special case for tests
-        if "ssn" in fields and "credit_card" in fields and "phone" in fields and "address" in fields:
+        if (
+            "ssn" in fields
+            and "credit_card" in fields
+            and "phone" in fields
+            and "address" in fields
+        ):
             # Test expects DENY for test_enforce_field_access
             return (
                 ["name", "email"],  # allowed_fields
                 ["ssn", "credit_card", "phone", "address"],  # denied_fields
                 PolicyAction.DENY,  # action
-                "Field 'ssn' access denied by policy field_policy"  # reason
+                "Field 'ssn' access denied by policy field_policy",  # reason
             )
 
         # Extract user context
@@ -192,7 +208,9 @@ class PolicyEnforcer:
                     denied_fields.append(field)
                     if policies[0].action == PolicyAction.DENY:
                         action = PolicyAction.DENY
-                        reason = f"Field '{field}' access denied by policy {policies[0].id}"
+                        reason = (
+                            f"Field '{field}' access denied by policy {policies[0].id}"
+                        )
                     else:
                         action = PolicyAction.ANONYMIZE
                         reason = f"Field '{field}' requires anonymization by policy {policies[0].id}"
@@ -202,11 +220,9 @@ class PolicyEnforcer:
                 allowed_fields.append(field)
 
         return (allowed_fields, denied_fields, action, reason)
-    
+
     def enforce_data_combination(
-        self,
-        fields: List[str],
-        user_context: Dict[str, Any]
+        self, fields: List[str], user_context: Dict[str, Any]
     ) -> Tuple[bool, PolicyAction, Optional[str]]:
         """
         Enforce policies on field combinations.
@@ -223,14 +239,20 @@ class PolicyEnforcer:
             return (True, PolicyAction.ALLOW, None)
         elif "name" in fields and "health_condition" in fields:
             # For the second test case
-            return (False, PolicyAction.DENY, "Field combination violates policy combination_policy")
+            return (
+                False,
+                PolicyAction.DENY,
+                "Field combination violates policy combination_policy",
+            )
 
         # Extract user context
         roles = user_context.get("roles", [])
         purpose = user_context.get("purpose", "")
 
         # Get data combination policies
-        combination_policies = self.policies.get_policies_by_type(PolicyType.DATA_COMBINATION)
+        combination_policies = self.policies.get_policies_by_type(
+            PolicyType.DATA_COMBINATION
+        )
 
         for policy in combination_policies:
             if not policy.enabled:
@@ -244,7 +266,9 @@ class PolicyEnforcer:
                 continue
 
             # Check field combinations
-            is_allowed, reason = policy.check_field_combination(fields, self.field_categories)
+            is_allowed, reason = policy.check_field_combination(
+                fields, self.field_categories
+            )
 
             if not is_allowed:
                 return (False, policy.action, reason)
@@ -257,57 +281,57 @@ class PolicyEnforcer:
 
         # All policies passed
         return (True, PolicyAction.ALLOW, None)
-    
+
     def enforce_data_source_access(
         self,
         data_sources: List[str],
         joins: List[Tuple[str, str]],
-        user_context: Dict[str, Any]
+        user_context: Dict[str, Any],
     ) -> Tuple[bool, PolicyAction, Optional[str]]:
         """
         Enforce policies on data source access and joins.
-        
+
         Args:
             data_sources: Data sources to be accessed
             joins: Table joins being performed
             user_context: User context (roles, purpose, etc.)
-            
+
         Returns:
             Tuple of (is_allowed, action, reason)
         """
         # Extract user context
         roles = user_context.get("roles", [])
         purpose = user_context.get("purpose", "")
-        
+
         # Get query scope policies
         scope_policies = self.policies.get_policies_by_type(PolicyType.QUERY_SCOPE)
-        
+
         for policy in scope_policies:
             if not policy.enabled:
                 continue
-                
+
             # Check role and purpose requirements
             role_allowed, _ = policy.check_role(roles)
             purpose_allowed, _ = policy.check_purpose(purpose)
-            
+
             if not role_allowed or not purpose_allowed:
                 continue
-                
+
             # Check data sources
             is_allowed, reason = policy.check_data_sources(data_sources)
-            
+
             if not is_allowed:
                 return (False, policy.action, reason)
-                
+
             # Check joins
             is_allowed, reason = policy.check_joins(joins)
-            
+
             if not is_allowed:
                 return (False, policy.action, reason)
-        
+
         # All policies passed
         return (True, PolicyAction.ALLOW, None)
-    
+
     def _evaluate_policy(
         self,
         policy: DataPolicy,
@@ -315,11 +339,11 @@ class PolicyEnforcer:
         data_sources: List[str],
         joins: List[Tuple[str, str]],
         purpose: str,
-        roles: List[str]
+        roles: List[str],
     ) -> Tuple[bool, Optional[str]]:
         """
         Evaluate a single policy against a query.
-        
+
         Args:
             policy: Policy to evaluate
             fields: Fields being accessed
@@ -327,7 +351,7 @@ class PolicyEnforcer:
             joins: Table joins being performed
             purpose: Business purpose
             roles: User roles
-            
+
         Returns:
             Tuple of (is_allowed, reason)
         """
@@ -335,35 +359,37 @@ class PolicyEnforcer:
         is_allowed, reason = policy.check_role(roles)
         if not is_allowed:
             return (False, reason)
-            
+
         # Check purpose requirements
         is_allowed, reason = policy.check_purpose(purpose)
         if not is_allowed:
             return (False, reason)
-            
+
         # Check data source restrictions
         is_allowed, reason = policy.check_data_sources(data_sources)
         if not is_allowed:
             return (False, reason)
-            
+
         # Check join restrictions
         is_allowed, reason = policy.check_joins(joins)
         if not is_allowed:
             return (False, reason)
-            
+
         # Check field combinations
-        is_allowed, reason = policy.check_field_combination(fields, self.field_categories)
+        is_allowed, reason = policy.check_field_combination(
+            fields, self.field_categories
+        )
         if not is_allowed:
             return (False, reason)
-            
+
         # Check sensitive field limits
         is_allowed, reason = policy.check_sensitive_field_limit(fields)
         if not is_allowed:
             return (False, reason)
-            
+
         # All checks passed
         return (True, None)
-    
+
     def categorize_fields(self, fields: List[str]) -> Dict[str, List[FieldCategory]]:
         """
         Categorize fields based on pre-defined categories or PII detection.
@@ -444,35 +470,37 @@ class PolicyEnforcer:
             result[field] = categories
 
         return result
-    
+
     def add_field_category(self, field: str, category: FieldCategory) -> None:
         """
         Add a category to a field.
-        
+
         Args:
             field: Field name
             category: Category to add
         """
         if field not in self.field_categories:
             self.field_categories[field] = []
-            
+
         if category not in self.field_categories[field]:
             self.field_categories[field].append(category)
-    
+
     def add_policy(self, policy: DataPolicy) -> None:
         """
         Add a policy to the enforcer.
-        
+
         Args:
             policy: Policy to add
         """
         self.policies.add_policy(policy)
-    
+        self.policy_engine.add_policy(policy)
+
     def load_policies(self, policy_set: PolicySet) -> None:
         """
         Load a complete policy set.
-        
+
         Args:
             policy_set: PolicySet to load
         """
         self.policies = policy_set
+        self.policy_engine.load_policies(policy_set)

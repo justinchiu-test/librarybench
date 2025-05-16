@@ -1,17 +1,24 @@
 """Impact measurement engine for tracking and quantifying investment impact."""
 
 from typing import Dict, List, Optional, Any, Tuple
-from datetime import date
+from datetime import date, datetime
+from uuid import UUID, uuid4
 import time
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
+from pydantic import BaseModel, Field
+
+# Import from common library
+from common.core.analysis.analyzer import BaseAnalyzer, AnalysisParameters, AnalysisResult
+from common.core.utils.performance import Timer
+from common.core.utils.cache_utils import memoize
+from common.core.models.investment import ImpactMetric as CommonImpactMetric, ImpactData as CommonImpactData
 
 from ethical_finance.models import Investment, Portfolio, ImpactMetric, ImpactData
 
 
-@dataclass
-class ImpactMetricDefinition:
+class ImpactMetricDefinition(BaseModel):
     """Definition of an impact metric used for measurement."""
     
     id: str
@@ -23,23 +30,65 @@ class ImpactMetricDefinition:
     data_source: str
     normalization_factor: Optional[str] = None
     benchmark: Optional[float] = None
+    
+    @classmethod
+    def from_impact_metric(cls, metric: ImpactMetric, benchmark: Optional[float] = None) -> "ImpactMetricDefinition":
+        """Create an ImpactMetricDefinition from an ImpactMetric."""
+        return cls(
+            id=str(metric.id),
+            name=metric.name,
+            category=metric.category,
+            unit=metric.unit,
+            description=metric.description,
+            higher_is_better=metric.higher_is_better,
+            data_source=metric.data_source,
+            benchmark=benchmark
+        )
 
 
-@dataclass
-class ImpactReport:
+class ImpactReport(AnalysisResult):
     """Report containing impact metrics for a portfolio or investment."""
     
-    entity_id: str
-    entity_type: str  # "portfolio" or "investment"
-    report_date: date
-    metrics: Dict[str, float]
-    normalized_metrics: Dict[str, float]
-    benchmark_comparison: Dict[str, float]
+    metrics: Dict[str, float] = Field(default_factory=dict)
+    normalized_metrics: Dict[str, float] = Field(default_factory=dict)
+    benchmark_comparison: Dict[str, float] = Field(default_factory=dict)
     historical_data: Optional[Dict[str, List[Tuple[date, float]]]] = None
-    processing_time_ms: float = 0
+    
+    @classmethod
+    def from_impact_analysis(cls, 
+                           entity_id: str,
+                           entity_type: str,
+                           metrics: Dict[str, float],
+                           normalized_metrics: Dict[str, float],
+                           benchmark_comparison: Dict[str, float],
+                           historical_data: Optional[Dict[str, List[Tuple[date, float]]]] = None,
+                           processing_time_ms: float = 0) -> "ImpactReport":
+        """Create an ImpactReport from impact analysis data."""
+        return cls(
+            id=uuid4(),
+            subject_id=entity_id,
+            subject_type=entity_type,
+            analysis_type="impact_measurement",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "metric_count": len(metrics),
+                "average_normalized_score": sum(normalized_metrics.values()) / len(normalized_metrics) if normalized_metrics else 0,
+                "benchmark_performance": "above" if all(v > 1.0 for v in benchmark_comparison.values()) else "mixed"
+            },
+            detailed_results={
+                "metrics": metrics,
+                "normalized_metrics": normalized_metrics,
+                "benchmark_comparison": benchmark_comparison
+            },
+            metrics=metrics,
+            normalized_metrics=normalized_metrics,
+            benchmark_comparison=benchmark_comparison,
+            historical_data=historical_data
+        )
 
 
-class ImpactMeasurementEngine:
+class ImpactMeasurementEngine(BaseAnalyzer[Investment, ImpactReport]):
     """Engine for measuring and quantifying the impact of investments."""
     
     def __init__(self, metrics: List[ImpactMetricDefinition]):
@@ -48,8 +97,27 @@ class ImpactMeasurementEngine:
         Args:
             metrics: List of impact metrics to track
         """
+        super().__init__()
         self.metrics = {metric.id: metric for metric in metrics}
     
+    def analyze(
+        self, subject: Investment, parameters: Optional[AnalysisParameters] = None
+    ) -> ImpactReport:
+        """
+        Analyze a single investment's impact.
+        
+        Args:
+            subject: The investment to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            Analysis result
+        """
+        # Use the measure_investment_impact method for implementation
+        impact_data = parameters.custom_settings.get("impact_data") if parameters and hasattr(parameters, "custom_settings") else None
+        return self.measure_investment_impact(subject, impact_data)
+    
+    @memoize
     def measure_investment_impact(
         self, 
         investment: Investment, 
@@ -64,51 +132,55 @@ class ImpactMeasurementEngine:
         Returns:
             An ImpactReport containing the calculated metrics
         """
-        start_time = time.time()
-        
-        metrics = {}
-        normalized_metrics = {}
-        benchmark_comparison = {}
-        
-        # Process environmental metrics
-        metrics["carbon_intensity"] = investment.carbon_footprint / investment.market_cap * 1e9  # tons CO2 per $B
-        normalized_metrics["carbon_intensity"] = self._normalize_metric("carbon_intensity", metrics["carbon_intensity"])
-        benchmark_comparison["carbon_intensity"] = self._compare_to_benchmark("carbon_intensity", metrics["carbon_intensity"])
-        
-        metrics["renewable_energy_percentage"] = investment.renewable_energy_use * 100  # Convert to percentage
-        normalized_metrics["renewable_energy_percentage"] = self._normalize_metric("renewable_energy_percentage", metrics["renewable_energy_percentage"])
-        benchmark_comparison["renewable_energy_percentage"] = self._compare_to_benchmark("renewable_energy_percentage", metrics["renewable_energy_percentage"])
-        
-        # Process social metrics
-        metrics["diversity_score"] = investment.diversity_score * 100  # Convert to percentage
-        normalized_metrics["diversity_score"] = self._normalize_metric("diversity_score", metrics["diversity_score"])
-        benchmark_comparison["diversity_score"] = self._compare_to_benchmark("diversity_score", metrics["diversity_score"])
-        
-        # Process governance metrics
-        metrics["board_independence"] = investment.board_independence * 100  # Convert to percentage
-        normalized_metrics["board_independence"] = self._normalize_metric("board_independence", metrics["board_independence"])
-        benchmark_comparison["board_independence"] = self._compare_to_benchmark("board_independence", metrics["board_independence"])
-        
-        # Include additional impact data if provided
-        if impact_data:
-            for metric_id, value in impact_data.items():
-                if metric_id in self.metrics:
-                    metrics[metric_id] = value
-                    normalized_metrics[metric_id] = self._normalize_metric(metric_id, value)
-                    benchmark_comparison[metric_id] = self._compare_to_benchmark(metric_id, value)
-        
-        processing_time = (time.time() - start_time) * 1000
-        
-        return ImpactReport(
-            entity_id=investment.id,
-            entity_type="investment",
-            report_date=date.today(),
-            metrics=metrics,
-            normalized_metrics=normalized_metrics,
-            benchmark_comparison=benchmark_comparison,
-            processing_time_ms=processing_time
-        )
+        # Use the Timer utility from common library
+        with Timer("measure_investment_impact") as timer:
+            metrics = {}
+            normalized_metrics = {}
+            benchmark_comparison = {}
+            
+            # Process environmental metrics
+            metrics["carbon_intensity"] = investment.carbon_footprint / investment.market_cap * 1e9  # tons CO2 per $B
+            normalized_metrics["carbon_intensity"] = self._normalize_metric("carbon_intensity", metrics["carbon_intensity"])
+            benchmark_comparison["carbon_intensity"] = self._compare_to_benchmark("carbon_intensity", metrics["carbon_intensity"])
+            
+            metrics["renewable_energy_percentage"] = investment.renewable_energy_use * 100  # Convert to percentage
+            normalized_metrics["renewable_energy_percentage"] = self._normalize_metric("renewable_energy_percentage", metrics["renewable_energy_percentage"])
+            benchmark_comparison["renewable_energy_percentage"] = self._compare_to_benchmark("renewable_energy_percentage", metrics["renewable_energy_percentage"])
+            
+            # Process social metrics
+            metrics["diversity_score"] = investment.diversity_score * 100  # Convert to percentage
+            normalized_metrics["diversity_score"] = self._normalize_metric("diversity_score", metrics["diversity_score"])
+            benchmark_comparison["diversity_score"] = self._compare_to_benchmark("diversity_score", metrics["diversity_score"])
+            
+            # Process governance metrics
+            metrics["board_independence"] = investment.board_independence * 100  # Convert to percentage
+            normalized_metrics["board_independence"] = self._normalize_metric("board_independence", metrics["board_independence"])
+            benchmark_comparison["board_independence"] = self._compare_to_benchmark("board_independence", metrics["board_independence"])
+            
+            # Include additional impact data if provided
+            if impact_data:
+                for metric_id, value in impact_data.items():
+                    if metric_id in self.metrics:
+                        metrics[metric_id] = value
+                        normalized_metrics[metric_id] = self._normalize_metric(metric_id, value)
+                        benchmark_comparison[metric_id] = self._compare_to_benchmark(metric_id, value)
+            
+            # Create the report using the factory method
+            result = ImpactReport.from_impact_analysis(
+                entity_id=str(investment.id),
+                entity_type="investment",
+                metrics=metrics,
+                normalized_metrics=normalized_metrics,
+                benchmark_comparison=benchmark_comparison,
+                processing_time_ms=timer.elapsed_milliseconds
+            )
+            
+            # Add to cache for future reuse
+            self._save_to_cache(str(investment.id), result)
+            
+            return result
     
+    @memoize
     def measure_portfolio_impact(
         self, 
         portfolio: Portfolio, 
@@ -125,63 +197,71 @@ class ImpactMeasurementEngine:
         Returns:
             An ImpactReport containing the calculated metrics for the portfolio
         """
-        start_time = time.time()
-        
-        # Calculate the weight of each investment in the portfolio
-        total_value = portfolio.total_value
-        weights = {
-            holding.investment_id: holding.current_value / total_value
-            for holding in portfolio.holdings
-        }
-        
-        # Collect individual investment impacts
-        investment_impacts = {}
-        for holding in portfolio.holdings:
-            investment_id = holding.investment_id
-            if investment_id in investments:
-                investment_data = impact_data.get(investment_id, {}) if impact_data else {}
-                investment_impacts[investment_id] = self.measure_investment_impact(
-                    investments[investment_id], investment_data
-                )
-        
-        # Aggregate impacts across the portfolio
-        portfolio_metrics = {}
-        portfolio_normalized = {}
-        portfolio_benchmark = {}
-        
-        for metric_id in self.metrics:
-            # Use weighted average for most metrics
-            if metric_id in ["renewable_energy_percentage", "diversity_score", "board_independence"]:
-                portfolio_metrics[metric_id] = sum(
-                    impact.metrics.get(metric_id, 0) * weights[impact.entity_id]
-                    for impact in investment_impacts.values()
-                    if impact.entity_id in weights
-                )
-            # For carbon intensity, weighted sum is appropriate
-            elif metric_id == "carbon_intensity":
-                portfolio_metrics[metric_id] = sum(
-                    impact.metrics.get(metric_id, 0) * weights[impact.entity_id]
-                    for impact in investment_impacts.values()
-                    if impact.entity_id in weights
-                )
+        # Use the Timer utility from common library
+        with Timer("measure_portfolio_impact") as timer:
+            # Calculate the weight of each investment in the portfolio
+            total_value = portfolio.total_value
+            weights = {
+                holding.investment_id: holding.current_value / total_value if total_value > 0 else 0
+                for holding in portfolio.holdings
+            }
             
-            # Normalize and benchmark the aggregated metrics
-            if metric_id in portfolio_metrics:
-                portfolio_normalized[metric_id] = self._normalize_metric(metric_id, portfolio_metrics[metric_id])
-                portfolio_benchmark[metric_id] = self._compare_to_benchmark(metric_id, portfolio_metrics[metric_id])
-        
-        # Calculate processing time
-        processing_time = (time.time() - start_time) * 1000
-        
-        return ImpactReport(
-            entity_id=portfolio.portfolio_id,
-            entity_type="portfolio",
-            report_date=date.today(),
-            metrics=portfolio_metrics,
-            normalized_metrics=portfolio_normalized,
-            benchmark_comparison=portfolio_benchmark,
-            processing_time_ms=processing_time
-        )
+            # Check for cached result first
+            portfolio_id = str(portfolio.id)
+            cached_result = self._get_from_cache(portfolio_id)
+            if cached_result and cached_result.analysis_date > portfolio.last_updated:
+                return cached_result
+            
+            # Collect individual investment impacts
+            investment_impacts = {}
+            for holding in portfolio.holdings:
+                investment_id = holding.investment_id
+                if investment_id in investments:
+                    investment_data = impact_data.get(investment_id, {}) if impact_data else {}
+                    investment_impacts[investment_id] = self.measure_investment_impact(
+                        investments[investment_id], investment_data
+                    )
+            
+            # Aggregate impacts across the portfolio
+            portfolio_metrics = {}
+            portfolio_normalized = {}
+            portfolio_benchmark = {}
+            
+            for metric_id in self.metrics:
+                # Use weighted average for most metrics
+                if metric_id in ["renewable_energy_percentage", "diversity_score", "board_independence"]:
+                    portfolio_metrics[metric_id] = sum(
+                        impact.metrics.get(metric_id, 0) * weights[impact.subject_id]
+                        for impact in investment_impacts.values()
+                        if impact.subject_id in weights
+                    )
+                # For carbon intensity, weighted sum is appropriate
+                elif metric_id == "carbon_intensity":
+                    portfolio_metrics[metric_id] = sum(
+                        impact.metrics.get(metric_id, 0) * weights[impact.subject_id]
+                        for impact in investment_impacts.values()
+                        if impact.subject_id in weights
+                    )
+                
+                # Normalize and benchmark the aggregated metrics
+                if metric_id in portfolio_metrics:
+                    portfolio_normalized[metric_id] = self._normalize_metric(metric_id, portfolio_metrics[metric_id])
+                    portfolio_benchmark[metric_id] = self._compare_to_benchmark(metric_id, portfolio_metrics[metric_id])
+            
+            # Create the report using the factory method
+            result = ImpactReport.from_impact_analysis(
+                entity_id=portfolio_id,
+                entity_type="portfolio",
+                metrics=portfolio_metrics,
+                normalized_metrics=portfolio_normalized,
+                benchmark_comparison=portfolio_benchmark,
+                processing_time_ms=timer.elapsed_milliseconds
+            )
+            
+            # Add to cache for future reuse
+            self._save_to_cache(portfolio_id, result)
+            
+            return result
     
     def analyze_historical_impact(
         self,
@@ -646,65 +726,75 @@ def create_default_impact_metrics() -> List[ImpactMetricDefinition]:
     Returns:
         List of default ImpactMetricDefinition objects
     """
-    return [
-        ImpactMetricDefinition(
+    # First create CommonImpactMetric instances
+    common_metrics = [
+        CommonImpactMetric(
             id="carbon_intensity",
             name="Carbon Intensity",
             category="environmental",
             unit="tons CO2/$B",
             description="Carbon emissions per billion dollars of market cap",
             higher_is_better=False,
-            data_source="company_reports",
-            benchmark=100
+            data_source="company_reports"
         ),
-        ImpactMetricDefinition(
+        CommonImpactMetric(
             id="renewable_energy_percentage",
             name="Renewable Energy Use",
             category="environmental",
             unit="%",
             description="Percentage of energy from renewable sources",
             higher_is_better=True,
-            data_source="company_reports",
-            benchmark=50
+            data_source="company_reports"
         ),
-        ImpactMetricDefinition(
+        CommonImpactMetric(
             id="diversity_score",
             name="Workforce Diversity",
             category="social",
             unit="%",
             description="Score representing workforce diversity",
             higher_is_better=True,
-            data_source="company_reports",
-            benchmark=60
+            data_source="company_reports"
         ),
-        ImpactMetricDefinition(
+        CommonImpactMetric(
             id="board_independence",
             name="Board Independence",
             category="governance",
             unit="%",
             description="Percentage of independent board members",
             higher_is_better=True,
-            data_source="company_reports",
-            benchmark=70
+            data_source="company_reports"
         ),
-        ImpactMetricDefinition(
+        CommonImpactMetric(
             id="community_investment",
             name="Community Investment",
             category="social",
             unit="$M",
             description="Millions of dollars invested in community projects",
             higher_is_better=True,
-            data_source="company_reports",
-            benchmark=5
+            data_source="company_reports"
         ),
-        ImpactMetricDefinition(
+        CommonImpactMetric(
             id="water_usage",
             name="Water Usage",
             category="environmental",
             unit="kgal/$M",
             description="Thousands of gallons used per million dollars of revenue",
             higher_is_better=False,
-            data_source="company_reports",
-            benchmark=500
+            data_source="company_reports"
         )
+    ]
+    
+    # Convert to ImpactMetricDefinition with benchmark values
+    benchmarks = {
+        "carbon_intensity": 100,
+        "renewable_energy_percentage": 50,
+        "diversity_score": 60,
+        "board_independence": 70,
+        "community_investment": 5,
+        "water_usage": 500
+    }
+    
+    return [
+        ImpactMetricDefinition.from_impact_metric(metric, benchmarks.get(str(metric.id)))
+        for metric in common_metrics
     ]

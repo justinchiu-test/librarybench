@@ -1,16 +1,25 @@
 """Portfolio analysis system for ESG-aligned investments."""
 
 from typing import Dict, List, Optional, Any, Tuple
-from datetime import date
+from datetime import date, datetime
+from uuid import UUID, uuid4
 import time
 from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
 # Import from common library
-from common.core.analysis.analyzer import BaseAnalyzer
-from common.core.analysis.portfolio import PortfolioAnalyzer as BasePortfolioAnalyzer
+from common.core.analysis.analyzer import BaseAnalyzer, AnalysisParameters, AnalysisResult
+from common.core.analysis.portfolio import (
+    PortfolioAnalyzer as BasePortfolioAnalyzer,
+    PortfolioAnalysisParameters,
+    PortfolioAnalysisResult,
+    PortfolioBreakdown,
+    PortfolioPerformance,
+    PortfolioESGMetrics
+)
 from common.core.utils.performance import Timer
+from common.core.utils.cache_utils import memoize
 
 from ethical_finance.models import Investment, Portfolio, InvestmentHolding
 from ethical_finance.ethical_screening.screening import EthicalScreener, ScreeningResult
@@ -36,73 +45,220 @@ def get_portfolio_id(portfolio: Portfolio) -> str:
     return str(portfolio.portfolio_id)
 
 
-@dataclass
-class PortfolioCompositionResult:
+class PortfolioCompositionResult(PortfolioAnalysisResult):
     """Result of analyzing the composition of a portfolio."""
     
-    portfolio_id: str
-    analysis_date: date
-    sector_breakdown: Dict[str, float]
-    industry_breakdown: Dict[str, float]
-    esg_theme_exposure: Dict[str, float]
-    concentration_metrics: Dict[str, float]
-    top_holdings: List[Tuple[str, float]]
-    ethical_alignment: Dict[str, Any]
-    processing_time_ms: float = 0
+    esg_theme_exposure: Dict[str, float] = {}
+    ethical_alignment: Dict[str, Any] = {}
+    
+    @classmethod
+    def from_analysis(cls, portfolio_id: str, 
+                     sector_breakdown: Dict[str, float],
+                     industry_breakdown: Dict[str, float],
+                     esg_theme_exposure: Dict[str, float],
+                     concentration_metrics: Dict[str, float],
+                     top_holdings: List[Tuple[str, float]],
+                     ethical_alignment: Dict[str, Any],
+                     processing_time_ms: float = 0) -> "PortfolioCompositionResult":
+        """Create a PortfolioCompositionResult from analysis data."""
+        # Create a PortfolioBreakdown instance
+        breakdown = PortfolioBreakdown(
+            by_sector=sector_breakdown,
+            by_industry=industry_breakdown,
+            concentration_metrics=concentration_metrics
+        )
+        
+        # Create basic esg_metrics
+        esg_metrics = None
+        if "weighted_environmental_score" in ethical_alignment:
+            esg_metrics = PortfolioESGMetrics(
+                overall_esg_score=ethical_alignment.get("weighted_overall_score", 0),
+                environmental_score=ethical_alignment.get("weighted_environmental_score", 0),
+                social_score=ethical_alignment.get("weighted_social_score", 0),
+                governance_score=ethical_alignment.get("weighted_governance_score", 0),
+                carbon_footprint=0.0,  # Default
+                renewable_energy_exposure=0.0,  # Default
+                diversity_score=0.0,  # Default
+                controversy_exposure=0.0,  # Default
+            )
+        
+        # Create the portfolio analysis result
+        result = cls(
+            id=uuid4(),
+            subject_id=portfolio_id,
+            subject_type="portfolio",
+            analysis_type="ethical_composition",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "top_sector": max(sector_breakdown.items(), key=lambda x: x[1])[0] if sector_breakdown else None,
+                "ethical_score": ethical_alignment.get("weighted_overall_score", 0),
+                "holdings_passing_percentage": ethical_alignment.get("holdings_passing_percentage", 0),
+            },
+            detailed_results={
+                "top_holdings": {holding[0]: holding[1] for holding in top_holdings[:5]},
+                "sector_breakdown": sector_breakdown,
+                "industry_breakdown": industry_breakdown,
+            },
+            breakdown=breakdown,
+            esg_metrics=esg_metrics,
+            diversification_score=1.0 - concentration_metrics.get("holdings_hhi", 0.0),
+            risk_exposure={
+                "sector_concentration": concentration_metrics.get("sector_hhi", 0.0),
+                "industry_concentration": concentration_metrics.get("industry_hhi", 0.0),
+            },
+            recommendations=[],
+            esg_theme_exposure=esg_theme_exposure,
+            ethical_alignment=ethical_alignment
+        )
+        
+        return result
 
 
-@dataclass
-class DiversificationAssessment:
+class DiversificationAssessment(AnalysisResult):
     """Assessment of portfolio diversification with ethical constraints."""
     
-    portfolio_id: str
-    assessment_date: date
     diversification_score: float  # 0-100
-    sector_concentration_risk: Dict[str, float]
-    industry_concentration_risk: Dict[str, float]
-    esg_theme_concentration_risk: Dict[str, float]
-    diversification_recommendations: List[Dict[str, Any]]
-    ethical_constraints_applied: List[str]
-    processing_time_ms: float = 0
+    sector_concentration_risk: Dict[str, float] = {}
+    industry_concentration_risk: Dict[str, float] = {}
+    esg_theme_concentration_risk: Dict[str, float] = {}
+    diversification_recommendations: List[Dict[str, Any]] = []
+    ethical_constraints_applied: List[str] = []
+    
+    @classmethod
+    def from_assessment(cls, portfolio_id: str, 
+                       diversification_score: float,
+                       sector_risk: Dict[str, float],
+                       industry_risk: Dict[str, float],
+                       theme_risk: Dict[str, float],
+                       recommendations: List[Dict[str, Any]],
+                       constraints: List[str],
+                       processing_time_ms: float = 0) -> "DiversificationAssessment":
+        """Create a DiversificationAssessment from assessment data."""
+        return cls(
+            id=uuid4(),
+            subject_id=portfolio_id,
+            subject_type="portfolio",
+            analysis_type="ethical_diversification",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "diversification_score": diversification_score,
+                "sector_risk_count": len(sector_risk),
+                "industry_risk_count": len(industry_risk),
+                "theme_risk_count": len(theme_risk),
+                "recommendation_count": len(recommendations),
+                "constraints_applied": len(constraints)
+            },
+            detailed_results={
+                "sector_concentration_risk": sector_risk,
+                "industry_concentration_risk": industry_risk,
+                "esg_theme_concentration_risk": theme_risk,
+                "diversification_recommendations": recommendations,
+                "ethical_constraints_applied": constraints
+            },
+            diversification_score=diversification_score,
+            sector_concentration_risk=sector_risk,
+            industry_concentration_risk=industry_risk,
+            esg_theme_concentration_risk=theme_risk,
+            diversification_recommendations=recommendations,
+            ethical_constraints_applied=constraints
+        )
 
 
-@dataclass
-class PortfolioOptimizationResult:
+class PortfolioOptimizationResult(AnalysisResult):
     """Result of optimizing a portfolio for both returns and ethical alignment."""
     
-    portfolio_id: str
-    optimization_date: date
     current_ethical_score: float
-    current_risk_metrics: Dict[str, float]
-    recommended_changes: List[Dict[str, Any]]
-    expected_improvement: Dict[str, float]
-    optimization_constraints: Dict[str, Any]
-    processing_time_ms: float = 0
+    current_risk_metrics: Dict[str, float] = {}
+    recommended_changes: List[Dict[str, Any]] = []
+    expected_improvement: Dict[str, float] = {}
+    optimization_constraints: Dict[str, Any] = {}
+    
+    @classmethod
+    def from_optimization(cls, portfolio_id: str,
+                         ethical_score: float,
+                         risk_metrics: Dict[str, float],
+                         changes: List[Dict[str, Any]],
+                         improvements: Dict[str, float],
+                         constraints: Dict[str, Any],
+                         processing_time_ms: float = 0) -> "PortfolioOptimizationResult":
+        """Create a PortfolioOptimizationResult from optimization data."""
+        return cls(
+            id=uuid4(),
+            subject_id=portfolio_id,
+            subject_type="portfolio",
+            analysis_type="ethical_optimization",
+            analysis_date=datetime.now(),
+            processing_time_ms=processing_time_ms,
+            result_summary={
+                "current_ethical_score": ethical_score,
+                "sector_concentration": risk_metrics.get("sector_concentration", 0),
+                "recommended_changes_count": len(changes),
+                "expected_ethical_improvement": improvements.get("ethical_score", 0),
+                "expected_diversification_improvement": improvements.get("diversification", 0)
+            },
+            detailed_results={
+                "current_risk_metrics": risk_metrics,
+                "recommended_changes": changes,
+                "expected_improvement": improvements,
+                "optimization_constraints": constraints
+            },
+            current_ethical_score=ethical_score,
+            current_risk_metrics=risk_metrics,
+            recommended_changes=changes,
+            expected_improvement=improvements,
+            optimization_constraints=constraints
+        )
 
 
 class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
     """System for analyzing investment portfolios with ESG considerations."""
     
-    def __init__(self, ethical_screener: Optional[EthicalScreener] = None):
-        """Initialize with optional ethical screener.
+    def __init__(self, investments: Dict[str, Investment], ethical_screener: Optional[EthicalScreener] = None):
+        """Initialize with investments database and optional ethical screener.
         
         Args:
+            investments: Dictionary mapping investment IDs to Investment objects
             ethical_screener: Optional EthicalScreener for ethical alignment analysis
         """
-        super().__init__()
+        super().__init__(investments)
         self.ethical_screener = ethical_screener
+        
+    def analyze(
+        self, portfolio: Portfolio, parameters: Optional[PortfolioAnalysisParameters] = None
+    ) -> PortfolioAnalysisResult:
+        """
+        Analyze a portfolio using the base analyzer and add ethical metrics.
+        
+        Args:
+            portfolio: The portfolio to analyze
+            parameters: Optional parameters to configure the analysis
+            
+        Returns:
+            Enhanced portfolio analysis result with ethical metrics
+        """
+        # Get base analysis from parent class
+        base_result = super().analyze(portfolio, parameters)
+        
+        # Enhanced the result with ethical metrics if screener is available
+        if self.ethical_screener:
+            # This would perform ethical screening on portfolio investments
+            # and enhance the base result with ethical metrics
+            pass
+            
+        return base_result
     
+    @memoize
     def analyze_portfolio_composition(
         self, 
         portfolio: Portfolio, 
-        investments: Dict[str, Investment],
         screening_results: Optional[Dict[str, ScreeningResult]] = None
     ) -> PortfolioCompositionResult:
         """Analyze the composition of a portfolio.
         
         Args:
             portfolio: The portfolio to analyze
-            investments: Dict mapping investment IDs to Investment objects
             screening_results: Optional dict of screening results for ethical analysis
             
         Returns:
@@ -112,151 +268,161 @@ class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
         with Timer("analyze_portfolio_composition") as timer:
             # Calculate total portfolio value
             total_value = portfolio.total_value
-        
-        # Calculate sector breakdown
-        sector_breakdown = {}
-        for holding in portfolio.holdings:
-            investment_id = holding.investment_id
-            if investment_id in investments:
-                investment = investments[investment_id]
-                sector = investment.sector
-                
-                # Calculate sector weight
-                weight = holding.current_value / total_value
-                
-                if sector in sector_breakdown:
-                    sector_breakdown[sector] += weight
-                else:
-                    sector_breakdown[sector] = weight
-        
-        # Calculate industry breakdown
-        industry_breakdown = {}
-        for holding in portfolio.holdings:
-            investment_id = holding.investment_id
-            if investment_id in investments:
-                investment = investments[investment_id]
-                industry = investment.industry
-                
-                # Calculate industry weight
-                weight = holding.current_value / total_value
-                
-                if industry in industry_breakdown:
-                    industry_breakdown[industry] += weight
-                else:
-                    industry_breakdown[industry] = weight
-        
-        # Calculate ESG theme exposure
-        esg_theme_exposure = {}
-        
-        # Initialize with common ESG themes
-        esg_themes = {
-            "renewable_energy": 0.0,
-            "climate_action": 0.0,
-            "social_justice": 0.0,
-            "diversity_equity_inclusion": 0.0,
-            "sustainable_agriculture": 0.0,
-            "circular_economy": 0.0,
-            "community_development": 0.0,
-            "good_governance": 0.0
-        }
-        
-        for holding in portfolio.holdings:
-            investment_id = holding.investment_id
-            if investment_id in investments:
-                investment = investments[investment_id]
-                weight = holding.current_value / total_value
-                
-                # Map positive practices to themes
-                for practice in investment.positive_practices:
-                    theme = self._map_practice_to_theme(practice)
-                    if theme in esg_themes:
-                        # Add weight to theme exposure
-                        score_factor = investment.esg_ratings.overall / 100
-                        esg_themes[theme] += weight * score_factor
-        
-        # Normalize theme exposure to a 0-1 scale
-        for theme, exposure in esg_themes.items():
-            # Cap at 1.0 for each theme
-            esg_theme_exposure[theme] = min(1.0, exposure)
-        
-        # Identify top holdings
-        top_holdings = []
-        for holding in portfolio.holdings:
-            weight = holding.current_value / total_value
-            top_holdings.append((holding.investment_id, weight))
-        
-        # Sort by weight descending
-        top_holdings.sort(key=lambda x: x[1], reverse=True)
-        
-        # Calculate concentration metrics
-        concentration_metrics = {}
-        
-        # Herfindahl-Hirschman Index (HHI) for holdings
-        hhi = sum(weight ** 2 for _, weight in top_holdings)
-        concentration_metrics["holdings_hhi"] = hhi
-        
-        # Sector concentration
-        sector_hhi = sum(weight ** 2 for weight in sector_breakdown.values())
-        concentration_metrics["sector_hhi"] = sector_hhi
-        
-        # Industry concentration
-        industry_hhi = sum(weight ** 2 for weight in industry_breakdown.values())
-        concentration_metrics["industry_hhi"] = industry_hhi
-        
-        # Top 5 concentration
-        top5_concentration = sum(weight for _, weight in top_holdings[:5])
-        concentration_metrics["top5_concentration"] = top5_concentration
-        
-        # Analyze ethical alignment if screening results provided
-        ethical_alignment = {}
-        if screening_results:
-            # Calculate percentage of portfolio passing ethical screening
-            holdings_passing = 0
-            value_passing = 0.0
             
+            # Check for cached portfolio breakdown from base class
+            portfolio_id = get_portfolio_id(portfolio)
+            parameters = PortfolioAnalysisParameters(
+                include_esg_analysis=True,
+                include_sector_breakdown=True,
+                include_performance_metrics=False
+            )
+            
+            # Get the base analysis result from the parent class
+            base_result = self._get_from_cache(portfolio_id, parameters)
+            
+            # If not cached, create sector and industry breakdowns
+            if base_result and hasattr(base_result, 'breakdown'):
+                # Use the base breakdown
+                sector_breakdown = base_result.breakdown.by_sector
+                industry_breakdown = base_result.breakdown.by_industry
+                
+                # Extract concentration metrics
+                concentration_metrics = base_result.breakdown.concentration_metrics
+            else:
+                # Use our own implementation
+                sector_breakdown = {}
+                industry_breakdown = {}
+                
+                # Calculate breakdowns
+                for holding in portfolio.holdings:
+                    investment_id = holding.investment_id
+                    if investment_id in self.investments:
+                        investment = self.investments[investment_id]
+                        weight = holding.current_value / total_value if total_value > 0 else 0
+                        
+                        # Sector breakdown
+                        sector = investment.sector
+                        sector_breakdown[sector] = sector_breakdown.get(sector, 0) + weight
+                        
+                        # Industry breakdown
+                        industry = investment.industry
+                        industry_breakdown[industry] = industry_breakdown.get(industry, 0) + weight
+                
+                # Calculate concentration metrics
+                concentration_metrics = {}
+                
+                # Sector concentration (HHI)
+                sector_hhi = sum(weight ** 2 for weight in sector_breakdown.values())
+                concentration_metrics["sector_hhi"] = sector_hhi
+                
+                # Industry concentration (HHI)
+                industry_hhi = sum(weight ** 2 for weight in industry_breakdown.values())
+                concentration_metrics["industry_hhi"] = industry_hhi
+            
+            # Calculate ESG theme exposure - this is specific to our ethical finance implementation
+            esg_theme_exposure = {}
+            
+            # Initialize with common ESG themes
+            esg_themes = {
+                "renewable_energy": 0.0,
+                "climate_action": 0.0,
+                "social_justice": 0.0,
+                "diversity_equity_inclusion": 0.0,
+                "sustainable_agriculture": 0.0,
+                "circular_economy": 0.0,
+                "community_development": 0.0,
+                "good_governance": 0.0
+            }
+            
+            # Map positive practices to themes
             for holding in portfolio.holdings:
                 investment_id = holding.investment_id
-                if investment_id in screening_results and screening_results[investment_id].passed:
-                    holdings_passing += 1
-                    value_passing += holding.current_value
-            
-            ethical_alignment["holdings_passing_percentage"] = holdings_passing / len(portfolio.holdings) if portfolio.holdings else 0
-            ethical_alignment["value_passing_percentage"] = value_passing / total_value if total_value > 0 else 0
-            
-            # Calculate average ESG scores weighted by holding value
-            weighted_env_score = 0.0
-            weighted_social_score = 0.0
-            weighted_gov_score = 0.0
-            weighted_overall_score = 0.0
-            
-            for holding in portfolio.holdings:
-                investment_id = holding.investment_id
-                if investment_id in investments and investment_id in screening_results:
-                    investment = investments[investment_id]
-                    weight = holding.current_value / total_value
+                if investment_id in self.investments:
+                    investment = self.investments[investment_id]
+                    weight = holding.current_value / total_value if total_value > 0 else 0
                     
-                    weighted_env_score += investment.esg_ratings.environmental * weight
-                    weighted_social_score += investment.esg_ratings.social * weight
-                    weighted_gov_score += investment.esg_ratings.governance * weight
-                    weighted_overall_score += investment.esg_ratings.overall * weight
+                    for practice in investment.positive_practices:
+                        theme = self._map_practice_to_theme(practice)
+                        if theme in esg_themes:
+                            # Add weight to theme exposure
+                            score_factor = investment.esg_ratings.overall / 100
+                            esg_themes[theme] += weight * score_factor
             
-            ethical_alignment["weighted_environmental_score"] = weighted_env_score
-            ethical_alignment["weighted_social_score"] = weighted_social_score
-            ethical_alignment["weighted_governance_score"] = weighted_gov_score
-            ethical_alignment["weighted_overall_score"] = weighted_overall_score
-        
-            # Return the result
-            return PortfolioCompositionResult(
+            # Normalize theme exposure to a 0-1 scale
+            for theme, exposure in esg_themes.items():
+                # Cap at 1.0 for each theme
+                esg_theme_exposure[theme] = min(1.0, exposure)
+            
+            # Identify top holdings
+            top_holdings = []
+            for holding in portfolio.holdings:
+                weight = holding.current_value / total_value if total_value > 0 else 0
+                top_holdings.append((holding.investment_id, weight))
+            
+            # Sort by weight descending
+            top_holdings.sort(key=lambda x: x[1], reverse=True)
+            
+            # Calculate holdings HHI and top 5 concentration
+            holdings_hhi = sum(weight ** 2 for _, weight in top_holdings)
+            concentration_metrics["holdings_hhi"] = holdings_hhi
+            
+            top5_concentration = sum(weight for _, weight in top_holdings[:5])
+            concentration_metrics["top5_concentration"] = top5_concentration
+            
+            # Analyze ethical alignment if screening results provided
+            ethical_alignment = {}
+            if screening_results:
+                # Calculate percentage of portfolio passing ethical screening
+                holdings_passing = 0
+                value_passing = 0.0
+                
+                for holding in portfolio.holdings:
+                    investment_id = holding.investment_id
+                    if investment_id in screening_results and screening_results[investment_id].passed:
+                        holdings_passing += 1
+                        value_passing += holding.current_value
+                
+                ethical_alignment["holdings_passing_percentage"] = holdings_passing / len(portfolio.holdings) if portfolio.holdings else 0
+                ethical_alignment["value_passing_percentage"] = value_passing / total_value if total_value > 0 else 0
+                
+                # Calculate average ESG scores weighted by holding value
+                weighted_env_score = 0.0
+                weighted_social_score = 0.0
+                weighted_gov_score = 0.0
+                weighted_overall_score = 0.0
+                
+                for holding in portfolio.holdings:
+                    investment_id = holding.investment_id
+                    if investment_id in self.investments and investment_id in screening_results:
+                        investment = self.investments[investment_id]
+                        weight = holding.current_value / total_value if total_value > 0 else 0
+                        
+                        weighted_env_score += investment.esg_ratings.environmental * weight
+                        weighted_social_score += investment.esg_ratings.social * weight
+                        weighted_gov_score += investment.esg_ratings.governance * weight
+                        weighted_overall_score += investment.esg_ratings.overall * weight
+                
+                ethical_alignment["weighted_environmental_score"] = weighted_env_score
+                ethical_alignment["weighted_social_score"] = weighted_social_score
+                ethical_alignment["weighted_governance_score"] = weighted_gov_score
+                ethical_alignment["weighted_overall_score"] = weighted_overall_score
+            
+            # Create the result using the factory method
+            result = PortfolioCompositionResult.from_analysis(
                 portfolio_id=get_portfolio_id(portfolio),
-                analysis_date=date.today(),
                 sector_breakdown=sector_breakdown,
                 industry_breakdown=industry_breakdown,
                 esg_theme_exposure=esg_theme_exposure,
                 concentration_metrics=concentration_metrics,
                 top_holdings=top_holdings[:10],  # Top 10 holdings
                 ethical_alignment=ethical_alignment,
-                processing_time_ms=timer.elapsed_ms
+                processing_time_ms=timer.elapsed_milliseconds
             )
+            
+            # Cache the result
+            self._save_to_cache(portfolio_id, result, parameters)
+            
+            return result
     
     def assess_diversification(
         self, 

@@ -53,22 +53,22 @@ class ExecutionPipeline:
         # Initialize execution context if not already set
         if not query.get_execution_context():
             query.set_execution_context(ExecutionContext())
-            
+
         # Initialize results
         results: Dict[str, Any] = {}
-        
+
         # Run pre-processors
         for processor in self.pre_processors:
             processor(query)
-        
+
         # Run execution steps
         for step in self.steps:
             step(query, results)
-        
+
         # Run post-processors
         for processor in self.post_processors:
             processor(query, results)
-        
+
         return results
 
 

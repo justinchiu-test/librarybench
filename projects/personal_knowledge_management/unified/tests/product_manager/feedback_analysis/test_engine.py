@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from productmind.feedback_analysis.engine import FeedbackAnalysisEngine
 from productmind.models import Feedback, FeedbackCluster, Sentiment, SourceType, Theme
+from common.core.models import NodeType
 
 
 class TestFeedbackAnalysisEngine:
@@ -38,7 +39,12 @@ class TestFeedbackAnalysisEngine:
         assert len(feedback_ids) == 1
         assert feedback_ids[0] == str(single_feedback.id)
         assert str(single_feedback.id) in engine._feedback_cache
-        assert os.path.exists(os.path.join(temp_data_dir, "feedback", f"{single_feedback.id}.json"))
+        
+        # The file is now saved through the knowledge base (in yaml format)
+        yaml_file1 = os.path.join(temp_data_dir, "feedback", f"{single_feedback.id}.yaml")
+        yaml_file2 = os.path.join(temp_data_dir, "nodes", "other", f"{single_feedback.id}.yaml")
+        
+        assert os.path.exists(yaml_file1) or os.path.exists(yaml_file2), "Could not find the feedback file"
         
         # Test adding multiple feedback items
         multiple_feedback = feedback_samples[1:3]
@@ -49,8 +55,12 @@ class TestFeedbackAnalysisEngine:
         assert feedback_ids[1] == str(multiple_feedback[1].id)
         assert str(multiple_feedback[0].id) in engine._feedback_cache
         assert str(multiple_feedback[1].id) in engine._feedback_cache
-        assert os.path.exists(os.path.join(temp_data_dir, "feedback", f"{multiple_feedback[0].id}.json"))
-        assert os.path.exists(os.path.join(temp_data_dir, "feedback", f"{multiple_feedback[1].id}.json"))
+        
+        # Check files in either location
+        for feedback_item in multiple_feedback:
+            yaml_file1 = os.path.join(temp_data_dir, "feedback", f"{feedback_item.id}.yaml")
+            yaml_file2 = os.path.join(temp_data_dir, "nodes", "other", f"{feedback_item.id}.yaml")
+            assert os.path.exists(yaml_file1) or os.path.exists(yaml_file2), f"Could not find the feedback file for {feedback_item.id}"
 
     def test_get_feedback(self, temp_data_dir, feedback_samples):
         """Test retrieving feedback items."""
@@ -135,7 +145,11 @@ class TestFeedbackAnalysisEngine:
             
             # Verify cluster storage
             assert cluster.id in engine._clusters
-            assert os.path.exists(os.path.join(temp_data_dir, "clusters", f"{cluster.id}.json"))
+            
+            # Check if file exists in one of the possible places
+            yaml_file1 = os.path.join(temp_data_dir, "clusters", f"{cluster.id}.yaml")
+            yaml_file2 = os.path.join(temp_data_dir, "nodes", "other", f"{cluster.id}.yaml")
+            assert os.path.exists(yaml_file1) or os.path.exists(yaml_file2), "Could not find the cluster file"
             
             # Verify feedback was updated with cluster_id
             for feedback_id in cluster.feedback_ids:
@@ -160,7 +174,11 @@ class TestFeedbackAnalysisEngine:
             
             # Verify cluster storage
             assert cluster.id in engine._clusters
-            assert os.path.exists(os.path.join(temp_data_dir, "clusters", f"{cluster.id}.json"))
+            
+            # Check if file exists in one of the possible places
+            yaml_file1 = os.path.join(temp_data_dir, "clusters", f"{cluster.id}.yaml")
+            yaml_file2 = os.path.join(temp_data_dir, "nodes", "other", f"{cluster.id}.yaml")
+            assert os.path.exists(yaml_file1) or os.path.exists(yaml_file2), "Could not find the cluster file"
 
     def test_extract_themes(self, temp_data_dir, feedback_samples):
         """Test theme extraction from feedback."""
@@ -183,7 +201,11 @@ class TestFeedbackAnalysisEngine:
             
             # Verify theme storage
             assert str(theme.id) in engine._themes
-            assert os.path.exists(os.path.join(temp_data_dir, "themes", f"{theme.id}.json"))
+            
+            # Check if file exists in one of the possible places
+            yaml_file1 = os.path.join(temp_data_dir, "themes", f"{theme.id}.yaml")
+            yaml_file2 = os.path.join(temp_data_dir, "nodes", "tag", f"{theme.id}.yaml")
+            assert os.path.exists(yaml_file1) or os.path.exists(yaml_file2), "Could not find the theme file"
             
             # Verify feedback was updated with theme
             for feedback_id in theme.feedback_ids:
@@ -284,10 +306,24 @@ class TestFeedbackAnalysisEngine:
     def test_get_all_themes(self, temp_data_dir, feedback_samples):
         """Test retrieving all themes."""
         engine = FeedbackAnalysisEngine(storage_dir=temp_data_dir)
-        engine.add_feedback(feedback_samples)
-        created_themes = engine.extract_themes(min_frequency=1)
         
+        # Add feedback to the engine
+        # Reset any existing themes to avoid interference
+        clean_feedback = []
+        for feedback in feedback_samples:
+            feedback.themes = []  # Clear existing themes
+            clean_feedback.append(feedback)
+            
+        engine.add_feedback(clean_feedback)
+        
+        # Extract themes with min_frequency=1 to get all possible themes
+        # Use force_recompute to ensure we start with a clean state
+        created_themes = engine.extract_themes(min_frequency=1, force_recompute=True)
+        
+        # Get all themes
         retrieved_themes = engine.get_all_themes()
+        
+        # Assert that we got back the same number of themes
         assert len(retrieved_themes) == len(created_themes)
         
         theme_ids = [str(t.id) for t in retrieved_themes]

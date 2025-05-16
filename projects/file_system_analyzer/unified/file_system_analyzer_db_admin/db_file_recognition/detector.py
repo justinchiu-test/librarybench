@@ -15,6 +15,7 @@ from .file_patterns import COMPILED_DB_PATTERNS, COMPILED_DIR_PATTERNS
 
 # Import from common library
 from common.core.base import FileSystemScanner, PatternMatcher, ScanSession
+from common.core.scanner import ParallelDirectoryScanner
 from common.core.patterns import FilePattern, FilePatternMatch, RegexPatternMatcher, FilePatternRegistry
 from common.utils.types import FileMetadata, ScanOptions, ScanResult
 
@@ -79,6 +80,12 @@ class DatabaseFileDetector(FileSystemScanner[DatabaseFileAnalysisResult]):
         # For backward compatibility with tests
         self.ignore_extensions = self.options.ignore_extensions
         # Patterns are already registered with the registry in file_patterns.py
+        
+        # Create a parallel scanner for improved performance
+        self.parallel_scanner = ParallelDirectoryScanner(
+            pattern_matcher=self.pattern_matcher,
+            options=self.options
+        )
 
     def detect_engine_from_path(self, file_path: Path) -> Optional[DatabaseEngine]:
         """
@@ -396,6 +403,44 @@ class DatabaseFileDetector(FileSystemScanner[DatabaseFileAnalysisResult]):
             size_by_category=dict(size_by_category),
             detected_files=all_detected_files,
         )
+    
+    def parallel_scan_directory(
+        self,
+        directory_path: Union[str, Path],
+        max_workers: Optional[int] = None
+    ) -> List[DatabaseFileAnalysisResult]:
+        """
+        Scan a directory using parallel processing for better performance.
+        
+        Args:
+            directory_path: Directory to scan
+            max_workers: Maximum number of worker threads
+            
+        Returns:
+            List of scan results
+        """
+        # Use the common library's parallel scanner to get file paths
+        common_results = self.parallel_scanner.parallel_scan_directory(
+            directory_path=directory_path,
+            max_workers=max_workers or self.max_workers
+        )
+        
+        # We'll process each file further to extract database-specific information
+        file_paths = [result.file_metadata.file_path for result in common_results]
+        
+        # Process files in parallel to extract database-specific information
+        results = []
+        with ThreadPoolExecutor(max_workers=max_workers or self.max_workers) as executor:
+            futures = {executor.submit(self.scan_file, file_path): file_path for file_path in file_paths}
+            for future in as_completed(futures):
+                try:
+                    result = future.result()
+                    if result:
+                        results.append(result)
+                except Exception as e:
+                    logger.error(f"Error processing file {futures[future]}: {e}")
+        
+        return results
         
     def scan_directory_with_session(
         self,
@@ -468,6 +513,12 @@ class DatabaseFileDetector(FileSystemScanner[DatabaseFileAnalysisResult]):
         Returns:
             Analysis result containing detected database files and statistics
         """
+        # Update scanning options
+        self.options.recursive = recursive
+        self.options.follow_symlinks = follow_symlinks
+        self.options.max_depth = max_depth
+        self.options.max_files = max_files
+        
         start_time = datetime.now()
         root = Path(root_path)
         
@@ -486,7 +537,21 @@ class DatabaseFileDetector(FileSystemScanner[DatabaseFileAnalysisResult]):
             )
             
         try:
-            # Find all files matching criteria
+            # Use the parallel scan method which utilizes the common library
+            if self.max_workers > 1:
+                results = self.parallel_scan_directory(
+                    directory_path=root_path,
+                    max_workers=self.max_workers
+                )
+                # Combine results into a single summary
+                combined_result = self.summarize_scan(results)
+                # Add timing information
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+                combined_result.analysis_duration_seconds = duration
+                return combined_result
+            
+            # Legacy fallback - for backward compatibility
             all_files = list(find_files(
                 root_path=root,
                 extensions=None,  # We'll filter by extension in analyze_file

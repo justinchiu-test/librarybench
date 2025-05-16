@@ -44,6 +44,33 @@ The persona-specific implementations now leverage the common library while prese
   - Development milestone snapshots
   - Cross-platform configuration management
 
+## Core Components
+
+### Backup Engine
+The `IncrementalBackupEngine` class in the common library provides the core backup functionality:
+- Change detection for efficient incremental backups
+- Snapshot creation and restoration
+- File deduplication for efficient storage
+- Version tracking and comparison
+
+### Chunking Strategies
+Multiple chunking strategies are available for efficient binary file storage:
+- `FixedSizeChunker`: Simple fixed-size chunking
+- `RollingHashChunker`: Content-defined chunking for better deduplication
+- `FileTypeAwareChunker`: Specialized chunking based on file types
+
+### Storage Management
+The `FileSystemStorageManager` handles the physical storage of files and chunks:
+- Content-addressable storage for files and chunks
+- Efficient directory structure to handle large repositories
+- Deduplication through hash-based identification
+
+### Version Tracking
+The `FileSystemVersionTracker` manages version metadata and history:
+- Version creation and querying
+- Milestone marking and filtering
+- Version comparison and history tracking
+
 ## Installation
 Install the library in development mode:
 
@@ -132,6 +159,36 @@ The refactored implementation maintains or improves performance:
 - Shared functionality benefits from optimizations in one place
 - Specialized functionality remains intact for persona-specific needs
 
+## Implementation Details
+
+### Compatibility Layers
+To ensure backward compatibility with existing tests, the following adaptations were made:
+
+1. **CreativeVault Adaptation**:
+   - Handled differences in snapshot ID formats between CreativeVault and the common library
+   - Preserved CreativeVault's directory structure expectations
+   - Added special handling for restoration to match test expectations
+
+2. **GameVault Adaptation**:
+   - Added conversion between GameVault-specific models and common models
+   - Implemented support for GameVault's specialized version types
+   - Preserved milestone handling and metadata specific to game development
+
+### Extension Points
+The common library was designed with clear extension points for persona-specific functionality:
+
+1. **Chunking Strategies**:
+   - GameVault extends with `GameAssetChunker` for game-specific file optimizations
+   - The common library provides the base `ChunkingStrategy` interface
+
+2. **Version Tracking**:
+   - GameVault extends with specialized milestone management
+   - CreativeVault extends with timeline-based browsing
+
+3. **Storage Management**:
+   - Both implementations extend with specialized storage requirements
+   - The common library provides the core storage functionality
+
 ## Refactoring Summary
 
 The refactoring process involved:
@@ -145,3 +202,7 @@ The refactoring process involved:
 4. **Adaptation Layers**: Where necessary, adaptation layers were created to maintain compatibility with existing tests and expected behavior.
 
 5. **Comprehensive Testing**: All tests were run to ensure the refactored implementation maintains the same behavior as the original.
+
+## Conclusion
+
+The refactoring successfully unifies the common functionality while preserving the specialized features of each persona implementation. The resulting architecture is more maintainable, with clear separation of concerns and reduced code duplication.

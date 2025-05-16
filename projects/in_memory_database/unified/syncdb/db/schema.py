@@ -180,13 +180,37 @@ class TableSchema(Serializable):
     def validate_record(self, record: Dict[str, Any]) -> List[str]:
         """
         Validate a record against the schema.
-        Returns a list of error messages, empty if valid.
+        
+        Args:
+            record: The record data to validate.
+            
+        Returns:
+            A list of error messages, empty if valid.
         """
+        # Ensure we have a valid common schema
         if not self._common_schema:
             self._common_schema = self.to_schema()
-            
+        
+        # Use the common Schema's validate method
         valid, errors = self._common_schema.validate(record)
         return errors
+    
+    def apply_defaults(self, record: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply default values to missing fields in the record.
+        
+        Args:
+            record: The record data to apply defaults to.
+            
+        Returns:
+            A new dictionary with default values applied.
+        """
+        # Ensure we have a valid common schema
+        if not self._common_schema:
+            self._common_schema = self.to_schema()
+        
+        # Use the common Schema's apply_defaults method
+        return self._common_schema.apply_defaults(record)
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -260,18 +284,50 @@ class TableSchema(Serializable):
 
 @dataclass
 class DatabaseSchema(Serializable):
-    """Defines the schema for the entire database."""
+    """
+    Defines the schema for the entire database.
+    
+    This class manages a collection of table schemas and integrates with
+    the common SchemaRegistry for schema registration and validation.
+    """
     tables: Dict[str, TableSchema]
     version: int = 1
     created_at: float = field(default_factory=time.time)
+    _registry: Optional[SchemaRegistry] = field(default=None, init=False, repr=False)
+    
+    def __post_init__(self) -> None:
+        """Initialize the schema registry."""
+        self._registry = SchemaRegistry()
+        # Register all tables with the registry
+        for table_schema in self.tables.values():
+            common_schema = table_schema.to_schema()
+            self._registry.register(common_schema)
     
     def get_table(self, name: str) -> Optional[TableSchema]:
-        """Get a table schema by name."""
+        """
+        Get a table schema by name.
+        
+        Args:
+            name: The name of the table.
+            
+        Returns:
+            The table schema, or None if not found.
+        """
         return self.tables.get(name)
     
     def add_table(self, table: TableSchema) -> None:
-        """Add a table to the schema."""
+        """
+        Add a table to the schema.
+        
+        Args:
+            table: The table schema to add.
+        """
         self.tables[table.name] = table
+        
+        # Register the table with the registry
+        if self._registry:
+            common_schema = table.to_schema()
+            self._registry.register(common_schema)
         
     def register_with_registry(self, registry: SchemaRegistry) -> None:
         """
@@ -283,6 +339,37 @@ class DatabaseSchema(Serializable):
         for table_schema in self.tables.values():
             common_schema = table_schema.to_schema()
             registry.register(common_schema)
+            
+    def validate(self, table_name: str, record: Dict[str, Any]) -> List[str]:
+        """
+        Validate a record against a table schema.
+        
+        Args:
+            table_name: The name of the table.
+            record: The record to validate.
+            
+        Returns:
+            A list of error messages, empty if valid.
+        """
+        table = self.get_table(table_name)
+        if not table:
+            return [f"Table '{table_name}' not found"]
+        
+        return table.validate_record(record)
+    
+    @property
+    def registry(self) -> SchemaRegistry:
+        """
+        Get the schema registry.
+        
+        Returns:
+            The schema registry for this database.
+        """
+        if not self._registry:
+            self._registry = SchemaRegistry()
+            self.register_with_registry(self._registry)
+        
+        return self._registry
             
     def to_dict(self) -> Dict[str, Any]:
         """

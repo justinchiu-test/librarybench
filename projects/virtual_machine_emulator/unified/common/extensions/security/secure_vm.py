@@ -265,22 +265,27 @@ class SecureVirtualMachine(BaseVirtualMachine):
     
     def _apply_memory_protections(self) -> None:
         """Apply configured memory protections."""
+        # Check if memory and segments have been initialized
+        if not hasattr(self, 'memory') or not hasattr(self, 'stack_segment'):
+            return
+            
         self.protection.apply_to_memory(self.memory)
         
         # Apply segment-specific protections
         self.protection.apply_to_segment(self.stack_segment, self.memory)
         
         # Log the memory protection configuration
-        self.forensic_log.log_system_event(
-            "memory_protection_config",
-            self.protection.get_protection_description()
-        )
-        
-        # Log the memory map
-        self.forensic_log.log_system_event(
-            "memory_map",
-            {"segments": self.memory.get_memory_map()}
-        )
+        if hasattr(self, 'forensic_log'):
+            self.forensic_log.log_system_event(
+                "memory_protection_config",
+                self.protection.get_protection_description()
+            )
+            
+            # Log the memory map
+            self.forensic_log.log_system_event(
+                "memory_map",
+                {"segments": self.memory.get_memory_map()}
+            )
     
     @property
     def cpu(self) -> Processor:

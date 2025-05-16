@@ -125,6 +125,7 @@ class ScanOptions(BaseModel):
     ])
     include_hidden: bool = False
     max_depth: Optional[int] = None
+    max_files: Optional[int] = None
     follow_symlinks: bool = False
     num_threads: int = 4
     
@@ -138,6 +139,7 @@ class ScanOptions(BaseModel):
                 "ignore_patterns": [r"^\.git/"],
                 "include_hidden": False,
                 "max_depth": 5,
+                "max_files": 1000,
                 "follow_symlinks": False,
                 "num_threads": 4
             }

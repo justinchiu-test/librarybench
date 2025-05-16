@@ -1,44 +1,84 @@
-# Common Package
+# Common Library for Concurrent Task Schedulers
 
-This package contains functionality shared across all the persona-specific packages.
-It provides a unified library for concurrent task scheduling that can be used by
-both the render farm manager and scientific computing implementations.
+This library provides common functionality for various concurrent task scheduler implementations.
 
-## Structure:
+## Components
 
-### Core Components
-- `core/models.py`: Common base models and data structures
-- `core/interfaces.py`: Abstract interfaces for key components
-- `core/utils.py`: Utility functions shared across implementations
-- `core/exceptions.py`: Custom exception types
+### Core
 
-### Upcoming Components
-- `scheduling/`: Common scheduling algorithms
-- `resource_management/`: Resource allocation and management
-- `dependency_tracking/`: Dependency graph and tracking
-- `failure_resilience/`: Checkpointing and failure handling
+- **Models**: Common data models for jobs, nodes, resources, etc.
+- **Interfaces**: Abstract interfaces that define component contracts
+- **Utilities**: Shared utility functions and classes
+- **Exceptions**: Custom exception types for error handling
+
+### Dependency Tracking
+
+- **Graph**: Generic dependency graph implementation
+- **Tracker**: Dependency tracking and management
+- **Workflow**: Workflow management and orchestration
+
+### Job Management
+
+- **Queue**: Job queue with priority management
+- **Scheduler**: Base scheduler implementation
+- **Prioritization**: Job priority management
+
+### Resource Management
+
+- **Allocator**: Resource allocation algorithms
+- **Forecaster**: Resource usage forecasting
+- **Partitioner**: Resource partitioning for multi-tenant systems
+
+### Failure Resilience
+
+- **Checkpoint Manager**: Job state checkpointing
+- **Failure Detector**: Detecting node and job failures
+- **Resilience Coordinator**: Coordinating recovery from failures
 
 ## Usage
 
-Import common components in persona-specific code:
+Import modules directly from their packages:
 
 ```python
-# Import common models
-from common.core.models import BaseJob, BaseNode, ResourceType, JobStatus
+# Import core models
+from common.core.models import BaseJob, BaseNode, JobStatus, Priority
 
 # Import interfaces
 from common.core.interfaces import SchedulerInterface, ResourceManagerInterface
 
 # Import utilities
-from common.core.utils import generate_id, weighted_average
+from common.core.utils import generate_id, DateTimeEncoder
 ```
 
-## Design Philosophy
+## Extension Points
 
-The common library follows these design principles:
+The library is designed with extension points for domain-specific functionality:
 
-1. **Interface-Based Design**: Key components are defined as abstract interfaces
-2. **Extensibility**: Base classes are designed to be extended by specific implementations
-3. **Minimal Dependencies**: The library minimizes external dependencies
-4. **API Compatibility**: Preserves backward compatibility with existing code
-5. **Performance-Optimized**: Core algorithms are optimized for performance
+1. **Model Extension**: Extend base models with domain-specific fields
+   ```python
+   from common.core.models import BaseJob
+   
+   class DomainJob(BaseJob):
+       domain_specific_field: str = "default"
+   ```
+
+2. **Interface Implementation**: Implement interfaces with domain-specific logic
+   ```python
+   from common.core.interfaces import SchedulerInterface
+   
+   class DomainScheduler(SchedulerInterface):
+       def schedule_jobs(self, jobs, nodes):
+           # Domain-specific implementation
+           pass
+   ```
+
+3. **Composition**: Use common components as building blocks
+   ```python
+   from common.job_management.queue import JobQueue
+   from common.dependency_tracking.graph import DependencyGraph
+   
+   class DomainWorkflowManager:
+       def __init__(self):
+           self.job_queue = JobQueue()
+           self.dependency_graph = DependencyGraph()
+   ```

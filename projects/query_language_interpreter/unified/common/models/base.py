@@ -16,7 +16,7 @@ class BaseModel(ABC):
         return self.__dict__
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BaseModel':
+    def from_dict(cls, data: Dict[str, Any]) -> "BaseModel":
         """Create model from dictionary.
 
         Args:
@@ -55,19 +55,19 @@ class Document(BaseModel):
             str: String representation
         """
         return f"Document(id={self.id}, metadata={self.metadata})"
-        
+
     def get_content(self) -> str:
         """Get the document content.
-        
+
         Returns:
             str: Document content
         """
         return self._content
-        
+
     @property
     def content(self) -> str:
         """Property to access document content.
-        
+
         Returns:
             str: Document content
         """

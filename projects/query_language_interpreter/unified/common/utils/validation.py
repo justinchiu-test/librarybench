@@ -3,7 +3,7 @@
 import re
 from typing import Any, Dict, List, Optional, Pattern, Set, Union, TypeVar, Callable
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 def validate_input(
@@ -57,16 +57,16 @@ def validate_string(
     """
     if not isinstance(value, str):
         return False
-    
+
     if len(value) < min_length:
         return False
-    
+
     if max_length is not None and len(value) > max_length:
         return False
-    
+
     if pattern is not None and not re.match(pattern, value):
         return False
-    
+
     return True
 
 
@@ -93,13 +93,13 @@ def validate_number(
         pass  # Floats are allowed if allow_float is True
     else:
         return False
-    
+
     if min_value is not None and value < min_value:
         return False
-    
+
     if max_value is not None and value > max_value:
         return False
-    
+
     return True
 
 
@@ -122,16 +122,16 @@ def validate_list(
     """
     if not isinstance(value, list):
         return False
-    
+
     if len(value) < min_length:
         return False
-    
+
     if max_length is not None and len(value) > max_length:
         return False
-    
+
     if item_validator is not None:
         return all(item_validator(item) for item in value)
-    
+
     return True
 
 
@@ -154,22 +154,22 @@ def validate_dict(
     """
     if not isinstance(value, dict):
         return False
-    
+
     # Check required keys
     if required_keys is not None:
         if not required_keys.issubset(set(value.keys())):
             return False
-    
+
     # Check that all keys are either required or optional
     if required_keys is not None and optional_keys is not None:
         allowed_keys = required_keys.union(optional_keys)
         if not set(value.keys()).issubset(allowed_keys):
             return False
-    
+
     # Validate specific keys
     if key_validators is not None:
         for key, validator in key_validators.items():
             if key in value and not validator(value[key]):
                 return False
-    
+
     return True

@@ -10,7 +10,7 @@ import time
 import threading
 from typing import Dict, List, Optional, Any, Union, Tuple, Type, ClassVar
 
-from common.operations import Pipeline, Transformer
+from common.operations.transform import Pipeline, Transformer
 from vectordb.transform.operations import BaseOperation
 
 

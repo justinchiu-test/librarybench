@@ -181,6 +181,20 @@ class MemoryProtection:
             segment: The segment to protect
             memory: The memory system containing the segment
         """
+        # Check if the segment exists
+        if segment is None or not hasattr(memory, 'segments'):
+            return
+            
+        # Verify the segment is in memory's segment list
+        segment_exists = False
+        for s in memory.segments:
+            if s.base_address == segment.base_address:
+                segment_exists = True
+                break
+                
+        if not segment_exists:
+            return
+            
         if segment.name == "stack" and self.stack_canaries:
             self._add_stack_canary(segment, memory)
     

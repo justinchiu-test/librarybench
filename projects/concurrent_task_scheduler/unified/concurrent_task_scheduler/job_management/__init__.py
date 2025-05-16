@@ -7,9 +7,9 @@ from concurrent_task_scheduler.job_management.queue import (
     PreemptionPolicy,
     PreemptionTrigger,
     QueuePolicy,
-    QueuedJob,
     QueueStats,
 )
+from common.job_management.queue import QueuedJob
 from concurrent_task_scheduler.job_management.reservation import (
     ConflictResolution,
     MaintenanceWindow,

@@ -10,7 +10,7 @@ from enum import Enum, auto
 from typing import Dict, List, Optional, Set, Union, Any, TypeVar, Generic
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class JobStatus(str, Enum):
@@ -233,6 +233,8 @@ T = TypeVar('T')
 
 class Result(BaseModel, Generic[T]):
     """Generic result model with success flag and error message."""
+    
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     success: bool
     value: Optional[T] = None

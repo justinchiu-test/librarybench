@@ -36,7 +36,7 @@ from concurrent_task_scheduler.models.utils import generate_id
 from concurrent_task_scheduler.job_management.reservation import (
     MaintenanceWindow,
     ReservationStatus,
-    ResourceReservation,
+    ResourceAllocation as ResourceReservation,  # Alias for backward compatibility
 )
 
 logger = logging.getLogger(__name__)

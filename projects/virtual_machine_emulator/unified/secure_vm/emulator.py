@@ -275,6 +275,26 @@ class VirtualMachine(SecureVirtualMachine):
         
         return result
     
+    def get_instruction(self, address: int) -> Optional[Any]:
+        """
+        Get the instruction at the given address.
+        
+        Args:
+            address: The memory address
+            
+        Returns:
+            The instruction at the address, or None if not found
+        """
+        try:
+            # Try to fetch instruction from memory (this enforces execution permissions)
+            instr_byte = self.memory.execute(address, {"instruction_pointer": self.cpu.registers.ip})
+            
+            # For the secure_vm, instructions are just bytes that we decode
+            # This is a simple implementation to satisfy the abstract method
+            return instr_byte
+        except Exception:
+            return None
+    
     def inject_vulnerability(
         self,
         vuln_type: str,

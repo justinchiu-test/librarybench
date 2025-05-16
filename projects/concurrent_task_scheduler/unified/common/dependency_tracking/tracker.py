@@ -11,6 +11,7 @@ from enum import Enum
 from typing import Dict, List, Optional, Set, Tuple, Any, Union
 
 from common.core.models import (
+    Dependency,
     DependencyState,
     DependencyType,
     JobStatus,

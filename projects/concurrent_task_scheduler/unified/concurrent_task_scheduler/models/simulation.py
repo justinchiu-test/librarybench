@@ -169,8 +169,16 @@ class Simulation(BaseJob):
             self.status = SimulationStatus.SCHEDULED
 
 
-class NodeStatus(CommonNodeStatus):
+class NodeStatus(str, Enum):
     """Status of a compute node."""
+    
+    # Include common statuses
+    ONLINE = CommonNodeStatus.ONLINE
+    OFFLINE = CommonNodeStatus.OFFLINE
+    MAINTENANCE = CommonNodeStatus.MAINTENANCE
+    ERROR = CommonNodeStatus.ERROR
+    STARTING = CommonNodeStatus.STARTING
+    STOPPING = CommonNodeStatus.STOPPING
     
     # Add domain-specific statuses
     RESERVED = "reserved"
@@ -178,11 +186,44 @@ class NodeStatus(CommonNodeStatus):
 
 class NodeType(str, Enum):
     """Type of compute node."""
-
+    
     COMPUTE = "compute"
     GPU = "gpu"
     MEMORY = "memory"
     STORAGE = "storage"
+
+
+class SimulationPriority(str, Enum):
+    """Priority levels for simulations and scenarios."""
+    
+    CRITICAL = "critical"
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+    BACKGROUND = "background"
+    
+    @classmethod
+    def from_common_priority(cls, priority: Priority) -> "SimulationPriority":
+        """Convert a common priority to a simulation priority."""
+        mapping = {
+            Priority.CRITICAL: cls.CRITICAL,
+            Priority.HIGH: cls.HIGH,
+            Priority.MEDIUM: cls.MEDIUM,
+            Priority.LOW: cls.LOW,
+            Priority.BACKGROUND: cls.BACKGROUND,
+        }
+        return mapping.get(priority, cls.MEDIUM)
+    
+    def to_common_priority(self) -> Priority:
+        """Convert a simulation priority to a common priority."""
+        mapping = {
+            self.CRITICAL: Priority.CRITICAL,
+            self.HIGH: Priority.HIGH,
+            self.MEDIUM: Priority.MEDIUM,
+            self.LOW: Priority.LOW,
+            self.BACKGROUND: Priority.BACKGROUND,
+        }
+        return mapping.get(self, Priority.MEDIUM)
 
 
 class ComputeNode(BaseNode):

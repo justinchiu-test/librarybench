@@ -148,7 +148,8 @@ def compute_metrics(directory, model, enable_logprobs=False, condition_on_codeba
             continue
         program_name = str(file.relative_to(directory.parent))
         program_names.append(program_name)
-        imported = get_imported_code(file, directory)
+        imported = []
+        if condition_on_codebank: imported = get_imported_code(file, directory)
         codes[program_name] = (imported, file.read_text())
 
     total_logprob = 0.0

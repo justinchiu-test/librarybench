@@ -24,6 +24,7 @@ for collection in glob.glob(os.path.join("projects_original", "*")):
     collection_name = os.path.basename(collection.rstrip(os.path.sep))
     if collection_name not in data_to_display: 
         data_to_display[collection_name] = {}
+    data_to_display[collection_name]["ORIGINAL"] = {}
     for persona in glob.glob(os.path.join(collection, "*")):
         if not os.path.isdir(persona): continue
 
@@ -46,7 +47,6 @@ for collection in glob.glob(os.path.join("projects_original", "*")):
                 os.chdir(original_dir)
 
         persona_name = re.search(collection_name + r'_(.+)', os.path.basename(persona)).group(1)
-        data_to_display[collection_name]["ORIGINAL"] = {}
         
         lb_metrics_file = os.path.join(persona, "LIBRARYBENCH_metrics.json")
         if not os.path.exists(lb_metrics_file):
@@ -141,7 +141,7 @@ table += r"""
  \bottomrule
 \end{tabular}
 \caption{}
-\label{tab:big_repo_results}
+\label{tab:large_repo_results}
 \end{table}
 """
 

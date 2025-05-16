@@ -157,7 +157,13 @@ class InMemoryStorage(BaseCollection[T]):
         
         Returns:
             The ID of the added record.
+            
+        Raises:
+            ValueError: If the record's ID is None.
         """
+        if record.id is None:
+            raise ValueError("Record ID cannot be None when adding to storage")
+            
         record_id = super().add(record)
         
         # Update indices

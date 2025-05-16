@@ -496,8 +496,8 @@ class TestExperimentTemplates:
 
         # Now verify the link
         assert brain._knowledge_graph.has_edge(str(experiment_id), str(question_id))
-        edge_data = brain._knowledge_graph.get_edge_data(str(experiment_id), str(question_id))
-        assert edge_data["type"] == "investigates"
+        edge_attrs = brain._knowledge_graph.get_edge_attributes(str(experiment_id), str(question_id))
+        assert edge_attrs["type"] == "investigates"
         
         # Verify we can navigate from question to experiment
         related = brain.get_related_nodes(question_id)
@@ -562,8 +562,8 @@ class TestExperimentTemplates:
         # Verify knowledge graph connections
         for note_id in [protocol_note_id, participant_note_id, analysis_note_id]:
             assert brain._knowledge_graph.has_edge(str(experiment_id), str(note_id))
-            edge_data = brain._knowledge_graph.get_edge_data(str(experiment_id), str(note_id))
-            assert edge_data["type"] == "documents"
+            edge_attrs = brain._knowledge_graph.get_edge_attributes(str(experiment_id), str(note_id))
+            assert edge_attrs["type"] == "documents"
         
         # Verify we can navigate from experiment to notes
         related = brain.get_related_nodes(experiment_id)

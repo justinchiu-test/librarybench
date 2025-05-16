@@ -37,7 +37,8 @@ class TestResearchQuestion:
             parent_question_id=parent_id,
         )
         
-        assert question.parent_question_id == parent_id
+        # The parent_question_id is stored as a string, so we compare with the string representation
+        assert question.parent_question_id == str(parent_id)
     
     def test_update_question(self):
         # Test updating fields
@@ -110,7 +111,7 @@ class TestResearchTask:
             parent_task_id=parent_id,
         )
         
-        assert task.parent_task_id == parent_id
+        assert task.parent_task_id == str(parent_id)
     
     def test_update_task(self):
         # Test updating fields
@@ -215,14 +216,14 @@ class TestResearchTask:
         task.add_research_question(question_id2)
         
         assert len(task.research_question_ids) == 2
-        assert question_id1 in task.research_question_ids
-        assert question_id2 in task.research_question_ids
+        assert str(question_id1) in task.research_question_ids
+        assert str(question_id2) in task.research_question_ids
         
         task.remove_research_question(question_id1)
         
         assert len(task.research_question_ids) == 1
-        assert question_id1 not in task.research_question_ids
-        assert question_id2 in task.research_question_ids
+        assert str(question_id1) not in task.research_question_ids
+        assert str(question_id2) in task.research_question_ids
     
     def test_subtask_management(self):
         # Test subtask management
@@ -244,8 +245,8 @@ class TestResearchTask:
         task.remove_subtask(subtask_id1)
         
         assert len(task.subtask_ids) == 1
-        assert subtask_id1 not in task.subtask_ids
-        assert subtask_id2 in task.subtask_ids
+        assert str(subtask_id1) not in task.subtask_ids
+        assert str(subtask_id2) in task.subtask_ids
     
     def test_custom_metadata(self):
         # Test custom metadata functionality

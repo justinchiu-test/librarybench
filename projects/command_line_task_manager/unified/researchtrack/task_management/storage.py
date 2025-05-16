@@ -8,7 +8,7 @@ from .models import ResearchQuestion, ResearchTask, TaskPriority, TaskStatus
 class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
     """Interface for research task storage implementations."""
     
-    def create_task(self, task: ResearchTask) -> UUID:
+    def create_task(self, task: ResearchTask) -> str:
         """
         Create a new research task.
         
@@ -16,11 +16,11 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
             task: The task to create
             
         Returns:
-            UUID: The ID of the created task
+            str: The ID of the created task
         """
         return self.create(task)
     
-    def get_task(self, task_id: UUID) -> Optional[ResearchTask]:
+    def get_task(self, task_id: Union[str, UUID]) -> Optional[ResearchTask]:
         """
         Retrieve a task by ID.
         
@@ -44,7 +44,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         """
         return self.update(task)
     
-    def delete_task(self, task_id: UUID) -> bool:
+    def delete_task(self, task_id: Union[str, UUID]) -> bool:
         """
         Delete a task by ID.
         
@@ -61,7 +61,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         status: Optional[TaskStatus] = None,
         priority: Optional[TaskPriority] = None,
         tags: Optional[Set[str]] = None,
-        research_question_id: Optional[UUID] = None,
+        research_question_id: Optional[Union[str, UUID]] = None,
     ) -> List[ResearchTask]:
         """
         List tasks with optional filtering.
@@ -77,11 +77,22 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         """
         filters = {}
         if status:
-            filters["status"] = status
+            filters["status"] = status.value if isinstance(status, TaskStatus) else status
         if priority:
-            filters["priority"] = priority
+            filters["priority"] = priority.value if isinstance(priority, TaskPriority) else priority
         
-        tasks = self.list(filters)
+        tasks = list(self._entities.values())
+        
+        # Apply status and priority filtering
+        if status or priority:
+            filtered_tasks = []
+            for task in tasks:
+                if status and task.status != filters["status"]:
+                    continue
+                if priority and task.priority != filters["priority"]:
+                    continue
+                filtered_tasks.append(task)
+            tasks = filtered_tasks
         
         # Apply tag filtering
         if tags:
@@ -91,6 +102,10 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         
         # Apply research question filtering
         if research_question_id:
+            # Convert UUID to string if needed
+            if isinstance(research_question_id, UUID):
+                research_question_id = str(research_question_id)
+                
             tasks = [
                 task
                 for task in tasks
@@ -99,7 +114,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         
         return tasks
     
-    def create_research_question(self, question: ResearchQuestion) -> UUID:
+    def create_research_question(self, question: ResearchQuestion) -> str:
         """
         Create a new research question.
         
@@ -111,7 +126,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         """
         return self.create(question)
     
-    def get_research_question(self, question_id: UUID) -> Optional[ResearchQuestion]:
+    def get_research_question(self, question_id: Union[str, UUID]) -> Optional[ResearchQuestion]:
         """
         Retrieve a research question by ID.
         
@@ -135,7 +150,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         """
         return self.update(question)
     
-    def delete_research_question(self, question_id: UUID) -> bool:
+    def delete_research_question(self, question_id: Union[str, UUID]) -> bool:
         """
         Delete a research question by ID.
         
@@ -148,7 +163,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         return self.delete(question_id)
     
     def list_research_questions(
-        self, parent_question_id: Optional[UUID] = ...
+        self, parent_question_id: Optional[Union[str, UUID]] = ...
     ) -> List[ResearchQuestion]:
         """
         List research questions with optional filtering.
@@ -180,7 +195,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
         return filtered_questions
     
     def get_tasks_by_research_question(
-        self, question_id: UUID
+        self, question_id: Union[str, UUID]
     ) -> List[ResearchTask]:
         """
         Get all tasks associated with a research question.
@@ -197,7 +212,7 @@ class TaskStorageInterface(BaseStorageInterface[ResearchTask]):
             if question_id in task.research_question_ids
         ]
     
-    def get_subtasks(self, parent_task_id: UUID) -> List[ResearchTask]:
+    def get_subtasks(self, parent_task_id: Union[str, UUID]) -> List[ResearchTask]:
         """
         Get all subtasks of a parent task.
         
@@ -219,21 +234,27 @@ class InMemoryTaskStorage(InMemoryStorage[ResearchTask], TaskStorageInterface):
     
     def __init__(self):
         super().__init__()
-        self._questions: Dict[UUID, ResearchQuestion] = {}
+        self._questions: Dict[str, ResearchQuestion] = {}
     
-    def create(self, entity) -> UUID:
+    def create(self, entity) -> str:
         """Create an entity, handling both tasks and questions."""
         if isinstance(entity, ResearchTask):
-            self._entities[entity.id] = entity
-            return entity.id
+            entity_id = str(entity.id)
+            self._entities[entity_id] = entity
+            return entity_id
         elif isinstance(entity, ResearchQuestion):
-            self._questions[entity.id] = entity
-            return entity.id
+            entity_id = str(entity.id)
+            self._questions[entity_id] = entity
+            return entity_id
         else:
             raise TypeError(f"Unsupported entity type: {type(entity)}")
     
-    def get(self, entity_id: UUID):
+    def get(self, entity_id: Union[str, UUID]):
         """Get an entity, checking both tasks and questions."""
+        # Convert UUID to string if needed
+        if isinstance(entity_id, UUID):
+            entity_id = str(entity_id)
+            
         # Try to get from tasks
         entity = self._entities.get(entity_id)
         if entity:
@@ -244,21 +265,27 @@ class InMemoryTaskStorage(InMemoryStorage[ResearchTask], TaskStorageInterface):
     
     def update(self, entity) -> bool:
         """Update an entity, handling both tasks and questions."""
+        entity_id = str(entity.id)
+        
         if isinstance(entity, ResearchTask):
-            if entity.id not in self._entities:
+            if entity_id not in self._entities:
                 return False
-            self._entities[entity.id] = entity
+            self._entities[entity_id] = entity
             return True
         elif isinstance(entity, ResearchQuestion):
-            if entity.id not in self._questions:
+            if entity_id not in self._questions:
                 return False
-            self._questions[entity.id] = entity
+            self._questions[entity_id] = entity
             return True
         else:
             raise TypeError(f"Unsupported entity type: {type(entity)}")
     
-    def delete(self, entity_id: UUID) -> bool:
+    def delete(self, entity_id: Union[str, UUID]) -> bool:
         """Delete an entity, checking both tasks and questions."""
+        # Convert UUID to string if needed
+        if isinstance(entity_id, UUID):
+            entity_id = str(entity_id)
+            
         # Try to delete from tasks
         if entity_id in self._entities:
             del self._entities[entity_id]
@@ -291,3 +318,37 @@ class InMemoryTaskStorage(InMemoryStorage[ResearchTask], TaskStorageInterface):
         """List entities of a specific type."""
         # Return tasks by default
         return list(self._entities.values())
+        
+    def list_research_questions(self, parent_question_id=...):
+        """
+        List research questions with optional filtering.
+        
+        Args:
+            parent_question_id: Filter by parent question ID. If not provided, returns all questions.
+                               If set to None, returns only top-level questions (with no parent).
+                               
+        Returns:
+            List[ResearchQuestion]: List of research questions matching the criteria
+        """
+        questions = list(self._questions.values())
+        
+        # If parent_question_id is not specified (default value), return all questions
+        if parent_question_id is ...:
+            return questions
+            
+        # Convert UUID to string if needed
+        if isinstance(parent_question_id, UUID):
+            parent_question_id = str(parent_question_id)
+            
+        # If parent_question_id is set to None, return top-level questions
+        # Otherwise, return questions with the specified parent
+        filtered_questions = []
+        for q in questions:
+            # For parent_question_id=None, include questions with no parent
+            if parent_question_id is None and q.parent_question_id is None:
+                filtered_questions.append(q)
+            # For specific parent_id, include questions with that parent
+            elif q.parent_question_id == parent_question_id:
+                filtered_questions.append(q)
+                
+        return filtered_questions

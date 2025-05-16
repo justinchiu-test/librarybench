@@ -7,7 +7,7 @@ the render farm manager and scientific computing implementations.
 
 from datetime import datetime, timedelta
 from enum import Enum, auto
-from typing import Dict, List, Optional, Set, Union, Any
+from typing import Dict, List, Optional, Set, Union, Any, TypeVar, Generic
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -228,15 +228,18 @@ class Checkpoint(BaseModel):
     last_restore_time: Optional[datetime] = None
 
 
-class Result(BaseModel):
+# Define a TypeVar for the Result generic type
+T = TypeVar('T')
+
+class Result(BaseModel, Generic[T]):
     """Generic result model with success flag and error message."""
     
     success: bool
-    value: Optional[Any] = None
+    value: Optional[T] = None
     error: Optional[str] = None
     
     @classmethod
-    def ok(cls, value: Any = None):
+    def ok(cls, value: Optional[T] = None):
         """Create a successful result."""
         return cls(success=True, value=value)
     

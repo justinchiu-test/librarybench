@@ -9,7 +9,24 @@ import time
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
+
+from common.core.models import (
+    BaseJob,
+    BaseNode,
+    Result,
+)
+from common.failure_resilience.failure_detector import (
+    FailureEvent as CommonFailureEvent,
+    FailureLevel,
+    FailureType as CommonFailureType,
+)
+from common.failure_resilience.resilience_coordinator import (
+    RecoveryAction,
+    RecoveryPlan,
+    RecoveryStrategy as CommonRecoveryStrategy,
+    ResilienceCoordinator as CommonResilienceCoordinator,
+)
 
 from concurrent_task_scheduler.failure_resilience.checkpoint_manager import (
     CheckpointCoordinator,
@@ -24,6 +41,8 @@ from concurrent_task_scheduler.failure_resilience.failure_detector import (
     FailureSeverity,
     FailureType,
     RecoveryStrategy,
+    map_failure_type_to_common,
+    map_severity_to_common,
 )
 from concurrent_task_scheduler.models import (
     Checkpoint,
@@ -58,6 +77,36 @@ class RestartMode(str, Enum):
     INCREMENTAL = "incremental"  # Restart from last checkpoint
     SOFT = "soft"  # Soft restart (try to keep state)
     HARD = "hard"  # Hard restart (discard all state)
+
+
+# Define mapping from domain-specific recovery strategies to common ones
+def map_recovery_strategy_to_common(strategy: RecoveryStrategy) -> RecoveryAction:
+    """Map domain-specific recovery strategy to common recovery action."""
+    mapping = {
+        RecoveryStrategy.RESTART: RecoveryAction.RESTART_JOB,
+        RecoveryStrategy.RESTORE_CHECKPOINT: RecoveryAction.RESTORE_CHECKPOINT,
+        RecoveryStrategy.MIGRATE: RecoveryAction.RESCHEDULE,
+        RecoveryStrategy.PARTIAL_RESTART: RecoveryAction.RETRY,
+        RecoveryStrategy.RECONFIGURE: RecoveryAction.RETRY,
+        RecoveryStrategy.ROLLBACK: RecoveryAction.RESTORE_CHECKPOINT,
+        RecoveryStrategy.IGNORE: RecoveryAction.SKIP,
+    }
+    return mapping.get(strategy, RecoveryAction.MANUAL)
+
+
+def map_common_recovery_action_to_strategy(action: RecoveryAction) -> RecoveryStrategy:
+    """Map common recovery action to domain-specific recovery strategy."""
+    mapping = {
+        RecoveryAction.RESTART_JOB: RecoveryStrategy.RESTART,
+        RecoveryAction.RESTORE_CHECKPOINT: RecoveryStrategy.RESTORE_CHECKPOINT,
+        RecoveryAction.RESCHEDULE: RecoveryStrategy.MIGRATE,
+        RecoveryAction.PREEMPT: RecoveryStrategy.RESTART,
+        RecoveryAction.RETRY: RecoveryStrategy.PARTIAL_RESTART,
+        RecoveryAction.SKIP: RecoveryStrategy.IGNORE,
+        RecoveryAction.ABORT: RecoveryStrategy.RESTART,
+        RecoveryAction.MANUAL: RecoveryStrategy.RESTORE_CHECKPOINT,
+    }
+    return mapping.get(action, RecoveryStrategy.RESTORE_CHECKPOINT)
 
 
 class ResilienceEvent:
@@ -248,7 +297,7 @@ class ResilienceMetrics:
         }
 
 
-class ResilienceCoordinator:
+class ResilienceCoordinator(CommonResilienceCoordinator):
     """Coordinator for failure resilience and recovery."""
 
     def __init__(
@@ -258,8 +307,13 @@ class ResilienceCoordinator:
         checkpoint_base_path: str = "/tmp/checkpoints",
         resilience_level: ResilienceLevel = ResilienceLevel.STANDARD,
     ):
-        self.checkpoint_manager = checkpoint_manager
-        self.failure_detector = failure_detector
+        # Initialize the common implementation
+        super().__init__(
+            checkpoint_manager=checkpoint_manager,
+            failure_detector=failure_detector,
+        )
+        
+        # Initialize domain-specific components
         self.recovery_manager = FailureRecoveryManager(failure_detector)
         self.checkpoint_coordinator = CheckpointCoordinator(checkpoint_manager)
         self.checkpoint_base_path = checkpoint_base_path
@@ -295,6 +349,59 @@ class ResilienceCoordinator:
         self.checkpoint_frequency = timedelta(
             minutes=self.checkpoint_configs[resilience_level]["frequency_minutes"]
         )
+        
+        # Register the recovery executor
+        self.set_recovery_executor(self._execute_recovery_plan)
+    
+    def _execute_recovery_plan(self, plan: RecoveryPlan) -> Result[bool]:
+        """Execute a recovery plan for the common implementation."""
+        # Map the common recovery action to a domain-specific strategy
+        strategy = map_common_recovery_action_to_strategy(plan.action)
+        
+        # Get the failure report from our detector
+        failure_id = plan.failure_event.id
+        domain_failures = [
+            f for f in self.failure_detector.failure_reports.values()
+            if f.id == failure_id or failure_id.endswith(f.id)
+        ]
+        
+        if not domain_failures:
+            # This might be a failure detected by the common implementation
+            # Create a domain-specific failure report
+            domain_failure = FailureReport(
+                id=failure_id,
+                failure_type=FailureType.UNKNOWN,  # Default if we can't determine
+                severity=FailureSeverity.MEDIUM,
+                detection_time=plan.failure_event.timestamp,
+                detection_method=DetectionMethod.SYSTEM_REPORT,
+                node_id=plan.node_id,
+                simulation_id=plan.job_id,
+                description=plan.failure_event.description,
+                details=plan.failure_event.details,
+            )
+            
+            # Add to our tracking
+            self.failure_detector.record_failure(domain_failure)
+        else:
+            domain_failure = domain_failures[0]
+        
+        # Initiate recovery using our domain-specific approach
+        if domain_failure.simulation_id:
+            recovery_info = self._initiate_simulation_recovery(
+                domain_failure.simulation_id,
+                f"Failure recovery for {failure_id}",
+                strategy,
+                failure_id
+            )
+            
+            if not recovery_info:
+                return Result.err(f"Failed to initiate recovery for {failure_id}")
+            
+            # Mark as successful for now (the actual recovery is async)
+            # In a real implementation, we'd track this and update when done
+            return Result.ok(True)
+        
+        return Result.err(f"Cannot recover from failure {failure_id}: no simulation ID")
     
     def set_resilience_level(self, level: ResilienceLevel) -> None:
         """Set the resilience level."""
@@ -403,6 +510,23 @@ class ResilienceCoordinator:
             # Link events
             event = self.events[event_id]
             event.add_related_event(failure.id)
+            
+            # Also report to common implementation
+            common_failure_type = map_failure_type_to_common(failure.failure_type)
+            common_failure_level = map_severity_to_common(failure.severity)
+            
+            common_event = CommonFailureEvent(
+                failure_id=failure.id,
+                failure_type=common_failure_type,
+                level=common_failure_level,
+                node_id=node_id,
+                description=failure.description,
+                details=failure.details,
+                timestamp=failure.detection_time,
+            )
+            
+            # Add to common implementation's tracking
+            self._add_failure_to_common(common_event)
         
         affected_handled = []
         
@@ -426,6 +550,16 @@ class ResilienceCoordinator:
                     affected_handled.append(sim_id)
         
         return affected_handled
+    
+    def _add_failure_to_common(self, common_event: CommonFailureEvent) -> None:
+        """Add a failure event to the common implementation's tracking."""
+        # Check if the failure detector has a function to handle this
+        if hasattr(self.failure_detector, 'add_failure_event'):
+            self.failure_detector.add_failure_event(common_event)
+        else:
+            # Fallback if the method doesn't exist
+            self.failure_detector.failure_history.append(common_event)
+            self.failure_detector.active_failures[common_event.id] = common_event
     
     def handle_simulation_status_change(
         self,
@@ -470,6 +604,10 @@ class ResilienceCoordinator:
             # Link events
             event = self.events[event_id]
             event.add_related_event(failure.id)
+            
+            # Report to common implementation
+            common_event = failure.to_common_event()
+            self._add_failure_to_common(common_event)
             
             # Check if already recovering
             if simulation.id in self.active_recoveries:
@@ -550,6 +688,10 @@ class ResilienceCoordinator:
             event = self.events[event_id]
             event.add_related_event(failure.id)
             
+            # Report to common implementation
+            common_event = failure.to_common_event()
+            self._add_failure_to_common(common_event)
+            
             # Check if already recovering
             if simulation.id in self.active_recoveries:
                 return None
@@ -595,11 +737,15 @@ class ResilienceCoordinator:
         # Record metrics
         self.metrics.record_failure(failure.detection_time)
         
+        # Report to common implementation
+        common_event = failure.to_common_event()
+        self._add_failure_to_common(common_event)
+        
         # Handle the failure
         self.handle_failure_detection(failure)
         
         return Result.ok(True)
-        
+    
     def handle_failure_detection(self, failure: FailureReport) -> Optional[str]:
         """Handle a detected failure."""
         # Record event
@@ -623,6 +769,10 @@ class ResilienceCoordinator:
         
         # Record metrics
         self.metrics.record_failure(failure.detection_time)
+        
+        # Add to common implementation if not already there
+        common_event = failure.to_common_event()
+        self._add_failure_to_common(common_event)
         
         # If simulation affected, initiate recovery
         if failure.simulation_id:
@@ -709,6 +859,55 @@ class ResilienceCoordinator:
             if event:
                 event.add_related_event(recovery_event_id)
         
+        # Create a recovery plan for the common implementation
+        if self.recovery_executor:
+            # Find the associated failure event
+            failure_events = [f for f in self.failure_detector.failure_reports.values() 
+                            if f.simulation_id == simulation_id and not f.resolved]
+            
+            if failure_events:
+                failure = failure_events[0]
+                common_event = failure.to_common_event()
+                
+                # Check if it's in the common implementation
+                found = False
+                for common_failure in self.failure_detector.active_failures.values():
+                    if common_failure.id == common_event.id or common_failure.job_id == simulation_id:
+                        found = True
+                        common_event = common_failure
+                        break
+                
+                if not found:
+                    # Add to common implementation
+                    self._add_failure_to_common(common_event)
+                
+                # Create a recovery strategy for the common implementation
+                common_action = map_recovery_strategy_to_common(strategy)
+                common_strategy = CommonRecoveryStrategy(
+                    failure_type=common_event.failure_type,
+                    action=common_action,
+                    description=reason,
+                )
+                
+                # Find latest checkpoint if needed
+                checkpoint_id = None
+                if strategy == RecoveryStrategy.RESTORE_CHECKPOINT:
+                    checkpoint = self.checkpoint_manager.get_latest_checkpoint(simulation_id)
+                    if checkpoint:
+                        checkpoint_id = checkpoint.id
+                
+                # Create recovery plan
+                common_plan = common_strategy.create_plan(
+                    failure_event=common_event,
+                    checkpoint_id=checkpoint_id,
+                )
+                
+                # Execute plan
+                try:
+                    self.execute_recovery_plan(common_plan.id)
+                except Exception as e:
+                    logger.error(f"Failed to execute common recovery plan: {e}")
+        
         return recovery_info
     
     def restore_simulation(
@@ -789,12 +988,64 @@ class ResilienceCoordinator:
                 duration = (datetime.now() - datetime.fromisoformat(recovery_info["initiated_at"])).total_seconds()
                 self.metrics.record_recovery_attempt(success, duration)
                 
+                # Also complete any common implementation recovery plans
+                completed_plans = 0
+                for plan_id, plan in list(self.active_recovery_plans.items()):
+                    if plan.job_id == sim_id:
+                        # Mark as complete
+                        self.complete_recovery_plan(
+                            plan_id=plan_id, 
+                            success=success, 
+                            error_message=details.get("error", "") if details and not success else None
+                        )
+                        completed_plans += 1
+                
+                if completed_plans > 0:
+                    logger.info(f"Completed {completed_plans} common implementation recovery plans for simulation {sim_id}")
+                
                 # Remove from active recoveries
                 del self.active_recoveries[sim_id]
+                
+                # Resolve any associated failures if successful
+                if success:
+                    for failure in self.failure_detector.get_active_failures(simulation_id=sim_id):
+                        self.failure_detector.resolve_failure(
+                            failure.id,
+                            f"Recovery {recovery_id} completed successfully"
+                        )
                 
                 return Result.ok(True)
         
         return Result.err(f"Recovery {recovery_id} not found")
+    
+    def execute_recovery_plan(self, plan_id: str) -> Result[bool]:
+        """
+        Execute a recovery plan.
+        
+        Override the parent implementation to also handle domain-specific tracking.
+        """
+        # Call the parent implementation
+        result = super().execute_recovery_plan(plan_id)
+        
+        # Track this in our domain-specific system
+        plan = self.active_recovery_plans.get(plan_id)
+        if result.success and plan:
+            # Add plan to our tracking
+            # In a real implementation, we'd track this recovery and update when done
+            # For now, just log the execution
+            logger.info(f"Executing recovery plan {plan_id} for {plan.job_id or plan.node_id}")
+        
+        return result
+    
+    def complete_recovery_plan(
+        self,
+        plan_id: str,
+        success: bool,
+        error_message: Optional[str] = None,
+    ) -> None:
+        """Complete a recovery plan."""
+        # Call the parent implementation
+        super().complete_recovery(plan_id, success, error_message)
     
     def get_active_recoveries(self) -> Dict[str, Dict]:
         """Get all active recovery operations."""
@@ -832,6 +1083,53 @@ class ResilienceCoordinator:
         
         # Process scheduled recoveries
         self.recovery_manager.process_failures()
+        
+        # Convert nodes and simulations for common implementation
+        common_nodes = []
+        for node in nodes.values():
+            # Convert to BaseNode (minimal implementation)
+            common_node = BaseNode(
+                id=node.id,
+                name=node.name,
+                cpu_cores=node.cpu_cores,
+                memory_gb=node.memory_gb,
+                storage_gb=node.storage_gb,
+                gpu_count=node.gpu_count if hasattr(node, 'gpu_count') else 0,
+            )
+            common_nodes.append(common_node)
+        
+        common_jobs = []
+        for sim in simulations.values():
+            # Convert to BaseJob (minimal implementation)
+            common_job = BaseJob(
+                id=sim.id,
+                name=sim.name,
+                owner=sim.owner,
+                project=sim.project,
+                estimated_duration=sim.estimated_duration,
+                progress=sim.total_progress(),
+            )
+            common_jobs.append(common_job)
+        
+        # Also use common implementation
+        _, common_plans = super().detect_and_recover(
+            jobs=common_jobs,
+            nodes=common_nodes,
+            auto_recover=True  # Automatically execute recovery plans
+        )
+        
+        # Add any recovery plans from common implementation
+        for plan in common_plans:
+            if plan.job_id and plan.job_id in simulations:
+                recovery_id = self._initiate_simulation_recovery(
+                    plan.job_id,
+                    f"Failure recovery from common implementation",
+                    map_common_recovery_action_to_strategy(plan.action),
+                    plan.failure_event.id,
+                )
+                
+                if recovery_id:
+                    handled_failures.append(recovery_id)
         
         return handled_failures
     

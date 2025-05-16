@@ -106,7 +106,7 @@ class TestPIIDetector:
         assert len(matches) > 0
         
         # Check that we found expected PII types
-        pii_types = {match.pii_type for match in matches}
+        pii_types = {match.pattern_id for match in matches}
         assert "email" in pii_types
         assert "phone_number" in pii_types
         assert "full_name" in pii_types

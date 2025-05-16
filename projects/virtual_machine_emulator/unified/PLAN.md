@@ -75,94 +75,101 @@ The unified architecture will provide clear extension points for specialized fun
    - Privilege enforcement
    - Control flow integrity
    - Attack simulation
+   - Forensic logging for security events
+   - Vulnerability detection and analysis
 
 2. **Parallelism Extensions**
    - Thread management
    - Synchronization primitives
    - Race detection
    - Memory coherence
+   - Parallel instruction handling
 
-## Implementation Strategy
+## Implementation Status and Next Steps
 
-### 1. Create Base Classes and Interfaces
+### Core Components (Implemented)
+We have successfully implemented the core components in the `common.core` package:
+- `instruction.py`: Base instruction representation
+- `memory.py`: Memory system with base operations
+- `processor.py`: Processor with instruction execution
+- `program.py`: Program representation
+- `vm.py`: Virtual machine framework
+- `exceptions.py`: Common exception types
 
-Start by implementing the core abstractions as base classes and interfaces that can be extended by the specialized implementations:
+### Extension Components
+We have implemented the security extensions in `common.extensions.security`:
+- `attack_vectors.py`: Simulation of different attack techniques
+- `control_flow.py`: Control flow integrity monitoring
+- `forensic_logging.py`: Detailed security event logging
+- `memory_protection.py`: Memory protection mechanisms
+- `privilege.py`: Privilege level management
+- `secure_vm.py`: Security-focused VM extensions
+- `vulnerability_detection.py`: Detection of security vulnerabilities
 
-- `BaseMemorySystem`: Basic memory operations without specialized features
-- `BaseProcessor`: Core instruction execution without specialized features
-- `BaseVirtualMachine`: Framework for coordinating processors and memory
+We need to implement the parallel extensions in `common.extensions.parallel`:
+- Thread management
+- Synchronization primitives
+- Race detection
+- Memory coherence models
 
-### 2. Extract Common Functionality
+### Implementation Strategy
 
-Move shared functionality from both implementations into the unified library:
+#### 1. Implement Parallel Extensions
+Create the parallel extensions to support the parallel computing VM:
+- Thread management and scheduling
+- Synchronization primitives (locks, semaphores, barriers)
+- Race condition detection
+- Memory coherence
 
-- Common enums and data structures
-- Shared instruction set definitions
-- Basic memory read/write operations
-- Basic processor execution logic
-- Event logging and tracing
+#### 2. Refactor vm_emulator
+Refactor the vm_emulator package to use the common library:
+- Update imports to use `common.core` components
+- Extend `common.core.vm.VirtualMachine` for parallel functionality
+- Implement parallel-specific features using common interfaces
+- Update thread management to use common thread model
 
-### 3. Implement Extension Mechanism
+#### 3. Refactor secure_vm
+Refactor the secure_vm package to use the common library:
+- Update imports to use `common.core` components
+- Extend `common.core.vm.VirtualMachine` for security functionality
+- Implement security-specific features using common interfaces
+- Update CPU implementation to use common processor model
 
-Design a plugin/extension system that allows each implementation to:
-
-- Register custom instruction handlers
-- Add specialized memory protection
-- Implement thread synchronization
-- Create custom execution tracers
-
-### 4. Refactor Existing Implementations
-
-Refactor each implementation to use the unified library:
-
-#### vm_emulator Refactoring
-
-1. Update imports to use common base classes
-2. Extend base classes with parallel-specific functionality
-3. Implement thread management and synchronization as extensions
-4. Move race detection into specialized memory monitor
-5. Ensure all tests pass with refactored implementation
-
-#### secure_vm Refactoring
-
-1. Update imports to use common base classes
-2. Extend base classes with security-specific functionality
-3. Implement protection mechanisms as extensions
-4. Move control flow integrity into specialized processor extension
-5. Ensure all tests pass with refactored implementation
+#### 4. Update Testing
+Ensure all tests work with the refactored implementations:
+- Run parallel_researcher tests to validate vm_emulator refactoring
+- Run security_researcher tests to validate secure_vm refactoring
+- Fix any issues that arise during testing
 
 ## Migration Plan
 
-### Phase 1: Create and Test Core Library
+### Phase 1: Parallel Extensions (To Be Implemented)
+1. Implement the following extensions in `common.extensions.parallel`:
+   - `thread.py`: Thread management extensions
+   - `synchronization.py`: Locks, semaphores, and barriers
+   - `race_detection.py`: Race condition monitoring
+   - `coherence.py`: Memory coherence protocols
+   - `parallel_vm.py`: Parallel-focused VM extensions
 
-1. Implement core abstractions in `common` package
-2. Write unit tests for common components
-3. Validate basic functionality of common components separately
+2. Test each component to ensure it works correctly
 
-### Phase 2: Migrating vm_emulator
+### Phase 2: Refactor vm_emulator (To Be Implemented)
+1. Update `vm_emulator/core/instruction.py` to use common instruction model
+2. Update `vm_emulator/core/memory.py` to extend common memory system
+3. Update `vm_emulator/core/processor.py` to extend common processor
+4. Update `vm_emulator/core/vm.py` to extend common VM with parallel extensions
+5. Test each component as it's refactored
 
-1. Create adapter classes where needed to bridge gaps
-2. Refactor vm_emulator components one by one:
-   - Replace memory implementation with common version
-   - Replace processor implementation with common version
-   - Replace VM implementation with common version
-3. Run tests after each component migration to ensure functionality
-
-### Phase 3: Migrating secure_vm
-
-1. Create adapter classes where needed to bridge gaps
-2. Refactor secure_vm components one by one:
-   - Replace memory implementation with common version
-   - Replace CPU implementation with common version
-   - Replace emulator implementation with common version
-3. Run tests after each component migration to ensure functionality
+### Phase 3: Refactor secure_vm (To Be Implemented)
+1. Update `secure_vm/memory.py` to extend common memory system
+2. Update `secure_vm/cpu.py` to extend common processor
+3. Update `secure_vm/emulator.py` to extend common VM with security extensions
+4. Test each component as it's refactored
 
 ### Phase 4: Final Integration and Testing
-
-1. Run tests for both implementations
-2. Measure performance impact
-3. Document any specialized behavior
-4. Update README with unified architecture description
+1. Run all tests for both personas to ensure functionality
+2. Optimize performance if needed
+3. Update documentation to reflect the new unified architecture
 
 ## Component Mapping
 
@@ -173,32 +180,40 @@ Refactor each implementation to use the unified library:
 | `vm_emulator.core.instruction` | `common.core.instruction` |
 | `vm_emulator.core.memory` | `common.core.memory` |
 | `vm_emulator.core.processor` | `common.core.processor` |
-| `vm_emulator.core.vm` | `common.core.vm` |
-| `vm_emulator.core.race` | `common.extensions.parallel.race` |
-| `vm_emulator.synchronization` | `common.extensions.parallel.synchronization` |
-| `vm_emulator.threading` | `common.extensions.parallel.threading` |
+| `vm_emulator.core.vm` | `common.core.vm` + `common.extensions.parallel.parallel_vm` |
+| `vm_emulator.core.race` | `common.extensions.parallel.race_detection` |
+| `vm_emulator.synchronization.primitives` | `common.extensions.parallel.synchronization` |
+| `vm_emulator.threading.thread` | `common.extensions.parallel.thread` |
 
 ### secure_vm → common
 
 | secure_vm Component | common Component |
 |---------------------|------------------|
-| `secure_vm.cpu` | `common.core.processor` + `common.extensions.security.cpu` |
-| `secure_vm.memory` | `common.core.memory` + `common.extensions.security.memory` |
-| `secure_vm.emulator` | `common.core.vm` + `common.extensions.security.emulator` |
-| `secure_vm.attacks` | `common.extensions.security.attacks` |
+| `secure_vm.cpu` | `common.core.processor` + `common.extensions.security.privilege` |
+| `secure_vm.memory` | `common.core.memory` + `common.extensions.security.memory_protection` |
+| `secure_vm.emulator` | `common.core.vm` + `common.extensions.security.secure_vm` |
+| `secure_vm.attacks` | `common.extensions.security.attack_vectors` |
 
 ## Testing Strategy
 
-- Create a common test suite for core components
-- Maintain original test suites for specialized features
-- Add integration tests for the unified system
-- Run all original test cases to ensure backward compatibility
+- Maintain persona-specific test suites for specialized features
+- Run tests incrementally during refactoring
+- Validate all original test cases pass after refactoring
+- Add integration tests for the unified system if needed
+
+## Final Deliverables
+
+1. Completed `common` library with core components and extensions
+2. Refactored `vm_emulator` that uses the common library
+3. Refactored `secure_vm` that uses the common library
+4. All tests passing for both personas
+5. Updated documentation explaining the unified architecture
+6. Performance report comparing original and refactored implementations
 
 ## Next Steps
 
-1. Implement core library components
-2. Create extension mechanisms
-3. Refactor vm_emulator to use common library
-4. Refactor secure_vm to use common library
-5. Validate all tests passing
-6. Document the unified architecture
+1. Implement parallel extensions
+2. Refactor vm_emulator to use common library
+3. Refactor secure_vm to use common library
+4. Run all tests to validate refactoring
+5. Update documentation and README

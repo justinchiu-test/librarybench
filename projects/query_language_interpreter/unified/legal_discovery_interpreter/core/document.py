@@ -94,6 +94,8 @@ class Document(CommonDocument):
             return self.content
         
         return f"{self.content[:max_length]}..."
+        
+    # No need to override content property as it's defined in the parent class
 
 
 class EmailDocument(Document):
@@ -108,6 +110,53 @@ class EmailDocument(Document):
     thread_id: Optional[str] = Field(None, description="ID of the email thread")
     in_reply_to: Optional[str] = Field(None, description="ID of the email this is in reply to")
     attachments: Optional[List[str]] = Field(None, description="List of attachment document IDs")
+    
+    def __init__(
+        self,
+        id: str = None,
+        content: str = None,
+        metadata: DocumentMetadata = None,
+        sender: str = None,
+        recipients: List[str] = None,
+        cc: Optional[List[str]] = None,
+        bcc: Optional[List[str]] = None,
+        subject: str = None,
+        sent_date: datetime = None,
+        thread_id: Optional[str] = None,
+        in_reply_to: Optional[str] = None,
+        attachments: Optional[List[str]] = None,
+        **kwargs
+    ):
+        """Initialize an email document.
+        
+        Args:
+            id: Document ID (uses metadata.document_id if not provided)
+            content: Document content
+            metadata: Document metadata
+            sender: Email sender
+            recipients: Email recipients
+            cc: CC recipients
+            bcc: BCC recipients
+            subject: Email subject
+            sent_date: Date and time the email was sent
+            thread_id: ID of the email thread
+            in_reply_to: ID of the email this is in reply to
+            attachments: List of attachment document IDs
+        """
+        super().__init__(
+            id=id,
+            content=content,
+            metadata=metadata
+        )
+        self.sender = sender
+        self.recipients = recipients or []
+        self.cc = cc
+        self.bcc = bcc
+        self.subject = subject
+        self.sent_date = sent_date
+        self.thread_id = thread_id
+        self.in_reply_to = in_reply_to
+        self.attachments = attachments
 
 
 class LegalAgreement(Document):

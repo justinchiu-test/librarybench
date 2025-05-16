@@ -150,6 +150,13 @@ def test_parse_participant_string(communication_analyzer):
 def test_parse_email_document(communication_analyzer, sample_email_collection):
     """Test parsing an email document into a message."""
     email = sample_email_collection.get_document("email001")
+    
+    # Add debug info
+    print(f"Email type: {type(email)}")
+    print(f"Email attributes: {dir(email)}")
+    print(f"Email content access (if available): {getattr(email, 'content', 'N/A')}")
+    print(f"Email sender: {getattr(email, 'sender', 'N/A')}")
+    
     message = communication_analyzer.parse_email_document(email)
     
     assert message is not None

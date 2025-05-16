@@ -32,7 +32,13 @@ class ResearchQuestion(BaseEntity):
     
     text: str
     description: Optional[str] = None
-    parent_question_id: Optional[UUID] = None
+    parent_question_id: Optional[str] = None
+    
+    def __init__(self, **data):
+        # Convert parent_question_id to string if it's a UUID
+        if 'parent_question_id' in data and isinstance(data['parent_question_id'], UUID):
+            data['parent_question_id'] = str(data['parent_question_id'])
+        super().__init__(**data)
 
 
 class ResearchTask(BaseTask):
@@ -47,13 +53,13 @@ class ResearchTask(BaseTask):
     actual_hours: Optional[float] = None
 
     # Associations with research questions and subtasks
-    research_question_ids: Set[UUID] = Field(default_factory=set)
+    research_question_ids: Set[Union[str, UUID]] = Field(default_factory=set)
 
     # Associations with other research artifacts
-    reference_ids: Set[UUID] = Field(default_factory=set)  # Bibliographic references
-    dataset_ids: Set[UUID] = Field(default_factory=set)    # Dataset versions
-    environment_ids: Set[UUID] = Field(default_factory=set)  # Computational environments
-    experiment_ids: Set[UUID] = Field(default_factory=set)  # Experiments
+    reference_ids: Set[Union[str, UUID]] = Field(default_factory=set)  # Bibliographic references
+    dataset_ids: Set[Union[str, UUID]] = Field(default_factory=set)    # Dataset versions
+    environment_ids: Set[Union[str, UUID]] = Field(default_factory=set)  # Computational environments
+    experiment_ids: Set[Union[str, UUID]] = Field(default_factory=set)  # Experiments
 
     # Additional properties for integration tests
     # These aren't persisted, but used for convenience in tests
@@ -72,7 +78,14 @@ class ResearchTask(BaseTask):
     # Handle parent_task_id in initialization
     def __init__(self, **data):
         if 'parent_task_id' in data and 'parent_id' not in data:
-            data['parent_id'] = data.pop('parent_task_id')
+            # Convert to string if it's a UUID
+            parent_id = data.pop('parent_task_id')
+            if isinstance(parent_id, UUID):
+                parent_id = str(parent_id)
+            data['parent_id'] = parent_id
+        elif 'parent_id' in data and isinstance(data['parent_id'], UUID):
+            # Convert existing parent_id to string if it's a UUID
+            data['parent_id'] = str(data['parent_id'])
         super().__init__(**data)
     
     @model_validator(mode='after')

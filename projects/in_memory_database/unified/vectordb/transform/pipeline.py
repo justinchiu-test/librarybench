@@ -8,7 +8,7 @@ in sequence, with support for configuration, serialization, and tracking.
 import json
 import time
 import threading
-from typing import Dict, List, Optional, Any, Union, Tuple
+from typing import Dict, List, Optional, Any, Union, Tuple, Type, ClassVar
 
 from common.operations import Pipeline, Transformer
 from vectordb.transform.operations import BaseOperation
@@ -46,6 +46,11 @@ class TransformationPipeline(Pipeline):
         """Get the number of transformations applied by this pipeline."""
         with self._lock:
             return self._transformations_applied
+            
+    @property
+    def operations(self) -> List[BaseOperation]:
+        """Get the operations in this pipeline for backward compatibility."""
+        return self.transformers
     
     @property
     def avg_transform_time(self) -> float:
@@ -63,7 +68,7 @@ class TransformationPipeline(Pipeline):
             operation: The operation to add
         """
         with self._lock:
-            self.add_transformer(operation)
+            self.transformers.append(operation)
     
     def remove_operation(self, index: int) -> Optional[BaseOperation]:
         """
@@ -102,6 +107,20 @@ class TransformationPipeline(Pipeline):
                 # Apply this operation to get transformed data for the next operation
                 current_data = operation.transform(current_data, feature_names)
     
+    def fit_transform(self, data: Dict[str, Dict[str, Any]], feature_names: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
+        """
+        Fit all operations in the pipeline and then transform the data.
+        
+        Args:
+            data: Data to fit and transform
+            feature_names: Optional specific features to use
+            
+        Returns:
+            Transformed data
+        """
+        self.fit(data, feature_names)
+        return self.transform(data, feature_names)
+    
     def transform(self, data: Dict[str, Dict[str, Any]], feature_names: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
         """
         Apply all operations in the pipeline to transform the data.
@@ -116,8 +135,12 @@ class TransformationPipeline(Pipeline):
         start_time = time.time()
         
         with self._lock:
-            # Use the base transform method but track metrics
-            result = super().transform(data)
+            # Create a copy of the data to avoid modifying the input
+            result = data
+            
+            # Apply each operation to the data
+            for operation in self.transformers:
+                result = operation.transform(result, feature_names)
             
             # Update metrics
             self._transformations_applied += 1
@@ -150,9 +173,33 @@ class TransformationPipeline(Pipeline):
             result.update({
                 "transformations_applied": self._transformations_applied,
                 "total_transform_time": self._total_transform_time,
-                "transform_count": self._transform_count
+                "transform_count": self._transform_count,
+                "operations": [op.to_dict() for op in self.transformers]
             })
             return result
+    
+    def to_json(self) -> str:
+        """
+        Convert this pipeline to a JSON string.
+        
+        Returns:
+            JSON string representation
+        """
+        return json.dumps(self.to_dict())
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> 'TransformationPipeline':
+        """
+        Create a pipeline from a JSON string.
+        
+        Args:
+            json_str: JSON string representation
+            
+        Returns:
+            A new TransformationPipeline instance
+        """
+        data = json.loads(json_str)
+        return cls.from_dict(data)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'TransformationPipeline':
@@ -167,8 +214,8 @@ class TransformationPipeline(Pipeline):
         """
         pipeline = cls(name=data.get("name", "TransformationPipeline"))
         
-        # Restore operations
-        operations_data = data.get("transformers", [])
+        # Try operations first, then fall back to transformers for backward compatibility
+        operations_data = data.get("operations", data.get("transformers", []))
         for op_data in operations_data:
             operation = BaseOperation.from_dict(op_data)
             pipeline.add_operation(operation)
@@ -307,6 +354,29 @@ class FeatureTransformer(Transformer[Dict[str, Dict[str, Any]], Dict[str, Dict[s
             "feature_mapping": self._feature_mapping
         })
         return result
+    
+    def to_json(self) -> str:
+        """
+        Convert this transformer to a JSON string.
+        
+        Returns:
+            JSON string representation
+        """
+        return json.dumps(self.to_dict())
+    
+    @classmethod
+    def from_json(cls, json_str: str) -> 'FeatureTransformer':
+        """
+        Create a transformer from a JSON string.
+        
+        Args:
+            json_str: JSON string representation
+            
+        Returns:
+            A new FeatureTransformer instance
+        """
+        data = json.loads(json_str)
+        return cls.from_dict(data)
     
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'FeatureTransformer':

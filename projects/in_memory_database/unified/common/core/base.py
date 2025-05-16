@@ -34,12 +34,13 @@ class BaseRecord(ABC):
         Initialize a base record.
         
         Args:
-            id: Unique identifier for the record. If None, a new UUID will be generated.
+            id: Unique identifier for the record. If None, it will remain None. 
+                 Subclasses may choose to generate a default ID.
             metadata: Optional metadata associated with the record.
             created_at: Timestamp when the record was created. If None, current time is used.
             updated_at: Timestamp when the record was last updated. If None, created_at is used.
         """
-        self.id = id if id is not None else str(uuid.uuid4())
+        self.id = id  # Keep id exactly as provided, allows None
         self.metadata = metadata or {}
         self.created_at = created_at if created_at is not None else time.time()
         self.updated_at = updated_at if updated_at is not None else self.created_at
@@ -148,7 +149,12 @@ class BaseCollection(Generic[T], ABC):
             
         Returns:
             The ID of the added record.
+            
+        Raises:
+            ValueError: If the record's ID is None.
         """
+        if record.id is None:
+            raise ValueError("Record ID cannot be None when adding to a collection")
         self._records[record.id] = record
         return record.id
     

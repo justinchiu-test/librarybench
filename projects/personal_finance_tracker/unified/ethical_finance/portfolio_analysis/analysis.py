@@ -15,6 +15,26 @@ from common.core.utils.performance import Timer
 from ethical_finance.models import Investment, Portfolio, InvestmentHolding
 from ethical_finance.ethical_screening.screening import EthicalScreener, ScreeningResult
 
+# Helper function to get portfolio ID consistently
+def get_portfolio_id(portfolio: Portfolio) -> str:
+    """
+    Get the portfolio ID in a consistent way.
+    
+    The common library expects 'id' but ethical_finance uses 'portfolio_id'.
+    This helper ensures we use the right field.
+    
+    Args:
+        portfolio: The portfolio object
+        
+    Returns:
+        The portfolio ID as a string
+    """
+    # In the common library, Portfolio uses 'id'
+    # In ethical_finance, Portfolio uses 'portfolio_id'
+    if hasattr(portfolio, 'id'):
+        return str(portfolio.id)
+    return str(portfolio.portfolio_id)
+
 
 @dataclass
 class PortfolioCompositionResult:
@@ -227,7 +247,7 @@ class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
         
             # Return the result
             return PortfolioCompositionResult(
-                portfolio_id=portfolio.portfolio_id,
+                portfolio_id=get_portfolio_id(portfolio),
                 analysis_date=date.today(),
                 sector_breakdown=sector_breakdown,
                 industry_breakdown=industry_breakdown,
@@ -372,7 +392,7 @@ class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
         processing_time = (time.time() - start_time) * 1000
         
         return DiversificationAssessment(
-            portfolio_id=portfolio.portfolio_id,
+            portfolio_id=get_portfolio_id(portfolio),
             assessment_date=date.today(),
             diversification_score=overall_score,
             sector_concentration_risk=sector_concentration_risk,
@@ -586,7 +606,7 @@ class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
         processing_time = (time.time() - start_time) * 1000
         
         return PortfolioOptimizationResult(
-            portfolio_id=portfolio.portfolio_id,
+            portfolio_id=get_portfolio_id(portfolio),
             optimization_date=date.today(),
             current_ethical_score=current_ethical_score,
             current_risk_metrics=current_risk_metrics,

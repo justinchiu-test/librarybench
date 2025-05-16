@@ -1,28 +1,30 @@
 """
 Version tracking module for GameVault backup engine.
 
-This module manages version history and tracking for game projects.
+This module manages version history and tracking for game projects,
+extending the common version tracking system for GameVault-specific functionality.
 """
 
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union, Any
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, cast
 
-from common.core.versioning import VersionTracker as BaseVersionTracker
-from common.core.models import VersionInfo
+from common.core.versioning import FileSystemVersionTracker
+from common.core.models import VersionInfo, FileInfo as CommonFileInfo, VersionType
+from common.core.utils import generate_timestamp, create_unique_id, save_json, load_json
 
 from gamevault.config import get_config
 from gamevault.models import FileInfo, GameVersionType, ProjectVersion
-from gamevault.utils import generate_timestamp
+from gamevault.utils import generate_timestamp as game_generate_timestamp
 
 
-class VersionTracker(BaseVersionTracker):
+class VersionTracker(FileSystemVersionTracker):
     """
-    Tracks and manages project versions and their history.
+    Tracks and manages project versions and their history for game projects.
     
-    This class handles tracking versions of a game project, including file changes,
-    version metadata, and relationships between versions.
+    This class extends the common FileSystemVersionTracker to provide GameVault-specific
+    functionality, including support for game version types and custom version properties.
     """
     
     def __init__(self, project_name: str, storage_dir: Optional[Union[str, Path]] = None):
@@ -34,17 +36,20 @@ class VersionTracker(BaseVersionTracker):
             storage_dir: Directory where version data will be stored. If None, uses the default from config.
         """
         config = get_config()
-        self.project_name = project_name
-        self.storage_dir = Path(storage_dir) if storage_dir else config.backup_dir / "versions" / project_name
+        actual_storage_dir = Path(storage_dir) if storage_dir else config.backup_dir / "versions"
         
-        # Create the directory structure
-        os.makedirs(self.storage_dir, exist_ok=True)
+        # Initialize the base FileSystemVersionTracker
+        super().__init__(project_name, actual_storage_dir)
+        
+        # Override the versions directory to include the project name
+        self.versions_dir = self.storage_dir / project_name
+        self.versions_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Dictionary to store cached game-specific versions
+        self.game_versions: Dict[str, ProjectVersion] = {}
         
         # Metadata file for the project
-        self.metadata_file = self.storage_dir / "metadata.json"
-        
-        # Dictionary to store cached versions
-        self.versions: Dict[str, ProjectVersion] = {}
+        self.metadata_file = self.versions_dir / "metadata.json"
         
         # Initialize or load project metadata
         self._init_project()
@@ -89,7 +94,118 @@ class VersionTracker(BaseVersionTracker):
         Returns:
             Path: Path to the version file
         """
-        return self.storage_dir / f"{version_id}.json"
+        return self.versions_dir / f"{version_id}.json"
+    
+    def _convert_to_common_file_info(self, game_file_info: Dict[str, FileInfo]) -> Dict[str, CommonFileInfo]:
+        """
+        Convert GameVault FileInfo objects to common FileInfo objects.
+        
+        Args:
+            game_file_info: Dictionary of file paths to GameVault FileInfo objects
+            
+        Returns:
+            Dictionary of file paths to common FileInfo objects
+        """
+        common_files = {}
+        for path, info in game_file_info.items():
+            # Create a CommonFileInfo with the same properties
+            common_files[path] = CommonFileInfo(
+                path=info.path,
+                size=info.size,
+                hash=info.hash,
+                modified_time=info.modified_time,
+                is_binary=info.is_binary,
+                content_type=None,  # GameVault doesn't use this field
+                chunks=info.chunks,
+                storage_path=info.storage_path,
+                metadata=info.metadata
+            )
+        return common_files
+    
+    def _convert_to_game_file_info(self, common_file_info: Dict[str, CommonFileInfo]) -> Dict[str, FileInfo]:
+        """
+        Convert common FileInfo objects to GameVault FileInfo objects.
+        
+        Args:
+            common_file_info: Dictionary of file paths to common FileInfo objects
+            
+        Returns:
+            Dictionary of file paths to GameVault FileInfo objects
+        """
+        game_files = {}
+        for path, info in common_file_info.items():
+            # Create a GameVault FileInfo with the same properties
+            game_files[path] = FileInfo(
+                path=info.path,
+                size=info.size,
+                hash=info.hash,
+                modified_time=info.modified_time,
+                is_binary=info.is_binary,
+                chunks=info.chunks,
+                storage_path=info.storage_path,
+                metadata=info.metadata
+            )
+        return game_files
+    
+    def _convert_version_type(self, game_type: GameVersionType) -> VersionType:
+        """
+        Convert GameVersionType to common VersionType.
+        
+        Args:
+            game_type: GameVault version type
+            
+        Returns:
+            Equivalent common version type
+        """
+        # Map GameVersionType to VersionType
+        type_map = {
+            GameVersionType.DEVELOPMENT: VersionType.DEVELOPMENT,
+            GameVersionType.FIRST_PLAYABLE: VersionType.MILESTONE,
+            GameVersionType.ALPHA: VersionType.DRAFT,
+            GameVersionType.BETA: VersionType.REVIEW,
+            GameVersionType.RELEASE_CANDIDATE: VersionType.REVIEW,
+            GameVersionType.RELEASE: VersionType.RELEASE,
+            GameVersionType.PATCH: VersionType.MILESTONE,
+            GameVersionType.HOTFIX: VersionType.MILESTONE,
+        }
+        return type_map.get(game_type, VersionType.DEVELOPMENT)
+    
+    def _convert_to_project_version(self, version_info: VersionInfo) -> ProjectVersion:
+        """
+        Convert common VersionInfo to GameVault ProjectVersion.
+        
+        Args:
+            version_info: Common version info object
+            
+        Returns:
+            Equivalent ProjectVersion object
+        """
+        # Determine best GameVersionType based on common VersionType
+        reverse_type_map = {
+            VersionType.DEVELOPMENT: GameVersionType.DEVELOPMENT,
+            VersionType.DRAFT: GameVersionType.ALPHA,
+            VersionType.REVIEW: GameVersionType.BETA,
+            VersionType.RELEASE: GameVersionType.RELEASE,
+            VersionType.MILESTONE: GameVersionType.FIRST_PLAYABLE,
+            VersionType.ARCHIVE: GameVersionType.DEVELOPMENT,
+        }
+        game_type = reverse_type_map.get(version_info.type, GameVersionType.DEVELOPMENT)
+        
+        # Convert file info objects
+        game_files = self._convert_to_game_file_info(version_info.files)
+        
+        # Create ProjectVersion
+        return ProjectVersion(
+            id=version_info.id,
+            timestamp=version_info.timestamp,
+            name=version_info.name,
+            parent_id=version_info.parent_id,
+            type=game_type,
+            tags=version_info.tags,
+            description=version_info.description,
+            files=game_files,
+            is_milestone=version_info.is_milestone
+        )
     
     def _load_version(self, version_id: str) -> ProjectVersion:
         """
@@ -109,10 +225,15 @@ class VersionTracker(BaseVersionTracker):
         if not version_path.exists():
             raise FileNotFoundError(f"Version {version_id} not found")
         
-        with open(version_path, "r") as f:
-            version_data = json.load(f)
+        version_data = load_json(version_path)
         
         # Convert to ProjectVersion model
+        if "files" in version_data:
+            files_data = version_data["files"]
+            version_data["files"] = {
+                path: FileInfo(**file_info) for path, file_info in files_data.items()
+            }
+        
         return ProjectVersion.model_validate(version_data)
     
     def _save_version(self, version: ProjectVersion) -> None:
@@ -123,9 +244,11 @@ class VersionTracker(BaseVersionTracker):
             version: The version to save
         """
         version_path = self._get_version_path(version.id)
+        save_json(version.model_dump(), version_path)
         
-        with open(version_path, "w") as f:
-            json.dump(version.model_dump(), f, indent=2)
+        # Also update the latest version pointer
+        with open(self.versions_dir / "latest.txt", "w") as f:
+            f.write(version.id)
     
     def get_version(self, version_id: str) -> ProjectVersion:
         """
@@ -141,14 +264,14 @@ class VersionTracker(BaseVersionTracker):
             FileNotFoundError: If the version doesn't exist
         """
         # Check if the version is cached
-        if version_id in self.versions:
-            return self.versions[version_id]
+        if version_id in self.game_versions:
+            return self.game_versions[version_id]
         
         # Load the version from disk
         version = self._load_version(version_id)
         
         # Cache the version
-        self.versions[version_id] = version
+        self.game_versions[version_id] = version
         
         return version
     
@@ -266,8 +389,8 @@ class VersionTracker(BaseVersionTracker):
         self._save_metadata()
         
         # Remove from cache
-        if version_id in self.versions:
-            del self.versions[version_id]
+        if version_id in self.game_versions:
+            del self.game_versions[version_id]
         
         return True
     
@@ -312,7 +435,7 @@ class VersionTracker(BaseVersionTracker):
         
         # Create new version
         version = ProjectVersion(
-            timestamp=generate_timestamp(),
+            timestamp=game_generate_timestamp(),
             name=name,
             parent_id=parent_id,
             type=version_type_enum,
@@ -340,7 +463,7 @@ class VersionTracker(BaseVersionTracker):
         self._save_metadata()
         
         # Cache the version
-        self.versions[version.id] = version
+        self.game_versions[version.id] = version
         
         return version
     
@@ -384,17 +507,8 @@ class VersionTracker(BaseVersionTracker):
         Returns:
             List[ProjectVersion]: List of milestone versions
         """
-        milestones = []
-        
-        for version_meta in self.metadata.get("versions", []):
-            if version_meta.get("is_milestone", False):
-                try:
-                    version = self.get_version(version_meta["id"])
-                    milestones.append(version)
-                except FileNotFoundError:
-                    continue
-        
-        return milestones
+        # Use filter_criteria for better performance
+        return self.list_versions(filter_criteria={"is_milestone": True})
     
     def get_versions_by_tag(self, tag: str) -> List[ProjectVersion]:
         """
@@ -406,16 +520,11 @@ class VersionTracker(BaseVersionTracker):
         Returns:
             List[ProjectVersion]: List of versions with the tag
         """
+        # Use filter_criteria approach but with manual tag check
         result = []
-        
-        for version_meta in self.metadata.get("versions", []):
-            try:
-                version = self.get_version(version_meta["id"])
-                if tag in version.tags:
-                    result.append(version)
-            except FileNotFoundError:
-                continue
-        
+        for version in self.list_versions():
+            if tag in version.tags:
+                result.append(version)
         return result
     
     def get_versions_by_type(self, version_type: GameVersionType) -> List[ProjectVersion]:
@@ -428,14 +537,5 @@ class VersionTracker(BaseVersionTracker):
         Returns:
             List[ProjectVersion]: List of versions of the specified type
         """
-        result = []
-        
-        for version_meta in self.metadata.get("versions", []):
-            if version_meta.get("type") == version_type:
-                try:
-                    version = self.get_version(version_meta["id"])
-                    result.append(version)
-                except FileNotFoundError:
-                    continue
-        
-        return result
+        # Use filter_criteria for better performance
+        return self.list_versions(filter_criteria={"type": version_type})

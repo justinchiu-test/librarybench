@@ -146,6 +146,14 @@ def parse_arguments():
         default=False
     )
     
+    # Performance options
+    parser.add_argument(
+        "--max-workers",
+        help="Maximum number of worker threads for parallel processing",
+        type=int,
+        default=4
+    )
+    
     return parser.parse_args()
 
 
@@ -180,12 +188,15 @@ def main():
         max_items=100
     )
     
-    # Initialize API
+    # Initialize API with new parameters from common library
     api = StorageOptimizerAPI(
         output_dir=output_dir,
         cache_results=not args.no_cache,
         cache_ttl_seconds=3600,
-        read_only=True
+        read_only=True,
+        notification_config=notification_config,
+        cache_config=cache_config,
+        max_workers=args.max_workers
     )
     
     # Prepare export options

@@ -92,6 +92,98 @@ class QueryResult:
         }
 
 
+class LegalQueryResult(QueryResult):
+    """Result of a legal discovery query execution."""
+    
+    def __init__(
+        self,
+        query: BaseQuery,
+        data: Union[List[Dict[str, Any]], List[Any]] = None,
+        success: bool = True,
+        error: str = None,
+        metadata: Dict[str, Any] = None,
+        document_ids: List[str] = None,
+        relevance_scores: Dict[str, float] = None,
+        privilege_info: Dict[str, Any] = None,
+    ):
+        """Initialize a legal query result.
+
+        Args:
+            query: Query that produced this result
+            data: Result data
+            success: Whether the query was successful
+            error: Error message if query failed
+            metadata: Additional metadata
+            document_ids: IDs of matching documents
+            relevance_scores: Relevance scores for documents
+            privilege_info: Privilege information for documents
+        """
+        # Initialize base result
+        super().__init__(
+            query=query,
+            data=data,
+            success=success,
+            error=error,
+            metadata=metadata or {},
+        )
+        
+        # Add legal-specific metadata
+        if document_ids:
+            self.metadata["document_ids"] = document_ids
+        
+        if relevance_scores:
+            self.metadata["relevance_scores"] = relevance_scores
+        
+        if privilege_info:
+            self.metadata["privilege_info"] = privilege_info
+    
+    def get_document_ids(self) -> List[str]:
+        """Get IDs of matching documents.
+
+        Returns:
+            List[str]: Document IDs
+        """
+        return self.metadata.get("document_ids", [])
+    
+    def get_relevance_score(self, doc_id: str) -> float:
+        """Get relevance score for a document.
+
+        Args:
+            doc_id: Document ID
+
+        Returns:
+            float: Relevance score, or 0.0 if not found
+        """
+        scores = self.metadata.get("relevance_scores", {})
+        return scores.get(doc_id, 0.0)
+    
+    def get_privilege_status(self, doc_id: str) -> str:
+        """Get privilege status for a document.
+
+        Args:
+            doc_id: Document ID
+
+        Returns:
+            str: Privilege status, or "unknown" if not found
+        """
+        privilege_info = self.metadata.get("privilege_info", {})
+        doc_info = privilege_info.get(doc_id, {})
+        return doc_info.get("status", "unknown")
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert result to dictionary.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation
+        """
+        result = super().to_dict()
+        
+        # Add legal-specific fields
+        result["document_count"] = len(self.get_document_ids())
+        
+        return result
+
+
 class ResultFormatter:
     """Formatter for query results."""
 

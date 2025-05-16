@@ -18,7 +18,8 @@ from legal_discovery_interpreter.core.query import (
     PrivilegeQuery,
     CompositeQuery,
     QueryResult,
-    LegalDiscoveryQuery
+    LegalDiscoveryQuery,
+    LegalQueryResult
 )
 
 

@@ -6,7 +6,6 @@ patterns in files and directories.
 """
 
 import os
-import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Set, Any, Optional, Union, Iterator, Tuple
@@ -23,8 +22,8 @@ from common.utils.types import (
     ComplianceCategory,
     SensitivityLevel
 )
-from common.core.scanner import DirectoryScanner, GenericScanMatch
-from common.core.patterns import RegexPatternMatcher, FilePatternMatch
+from common.core.scanner import DirectoryScanner, GenericScanMatch, ParallelDirectoryScanner
+from common.core.patterns import RegexPatternMatcher, FilePatternMatch, FilePattern, FilePatternRegistry
 
 from file_system_analyzer.detection.patterns import (
     SensitiveDataPattern,
@@ -33,21 +32,12 @@ from file_system_analyzer.detection.patterns import (
 )
 
 
-class SensitiveDataMatch(BaseScanMatch):
+class SensitiveDataMatch(FilePatternMatch):
     """A match of sensitive data found in a file."""
-    pattern_name: str
-    pattern_description: str
-    matched_content: str
-    context: str = ""
-    line_number: Optional[int] = None
-    byte_offset: Optional[int] = None
-    category: ComplianceCategory
-    sensitivity: SensitivityLevel
-    validation_status: bool = True
     
     @classmethod
-    def from_generic_match(cls, match: GenericScanMatch) -> "SensitiveDataMatch":
-        """Convert a generic match to a sensitive data match."""
+    def from_file_pattern_match(cls, match: FilePatternMatch) -> "SensitiveDataMatch":
+        """Convert a file pattern match to a sensitive data match."""
         return cls(
             pattern_name=match.pattern_name,
             pattern_description=match.pattern_description,
@@ -106,11 +96,12 @@ class ScanResult(CommonScanResult):
                  }[s])
     
     @classmethod
-    def from_common_result(cls, result: CommonScanResult) -> "ScanResult":
-        """Convert a common scan result to a sensitive data scan result."""
+    def from_generic_result(cls, result: CommonScanResult) -> "ScanResult":
+        """Convert a generic scan result to a sensitive data scan result."""
         # Convert generic matches to sensitive data matches
         sensitive_matches = [
-            SensitiveDataMatch.from_generic_match(match)
+            SensitiveDataMatch.from_file_pattern_match(match) 
+            if isinstance(match, FilePatternMatch) else SensitiveDataMatch(**match.dict())
             for match in result.matches
         ]
         
@@ -133,7 +124,7 @@ class ScanSummary(CommonScanSummary):
     files_with_sensitive_data: int
     total_matches: int
     files_with_errors: int
-    categorized_matches: Dict[ComplianceCategory, int] = Field(default_factory=dict)
+    categorized_matches: Dict[str, int] = Field(default_factory=dict)
     sensitivity_breakdown: Dict[SensitivityLevel, int] = Field(default_factory=dict)
     
     @classmethod
@@ -172,22 +163,48 @@ class SensitiveDataScanner:
             context_lines=self.options.context_lines
         )
         
-        # Create common scanner
-        self.common_scanner = DirectoryScanner(
+        # Create common scanner - use ParallelDirectoryScanner for better performance
+        self.common_scanner = ParallelDirectoryScanner(
             pattern_matcher=self.pattern_matcher,
             options=self.options
         )
     
-    def should_ignore_file(self, file_path: str) -> bool:
+    def should_ignore_file(self, file_path: Union[str, Path]) -> bool:
         """Check if a file should be ignored based on options."""
         return self.common_scanner.should_ignore_file(file_path)
     
-    def scan_file(self, file_path: str) -> ScanResult:
+    def scan_file(self, file_path: Union[str, Path]) -> ScanResult:
         """Scan a single file for sensitive data."""
-        common_result = self.common_scanner.scan_file(file_path)
-        return ScanResult.from_common_result(common_result)
+        try:
+            common_result = self.common_scanner.scan_file(file_path)
+            result = ScanResult.from_generic_result(common_result)
+            
+            # Set error for non-existent files
+            if not Path(file_path).exists():
+                result.error = f"File not found: {file_path}"
+                
+            return result
+        except Exception as e:
+            # Create a result with error information
+            file_metadata = FileMetadata(
+                file_path=str(file_path),
+                file_size=0, 
+                file_type="unknown",
+                creation_time=datetime.now(),
+                modification_time=datetime.now(),
+                access_time=datetime.now(),
+                owner="unknown",
+                permissions="unknown",
+                tags=[]
+            )
+            
+            return ScanResult(
+                file_metadata=file_metadata,
+                matches=[],
+                error=str(e)
+            )
     
-    def scan_directory(self, directory_path: str) -> Iterator[ScanResult]:
+    def scan_directory(self, directory_path: Union[str, Path]) -> Iterator[ScanResult]:
         """Scan a directory for sensitive data, yielding results for each file."""
         # For test purposes, first try standard directory scanning
         directory = Path(directory_path)
@@ -199,41 +216,75 @@ class SensitiveDataScanner:
             
         # If no files scanned or directory doesn't exist, use common scanner
         for common_result in self.common_scanner.scan_directory(directory_path):
-            yield ScanResult.from_common_result(common_result)
+            yield ScanResult.from_generic_result(common_result)
+    
+    def parallel_scan_directory(
+        self, 
+        directory_path: Union[str, Path],
+        max_workers: Optional[int] = None
+    ) -> List[ScanResult]:
+        """
+        Scan a directory using parallel processing for better performance.
+        
+        Args:
+            directory_path: Directory to scan
+            max_workers: Maximum number of worker threads
+            
+        Returns:
+            List of scan results
+        """
+        common_results = self.common_scanner.parallel_scan_directory(
+            directory_path=directory_path,
+            max_workers=max_workers or self.options.num_threads
+        )
+        
+        return [ScanResult.from_generic_result(result) for result in common_results]
     
     def summarize_scan(self, results: List[ScanResult]) -> ScanSummary:
         """Create a summary of scan results."""
-        # Convert ScanResult to CommonScanResult
-        common_results = [
-            CommonScanResult(
-                file_metadata=r.file_metadata,
-                matches=r.matches,
-                scan_time=r.scan_time,
-                scan_duration=r.scan_duration,
-                error=r.error
-            )
-            for r in results
-        ]
+        start_time = min([r.scan_time for r in results], default=datetime.now())
+        end_time = max([r.scan_time for r in results], default=datetime.now())
+        total_duration = sum([r.scan_duration for r in results])
         
-        # Use common scanner to summarize
-        common_summary = self.common_scanner.summarize_scan(common_results)
+        # Calculate summary statistics
+        total_files = len(results)
+        files_with_sensitive_data = sum(1 for r in results if hasattr(r, 'has_sensitive_data') and r.has_sensitive_data)
+        files_with_errors = sum(1 for r in results if r.error)
+        total_matches = sum(len(r.matches) for r in results)
         
-        # Convert to ScanSummary with additional fields
-        summary = ScanSummary.from_common_summary(common_summary)
+        # Calculate category breakdown
+        categorized_matches = {}
+        for result in results:
+            for match in result.matches:
+                category = str(match.category) if hasattr(match, 'category') else "unknown"
+                if category in categorized_matches:
+                    categorized_matches[category] += 1
+                else:
+                    categorized_matches[category] = 1
         
         # Add sensitivity breakdown
         sensitivity_breakdown = {}
         for result in results:
             for match in result.matches:
-                sensitivity = match.sensitivity
-                if sensitivity in sensitivity_breakdown:
-                    sensitivity_breakdown[sensitivity] += 1
-                else:
-                    sensitivity_breakdown[sensitivity] = 1
+                if hasattr(match, 'sensitivity'):
+                    sensitivity = match.sensitivity
+                    if sensitivity in sensitivity_breakdown:
+                        sensitivity_breakdown[sensitivity] += 1
+                    else:
+                        sensitivity_breakdown[sensitivity] = 1
         
-        summary.sensitivity_breakdown = sensitivity_breakdown
-        
-        # Rename files_matched to files_with_sensitive_data
-        summary.files_with_sensitive_data = summary.files_matched
+        # Create summary
+        summary = ScanSummary(
+            start_time=start_time,
+            end_time=end_time,
+            duration=total_duration,
+            total_files=total_files,
+            files_matched=files_with_sensitive_data,  # Required by CommonScanSummary
+            files_with_sensitive_data=files_with_sensitive_data,
+            total_matches=total_matches,
+            files_with_errors=files_with_errors,
+            categorized_matches=categorized_matches,
+            sensitivity_breakdown=sensitivity_breakdown
+        )
         
         return summary

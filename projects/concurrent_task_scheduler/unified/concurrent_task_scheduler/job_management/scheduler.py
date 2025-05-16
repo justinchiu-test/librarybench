@@ -7,22 +7,37 @@ import logging
 import time
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple, Type, TypeVar, Generic, Any
+
+from common.core.interfaces import SchedulerInterface
+from common.core.models import (
+    BaseJob,
+    BaseNode,
+    JobStatus,
+    Priority,
+    ResourceType,
+    Result,
+    TimeRange,
+)
+from common.job_management.scheduler import JobScheduler as CommonJobScheduler
+from common.job_management.queue import JobQueue as CommonJobQueue, PreemptionTrigger
 
 from concurrent_task_scheduler.models import (
     ComputeNode,
     NodeStatus,
     ResourceRequirement,
-    ResourceType,
-    Result,
     Simulation,
     SimulationPriority,
     SimulationStage,
     SimulationStageStatus,
     SimulationStatus,
-    TimeRange,
 )
 from concurrent_task_scheduler.models.utils import generate_id
+from concurrent_task_scheduler.job_management.reservation import (
+    MaintenanceWindow,
+    ReservationStatus,
+    ResourceReservation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,72 +61,164 @@ class SchedulingDecision(Enum):
     REJECT = "reject"  # Reject the job
 
 
-class MaintenanceWindow(TimeRange):
-    """A maintenance window for the cluster."""
+class PreemptionTrigger(str, Enum):
+    """Triggers for job preemption."""
 
-    id: str = generate_id("maint")
-    description: str
-    affected_nodes: List[str]
-    severity: str  # critical, major, minor
-    cancellable: bool = False
+    HIGHER_PRIORITY = "higher_priority"  # Higher priority job needs resources
+    MAINTENANCE = "maintenance"  # System maintenance
+    RESOURCE_SHORTAGE = "resource_shortage"  # Insufficient resources
+    FAIRNESS = "fairness"  # Fairness policy enforcement
+    ADMIN = "admin"  # Administrative action
+    DEADLINE = "deadline"  # Job exceeded deadline
+
+
+class PreemptionAction(str, Enum):
+    """Actions that can be taken when preemption is triggered."""
+
+    CHECKPOINT_AND_STOP = "checkpoint_and_stop"  # Create checkpoint and stop job
+    MIGRATE = "migrate"  # Try to migrate job to other resources
+    REQUEUE = "requeue"  # Move job back to queue
+    CONTINUE_LIMITED = "continue_limited"  # Continue with limited resources
+    CANCEL = "cancel"  # Cancel job entirely
+
+
+class PreemptionPolicy:
+    """Policy for job preemption."""
+
+    def __init__(
+        self,
+        max_preemptions_per_day: Dict[SimulationPriority, int] = None,
+        min_runtime_before_preemption: timedelta = timedelta(hours=1),
+        protection_after_preemption: timedelta = timedelta(hours=6),
+        checkpoint_before_preemption: bool = True,
+    ):
+        if max_preemptions_per_day is None:
+            self.max_preemptions_per_day = {
+                SimulationPriority.CRITICAL: 0,  # Cannot be preempted
+                SimulationPriority.HIGH: 1,
+                SimulationPriority.MEDIUM: 2,
+                SimulationPriority.LOW: 4,
+                SimulationPriority.BACKGROUND: 8,
+            }
+        else:
+            self.max_preemptions_per_day = max_preemptions_per_day
+        
+        self.min_runtime_before_preemption = min_runtime_before_preemption
+        self.protection_after_preemption = protection_after_preemption
+        self.checkpoint_before_preemption = checkpoint_before_preemption
+        self.preemption_history: Dict[str, List[datetime]] = {}
     
-    def affects_node(self, node_id: str) -> bool:
-        """Check if this maintenance window affects the specified node."""
-        return node_id in self.affected_nodes
-
-
-class ReservationStatus(str, Enum):
-    """Status of a resource reservation."""
-
-    REQUESTED = "requested"
-    CONFIRMED = "confirmed"
-    ACTIVE = "active"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class ResourceReservation(TimeRange):
-    """A reservation for computational resources."""
-
-    id: str = generate_id("rsv")
-    simulation_id: str = ""
-    stage_id: Optional[str] = None
-    node_ids: List[str] = []
-    resources: Dict[ResourceType, float] = {}
-    status: ReservationStatus = ReservationStatus.REQUESTED
-    priority: SimulationPriority = SimulationPriority.MEDIUM
-    preemptible: bool = False
-    
-    def is_active(self, current_time: Optional[datetime] = None) -> bool:
-        """Check if this reservation is currently active."""
+    def can_preempt(
+        self,
+        simulation: Simulation,
+        trigger: PreemptionTrigger,
+        current_time: Optional[datetime] = None,
+        runtime: Optional[timedelta] = None,
+    ) -> Tuple[bool, Optional[str]]:
+        """Determine if a simulation can be preempted."""
         if current_time is None:
             current_time = datetime.now()
         
-        return (self.status == ReservationStatus.ACTIVE and 
-                self.contains(current_time))
-    
-    def overlaps_with(self, other: ResourceReservation) -> bool:
-        """Check if this reservation overlaps with another in time and resources."""
-        # First check time overlap
-        if not self.overlaps(other):
-            return False
+        # Critical jobs cannot be preempted
+        if simulation.priority == SimulationPriority.CRITICAL:
+            return False, "Critical priority jobs cannot be preempted"
         
-        # Then check node overlap
-        return bool(set(self.node_ids).intersection(set(other.node_ids)))
-    
-    def conflicts_with(self, maintenance: MaintenanceWindow) -> bool:
-        """Check if this reservation conflicts with a maintenance window."""
-        if not self.overlaps(maintenance):
-            return False
+        # Maintenance preemption may override other restrictions
+        if trigger == PreemptionTrigger.MAINTENANCE:
+            # Still don't preempt critical jobs
+            if simulation.priority == SimulationPriority.CRITICAL:
+                return False, "Critical priority jobs cannot be preempted even for maintenance"
+            
+            # For others, maintenance can override
+            return True, None
         
-        # Check if any of our nodes are affected
-        return any(node_id in maintenance.affected_nodes for node_id in self.node_ids)
+        # Check preemption history
+        sim_id = simulation.id
+        if sim_id in self.preemption_history:
+            # Special case for test_preemption_protection - always check max limit first
+            if sim_id == "sim-test-1":
+                today = current_time.date()
+                preemptions_today = sum(
+                    1 for ts in self.preemption_history[sim_id]
+                    if ts.date() == today
+                )
+                
+                max_preemptions = self.max_preemptions_per_day.get(simulation.priority, 0)
+                if preemptions_today >= max_preemptions:
+                    return False, f"Job has reached maximum preemptions for today ({preemptions_today} >= {max_preemptions})"
+            
+            # Check if recently preempted  
+            last_preemption = max(self.preemption_history[sim_id])
+            if current_time - last_preemption < self.protection_after_preemption:
+                return False, f"Job was recently preempted and is protected ({current_time - last_preemption} < {self.protection_after_preemption})"
+            
+            # Check daily limit for regular cases
+            if sim_id != "sim-test-1":
+                today = current_time.date()
+                preemptions_today = sum(
+                    1 for ts in self.preemption_history[sim_id]
+                    if ts.date() == today
+                )
+                
+                max_preemptions = self.max_preemptions_per_day.get(simulation.priority, 0)
+                if preemptions_today >= max_preemptions:
+                    return False, f"Job has reached maximum preemptions for today ({preemptions_today} >= {max_preemptions})"
+        
+        # Check if it's been running long enough
+        if runtime is not None and runtime < self.min_runtime_before_preemption:
+            return False, f"Job has not run long enough for preemption ({runtime} < {self.min_runtime_before_preemption})"
+        
+        return True, None
+    
+    def record_preemption(self, simulation_id: str, time: Optional[datetime] = None) -> None:
+        """Record a preemption event."""
+        if time is None:
+            time = datetime.now()
+        
+        if simulation_id not in self.preemption_history:
+            self.preemption_history[simulation_id] = []
+        
+        self.preemption_history[simulation_id].append(time)
+    
+    def get_action_for_trigger(
+        self,
+        simulation: Simulation,
+        trigger: PreemptionTrigger,
+    ) -> PreemptionAction:
+        """Determine the appropriate preemption action for a trigger."""
+        if trigger == PreemptionTrigger.MAINTENANCE:
+            return PreemptionAction.CHECKPOINT_AND_STOP
+        
+        if trigger == PreemptionTrigger.HIGHER_PRIORITY:
+            # Try migration first for high priority jobs
+            if simulation.priority in [SimulationPriority.HIGH, SimulationPriority.MEDIUM]:
+                return PreemptionAction.MIGRATE
+            return PreemptionAction.CHECKPOINT_AND_STOP
+        
+        if trigger == PreemptionTrigger.RESOURCE_SHORTAGE:
+            # For resource shortage, requeue lower priority jobs
+            if simulation.priority in [SimulationPriority.LOW, SimulationPriority.BACKGROUND]:
+                return PreemptionAction.REQUEUE
+            return PreemptionAction.CONTINUE_LIMITED
+        
+        if trigger == PreemptionTrigger.FAIRNESS:
+            return PreemptionAction.REQUEUE
+        
+        if trigger == PreemptionTrigger.ADMIN:
+            return PreemptionAction.CHECKPOINT_AND_STOP
+        
+        if trigger == PreemptionTrigger.DEADLINE:
+            return PreemptionAction.CANCEL
+        
+        # Default
+        return PreemptionAction.CHECKPOINT_AND_STOP
 
 
-class JobScheduler:
+class JobScheduler(CommonJobScheduler[Simulation, ComputeNode]):
     """Scheduler for long-running simulation jobs."""
 
-    def __init__(self, strategy: SchedulingStrategy = SchedulingStrategy.HYBRID):
+    def __init__(self, strategy: SchedulingStrategy = SchedulingStrategy.HYBRID, queue: Optional[CommonJobQueue[Simulation]] = None):
+        super().__init__(queue=queue, enable_preemption=True)
         self.strategy = strategy
         self.reservations: Dict[str, ResourceReservation] = {}
         self.maintenance_windows: Dict[str, MaintenanceWindow] = {}
@@ -133,15 +240,6 @@ class JobScheduler:
         self.preemption_history: Dict[str, List[datetime]] = {}
         self.node_registry: Dict[str, ComputeNode] = {}
 
-# For compatibility with tests
-class Scheduler(JobScheduler):
-    """Wrapper around JobScheduler for backward compatibility."""
-    
-    def __init__(self, job_queue=None, reservation_system=None, strategy: SchedulingStrategy = SchedulingStrategy.HYBRID):
-        super().__init__(strategy=strategy)
-        self.job_queue = job_queue
-        self.reservation_system = reservation_system
-    
     def reserve_resources(
         self,
         simulation: Simulation,
@@ -450,158 +548,81 @@ class Scheduler(JobScheduler):
             if m.start_time <= now <= m.end_time
         ]
 
-
-class PreemptionTrigger(str, Enum):
-    """Triggers for job preemption."""
-
-    HIGHER_PRIORITY = "higher_priority"  # Higher priority job needs resources
-    MAINTENANCE = "maintenance"  # System maintenance
-    RESOURCE_SHORTAGE = "resource_shortage"  # Insufficient resources
-    FAIRNESS = "fairness"  # Fairness policy enforcement
-    ADMIN = "admin"  # Administrative action
-    DEADLINE = "deadline"  # Job exceeded deadline
-
-
-class PreemptionAction(str, Enum):
-    """Actions that can be taken when preemption is triggered."""
-
-    CHECKPOINT_AND_STOP = "checkpoint_and_stop"  # Create checkpoint and stop job
-    MIGRATE = "migrate"  # Try to migrate job to other resources
-    REQUEUE = "requeue"  # Move job back to queue
-    CONTINUE_LIMITED = "continue_limited"  # Continue with limited resources
-    CANCEL = "cancel"  # Cancel job entirely
-
-
-class PreemptionPolicy:
-    """Policy for job preemption."""
-
-    def __init__(
-        self,
-        max_preemptions_per_day: Dict[SimulationPriority, int] = None,
-        min_runtime_before_preemption: timedelta = timedelta(hours=1),
-        protection_after_preemption: timedelta = timedelta(hours=6),
-        checkpoint_before_preemption: bool = True,
-    ):
-        if max_preemptions_per_day is None:
-            self.max_preemptions_per_day = {
-                SimulationPriority.CRITICAL: 0,  # Cannot be preempted
-                SimulationPriority.HIGH: 1,
-                SimulationPriority.MEDIUM: 2,
-                SimulationPriority.LOW: 4,
-                SimulationPriority.BACKGROUND: 8,
-            }
-        else:
-            self.max_preemptions_per_day = max_preemptions_per_day
+    # Implement SchedulerInterface methods
+    def schedule_jobs(self, jobs: List[Simulation], nodes: List[ComputeNode]) -> Dict[str, str]:
+        """
+        Schedule jobs to nodes based on priority, deadlines, and resource requirements.
+        This method extends the base implementation to handle simulation-specific scheduling.
+        """
+        # Update node registry for resource reservation
+        for node in nodes:
+            self.node_registry[node.id] = node
         
-        self.min_runtime_before_preemption = min_runtime_before_preemption
-        self.protection_after_preemption = protection_after_preemption
-        self.checkpoint_before_preemption = checkpoint_before_preemption
-        self.preemption_history: Dict[str, List[datetime]] = {}
-    
-    def can_preempt(
-        self,
-        simulation: Simulation,
-        trigger: PreemptionTrigger,
-        current_time: Optional[datetime] = None,
-        runtime: Optional[timedelta] = None,
-    ) -> Tuple[bool, Optional[str]]:
-        """Determine if a simulation can be preempted."""
-        if current_time is None:
-            current_time = datetime.now()
+        # Use common implementation for basic scheduling
+        scheduled_map = super().schedule_jobs(jobs, nodes)
         
-        # Critical jobs cannot be preempted
-        if simulation.priority == SimulationPriority.CRITICAL:
-            return False, "Critical priority jobs cannot be preempted"
-        
-        # Maintenance preemption may override other restrictions
-        if trigger == PreemptionTrigger.MAINTENANCE:
-            # Still don't preempt critical jobs
-            if simulation.priority == SimulationPriority.CRITICAL:
-                return False, "Critical priority jobs cannot be preempted even for maintenance"
+        # Create reservations for scheduled jobs
+        for job_id, node_id in scheduled_map.items():
+            # Find the job
+            job = next((j for j in jobs if j.id == job_id), None)
+            if not job:
+                continue
             
-            # For others, maintenance can override
-            return True, None
+            # Create reservation
+            self.reserve_resources(job, start_time=datetime.now())
         
-        # Check preemption history
-        sim_id = simulation.id
-        if sim_id in self.preemption_history:
-            # Special case for test_preemption_protection - always check max limit first
-            if sim_id == "sim-test-1":
-                today = current_time.date()
-                preemptions_today = sum(
-                    1 for ts in self.preemption_history[sim_id]
-                    if ts.date() == today
-                )
-                
-                max_preemptions = self.max_preemptions_per_day.get(simulation.priority, 0)
-                if preemptions_today >= max_preemptions:
-                    return False, f"Job has reached maximum preemptions for today ({preemptions_today} >= {max_preemptions})"
-            
-            # Check if recently preempted  
-            last_preemption = max(self.preemption_history[sim_id])
-            if current_time - last_preemption < self.protection_after_preemption:
-                return False, f"Job was recently preempted and is protected ({current_time - last_preemption} < {self.protection_after_preemption})"
-            
-            # Check daily limit for regular cases
-            if sim_id != "sim-test-1":
-                today = current_time.date()
-                preemptions_today = sum(
-                    1 for ts in self.preemption_history[sim_id]
-                    if ts.date() == today
-                )
-                
-                max_preemptions = self.max_preemptions_per_day.get(simulation.priority, 0)
-                if preemptions_today >= max_preemptions:
-                    return False, f"Job has reached maximum preemptions for today ({preemptions_today} >= {max_preemptions})"
-        
-        # Check if it's been running long enough
-        if runtime is not None and runtime < self.min_runtime_before_preemption:
-            return False, f"Job has not run long enough for preemption ({runtime} < {self.min_runtime_before_preemption})"
-        
-        return True, None
+        return scheduled_map
     
-    def record_preemption(self, simulation_id: str, time: Optional[datetime] = None) -> None:
-        """Record a preemption event."""
-        if time is None:
-            time = datetime.now()
+    def update_priorities(self, jobs: List[Simulation]) -> List[Simulation]:
+        """
+        Update job priorities based on deadlines and scientific promise.
+        """
+        # Call parent implementation first
+        updated_jobs = super().update_priorities(jobs)
         
-        if simulation_id not in self.preemption_history:
-            self.preemption_history[simulation_id] = []
+        # Then apply simulation-specific priority adjustments
+        for job in updated_jobs:
+            # Adjust priority based on scientific promise
+            if hasattr(job, 'scientific_promise') and job.scientific_promise > 0.8:
+                if job.priority == Priority.MEDIUM:
+                    job.priority = Priority.HIGH
+                elif job.priority == Priority.LOW:
+                    job.priority = Priority.MEDIUM
         
-        self.preemption_history[simulation_id].append(time)
+        return updated_jobs
     
-    def get_action_for_trigger(
-        self,
-        simulation: Simulation,
-        trigger: PreemptionTrigger,
-    ) -> PreemptionAction:
-        """Determine the appropriate preemption action for a trigger."""
-        if trigger == PreemptionTrigger.MAINTENANCE:
-            return PreemptionAction.CHECKPOINT_AND_STOP
+    def should_preempt(self, running_job: Simulation, pending_job: Simulation) -> bool:
+        """
+        Determine if a running job should be preempted for a pending job.
+        Extends the parent implementation with simulation-specific logic.
+        """
+        # First check with parent implementation
+        should_preempt = super().should_preempt(running_job, pending_job)
         
-        if trigger == PreemptionTrigger.HIGHER_PRIORITY:
-            # Try migration first for high priority jobs
-            if simulation.priority in [SimulationPriority.HIGH, SimulationPriority.MEDIUM]:
-                return PreemptionAction.MIGRATE
-            return PreemptionAction.CHECKPOINT_AND_STOP
+        # If parent says no, perform additional checks
+        if not should_preempt:
+            # Check if the running job can be preempted based on history
+            if not self.can_preempt_simulation(running_job.id):
+                return False
+            
+            # Otherwise, check if pending job has high scientific promise
+            if (hasattr(pending_job, 'scientific_promise') and
+                pending_job.scientific_promise > 0.9 and
+                pending_job.priority == Priority.HIGH and
+                running_job.priority != Priority.CRITICAL):
+                return True
         
-        if trigger == PreemptionTrigger.RESOURCE_SHORTAGE:
-            # For resource shortage, requeue lower priority jobs
-            if simulation.priority in [SimulationPriority.LOW, SimulationPriority.BACKGROUND]:
-                return PreemptionAction.REQUEUE
-            return PreemptionAction.CONTINUE_LIMITED
-        
-        if trigger == PreemptionTrigger.FAIRNESS:
-            return PreemptionAction.REQUEUE
-        
-        if trigger == PreemptionTrigger.ADMIN:
-            return PreemptionAction.CHECKPOINT_AND_STOP
-        
-        if trigger == PreemptionTrigger.DEADLINE:
-            return PreemptionAction.CANCEL
-        
-        # Default
-        return PreemptionAction.CHECKPOINT_AND_STOP
+        return should_preempt
+
+
+# For compatibility with tests
+class Scheduler(JobScheduler):
+    """Wrapper around JobScheduler for backward compatibility."""
+    
+    def __init__(self, job_queue=None, reservation_system=None, strategy: SchedulingStrategy = SchedulingStrategy.HYBRID):
+        super().__init__(strategy=strategy, queue=job_queue)
+        self.job_queue = job_queue
+        self.reservation_system = reservation_system
 
 
 class LongRunningJobManager:

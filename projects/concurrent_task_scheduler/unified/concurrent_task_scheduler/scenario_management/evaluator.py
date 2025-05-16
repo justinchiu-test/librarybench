@@ -7,12 +7,13 @@ import math
 import random
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, Generic, TypeVar
 
 import numpy as np
 
+from common.core.models import Result
+
 from concurrent_task_scheduler.models import (
-    Result,
     Scenario,
     ScenarioEvaluationResult,
     ScientificMetric,

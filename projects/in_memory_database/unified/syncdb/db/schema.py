@@ -121,12 +121,34 @@ class TableSchema(Serializable):
     def to_schema(self) -> Schema:
         """Convert to a Schema from the common library."""
         fields = [col.to_schema_field() for col in self.columns]
+        
+        # Add system fields for created_at and updated_at that are automatically added
+        if not any(field.name == 'created_at' for field in fields):
+            fields.append(SchemaField(
+                name='created_at',
+                field_type=FieldType.FLOAT,
+                required=False,
+                nullable=True,
+                default=None,
+                description="Automatically populated timestamp when record was created"
+            ))
+            
+        if not any(field.name == 'updated_at' for field in fields):
+            fields.append(SchemaField(
+                name='updated_at',
+                field_type=FieldType.FLOAT,
+                required=False,
+                nullable=True,
+                default=None,
+                description="Automatically populated timestamp when record was updated"
+            ))
+        
         return Schema(
             name=self.name,
             fields=fields,
             version=str(self.version),
             description=f"SyncDB table schema for {self.name}",
-            additional_properties=False
+            additional_properties=True  # Allow additional properties like system fields
         )
     
     @classmethod

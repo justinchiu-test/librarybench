@@ -31,6 +31,116 @@ class TaskManagementService(BaseTaskService):
 
         # Experiment validation callback to be set by external services
         self._validate_experiment_callback = None
+    
+    # Add methods to interface with storage
+    def get_task(self, task_id: Union[str, UUID]) -> Optional[ResearchTask]:
+        """Get a task by ID."""
+        return self._storage.get_task(task_id)
+        
+    def update_task_wrapper(self, task: ResearchTask) -> bool:
+        """Update a task."""
+        return self._storage.update_task(task)
+        
+    def delete_task(self, task_id: Union[str, UUID]) -> bool:
+        """Delete a task by ID."""
+        return self._storage.delete_task(task_id)
+        
+    # Override BaseTaskService.update_task to accept researcher-specific parameters
+    def update_task(
+        self,
+        task_id: Union[str, UUID],
+        title: Optional[str] = None,
+        description: Optional[str] = None,
+        status: Optional[TaskStatus] = None,
+        priority: Optional[TaskPriority] = None,
+        estimated_hours: Optional[float] = None,
+        actual_hours: Optional[float] = None,
+        due_date: Optional[datetime] = None,
+    ) -> bool:
+        """
+        Update an existing task with researcher-specific fields.
+        
+        Args:
+            task_id: The ID of the task to update
+            title: New task title
+            description: New task description
+            status: New task status
+            priority: New task priority
+            estimated_hours: New estimated hours
+            actual_hours: New actual hours
+            due_date: New due date
+            
+        Returns:
+            bool: True if update successful, False otherwise
+            
+        Raises:
+            ValueError: If task doesn't exist
+        """
+        task = self.get_task(task_id)
+        if not task:
+            raise ValueError(f"Task with ID {task_id} does not exist")
+        
+        update_data = {}
+        if title is not None:
+            update_data["title"] = title
+        if description is not None:
+            update_data["description"] = description
+        if status is not None:
+            update_data["status"] = status
+        if priority is not None:
+            update_data["priority"] = priority
+        if due_date is not None:
+            update_data["due_date"] = due_date
+        if estimated_hours is not None:
+            update_data["estimated_hours"] = estimated_hours
+        if actual_hours is not None:
+            update_data["actual_hours"] = actual_hours
+        
+        task.update(**update_data)
+        return self.update_task_wrapper(task)
+    
+    def list_tasks(self, **kwargs) -> List[ResearchTask]:
+        """List tasks with optional filtering."""
+        return self._storage.list_tasks(**kwargs)
+        
+    def get_subtasks(self, parent_id: Union[str, UUID]) -> List[ResearchTask]:
+        """
+        Get all subtasks of a parent task.
+        
+        Args:
+            parent_id: The ID of the parent task
+            
+        Returns:
+            List[ResearchTask]: List of subtasks
+        """
+        return self._storage.get_subtasks(parent_id)
+        
+    # Research question methods
+    def create_research_question(self, text: str, description: Optional[str] = None, 
+                                parent_question_id: Optional[Union[str, UUID]] = None) -> str:
+        """Create a new research question."""
+        question = ResearchQuestion(
+            text=text,
+            description=description,
+            parent_question_id=parent_question_id,
+        )
+        return self._storage.create_research_question(question)
+        
+    def get_research_question(self, question_id: Union[str, UUID]) -> Optional[ResearchQuestion]:
+        """Get a research question by ID."""
+        return self._storage.get_research_question(question_id)
+        
+    def update_research_question(self, question: ResearchQuestion) -> bool:
+        """Update a research question."""
+        return self._storage.update_research_question(question)
+        
+    def delete_research_question(self, question_id: Union[str, UUID]) -> bool:
+        """Delete a research question by ID."""
+        return self._storage.delete_research_question(question_id)
+        
+    def list_research_questions(self, **kwargs) -> List[ResearchQuestion]:
+        """List research questions with optional filtering."""
+        return self._storage.list_research_questions(**kwargs)
 
     def set_reference_validator(self, validator_callback):
         """
@@ -699,19 +809,40 @@ class TaskService:
             # Populate convenience properties for integration tests
             # References
             reference_ids = task.reference_ids
-            task.references = [self._references.get(ref_id) for ref_id in reference_ids if ref_id in self._references]
+            # Convert string IDs to UUIDs for lookup in the _references map
+            task.references = []
+            for ref_id in reference_ids:
+                # Try to convert string ID to UUID if needed
+                uuid_key = ref_id if isinstance(ref_id, UUID) else UUID(ref_id)
+                if uuid_key in self._references:
+                    task.references.append(self._references[uuid_key])
             
             # Datasets
             dataset_ids = task.dataset_ids
-            task.datasets = [self._datasets.get(ds_id) for ds_id in dataset_ids if ds_id in self._datasets]
+            task.datasets = []
+            for ds_id in dataset_ids:
+                # Try to convert string ID to UUID if needed
+                uuid_key = ds_id if isinstance(ds_id, UUID) else UUID(ds_id)
+                if uuid_key in self._datasets:
+                    task.datasets.append(self._datasets[uuid_key])
             
             # Environments
             environment_ids = task.environment_ids
-            task.environments = [self._environments.get(env_id) for env_id in environment_ids if env_id in self._environments]
+            task.environments = []
+            for env_id in environment_ids:
+                # Try to convert string ID to UUID if needed
+                uuid_key = env_id if isinstance(env_id, UUID) else UUID(env_id)
+                if uuid_key in self._environments:
+                    task.environments.append(self._environments[uuid_key])
             
             # Experiments
             experiment_ids = task.experiment_ids
-            task.experiments = [self._experiments.get(exp_id) for exp_id in experiment_ids if exp_id in self._experiments]
+            task.experiments = []
+            for exp_id in experiment_ids:
+                # Try to convert string ID to UUID if needed
+                uuid_key = exp_id if isinstance(exp_id, UUID) else UUID(exp_id)
+                if uuid_key in self._experiments:
+                    task.experiments.append(self._experiments[uuid_key])
             
             # Research Questions
             question_ids = task.research_question_ids
@@ -719,50 +850,7 @@ class TaskService:
         
         return task
     
-    def update_task(
-        self,
-        task_id: UUID,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        status: Optional[TaskStatus] = None,
-        priority: Optional[TaskPriority] = None,
-        estimated_hours: Optional[float] = None,
-        actual_hours: Optional[float] = None,
-        due_date: Optional[datetime] = None,
-    ) -> ResearchTask:
-        """
-        Update an existing task.
         
-        Args:
-            task_id: The ID of the task to update
-            title: New task title
-            description: New task description
-            status: New task status
-            priority: New task priority
-            estimated_hours: New estimated hours
-            actual_hours: New actual hours
-            due_date: New due date
-            
-        Returns:
-            ResearchTask: The updated task
-            
-        Raises:
-            ValueError: If task doesn't exist
-        """
-        self._service.update_task(
-            task_id=task_id,
-            title=title,
-            description=description,
-            status=status,
-            priority=priority,
-            estimated_hours=estimated_hours,
-            actual_hours=actual_hours,
-            due_date=due_date,
-        )
-        
-        # Return the updated task object
-        return self._service.get_task(task_id)
-    
     def delete_task(self, task_id: UUID) -> bool:
         """
         Delete a task by ID.
@@ -956,7 +1044,13 @@ class TaskService:
             ValueError: If task doesn't exist
         """
         reference_ids = self._service.get_task_references(task_id)
-        references = [self._references.get(ref_id) for ref_id in reference_ids if ref_id in self._references]
+        references = []
+        for ref_id in reference_ids:
+            # Try to convert string ID to UUID if needed
+            uuid_key = ref_id if isinstance(ref_id, UUID) else UUID(ref_id)
+            if uuid_key in self._references:
+                references.append(self._references[uuid_key])
+                
         # Add references property for compatibility with integration tests
         task = self._service.get_task(task_id)
         if task:
@@ -1032,7 +1126,13 @@ class TaskService:
             ValueError: If task doesn't exist
         """
         dataset_ids = self._service.get_task_datasets(task_id)
-        datasets = [self._datasets.get(ds_id) for ds_id in dataset_ids if ds_id in self._datasets] 
+        datasets = []
+        for ds_id in dataset_ids:
+            # Try to convert string ID to UUID if needed
+            uuid_key = ds_id if isinstance(ds_id, UUID) else UUID(ds_id)
+            if uuid_key in self._datasets:
+                datasets.append(self._datasets[uuid_key])
+                
         # Add datasets property for compatibility with integration tests
         task = self._service.get_task(task_id)
         if task:
@@ -1104,7 +1204,13 @@ class TaskService:
             ValueError: If task doesn't exist
         """
         environment_ids = self._service.get_task_environments(task_id)
-        environments = [self._environments.get(env_id) for env_id in environment_ids if env_id in self._environments]
+        environments = []
+        for env_id in environment_ids:
+            # Try to convert string ID to UUID if needed
+            uuid_key = env_id if isinstance(env_id, UUID) else UUID(env_id)
+            if uuid_key in self._environments:
+                environments.append(self._environments[uuid_key])
+                
         # Add environments property for compatibility with integration tests
         task = self._service.get_task(task_id)
         if task:
@@ -1176,7 +1282,13 @@ class TaskService:
             ValueError: If task doesn't exist
         """
         experiment_ids = self._service.get_task_experiments(task_id)
-        experiments = [self._experiments.get(exp_id) for exp_id in experiment_ids if exp_id in self._experiments]
+        experiments = []
+        for exp_id in experiment_ids:
+            # Try to convert string ID to UUID if needed
+            uuid_key = exp_id if isinstance(exp_id, UUID) else UUID(exp_id)
+            if uuid_key in self._experiments:
+                experiments.append(self._experiments[uuid_key])
+                
         # Add experiments property for compatibility with integration tests
         task = self._service.get_task(task_id)
         if task:

@@ -186,7 +186,8 @@ class LocalStorage(BaseStorage):
         # Create type-specific subdirectories
         node_path = self.base_path / 'nodes'
         for node_type in ['notes', 'documents', 'citations', 'questions', 
-                          'experiments', 'projects', 'people', 'annotations', 'tags', 'other']:
+                          'experiments', 'projects', 'people', 'annotations', 'tags', 'other',
+                          'grantproposals', 'collaborators']:
             (node_path / node_type).mkdir(parents=True, exist_ok=True)
 
     def _get_collection_path(self, model_type: Type[T]) -> Path:

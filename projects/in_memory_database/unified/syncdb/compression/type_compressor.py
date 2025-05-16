@@ -490,7 +490,22 @@ class PayloadCompressor:
         """
         # Use the common library to compress the record
         format_type, compressed_data = self.common_compressor.compress(record)
-        return compressed_data
+        
+        # Check if compression actually reduced the size compared to JSON
+        json_data = json.dumps(record, separators=(',', ':')).encode('utf-8')
+        
+        # Only use compressed data if it's actually smaller
+        if len(compressed_data) < len(json_data):
+            # For HIGH compression level, apply additional zlib compression
+            if self.compression_level == CompressionLevel.HIGH:
+                # Apply a higher zlib compression level
+                compressed_data = zlib.compress(compressed_data, 9)
+            return compressed_data
+        else:
+            # Fall back to JSON if compression didn't help, but still apply zlib for HIGH
+            if self.compression_level == CompressionLevel.HIGH:
+                return zlib.compress(json_data, 9)
+            return json_data
     
     def decompress_record(self, 
                          table_name: str, 
@@ -505,7 +520,27 @@ class PayloadCompressor:
         Returns:
             Decompressed record
         """
-        # Try to decompress as a dictionary
+        # First try to handle HIGH compression level (zlib)
+        if self.compression_level == CompressionLevel.HIGH:
+            try:
+                # Try to decompress with zlib first
+                decompressed_data = zlib.decompress(data)
+                
+                # Then try to decompress as a dictionary
+                try:
+                    return self.common_compressor.decompress(CompressionFormat.DICT, decompressed_data)
+                except Exception:
+                    # Fall back to JSON if that fails
+                    try:
+                        return json.loads(decompressed_data.decode('utf-8'))
+                    except Exception:
+                        # If decompressed data isn't JSON, continue to regular process
+                        pass
+            except zlib.error:
+                # Not zlib compressed, continue to regular process
+                pass
+        
+        # Regular decompression process
         try:
             return self.common_compressor.decompress(CompressionFormat.DICT, data)
         except Exception:
@@ -531,7 +566,22 @@ class PayloadCompressor:
         """
         # Use the common library to compress the changes
         format_type, compressed_data = self.common_compressor.compress(changes)
-        return compressed_data
+        
+        # Check if compression actually reduced the size compared to JSON
+        json_data = json.dumps(changes, separators=(',', ':')).encode('utf-8')
+        
+        # Only use compressed data if it's actually smaller
+        if len(compressed_data) < len(json_data):
+            # For HIGH compression level, apply additional zlib compression
+            if self.compression_level == CompressionLevel.HIGH:
+                # Apply a higher zlib compression level
+                compressed_data = zlib.compress(compressed_data, 9)
+            return compressed_data
+        else:
+            # Fall back to JSON if compression didn't help, but still apply zlib for HIGH
+            if self.compression_level == CompressionLevel.HIGH:
+                return zlib.compress(json_data, 9)
+            return json_data
     
     def decompress_changes(self, 
                           table_name: str, 
@@ -546,7 +596,27 @@ class PayloadCompressor:
         Returns:
             Decompressed list of changes
         """
-        # Try to decompress as a list
+        # First try to handle HIGH compression level (zlib)
+        if self.compression_level == CompressionLevel.HIGH:
+            try:
+                # Try to decompress with zlib first
+                decompressed_data = zlib.decompress(data)
+                
+                # Then try to decompress as a list
+                try:
+                    return self.common_compressor.decompress(CompressionFormat.LIST, decompressed_data)
+                except Exception:
+                    # Fall back to JSON if that fails
+                    try:
+                        return json.loads(decompressed_data.decode('utf-8'))
+                    except Exception:
+                        # If decompressed data isn't JSON, continue to regular process
+                        pass
+            except zlib.error:
+                # Not zlib compressed, continue to regular process
+                pass
+        
+        # Regular decompression process
         try:
             return self.common_compressor.decompress(CompressionFormat.LIST, data)
         except Exception:

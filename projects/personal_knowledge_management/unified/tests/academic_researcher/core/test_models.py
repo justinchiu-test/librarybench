@@ -166,7 +166,9 @@ class TestResearchQuestion:
         assert question.description is None
         assert question.evidence == []
         assert question.status == "open"
-        assert question.priority == 0
+        # Check for Priority enum instead of 0 (default is MEDIUM)
+        from common.core.models import Priority
+        assert question.priority == Priority.MEDIUM
     
     def test_init_with_evidence(self):
         """Test initialization with evidence."""
@@ -194,7 +196,8 @@ class TestResearchQuestion:
         assert question.evidence[0].evidence_type == EvidenceType.SUPPORTING
         assert question.evidence[0].strength == EvidenceStrength.STRONG
         assert question.status == "resolved"
-        assert question.priority == 5
+        # Check the numeric_priority field instead of the enum
+        assert question.numeric_priority == 5
 
 
 class TestExperiment:

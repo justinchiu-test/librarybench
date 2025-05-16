@@ -632,13 +632,27 @@ class DataAnonymizer:
         try:
             num_value = float(value)
             
-            # Calculate noise
-            noise = num_value * noise_range * (2 * random.random() - 1)
-            perturbed = num_value + noise
+            # Ensure there's a minimum amount of perturbation to guarantee a different value
+            # For values > 0, ensure at least a 1% change
+            # For values = 0, add a small random value
+            if num_value == 0:
+                perturbed = random.uniform(0.01, 0.1)
+            else:
+                # Calculate noise, ensuring it's at least 1% of the original value
+                min_noise = max(0.01 * abs(num_value), 1.0 if isinstance(value, int) else 0.1)
+                # Determine noise direction (positive or negative)
+                noise_direction = 1 if random.random() > 0.5 else -1
+                # Calculate noise value (at least min_noise, at most noise_range * num_value)
+                noise = noise_direction * max(min_noise, num_value * noise_range * random.random())
+                perturbed = num_value + noise
             
             # Return as the same type as input
             if isinstance(value, int):
-                return int(round(perturbed))
+                perturbed_int = int(round(perturbed))
+                # If rounding resulted in the same value, add or subtract 1
+                if perturbed_int == int(value):
+                    perturbed_int = perturbed_int + 1 if noise_direction > 0 else perturbed_int - 1
+                return perturbed_int
             else:
                 return perturbed
         except (ValueError, TypeError):

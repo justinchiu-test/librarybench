@@ -37,9 +37,6 @@ class Vector(BaseRecord, Serializable):
         Raises:
             ValueError: If values is empty or contains non-numeric values.
         """
-        # Initialize BaseRecord
-        super().__init__(id, metadata, created_at, updated_at)
-        
         if not values:
             raise ValueError("Vector cannot be empty")
         
@@ -49,6 +46,10 @@ class Vector(BaseRecord, Serializable):
             raise ValueError("Vector values must be numeric")
             
         self._dimension = len(self._values)
+        
+        # Initialize BaseRecord with explicitly passing None for id if not provided
+        # This will prevent BaseRecord from auto-generating an ID when one isn't provided
+        super().__init__(id=id, metadata=metadata, created_at=created_at, updated_at=updated_at)
         
     @property
     def values(self) -> Tuple[float, ...]:
@@ -77,10 +78,14 @@ class Vector(BaseRecord, Serializable):
         if not isinstance(other, Vector):
             return False
         # Check if IDs are the same (inherit from BaseRecord)
-        if super().__eq__(other):
+        if super().__eq__(other) and self.id is not None:
             return True
         # Otherwise check if values are the same
         return self._values == other.values
+    
+    def __ne__(self, other: object) -> bool:
+        """Check if two vectors are not equal."""
+        return not self.__eq__(other)
         
     def __repr__(self) -> str:
         """Return a string representation of the vector."""
@@ -90,9 +95,15 @@ class Vector(BaseRecord, Serializable):
         
     def __str__(self) -> str:
         """Return a readable string representation of the vector."""
-        values_str = str(self._values)
-        if len(values_str) > 50:
-            values_str = f"{str(self._values[:3])[:-1]}, ..., {str(self._values[-3:])[1:]}"
+        # Convert tuple to list for string representation
+        if len(self._values) > 6:
+            # For long vectors, show first 3 and last 3 elements
+            first_part = list(self._values[:3])
+            last_part = list(self._values[-3:])
+            values_str = f"{first_part} ... {last_part}"
+        else:
+            # For short vectors, show all elements
+            values_str = str(list(self._values))
         
         if self.id:
             return f"Vector(id={self.id}, values={values_str})"

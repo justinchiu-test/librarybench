@@ -50,6 +50,11 @@ class VectorIndex(InMemoryStorage[Vector]):
     def ids(self) -> List[str]:
         """Get a list of all vector IDs in the index."""
         return [record.id for record in self]
+        
+    @property
+    def last_modified(self) -> float:
+        """Get the timestamp of the last modification to the index."""
+        return self._last_modified
     
     def add(self, vector: Vector, metadata: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -269,3 +274,40 @@ class VectorIndex(InMemoryStorage[Vector]):
         all_ids = [record.id for record in self]
         sampled_ids = random.sample(all_ids, n)
         return [self.get(id) for id in sampled_ids]
+    
+    def remove(self, record_id: str) -> bool:
+        """
+        Remove a vector from the index.
+        
+        Args:
+            record_id: The ID of the vector to remove
+            
+        Returns:
+            True if the vector was removed, False if it wasn't in the index
+        """
+        # Use the underlying InMemoryStorage's removal method
+        vector = self.get(record_id)
+        if vector is None:
+            return False
+            
+        self.delete(record_id)
+        return True
+    
+    def remove_batch(self, record_ids: List[str]) -> Union[List[bool], int]:
+        """
+        Remove multiple vectors from the index in a batch.
+        
+        Args:
+            record_ids: List of vector IDs to remove
+            
+        Returns:
+            Either the count of successfully removed vectors (for backward compatibility)
+            or a list of booleans indicating whether each vector was removed
+        """
+        results = []
+        for record_id in record_ids:
+            result = self.remove(record_id)
+            results.append(result)
+            
+        # Return the count of True values for backward compatibility
+        return sum(1 for r in results if r)

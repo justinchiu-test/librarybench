@@ -9,9 +9,12 @@ import time
 import uuid
 from typing import Dict, List, Set, Optional, Any, Tuple, Union
 from datetime import datetime
+import copy
+
+from common.core.serialization import Serializable
 
 
-class LineageNode:
+class LineageNode(Serializable):
     """
     Represents a node in the feature lineage graph.
     

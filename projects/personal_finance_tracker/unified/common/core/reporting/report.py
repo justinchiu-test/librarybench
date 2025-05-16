@@ -293,7 +293,8 @@ class ReportGenerator(ABC):
                     
                     # Escape commas and quotes in CSV
                     if isinstance(formatted_value, str) and ("," in formatted_value or '"' in formatted_value):
-                        formatted_value = f'"{formatted_value.replace(\'"\', \'""\')}"'
+                        escaped_value = formatted_value.replace('"', '""')
+                        formatted_value = f'"{escaped_value}"'
                     
                     lines.append(f"{formatted_key},{formatted_value}")
         

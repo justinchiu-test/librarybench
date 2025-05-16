@@ -171,6 +171,12 @@ class LocalStorage(BaseStorage):
             'attachments',
             'backups',
             'indexes',  # For search indexes
+            # Legacy directories for backward compatibility
+            'research_questions',  # Used by ResearchBrain 
+            'experiments',  # Used by ResearchBrain
+            'grants',  # Used by ResearchBrain
+            'collaborators',  # Used by ResearchBrain
+            'templates',  # Used by ResearchBrain
         ]
 
         for directory in directories:
@@ -180,7 +186,8 @@ class LocalStorage(BaseStorage):
         # Create type-specific subdirectories
         node_path = self.base_path / 'nodes'
         for node_type in ['notes', 'documents', 'citations', 'questions', 
-                          'experiments', 'projects', 'people', 'annotations', 'tags', 'other']:
+                          'experiments', 'projects', 'people', 'annotations', 'tags', 'other',
+                          'grantproposals', 'collaborators']:
             (node_path / node_type).mkdir(parents=True, exist_ok=True)
 
     def _get_collection_path(self, model_type: Type[T]) -> Path:
@@ -201,8 +208,16 @@ class LocalStorage(BaseStorage):
         # Get the model name in lowercase
         type_name = model_type.__name__.lower()
         
+        # Special handling for ResearchQuestion to maintain compatibility with ResearchBrain
+        if model_type.__name__ == 'ResearchQuestion':
+            # First check if the 'research_questions' directory exists (old path)
+            legacy_path = self.base_path / 'research_questions'
+            if legacy_path.exists():
+                return legacy_path
+            # Otherwise use the new path structure
+            return nodes_path / 'questions'
         # Handle known types with specific directories
-        if hasattr(model_type, 'node_type') and isinstance(model_type.node_type, str):
+        elif hasattr(model_type, 'node_type') and isinstance(model_type.node_type, str):
             return nodes_path / model_type.node_type.lower() + 's'
         elif model_type.__name__ == 'Annotation':
             return nodes_path / 'annotations'

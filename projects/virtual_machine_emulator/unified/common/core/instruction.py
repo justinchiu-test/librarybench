@@ -266,3 +266,30 @@ def create_common_instruction_set() -> InstructionSet:
     isa.add_instruction("JOIN", InstructionType.SPECIAL, latency=2)
     
     return isa
+
+# Create a default instance for static-like access
+DEFAULT_INSTRUCTION_SET = create_common_instruction_set()
+
+# Store the original instance method
+_original_create_instruction = InstructionSet.create_instruction
+
+# Define a new class method for backward compatibility
+@staticmethod
+def _static_create_instruction(opcode: str, operands: List[Any], metadata: Dict[str, Any] = None) -> Optional[Instruction]:
+    """Static method to create an instruction using the default instruction set."""
+    # Call the original instance method on our default instance
+    instr_type = DEFAULT_INSTRUCTION_SET.get_instruction_type(opcode)
+    if instr_type is None:
+        return None
+    
+    return Instruction(
+        opcode=opcode,
+        type=instr_type,
+        operands=operands,
+        latency=DEFAULT_INSTRUCTION_SET.get_latency(opcode),
+        privileged=DEFAULT_INSTRUCTION_SET.is_privileged(opcode),
+        metadata=metadata
+    )
+
+# Replace the instance method with our static method
+InstructionSet.create_instruction = _static_create_instruction

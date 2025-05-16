@@ -16,7 +16,7 @@ class ESGRating(BaseModel):
     governance: int
     overall: int
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_overall_score(cls, values):
         """Validate that the overall score is consistent with component scores."""
         env = values.get("environmental", 0)
@@ -89,7 +89,7 @@ class InvestmentHolding(BaseModel):
     current_price: float
     current_value: float
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_current_value(cls, values):
         """Validate that current_value = shares * current_price."""
         shares = values.get("shares", 0)
@@ -124,7 +124,7 @@ class Portfolio(BaseModel):
     creation_date: Union[date, datetime]
     last_updated: Union[date, datetime] = Field(default_factory=datetime.now)
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_total_value(cls, values):
         """Validate that total_value equals the sum of all holdings' values."""
         holdings = values.get("holdings", [])
@@ -188,7 +188,7 @@ class EthicalCriteria(BaseModel):
     exclusions: List[str] = Field(default_factory=list)
     inclusions: List[str] = Field(default_factory=list)
     
-    @root_validator
+    @root_validator(skip_on_failure=True)
     def validate_criteria_weights(cls, values):
         """Validate that criteria weights are included and sum approximately to 1."""
         for field_name in ['environmental', 'social', 'governance']:

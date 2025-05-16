@@ -4,6 +4,13 @@ from typing import Dict, List, Optional, Any, Union
 from datetime import date, datetime
 from dataclasses import dataclass, field
 
+from common.core.models.investment import (
+    Investment as CommonInvestment,
+    InvestmentHolding as BaseInvestmentHolding,
+    Portfolio as BasePortfolio
+)
+from common.core.models.transaction import BaseTransaction
+
 
 @dataclass
 class ESGRating:
@@ -23,25 +30,33 @@ class ESGRating:
 
 
 @dataclass
-class Investment:
+class Investment(CommonInvestment):
     """Model representing an investment opportunity with ESG attributes."""
     
-    id: str
-    name: str
-    sector: str
-    industry: str
-    market_cap: float
-    price: float
-    esg_ratings: Union[ESGRating, Dict[str, Any]]
-    carbon_footprint: float
-    renewable_energy_use: float
-    diversity_score: float
-    board_independence: float
-    controversies: List[str] = field(default_factory=list)
-    positive_practices: List[str] = field(default_factory=list)
+    # These fields come from CommonInvestment:
+    # id: str
+    # name: str
+    # sector: str
+    # industry: str
+    # market_cap: float
+    # price: float
+    # esg_ratings: ESGRating
+    # carbon_footprint: float 
+    # renewable_energy_use: float
+    # diversity_score: float
+    # board_independence: float
+    # controversies: List[str]
+    # positive_practices: List[str]
+    
+    # The ESG-specific fields are already in the parent class
+    # We just need to make the esg_ratings field compatible with both ESGRating and Dict
+    esg_ratings: Union[ESGRating, Dict[str, Any]] = None
     
     def __post_init__(self):
         """Convert dictionary esg_ratings to ESGRating object if necessary."""
+        # Call parent post init first
+        super().__post_init__()
+        
         if isinstance(self.esg_ratings, dict):
             self.esg_ratings = ESGRating(
                 environmental=self.esg_ratings["environmental"],
@@ -58,18 +73,23 @@ class Investment:
 
 
 @dataclass
-class InvestmentHolding:
+class InvestmentHolding(BaseInvestmentHolding):
     """A specific holding of an investment in a portfolio."""
     
-    investment_id: str
-    shares: float
-    purchase_price: float
-    purchase_date: date
-    current_price: float
-    current_value: float
+    # These fields come from BaseInvestmentHolding:
+    # investment_id: str
+    # shares: float
+    # purchase_price: float
+    # purchase_date: date
+    # current_price: float
+    # current_value: float
+    
+    # No additional fields needed
     
     def __post_init__(self):
         """Validate that current_value = shares * current_price."""
+        super().__post_init__()
+        
         expected_value = self.shares * self.current_price
         if abs(self.current_value - expected_value) > 0.01:  # Allow for small rounding errors
             raise ValueError(f"Current value {self.current_value} does not match shares * price {expected_value}")
@@ -81,16 +101,20 @@ class InvestmentHolding:
 
 
 @dataclass
-class Portfolio:
+class Portfolio(BasePortfolio):
     """A collection of investment holdings."""
     
-    portfolio_id: str
-    name: str
-    holdings: List[Union[InvestmentHolding, Dict[str, Any]]]
-    total_value: float
+    # These fields come from BasePortfolio:
+    # portfolio_id: str
+    # name: str
+    # holdings: List[InvestmentHolding]
+    # total_value: float
+    # creation_date: date
+    # last_updated: date
+    
+    # Add ESG-specific fields
     cash_balance: float
-    creation_date: date
-    last_updated: date
+    holdings: List[Union[InvestmentHolding, Dict[str, Any]]]
     
     def __post_init__(self):
         """Validate that total_value equals the sum of all holdings' values and convert dict holdings to InvestmentHolding objects."""
@@ -141,16 +165,23 @@ class ShareholderResolution:
 
 
 @dataclass
-class Transaction:
+class Transaction(BaseTransaction):
     """Model representing a personal financial transaction."""
     
-    id: str
-    date: date
-    amount: float
+    # These fields come from BaseTransaction:
+    # id: str
+    # date: date
+    # amount: float
+    # description: str
+    # transaction_type: TransactionType (we don't use this)
+    # tags: List[str]
+    
+    # Add ethical-specific fields
     vendor: str
     category: str
-    description: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
+    
+    # We don't need transaction_type for ethical transactions
+    transaction_type: Optional[str] = None
 
 
 @dataclass

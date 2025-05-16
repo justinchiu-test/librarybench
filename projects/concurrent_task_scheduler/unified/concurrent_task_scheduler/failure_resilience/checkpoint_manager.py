@@ -12,7 +12,27 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
+
+from common.core.exceptions import (
+    CheckpointCreationError,
+    CheckpointNotFoundError,
+    CheckpointRestoreError,
+)
+from common.core.models import (
+    BaseJob,
+    Checkpoint as CommonCheckpoint,
+    CheckpointStatus as CommonCheckpointStatus,
+    CheckpointType as CommonCheckpointType,
+    Result,
+)
+from common.core.utils import (
+    calculate_hash,
+    create_directory_if_not_exists,
+    serialize_model,
+    DateTimeEncoder,
+)
+from common.failure_resilience.checkpoint_manager import CheckpointManager as CommonCheckpointManager
 
 from concurrent_task_scheduler.models import (
     Checkpoint,
@@ -51,7 +71,103 @@ class CheckpointCreationStrategy(str, Enum):
     HYBRID = "hybrid"  # Combination of strategies
 
 
-class CheckpointManager:
+# Mapping functions between domain-specific and common types
+def map_checkpoint_type_to_common(checkpoint_type: CheckpointType) -> CommonCheckpointType:
+    """Map domain-specific checkpoint type to common checkpoint type."""
+    mapping = {
+        CheckpointType.FULL: CommonCheckpointType.FULL,
+        CheckpointType.INCREMENTAL: CommonCheckpointType.INCREMENTAL,
+        CheckpointType.METADATA_ONLY: CommonCheckpointType.METADATA,
+        CheckpointType.CRITICAL_STATE: CommonCheckpointType.DIFFERENTIAL,
+    }
+    return mapping.get(checkpoint_type, CommonCheckpointType.FULL)
+
+
+def map_checkpoint_status_to_common(status: CheckpointStatus) -> CommonCheckpointStatus:
+    """Map domain-specific checkpoint status to common checkpoint status."""
+    mapping = {
+        CheckpointStatus.CREATING: CommonCheckpointStatus.CREATING,
+        CheckpointStatus.COMPLETE: CommonCheckpointStatus.COMPLETE,
+        CheckpointStatus.FAILED: CommonCheckpointStatus.FAILED,
+        CheckpointStatus.CORRUPTED: CommonCheckpointStatus.FAILED,
+        CheckpointStatus.ARCHIVED: CommonCheckpointStatus.ARCHIVED,
+    }
+    return mapping.get(status, CommonCheckpointStatus.CREATING)
+
+
+def map_common_checkpoint_to_domain(common_checkpoint: CommonCheckpoint) -> Checkpoint:
+    """Convert common checkpoint to domain-specific checkpoint."""
+    # Create metadata with required fields
+    metadata = CheckpointMetadata(
+        simulation_id=common_checkpoint.job_id,
+        simulation_name=common_checkpoint.metadata.get("job_name", "Unknown"),
+        stage_id=common_checkpoint.metadata.get("stage_id"),
+        stage_name=common_checkpoint.metadata.get("stage_name"),
+        checkpoint_type=map_common_checkpoint_type_to_domain(common_checkpoint.checkpoint_type),
+        storage_type=CheckpointStorageType.PARALLEL_FS,
+        compression=CheckpointCompression.ZSTD,
+        progress_at_checkpoint=common_checkpoint.metadata.get("progress", 0.0),
+        custom_metadata=common_checkpoint.metadata,
+    )
+    
+    # Create domain checkpoint
+    checkpoint = Checkpoint(
+        id=common_checkpoint.id,
+        metadata=metadata,
+        status=map_common_checkpoint_status_to_domain(common_checkpoint.status),
+        path=common_checkpoint.path,
+        validation_hash=common_checkpoint.validation_hash,
+        restore_count=common_checkpoint.restore_count,
+        last_restore_time=common_checkpoint.last_restore_time,
+    )
+    
+    return checkpoint
+
+
+def map_common_checkpoint_type_to_domain(common_type: CommonCheckpointType) -> CheckpointType:
+    """Map common checkpoint type to domain-specific checkpoint type."""
+    mapping = {
+        CommonCheckpointType.FULL: CheckpointType.FULL,
+        CommonCheckpointType.INCREMENTAL: CheckpointType.INCREMENTAL,
+        CommonCheckpointType.DIFFERENTIAL: CheckpointType.CRITICAL_STATE,
+        CommonCheckpointType.METADATA: CheckpointType.METADATA_ONLY,
+    }
+    return mapping.get(common_type, CheckpointType.FULL)
+
+
+def map_common_checkpoint_status_to_domain(common_status: CommonCheckpointStatus) -> CheckpointStatus:
+    """Map common checkpoint status to domain-specific checkpoint status."""
+    mapping = {
+        CommonCheckpointStatus.CREATING: CheckpointStatus.CREATING,
+        CommonCheckpointStatus.COMPLETE: CheckpointStatus.COMPLETE,
+        CommonCheckpointStatus.FAILED: CheckpointStatus.FAILED,
+        CommonCheckpointStatus.ARCHIVED: CheckpointStatus.ARCHIVED,
+        CommonCheckpointStatus.RESTORING: CheckpointStatus.CREATING,
+    }
+    return mapping.get(common_status, CheckpointStatus.CREATING)
+
+
+def simulation_to_job(simulation: Simulation) -> BaseJob:
+    """Convert Simulation to BaseJob for use with common library."""
+    # Create a minimal BaseJob with required fields for checkpoint creation
+    return BaseJob(
+        id=simulation.id,
+        name=simulation.name,
+        owner=simulation.owner,
+        project=simulation.project,
+        estimated_duration=simulation.estimated_duration,
+        progress=simulation.total_progress(),
+        metadata={
+            "stages": {k: {"progress": v.progress, "status": v.status.value} 
+                      for k, v in simulation.stages.items()},
+            "status": simulation.status,
+            "resources": simulation.resources,
+            "computed_at": datetime.now().isoformat(),
+        }
+    )
+
+
+class CheckpointManager(CommonCheckpointManager):
     """Manager for checkpoint creation, validation, and restoration."""
     
     def __init__(
@@ -62,9 +178,16 @@ class CheckpointManager:
     ):
         # For backward compatibility
         self.base_storage_path = base_storage_path or checkpoint_base_path or "/tmp/checkpoints"
+        
+        # Initialize common manager with consistent parameters
+        super().__init__(
+            base_directory=self.base_storage_path,
+            retention_days=7,
+            max_checkpoints_per_job=10,
+        )
+        
         self.max_concurrent_operations = max_concurrent_operations
         self.policies: Dict[str, CheckpointPolicy] = {}
-        self.checkpoints: Dict[str, Dict[str, Checkpoint]] = {}  # sim_id -> checkpoint_id -> Checkpoint
         self.simulation_managers: Dict[str, CheckpointManagerModel] = {}
         self.active_operations: Dict[str, datetime] = {}  # operation_id -> start_time
         # ValidationResult is defined in this file, so it's accessible here
@@ -154,7 +277,10 @@ class CheckpointManager:
         )
         
         self.simulation_managers[simulation_id] = manager
-        self.checkpoints[simulation_id] = {}
+        
+        # Initialize domain-specific checkpoints dictionary if needed
+        if simulation_id not in self.checkpoints:
+            self.checkpoints[simulation_id] = {}
         
         return Result.ok(manager)
     
@@ -199,40 +325,62 @@ class CheckpointManager:
     
     def register_checkpoint(self, checkpoint: Checkpoint) -> Result[bool]:
         """Register an existing checkpoint."""
-        if checkpoint.metadata.simulation_id not in self.checkpoints:
-            self.checkpoints[checkpoint.metadata.simulation_id] = {}
+        # First, register the checkpoint with the common implementation
+        job_id = checkpoint.metadata.simulation_id
+        common_checkpoint = CommonCheckpoint(
+            id=checkpoint.id,
+            job_id=job_id,
+            checkpoint_type=map_checkpoint_type_to_common(checkpoint.metadata.checkpoint_type),
+            status=map_checkpoint_status_to_common(checkpoint.status),
+            path=checkpoint.path,
+            timestamp=checkpoint.metadata.checkpoint_time,
+            size_bytes=checkpoint.metadata.size_bytes,
+            metadata={
+                "progress": checkpoint.metadata.progress_at_checkpoint,
+                "stage_id": checkpoint.metadata.stage_id,
+                "stage_name": checkpoint.metadata.stage_name,
+                "simulation_name": checkpoint.metadata.simulation_name,
+                **checkpoint.metadata.custom_metadata
+            },
+            validation_hash=checkpoint.validation_hash,
+            restore_count=checkpoint.restore_count,
+            last_restore_time=checkpoint.last_restore_time
+        )
+        
+        # Initialize domain-specific storage if needed
+        if job_id not in self.checkpoints:
+            self.checkpoints[job_id] = {}
             
-        # Store the checkpoint
-        self.checkpoints[checkpoint.metadata.simulation_id][checkpoint.id] = checkpoint
+        # Store the checkpoint in both storages
+        self.checkpoints[job_id][checkpoint.id] = checkpoint
         
         # Update simulation manager
-        if checkpoint.metadata.simulation_id not in self.simulation_managers:
+        if job_id not in self.simulation_managers:
             # Create a new manager if needed
-            simulation_storage_path = os.path.join(self.base_storage_path, checkpoint.metadata.simulation_id)
+            simulation_storage_path = os.path.join(self.base_storage_path, job_id)
             os.makedirs(simulation_storage_path, exist_ok=True)
             
             manager = CheckpointManagerModel(
-                simulation_id=checkpoint.metadata.simulation_id,
+                simulation_id=job_id,
                 checkpoint_policy=self.get_default_policy(),
                 base_storage_path=simulation_storage_path,
             )
             
-            self.simulation_managers[checkpoint.metadata.simulation_id] = manager
-            self.checkpoints[checkpoint.metadata.simulation_id] = {}
+            self.simulation_managers[job_id] = manager
             
         # Add to manager
-        manager = self.simulation_managers[checkpoint.metadata.simulation_id]
+        manager = self.simulation_managers[job_id]
         if checkpoint not in manager.checkpoints:
             manager.checkpoints.append(checkpoint)
         
         # Update latest checkpoint ID if this is newer
         if (manager.latest_checkpoint_id is None or
             (checkpoint.metadata.checkpoint_time > 
-             self.checkpoints[checkpoint.metadata.simulation_id][manager.latest_checkpoint_id].metadata.checkpoint_time)):
+             self.checkpoints[job_id][manager.latest_checkpoint_id].metadata.checkpoint_time)):
             manager.latest_checkpoint_id = checkpoint.id
             
         return Result.ok(True)
-            
+    
     def create_checkpoint(
         self,
         simulation: Simulation,
@@ -285,18 +433,51 @@ class CheckpointManager:
             path=checkpoint_path,
         )
         
-        # Track checkpoint
-        self.checkpoints.setdefault(simulation.id, {})[checkpoint_id] = checkpoint
-        manager.checkpoints.append(checkpoint)
-        manager.latest_checkpoint_id = checkpoint_id
-        
-        # Start checkpoint creation process
-        operation_id = generate_id("cp_op")
-        self.active_operations[operation_id] = datetime.now()
-        
-        # In a real implementation, this would actually save the simulation state
-        # Here we'll just simulate the process with a delay and creating empty files
         try:
+            # First, use the common implementation to create the basic checkpoint structure
+            # Convert the simulation to a BaseJob for use with the common library
+            job = simulation_to_job(simulation)
+            
+            # Create a metadata dict for the common checkpoint
+            common_metadata = {
+                "simulation_name": simulation.name,
+                "stage_id": stage_id,
+                "stage_name": stage_name,
+                "progress": progress,
+                "description": description,
+                "checkpoint_type": cp_type.value,
+                "storage_type": manager.checkpoint_policy.storage_type.value,
+                "compression": manager.checkpoint_policy.compression.value,
+            }
+            
+            # Create the checkpoint using the common implementation
+            common_checkpoint_result = super().create_checkpoint(
+                job=job, 
+                checkpoint_type=map_checkpoint_type_to_common(cp_type),
+                metadata=common_metadata
+            )
+            
+            if not common_checkpoint_result.success:
+                return Result.err(f"Failed to create checkpoint: {common_checkpoint_result.error}")
+            
+            # Get the common checkpoint
+            common_checkpoint = common_checkpoint_result.value
+            
+            # Now add domain-specific data
+            # Track checkpoint
+            if simulation.id not in self.checkpoints:
+                self.checkpoints[simulation.id] = {}
+                
+            self.checkpoints[simulation.id][checkpoint_id] = checkpoint
+            manager.checkpoints.append(checkpoint)
+            manager.latest_checkpoint_id = checkpoint_id
+            
+            # Start checkpoint creation process
+            operation_id = generate_id("cp_op")
+            self.active_operations[operation_id] = datetime.now()
+            
+            # In a real implementation, this would actually save the simulation state
+            # Here we'll just simulate the process with a delay and creating domain-specific files
             self._create_checkpoint_files(checkpoint, simulation, stage_id)
             
             # Update checkpoint status
@@ -307,7 +488,8 @@ class CheckpointManager:
             metadata.creation_duration_seconds = (datetime.now() - self.active_operations[operation_id]).total_seconds()
             
             # Generate validation hash
-            checkpoint.validation_hash = self._calculate_validation_hash(checkpoint)
+            if not checkpoint.validation_hash:
+                checkpoint.validation_hash = self._calculate_validation_hash(checkpoint)
             
             # Remove from active operations
             del self.active_operations[operation_id]
@@ -322,7 +504,7 @@ class CheckpointManager:
             checkpoint.status = CheckpointStatus.FAILED
             
             # Remove from active operations
-            if operation_id in self.active_operations:
+            if 'operation_id' in locals() and operation_id in self.active_operations:
                 del self.active_operations[operation_id]
             
             logger.error(f"Failed to create checkpoint: {e}")
@@ -498,6 +680,10 @@ class CheckpointManager:
         stage_id: Optional[str] = None,
     ) -> List[Checkpoint]:
         """Get all checkpoints for a simulation or stage."""
+        # Use the common implementation to list checkpoints
+        common_checkpoints = super().list_checkpoints(simulation_id)
+        
+        # If using the domain-specific implementation
         if simulation_id not in self.simulation_managers:
             logger.error(f"No checkpoint manager found for simulation {simulation_id}")
             return []
@@ -512,7 +698,7 @@ class CheckpointManager:
             ]
         
         return manager.checkpoints.copy()
-        
+    
     def get_checkpoints_for_simulation(self, simulation_id: str) -> List[Checkpoint]:
         """Get all checkpoints for a simulation. Alias for get_all_checkpoints."""
         return self.get_all_checkpoints(simulation_id)
@@ -539,6 +725,18 @@ class CheckpointManager:
         
         checkpoint.restore_count += 1
         checkpoint.last_restore_time = datetime.now()
+        
+        # Update in common implementation
+        common_restore_result = super().validate_checkpoint(checkpoint_id)
+        if common_restore_result.success:
+            # Only need to call restore if validation succeeded
+            # Use a simple factory function that returns the original job state
+            restore_result = super().restore_checkpoint(
+                checkpoint_id=checkpoint_id,
+                job_factory=lambda job_state: job_state
+            )
+            if not restore_result.success:
+                logger.warning(f"Common library restore failed: {restore_result.error}")
         
         return Result.ok(True)
     
@@ -581,6 +779,9 @@ class CheckpointManager:
                         manager.latest_checkpoint_id = latest.id
                     else:
                         manager.latest_checkpoint_id = None
+                
+                # Also remove from the common implementation
+                super().delete_checkpoint(checkpoint_id)
     
     def archive_checkpoint(
         self,
@@ -614,7 +815,6 @@ class CheckpointManager:
         
         # In a real implementation, this would compress and archive the checkpoint
         # Here we'll just update the checkpoint's status
-        
         checkpoint.status = CheckpointStatus.ARCHIVED
         
         return Result.ok(archive_path)
@@ -623,6 +823,11 @@ class CheckpointManager:
         """Clean up resources used by the checkpoint manager."""
         # Shutdown executor
         self.executor.shutdown(wait=True)
+        
+        # Call parent cleanup if it exists
+        super_cleanup = getattr(super(), "cleanup", None)
+        if super_cleanup and callable(super_cleanup):
+            super_cleanup()
 
 
 class CheckpointCoordinator:

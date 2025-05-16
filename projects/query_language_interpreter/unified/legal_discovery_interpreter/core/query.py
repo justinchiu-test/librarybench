@@ -1,61 +1,61 @@
 """Query models for the legal discovery interpreter."""
 
 from typing import Dict, List, Optional, Any, Union, Set
-from enum import Enum, auto
 from datetime import datetime, date, timedelta
 from pydantic import BaseModel, Field
 
 from common.core.query import BaseQuery, ExecutionContext
-from common.core.result import QueryResult as CommonQueryResult
+from common.core.result import QueryResult
+from common.models.legal import (
+    QueryOperator, 
+    DistanceUnit, 
+    QueryType, 
+    SortOrder
+)
+from common.core.legal_clauses import (
+    QueryClause,
+    FullTextQuery,
+    MetadataQuery,
+    ProximityQuery,
+    CommunicationQuery,
+    TemporalQuery,
+    PrivilegeQuery,
+    CompositeQuery
+)
 
-
-class QueryOperator(str, Enum):
-    """Query operators for the legal discovery query language."""
+# Create a base result class that doesn't set execution_time directly
+class CommonQueryResult(QueryResult):
+    """Base query result that doesn't set execution_time attribute."""
     
-    AND = "AND"
-    OR = "OR"
-    NOT = "NOT"
-    NEAR = "NEAR"
-    WITHIN = "WITHIN"
-    CONTAINS = "CONTAINS"
-    STARTS_WITH = "STARTS_WITH"
-    ENDS_WITH = "ENDS_WITH"
-    EQUALS = "EQUALS"
-    GREATER_THAN = "GREATER_THAN"
-    LESS_THAN = "LESS_THAN"
-    GREATER_THAN_EQUALS = "GREATER_THAN_EQUALS"
-    LESS_THAN_EQUALS = "LESS_THAN_EQUALS"
-    BETWEEN = "BETWEEN"
-    IN = "IN"
+    def __init__(
+        self,
+        query: BaseQuery,
+        data: Union[List[Dict[str, Any]], List[Any]] = None,
+        success: bool = True,
+        error: str = None,
+        metadata: Dict[str, Any] = None,
+    ):
+        """Initialize a query result.
 
-
-class DistanceUnit(str, Enum):
-    """Units for proximity distance measurement."""
-    
-    WORDS = "WORDS"
-    SENTENCES = "SENTENCES"
-    PARAGRAPHS = "PARAGRAPHS"
-    SECTIONS = "SECTIONS"
-    PAGES = "PAGES"
-
-
-class QueryType(str, Enum):
-    """Types of queries that can be executed."""
-    
-    FULL_TEXT = "FULL_TEXT"
-    METADATA = "METADATA"
-    PROXIMITY = "PROXIMITY"
-    COMMUNICATION = "COMMUNICATION"
-    TEMPORAL = "TEMPORAL"
-    PRIVILEGE = "PRIVILEGE"
-    COMPOSITE = "COMPOSITE"
-
-
-class SortOrder(str, Enum):
-    """Sort orders for query results."""
-    
-    ASC = "ASC"
-    DESC = "DESC"
+        Args:
+            query: Query that produced this result
+            data: Result data
+            success: Whether the query was successful
+            error: Error message if query failed
+            metadata: Additional metadata
+        """
+        self.query = query
+        self.data = data or []
+        self.success = success
+        self.error = error
+        self.metadata = metadata or {}
+        
+        # Extract context metadata if available
+        context = query.get_execution_context()
+        if context:
+            if not 'execution_time' in self.metadata:
+                self.metadata['execution_time'] = context.execution_time()
+            self.metadata.update(context.metadata)
 
 
 class SortField(BaseModel):
@@ -65,103 +65,61 @@ class SortField(BaseModel):
     order: SortOrder = Field(default=SortOrder.DESC, description="Sort order")
 
 
-class QueryClause(BaseModel):
-    """Base class for a query clause."""
-    
-    query_type: QueryType = Field(..., description="Type of query clause")
-
-
-class FullTextQuery(QueryClause):
-    """Full text query for searching document content."""
-    
-    query_type: QueryType = Field(default=QueryType.FULL_TEXT, description="Type of query clause")
-    terms: List[str] = Field(..., description="Search terms")
-    operator: QueryOperator = Field(default=QueryOperator.AND, description="Operator for combining terms")
-    expand_terms: bool = Field(default=True, description="Whether to expand terms using legal ontology")
-    field: Optional[str] = Field(None, description="Field to search in (defaults to all)")
-    boost: float = Field(default=1.0, description="Relevance boost factor")
-
-
-class MetadataQuery(QueryClause):
-    """Query for document metadata."""
-    
-    query_type: QueryType = Field(default=QueryType.METADATA, description="Type of query clause")
-    field: str = Field(..., description="Metadata field to query")
-    operator: QueryOperator = Field(..., description="Comparison operator")
-    value: Any = Field(..., description="Value to compare against")
-    
-    class Config:
-        """Pydantic model configuration."""
-        
-        arbitrary_types_allowed = True  # Allow any type for value
-
-
-class ProximityQuery(QueryClause):
-    """Query for terms in proximity to each other."""
-    
-    query_type: QueryType = Field(default=QueryType.PROXIMITY, description="Type of query clause")
-    terms: List[str] = Field(..., description="Terms to search for")
-    distance: int = Field(..., description="Maximum distance between terms")
-    unit: DistanceUnit = Field(..., description="Unit of distance measurement")
-    ordered: bool = Field(default=False, description="Whether terms must appear in the specified order")
-    expand_terms: bool = Field(default=True, description="Whether to expand terms using legal ontology")
-
-
-class CommunicationQuery(QueryClause):
-    """Query for communication patterns."""
-    
-    query_type: QueryType = Field(default=QueryType.COMMUNICATION, description="Type of query clause")
-    participants: List[str] = Field(..., description="Participants in the communication")
-    direction: Optional[str] = Field(None, description="Direction of communication (e.g., from, to, between)")
-    date_range: Optional[Dict[str, datetime]] = Field(None, description="Date range for the communication")
-    thread_analysis: bool = Field(default=False, description="Whether to analyze message threads")
-    include_cc: bool = Field(default=True, description="Whether to include CC recipients")
-    include_bcc: bool = Field(default=False, description="Whether to include BCC recipients")
-
-
-class TemporalQuery(QueryClause):
-    """Query for temporal information."""
-    
-    query_type: QueryType = Field(default=QueryType.TEMPORAL, description="Type of query clause")
-    date_field: str = Field(..., description="Date field to query")
-    operator: QueryOperator = Field(..., description="Comparison operator")
-    value: Union[datetime, date, str, Dict[str, Any]] = Field(
-        ..., description="Date value or legal timeframe reference"
-    )
-    timeframe_type: Optional[str] = Field(None, description="Type of legal timeframe if applicable")
-    jurisdiction: Optional[str] = Field(None, description="Jurisdiction for the timeframe if applicable")
-
-
-class PrivilegeQuery(QueryClause):
-    """Query for privilege detection."""
-    
-    query_type: QueryType = Field(default=QueryType.PRIVILEGE, description="Type of query clause")
-    privilege_type: Optional[str] = Field(None, description="Type of privilege to detect")
-    threshold: float = Field(default=0.5, description="Confidence threshold for privilege detection")
-    attorneys: Optional[List[str]] = Field(None, description="List of attorneys to match")
-    include_potentially_privileged: bool = Field(default=True, 
-                                               description="Whether to include potentially privileged documents")
-
-
-class CompositeQuery(QueryClause):
-    """Composite query combining multiple query clauses."""
-    
-    query_type: QueryType = Field(default=QueryType.COMPOSITE, description="Type of query clause")
-    operator: QueryOperator = Field(..., description="Operator for combining clauses")
-    clauses: List[QueryClause] = Field(..., description="Query clauses to combine")
-
-
 class LegalQueryResult(CommonQueryResult):
     """Result of a legal discovery query execution."""
     
-    document_ids: List[str] = Field(default_factory=list, description="Matching document IDs")
-    relevance_scores: Optional[Dict[str, float]] = Field(None, description="Relevance scores for documents")
-    privilege_status: Optional[Dict[str, str]] = Field(None, description="Privilege status for documents")
-    executed_at: datetime = Field(default_factory=datetime.now, description="When the query was executed")
+    # For backward compatibility, add property methods that get data from metadata
+    @property
+    def query_id(self) -> str:
+        """Get query ID from the query."""
+        if hasattr(self.query, 'query_id'):
+            return self.query.query_id
+        return None
     
-    pagination: Optional[Dict[str, Any]] = Field(None, description="Pagination information")
-    aggregations: Optional[Dict[str, Any]] = Field(None, description="Aggregation results")
-    facets: Optional[Dict[str, Any]] = Field(None, description="Facet results")
+    @property
+    def document_ids(self) -> List[str]:
+        """Get document IDs from metadata."""
+        return self.metadata.get("document_ids", [])
+    
+    @property
+    def total_hits(self) -> int:
+        """Get total hits from metadata."""
+        return self.metadata.get("total_hits", 0)
+    
+    @property
+    def relevance_scores(self) -> Dict[str, float]:
+        """Get relevance scores from metadata."""
+        return self.metadata.get("relevance_scores", {})
+    
+    @property
+    def privilege_status(self) -> Dict[str, str]:
+        """Get privilege status from metadata."""
+        return self.metadata.get("privilege_status", {})
+    
+    @property
+    def executed_at(self) -> datetime:
+        """Get execution timestamp from metadata."""
+        return self.metadata.get("executed_at", datetime.now())
+        
+    @property
+    def execution_time(self) -> float:
+        """Get execution time from metadata."""
+        return self.metadata.get("execution_time", self.get_metadata("execution_time", -1))
+    
+    @property
+    def pagination(self) -> Dict[str, Any]:
+        """Get pagination from metadata."""
+        return self.metadata.get("pagination", {})
+    
+    @property
+    def aggregations(self) -> Dict[str, Any]:
+        """Get aggregations from metadata."""
+        return self.metadata.get("aggregations", {})
+    
+    @property
+    def facets(self) -> Dict[str, Any]:
+        """Get facets from metadata."""
+        return self.metadata.get("facets", {})
 
 
 class LegalDiscoveryQuery(BaseQuery):

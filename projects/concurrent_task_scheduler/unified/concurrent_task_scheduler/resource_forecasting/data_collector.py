@@ -11,9 +11,12 @@ from typing import Dict, List, Optional, Set, Tuple, Union
 import numpy as np
 import pandas as pd
 
-from concurrent_task_scheduler.models import (
+from common.core.models import (
     ResourceType,
     Result,
+)
+
+from concurrent_task_scheduler.models import (
     Simulation,
     UtilizationDataPoint,
 )

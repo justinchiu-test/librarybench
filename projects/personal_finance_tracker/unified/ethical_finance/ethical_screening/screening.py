@@ -4,6 +4,10 @@ from typing import Dict, List, Tuple, Any, Optional
 import time
 from dataclasses import dataclass
 
+# Import from common library
+from common.core.analysis.analyzer import BaseAnalyzer
+from common.core.utils.performance import Timer
+
 from ethical_finance.models import Investment, EthicalCriteria
 
 
@@ -22,7 +26,7 @@ class ScreeningResult:
     details: Dict[str, Any]
 
 
-class EthicalScreener:
+class EthicalScreener(BaseAnalyzer):
     """Evaluates investments against customizable ethical criteria."""
     
     def __init__(self, criteria: EthicalCriteria):
@@ -31,6 +35,7 @@ class EthicalScreener:
         Args:
             criteria: The ethical criteria to use for screening
         """
+        super().__init__()
         self.criteria = criteria
         
     @staticmethod
@@ -119,56 +124,55 @@ class EthicalScreener:
         Returns:
             A ScreeningResult with the screening outcome
         """
-        # Start timing for performance benchmarking
-        start_time = time.time()
-        
-        # Check for exclusions (immediate disqualification)
-        exclusion_flags = self._check_exclusions(investment)
-        
-        # Check for inclusions (positive attributes)
-        inclusion_flags = self._check_inclusions(investment)
-        
-        # Evaluate environmental criteria
-        env_score, env_details = self._evaluate_environmental_criteria(investment)
-        
-        # Evaluate social criteria
-        social_score, social_details = self._evaluate_social_criteria(investment)
-        
-        # Evaluate governance criteria
-        gov_score, gov_details = self._evaluate_governance_criteria(investment)
-        
-        # Calculate weighted overall score
-        overall_score = (
-            env_score * self.criteria.environmental["weight"] +
-            social_score * self.criteria.social["weight"] +
-            gov_score * self.criteria.governance["weight"]
-        )
-        
-        # Determine if the investment passes the screening
-        passes = (
-            len(exclusion_flags) == 0 and  # No exclusion criteria violated
-            overall_score >= self.criteria.min_overall_score
-        )
-        
-        # Compile detailed results
-        details = {
-            "environmental": env_details,
-            "social": social_details,
-            "governance": gov_details,
-            "processing_time_ms": (time.time() - start_time) * 1000
-        }
-        
-        return ScreeningResult(
-            investment_id=investment.id,
-            passed=passes,
-            overall_score=overall_score,
-            environmental_score=env_score,
-            social_score=social_score,
-            governance_score=gov_score,
-            exclusion_flags=exclusion_flags,
-            inclusion_flags=inclusion_flags,
-            details=details
-        )
+        # Use the Timer utility from common library for performance measurement
+        with Timer("screen_investment") as timer:
+            # Check for exclusions (immediate disqualification)
+            exclusion_flags = self._check_exclusions(investment)
+            
+            # Check for inclusions (positive attributes)
+            inclusion_flags = self._check_inclusions(investment)
+            
+            # Evaluate environmental criteria
+            env_score, env_details = self._evaluate_environmental_criteria(investment)
+            
+            # Evaluate social criteria
+            social_score, social_details = self._evaluate_social_criteria(investment)
+            
+            # Evaluate governance criteria
+            gov_score, gov_details = self._evaluate_governance_criteria(investment)
+            
+            # Calculate weighted overall score
+            overall_score = (
+                env_score * self.criteria.environmental["weight"] +
+                social_score * self.criteria.social["weight"] +
+                gov_score * self.criteria.governance["weight"]
+            )
+            
+            # Determine if the investment passes the screening
+            passes = (
+                len(exclusion_flags) == 0 and  # No exclusion criteria violated
+                overall_score >= self.criteria.min_overall_score
+            )
+            
+            # Compile detailed results
+            details = {
+                "environmental": env_details,
+                "social": social_details,
+                "governance": gov_details,
+                "processing_time_ms": timer.elapsed_ms
+            }
+            
+            return ScreeningResult(
+                investment_id=investment.id,
+                passed=passes,
+                overall_score=overall_score,
+                environmental_score=env_score,
+                social_score=social_score,
+                governance_score=gov_score,
+                exclusion_flags=exclusion_flags,
+                inclusion_flags=inclusion_flags,
+                details=details
+            )
     
     def screen_investments(self, investments: List[Investment]) -> Dict[str, ScreeningResult]:
         """Screen multiple investments against the ethical criteria.
@@ -179,16 +183,16 @@ class EthicalScreener:
         Returns:
             Dict mapping investment IDs to their screening results
         """
-        start_time = time.time()
-        results = {}
-        
-        for investment in investments:
-            results[investment.id] = self.screen_investment(investment)
-        
-        total_time = time.time() - start_time
-        print(f"Screened {len(investments)} investments in {total_time:.2f} seconds")
-        
-        return results
+        # Use the Timer utility from common library for performance measurement
+        with Timer("screen_investments_batch") as timer:
+            results = {}
+            
+            for investment in investments:
+                results[investment.id] = self.screen_investment(investment)
+            
+            self.log_performance(f"Screened {len(investments)} investments in {timer.elapsed_seconds:.2f} seconds")
+            
+            return results
     
     def _check_exclusions(self, investment: Investment) -> List[str]:
         """Check if the investment violates any exclusion criteria.

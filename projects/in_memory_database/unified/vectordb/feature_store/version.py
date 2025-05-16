@@ -7,9 +7,15 @@ and maintaining history to ensure reproducibility of model predictions.
 
 import time
 import uuid
-from typing import Dict, Any, List, Optional, Set, Tuple, Union
+from typing import Dict, Any, List, Optional, Set, Tuple, Union, TypeVar, Generic
 from datetime import datetime
+import copy
 
+from common.core.versioning import Version as CommonVersion, ChangeTracker
+from common.core.base import BaseRecord
+from common.core.serialization import Serializable
+
+T = TypeVar('T')
 
 class Version:
     """
@@ -17,6 +23,8 @@ class Version:
     
     This class encapsulates a feature value with its version metadata,
     including timestamp, version number, and creation information.
+    
+    It adapts the common library's Version class for ML feature store use.
     """
     
     def __init__(
@@ -40,11 +48,49 @@ class Version:
             metadata: Optional additional metadata
         """
         self.value = value
-        self.version_id = version_id or str(uuid.uuid4())
-        self.timestamp = timestamp or time.time()
-        self.created_by = created_by
-        self.description = description
-        self.metadata = metadata or {}
+        self._created_by = created_by
+        self._description = description
+        self._metadata = metadata or {}
+            
+        # Create common version
+        cv_metadata = {}
+        if created_by:
+            cv_metadata['created_by'] = created_by
+        if description:
+            cv_metadata['description'] = description
+        if metadata:
+            cv_metadata.update(metadata)
+            
+        self._common_version = CommonVersion(
+            version_id=version_id,
+            timestamp=timestamp,
+            metadata=cv_metadata
+        )
+        
+    @property
+    def version_id(self) -> str:
+        """Get the version ID."""
+        return self._common_version.version_id
+    
+    @property
+    def timestamp(self) -> float:
+        """Get the version timestamp."""
+        return self._common_version.timestamp
+    
+    @property
+    def created_by(self) -> Optional[str]:
+        """Get the creator identifier."""
+        return self._created_by
+    
+    @property
+    def description(self) -> Optional[str]:
+        """Get the version description."""
+        return self._description
+    
+    @property
+    def metadata(self) -> Dict[str, Any]:
+        """Get the version metadata."""
+        return self._metadata
         
     @property
     def created_at(self) -> datetime:
@@ -59,7 +105,7 @@ class Version:
         Returns:
             Dictionary representation of this version
         """
-        return {
+        result = {
             "version_id": self.version_id,
             "value": self.value,
             "timestamp": self.timestamp,
@@ -67,6 +113,8 @@ class Version:
             "description": self.description,
             "metadata": self.metadata
         }
+        
+        return result
         
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Version':
@@ -86,6 +134,40 @@ class Version:
             created_by=data.get("created_by"),
             description=data.get("description"),
             metadata=data.get("metadata", {})
+        )
+    
+    def to_common_version(self) -> CommonVersion:
+        """
+        Get the underlying common Version object.
+        
+        Returns:
+            The common library Version object
+        """
+        return self._common_version
+    
+    @classmethod
+    def from_common_version(cls, common_version: CommonVersion, value: Any) -> 'Version':
+        """
+        Create a Version from a common Version object.
+        
+        Args:
+            common_version: Common library Version object
+            value: The feature value
+            
+        Returns:
+            A new Version instance
+        """
+        metadata = copy.deepcopy(common_version.metadata)
+        created_by = metadata.pop('created_by', None)
+        description = metadata.pop('description', None)
+        
+        return cls(
+            value=value,
+            version_id=common_version.version_id,
+            timestamp=common_version.timestamp,
+            created_by=created_by,
+            description=description,
+            metadata=metadata
         )
         
     def __eq__(self, other: object) -> bool:
@@ -110,6 +192,7 @@ class VersionManager:
     
     This class tracks the history of values for features, allowing
     retrieval of specific versions and maintaining a complete history.
+    It adapts the common library's ChangeTracker for feature value versioning.
     """
     
     def __init__(self, max_versions_per_feature: Optional[int] = None):

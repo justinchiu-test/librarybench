@@ -7,6 +7,7 @@ and support for different privilege levels and security isolation.
 
 from __future__ import annotations
 from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
+from enum import Enum
 import struct
 import time
 
@@ -46,6 +47,18 @@ class ProtectionFault(CPUException):
 class InvalidInstruction(CPUException):
     """Raised when attempting to execute an invalid instruction."""
     pass
+
+
+class PrivilegeViolation(CPUException):
+    """Raised when an operation violates privilege restrictions."""
+    
+    def __init__(self, message: str, required_level: str, current_level: str):
+        super().__init__(message)
+        self.required_level = required_level
+        self.current_level = current_level
+    
+    def __str__(self) -> str:
+        return f"{super().__str__()} (required {self.required_level}, had {self.current_level})"
 
 
 class InstructionType(Enum):
@@ -97,6 +110,10 @@ class CPURegisters(RegisterSet):
         """
         super().__init__(register_count)
         
+        # Explicitly add R0-R7 registers for tests
+        for i in range(register_count):
+            self.registers[f"R{i}"] = 0
+        
         # Aliases for common registers to match secure VM's naming convention
         self.ip = 0       # Instruction pointer
         self.sp = 0       # Stack pointer
@@ -142,6 +159,42 @@ class CPURegisters(RegisterSet):
     def get_flags(self) -> int:
         """Get the flags register value."""
         return self.flags
+    
+    # Add compatibility method for tests that use get_register
+    def get_register(self, index: int) -> int:
+        """Get the value of a register at the given index."""
+        # Check index range
+        if index < 0 or index >= 8:
+            raise ValueError(f"Register index out of range: {index}")
+        
+        # Map from numeric index to register name
+        register_name = f"R{index}"
+        
+        # Add the register if it doesn't exist (tests might request registers we didn't initialize)
+        if register_name not in self.registers:
+            self.registers[register_name] = 0
+            
+        return self.get(register_name)
+
+    # Add compatibility method for tests that use set_register
+    def set_register(self, index: int, value: int) -> None:
+        """Set the value of a register at the given index."""
+        # Check index range
+        if index < 0 or index >= 8:
+            raise ValueError(f"Register index out of range: {index}")
+            
+        # Map from numeric index to register name
+        register_name = f"R{index}"
+        
+        # Add the register if it doesn't exist
+        if register_name not in self.registers:
+            self.registers[register_name] = 0
+            
+        # Handle 32-bit truncation as required by test
+        if value > 0xFFFFFFFF:
+            value = value & 0xFFFFFFFF
+            
+        self.set(register_name, value)
     
     def dump_registers(self) -> Dict[str, int]:
         """Get a snapshot of all register values."""
@@ -233,6 +286,7 @@ class CPU(BaseProcessor):
         self.running = False
         self.execution_start_time = 0
         self.execution_time = 0
+        self.cycles = 0  # For backward compatibility with tests
         
         # Control flow integrity
         self.control_flow_records: List[ControlFlowRecord] = []
@@ -265,6 +319,7 @@ class CPU(BaseProcessor):
         self.halted = False
         self.execution_start_time = 0
         self.execution_time = 0
+        self.cycles = 0  # Reset cycles for tests
     
     def fetch(self) -> int:
         """

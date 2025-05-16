@@ -45,7 +45,7 @@ class Document(BaseModel):
             metadata: Document metadata
         """
         self.id = id
-        self.content = content
+        self._content = content
         self.metadata = metadata or {}
 
     def __str__(self) -> str:
@@ -55,6 +55,23 @@ class Document(BaseModel):
             str: String representation
         """
         return f"Document(id={self.id}, metadata={self.metadata})"
+        
+    def get_content(self) -> str:
+        """Get the document content.
+        
+        Returns:
+            str: Document content
+        """
+        return self._content
+        
+    @property
+    def content(self) -> str:
+        """Property to access document content.
+        
+        Returns:
+            str: Document content
+        """
+        return self._content
 
 
 class DataField(BaseModel):

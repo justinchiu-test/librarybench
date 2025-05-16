@@ -8,18 +8,19 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from concurrent_task_scheduler.dependency_tracking.graph import (
-    DependencyGraph,
+from common.core.models import (
     DependencyState,
     DependencyType,
-    GraphNodeType,
+    Result,
 )
+from common.dependency_tracking.graph import GraphNodeType
+
+from concurrent_task_scheduler.dependency_tracking.graph import DependencyGraph
 from concurrent_task_scheduler.dependency_tracking.tracker import (
     DependencyTracker,
     TransitionTrigger,
 )
 from concurrent_task_scheduler.models import (
-    Result,
     Simulation,
     SimulationStage,
     SimulationStageStatus,

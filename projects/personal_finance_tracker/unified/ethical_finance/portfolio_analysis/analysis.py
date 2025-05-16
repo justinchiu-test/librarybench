@@ -7,8 +7,33 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
+# Import from common library
+from common.core.analysis.analyzer import BaseAnalyzer
+from common.core.analysis.portfolio import PortfolioAnalyzer as BasePortfolioAnalyzer
+from common.core.utils.performance import Timer
+
 from ethical_finance.models import Investment, Portfolio, InvestmentHolding
 from ethical_finance.ethical_screening.screening import EthicalScreener, ScreeningResult
+
+# Helper function to get portfolio ID consistently
+def get_portfolio_id(portfolio: Portfolio) -> str:
+    """
+    Get the portfolio ID in a consistent way.
+    
+    The common library expects 'id' but ethical_finance uses 'portfolio_id'.
+    This helper ensures we use the right field.
+    
+    Args:
+        portfolio: The portfolio object
+        
+    Returns:
+        The portfolio ID as a string
+    """
+    # In the common library, Portfolio uses 'id'
+    # In ethical_finance, Portfolio uses 'portfolio_id'
+    if hasattr(portfolio, 'id'):
+        return str(portfolio.id)
+    return str(portfolio.portfolio_id)
 
 
 @dataclass
@@ -55,7 +80,7 @@ class PortfolioOptimizationResult:
     processing_time_ms: float = 0
 
 
-class PortfolioAnalysisSystem:
+class PortfolioAnalysisSystem(BasePortfolioAnalyzer):
     """System for analyzing investment portfolios with ESG considerations."""
     
     def __init__(self, ethical_screener: Optional[EthicalScreener] = None):
@@ -64,6 +89,7 @@ class PortfolioAnalysisSystem:
         Args:
             ethical_screener: Optional EthicalScreener for ethical alignment analysis
         """
+        super().__init__()
         self.ethical_screener = ethical_screener
     
     def analyze_portfolio_composition(
@@ -82,10 +108,10 @@ class PortfolioAnalysisSystem:
         Returns:
             PortfolioCompositionResult containing the analysis
         """
-        start_time = time.time()
-        
-        # Calculate total portfolio value
-        total_value = portfolio.total_value
+        # Use the Timer utility from common library for performance measurement
+        with Timer("analyze_portfolio_composition") as timer:
+            # Calculate total portfolio value
+            total_value = portfolio.total_value
         
         # Calculate sector breakdown
         sector_breakdown = {}
@@ -219,20 +245,18 @@ class PortfolioAnalysisSystem:
             ethical_alignment["weighted_governance_score"] = weighted_gov_score
             ethical_alignment["weighted_overall_score"] = weighted_overall_score
         
-        # Calculate processing time
-        processing_time = (time.time() - start_time) * 1000
-        
-        return PortfolioCompositionResult(
-            portfolio_id=portfolio.portfolio_id,
-            analysis_date=date.today(),
-            sector_breakdown=sector_breakdown,
-            industry_breakdown=industry_breakdown,
-            esg_theme_exposure=esg_theme_exposure,
-            concentration_metrics=concentration_metrics,
-            top_holdings=top_holdings[:10],  # Top 10 holdings
-            ethical_alignment=ethical_alignment,
-            processing_time_ms=processing_time
-        )
+            # Return the result
+            return PortfolioCompositionResult(
+                portfolio_id=get_portfolio_id(portfolio),
+                analysis_date=date.today(),
+                sector_breakdown=sector_breakdown,
+                industry_breakdown=industry_breakdown,
+                esg_theme_exposure=esg_theme_exposure,
+                concentration_metrics=concentration_metrics,
+                top_holdings=top_holdings[:10],  # Top 10 holdings
+                ethical_alignment=ethical_alignment,
+                processing_time_ms=timer.elapsed_ms
+            )
     
     def assess_diversification(
         self, 
@@ -368,7 +392,7 @@ class PortfolioAnalysisSystem:
         processing_time = (time.time() - start_time) * 1000
         
         return DiversificationAssessment(
-            portfolio_id=portfolio.portfolio_id,
+            portfolio_id=get_portfolio_id(portfolio),
             assessment_date=date.today(),
             diversification_score=overall_score,
             sector_concentration_risk=sector_concentration_risk,
@@ -582,7 +606,7 @@ class PortfolioAnalysisSystem:
         processing_time = (time.time() - start_time) * 1000
         
         return PortfolioOptimizationResult(
-            portfolio_id=portfolio.portfolio_id,
+            portfolio_id=get_portfolio_id(portfolio),
             optimization_date=date.today(),
             current_ethical_score=current_ethical_score,
             current_risk_metrics=current_risk_metrics,

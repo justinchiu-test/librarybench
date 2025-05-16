@@ -45,10 +45,11 @@ class TestCLI:
             _init_command(temp_data_dir)
         
         # Check that the directory structure was created
-        assert os.path.exists(os.path.join(temp_data_dir, "notes"))
-        assert os.path.exists(os.path.join(temp_data_dir, "citations"))
-        assert os.path.exists(os.path.join(temp_data_dir, "experiments"))
-        assert os.path.exists(os.path.join(temp_data_dir, "grants"))
+        # In the refactored version, directories are under nodes/
+        assert os.path.exists(os.path.join(temp_data_dir, "nodes", "notes"))
+        assert os.path.exists(os.path.join(temp_data_dir, "nodes", "citations"))
+        assert os.path.exists(os.path.join(temp_data_dir, "nodes", "experiments"))
+        assert os.path.exists(os.path.join(temp_data_dir, "nodes", "projects"))  # Grant proposals are stored as projects
         
         # Check that the console was called
         mock_console.print.assert_called()

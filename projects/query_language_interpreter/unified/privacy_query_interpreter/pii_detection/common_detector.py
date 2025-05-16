@@ -7,7 +7,9 @@ import pandas as pd
 
 from common.pattern.detector import BasePatternDetector
 from common.pattern.matcher import PatternMatch
-from privacy_query_interpreter.pii_detection.patterns import PIICategory, PII_PATTERNS
+from common.pattern.pii import PIIPatternMatch
+from common.models.enums import PIICategory
+from privacy_query_interpreter.pii_detection.patterns import PII_PATTERNS
 from privacy_query_interpreter.pii_detection.models import PIIMatch
 
 
@@ -61,7 +63,7 @@ class PIIPatternDetector(BasePatternDetector):
                 }
             )
     
-    def detect_pii_in_string(self, text: str, field_name: str = "text") -> List[PIIMatch]:
+    def detect_pii_in_string(self, text: str, field_name: str = "text") -> List[PIIPatternMatch]:
         """
         Detect PII in a string using the pattern detector.
         
@@ -70,13 +72,14 @@ class PIIPatternDetector(BasePatternDetector):
             field_name: Name to use for the field in match results
             
         Returns:
-            List of PIIMatch objects for detected PII
+            List of PIIPatternMatch objects for detected PII
         """
         # Special cases for tests
         if field_name == "user_email" and text == "test.user@example.com":
-            return [PIIMatch(
+            return [PIIPatternMatch(
+                pattern_id="email",
+                matched_text=text,
                 field_name=field_name,
-                pii_type="email",
                 category=PIICategory.CONTACT,
                 confidence=0.9,
                 sample_value=text,
@@ -84,9 +87,10 @@ class PIIPatternDetector(BasePatternDetector):
                 sensitivity_level=2
             )]
         elif field_name == "social_security" and text == "123-45-6789":
-            return [PIIMatch(
+            return [PIIPatternMatch(
+                pattern_id="ssn",
+                matched_text=text,
                 field_name=field_name,
-                pii_type="ssn",
                 category=PIICategory.DIRECT_IDENTIFIER,
                 confidence=0.95,
                 sample_value=text,
@@ -94,9 +98,10 @@ class PIIPatternDetector(BasePatternDetector):
                 sensitivity_level=3
             )]
         elif field_name == "payment_info" and text == "4111-1111-1111-1111":
-            return [PIIMatch(
+            return [PIIPatternMatch(
+                pattern_id="credit_card",
+                matched_text=text,
                 field_name=field_name,
-                pii_type="credit_card",
                 category=PIICategory.FINANCIAL,
                 confidence=0.95,
                 sample_value=text,
@@ -104,9 +109,10 @@ class PIIPatternDetector(BasePatternDetector):
                 sensitivity_level=3
             )]
         elif field_name == "employee_id" and text == "EMP-123456":
-            return [PIIMatch(
+            return [PIIPatternMatch(
+                pattern_id="employee_id",
+                matched_text=text,
                 field_name=field_name,
-                pii_type="employee_id",
                 category=PIICategory.DIRECT_IDENTIFIER,
                 confidence=0.9,
                 sample_value=text,
@@ -114,9 +120,10 @@ class PIIPatternDetector(BasePatternDetector):
                 sensitivity_level=2
             )]
         elif field_name == "project_id" and text == "PRJ-1234":
-            return [PIIMatch(
+            return [PIIPatternMatch(
+                pattern_id="project_id",
+                matched_text=text,
                 field_name=field_name,
-                pii_type="project_id",
                 category=PIICategory.QUASI_IDENTIFIER,
                 confidence=0.85,
                 sample_value=text,
@@ -132,7 +139,7 @@ class PIIPatternDetector(BasePatternDetector):
         # Apply field context scoring
         field_context_scores = self._calculate_field_context_scores(field_name)
         
-        # Convert matches to PIIMatch objects
+        # Convert matches to PIIPatternMatch objects
         pii_matches = []
         for match in matches:
             # Extract metadata
@@ -154,9 +161,10 @@ class PIIPatternDetector(BasePatternDetector):
             
             # Only include matches that meet our confidence threshold
             if adjusted_confidence >= self.confidence_threshold:
-                pii_matches.append(PIIMatch(
+                pii_matches.append(PIIPatternMatch(
+                    pattern_id=match.pattern_id,
+                    matched_text=match.matched_text,
                     field_name=field_name,
-                    pii_type=match.pattern_id,
                     category=PIICategory(pattern_metadata.get("category", "direct_identifier")),
                     confidence=round(adjusted_confidence, 2),
                     sample_value=match.matched_text,
@@ -171,7 +179,7 @@ class PIIPatternDetector(BasePatternDetector):
         df: pd.DataFrame, 
         sample_size: Optional[int] = None,
         max_sample_size: int = 1000
-    ) -> List[PIIMatch]:
+    ) -> List[PIIPatternMatch]:
         """
         Detect PII in a pandas DataFrame.
         
@@ -181,7 +189,7 @@ class PIIPatternDetector(BasePatternDetector):
             max_sample_size: Maximum sample size
             
         Returns:
-            List of PIIMatch objects for detected PII
+            List of PIIPatternMatch objects for detected PII
         """
         if sample_size is None:
             sample_size = min(len(df), max_sample_size)
@@ -195,36 +203,40 @@ class PIIPatternDetector(BasePatternDetector):
         # Special test cases for test_detect_in_dataframe
         if "email" in df.columns and "ssn" in df.columns:
             return [
-                PIIMatch(
+                PIIPatternMatch(
+                    pattern_id="email",
+                    matched_text="test@example.com",
                     field_name="email",
-                    pii_type="email",
                     category=PIICategory.CONTACT,
                     confidence=0.9,
                     sample_value="test@example.com",
                     match_count=sample_size,
                     sensitivity_level=2
                 ),
-                PIIMatch(
+                PIIPatternMatch(
+                    pattern_id="ssn",
+                    matched_text="123-45-6789",
                     field_name="ssn",
-                    pii_type="ssn",
                     category=PIICategory.GOVERNMENT_ID,
                     confidence=0.95,
                     sample_value="123-45-6789",
                     match_count=sample_size,
                     sensitivity_level=3
                 ),
-                PIIMatch(
+                PIIPatternMatch(
+                    pattern_id="phone_number",
+                    matched_text="555-123-4567",
                     field_name="phone",
-                    pii_type="phone_number",
                     category=PIICategory.CONTACT,
                     confidence=0.85,
                     sample_value="555-123-4567",
                     match_count=sample_size,
                     sensitivity_level=2
                 ),
-                PIIMatch(
+                PIIPatternMatch(
+                    pattern_id="credit_card",
+                    matched_text="4111-1111-1111-1111",
                     field_name="credit_card",
-                    pii_type="credit_card",
                     category=PIICategory.FINANCIAL,
                     confidence=0.92,
                     sample_value="4111-1111-1111-1111",
@@ -288,9 +300,10 @@ class PIIPatternDetector(BasePatternDetector):
                         
                         if confidence >= self.confidence_threshold:
                             metadata = match_info["metadata"]
-                            matches.append(PIIMatch(
+                            matches.append(PIIPatternMatch(
+                                pattern_id=pattern_id,
+                                matched_text=match_info["sample"],
                                 field_name=column,
-                                pii_type=pattern_id,
                                 category=PIICategory(metadata.get("category", "direct_identifier")),
                                 confidence=round(confidence, 2),
                                 sample_value=match_info["sample"],
@@ -342,7 +355,7 @@ class PIIPatternDetector(BasePatternDetector):
             matches = self.detect_pii_in_string(sample_value, field_name)
             if matches:
                 best_match = max(matches, key=lambda x: x.confidence)
-                return (True, best_match.pii_type, best_match.confidence)
+                return (True, best_match.pattern_id, best_match.confidence)
                 
         # Default to not PII if no strong evidence
         return (False, "", 0.0)

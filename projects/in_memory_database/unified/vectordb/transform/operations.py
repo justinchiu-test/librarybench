@@ -7,8 +7,9 @@ such as scaling, normalization, encoding, and missing value imputation.
 
 import math
 import statistics
-from typing import Dict, List, Optional, Any, Union, Tuple, Callable
+from typing import Dict, List, Optional, Any, Union, Tuple, Callable, ClassVar, Type
 import json
+from copy import deepcopy
 
 from common.operations import Operation, Transformer
 
@@ -118,6 +119,29 @@ class BaseOperation(Transformer[Dict[str, Dict[str, Any]], Dict[str, Dict[str, A
         })
         return result
     
+    def to_json(self) -> str:
+        """
+        Convert this operation to a JSON string.
+        
+        Returns:
+            JSON string representation
+        """
+        return json.dumps(self.to_dict())
+        
+    @classmethod
+    def from_json(cls, json_str: str) -> 'BaseOperation':
+        """
+        Create an operation from a JSON string.
+        
+        Args:
+            json_str: JSON string representation
+            
+        Returns:
+            A new operation instance
+        """
+        data = json.loads(json_str)
+        return cls.from_dict(data)
+        
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'BaseOperation':
         """

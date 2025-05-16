@@ -25,7 +25,7 @@ from .query import (
 from .document import DocumentCollection, Document
 
 
-class LegalQueryExecutionContext(ExecutionContext):
+class QueryExecutionContext(ExecutionContext):
     """Context for legal query execution."""
     
     def __init__(
@@ -198,15 +198,19 @@ class LegalQueryInterpreter(BaseInterpreter):
             expand_terms=True
         )
     
-    def execute(self, query: BaseQuery) -> LegalQueryResult:
+    def execute(self, query: Union[BaseQuery, str]) -> LegalQueryResult:
         """Execute a structured query and return results.
 
         Args:
-            query: The query to execute
+            query: The query to execute or a query string
 
         Returns:
             Query execution result
         """
+        # Handle string queries for backward compatibility
+        if isinstance(query, str):
+            return self.parse_and_execute(query)
+        
         if not isinstance(query, LegalDiscoveryQuery):
             raise ValueError(f"Expected LegalDiscoveryQuery, got {type(query)}")
             
@@ -215,7 +219,7 @@ class LegalQueryInterpreter(BaseInterpreter):
         self.logger.info(f"Executing query: {query.query_id}")
         
         # Create the execution context
-        context = LegalQueryExecutionContext(
+        context = QueryExecutionContext(
             document_collection=self.document_collection,
             user_id=query.get_execution_context().user_id if query.get_execution_context() else None,
             expand_terms_func=self.ontology_service.expand_terms if self.ontology_service else None,
@@ -232,19 +236,37 @@ class LegalQueryInterpreter(BaseInterpreter):
         # Calculate execution time
         execution_time = time.time() - start_time
         
-        # Create and return the result
+        # Create data for the result
+        matching_docs = []
+        for doc_id in context.matched_documents:
+            doc = self.document_collection.get_document(doc_id)
+            if doc:
+                matching_docs.append({
+                    "document_id": doc_id,
+                    "title": doc.metadata.title if hasattr(doc.metadata, 'title') else "",
+                    "relevance_score": context.relevance_scores.get(doc_id, 0),
+                    "privilege_status": context.privilege_status.get(doc_id, "UNKNOWN")
+                })
+        
+        # Set up metadata for backward compatibility
+        metadata = {
+            "document_ids": list(context.matched_documents),
+            "total_hits": len(context.matched_documents),
+            "relevance_scores": context.relevance_scores,
+            "privilege_status": context.privilege_status,
+            "execution_time": execution_time,
+            "executed_at": datetime.now()
+        }
+        
+        # Create and return the result that fits the common QueryResult format
         result = LegalQueryResult(
             query=query,
-            document_ids=list(context.matched_documents),
-            total_hits=len(context.matched_documents),
-            relevance_scores=context.relevance_scores,
-            privilege_status=context.privilege_status,
-            execution_time=execution_time,
-            executed_at=datetime.now(),
-            success=True
+            data=matching_docs,
+            success=True,
+            metadata=metadata
         )
         
-        self.logger.info(f"Query {query.query_id} executed in {execution_time:.2f}s with {result.total_hits} hits")
+        self.logger.info(f"Query {query.query_id} executed in {execution_time:.2f}s with {len(matching_docs)} hits")
         
         return result
     
@@ -274,10 +296,13 @@ class LegalQueryInterpreter(BaseInterpreter):
                 query=query,
                 success=False,
                 error="Query validation failed",
-                document_ids=[],
-                total_hits=0,
-                execution_time=0,
-                executed_at=datetime.now()
+                data=[],
+                metadata={
+                    "document_ids": [],
+                    "total_hits": 0,
+                    "execution_time": 0,
+                    "executed_at": datetime.now()
+                }
             )
         
         # Execute the query
@@ -292,13 +317,16 @@ class LegalQueryInterpreter(BaseInterpreter):
                 query=query,
                 success=False,
                 error=str(e),
-                document_ids=[],
-                total_hits=0,
-                execution_time=0,
-                executed_at=datetime.now()
+                data=[],
+                metadata={
+                    "document_ids": [],
+                    "total_hits": 0,
+                    "execution_time": 0,
+                    "executed_at": datetime.now()
+                }
             )
     
-    def _execute_clause(self, clause: QueryClause, context: LegalQueryExecutionContext) -> None:
+    def _execute_clause(self, clause: QueryClause, context: QueryExecutionContext) -> None:
         """Execute a single query clause.
         
         Args:
@@ -322,7 +350,7 @@ class LegalQueryInterpreter(BaseInterpreter):
         else:
             self.logger.warning(f"Unknown query clause type: {type(clause)}")
     
-    def _execute_full_text_query(self, clause: FullTextQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_full_text_query(self, clause: FullTextQuery, context: QueryExecutionContext) -> None:
         """Execute a full text query clause.
         
         Args:
@@ -375,7 +403,7 @@ class LegalQueryInterpreter(BaseInterpreter):
             else:
                 context.relevance_scores[doc_id] = score
     
-    def _execute_metadata_query(self, clause: MetadataQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_metadata_query(self, clause: MetadataQuery, context: QueryExecutionContext) -> None:
         """Execute a metadata query clause.
         
         Args:
@@ -411,7 +439,7 @@ class LegalQueryInterpreter(BaseInterpreter):
         # Update the matched documents in the context
         context.matched_documents.update(matched_docs)
     
-    def _execute_proximity_query(self, clause: ProximityQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_proximity_query(self, clause: ProximityQuery, context: QueryExecutionContext) -> None:
         """Execute a proximity query clause.
         
         Args:
@@ -446,7 +474,7 @@ class LegalQueryInterpreter(BaseInterpreter):
                 context
             )
     
-    def _execute_communication_query(self, clause: CommunicationQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_communication_query(self, clause: CommunicationQuery, context: QueryExecutionContext) -> None:
         """Execute a communication query clause.
         
         Args:
@@ -496,7 +524,7 @@ class LegalQueryInterpreter(BaseInterpreter):
             # Update the matched documents in the context
             context.matched_documents.update(matched_docs)
     
-    def _execute_temporal_query(self, clause: TemporalQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_temporal_query(self, clause: TemporalQuery, context: QueryExecutionContext) -> None:
         """Execute a temporal query clause.
         
         Args:
@@ -548,7 +576,7 @@ class LegalQueryInterpreter(BaseInterpreter):
         # Update the matched documents in the context
         context.matched_documents.update(matched_docs)
     
-    def _execute_privilege_query(self, clause: PrivilegeQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_privilege_query(self, clause: PrivilegeQuery, context: QueryExecutionContext) -> None:
         """Execute a privilege query clause.
         
         Args:
@@ -602,7 +630,7 @@ class LegalQueryInterpreter(BaseInterpreter):
             if clause.include_potentially_privileged:
                 context.matched_documents.update(matched_docs)
     
-    def _execute_composite_query(self, clause: CompositeQuery, context: LegalQueryExecutionContext) -> None:
+    def _execute_composite_query(self, clause: CompositeQuery, context: QueryExecutionContext) -> None:
         """Execute a composite query clause.
         
         Args:
@@ -614,7 +642,7 @@ class LegalQueryInterpreter(BaseInterpreter):
         # Create a new context for each subclause
         subcontexts = []
         for subclause in clause.clauses:
-            subcontext = LegalQueryExecutionContext(
+            subcontext = QueryExecutionContext(
                 document_collection=context.document_collection,
                 user_id=context.user_id,
                 expand_terms_func=context.expand_terms_func,
@@ -667,3 +695,10 @@ class LegalQueryInterpreter(BaseInterpreter):
             for doc_id, status in subcontext.privilege_status.items():
                 if doc_id not in context.privilege_status or status == "PRIVILEGED":
                     context.privilege_status[doc_id] = status
+                    
+# Add aliases for backward compatibility with tests
+QueryInterpreter = LegalQueryInterpreter
+
+# Add method aliases for backward compatibility with tests
+LegalQueryInterpreter.parse_query = LegalQueryInterpreter.parse
+LegalQueryInterpreter.execute_query = LegalQueryInterpreter.execute

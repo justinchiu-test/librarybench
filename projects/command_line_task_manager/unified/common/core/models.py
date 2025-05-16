@@ -34,7 +34,7 @@ class TaskPriorityEnum(str, Enum):
 class BaseEntity(BaseModel):
     """Base model for all entities with common fields and methods."""
     
-    id: UUID = Field(default_factory=uuid4)
+    id: str = Field(default_factory=lambda: str(uuid4()))
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     
@@ -49,6 +49,11 @@ class BaseEntity(BaseModel):
             if hasattr(self, key):
                 setattr(self, key, value)
         self.updated_at = datetime.now()
+        
+    class Config:
+        json_encoders = {
+            UUID: str  # Ensure UUIDs are serialized as strings
+        }
 
 
 class BaseTask(BaseEntity):
@@ -71,8 +76,8 @@ class BaseTask(BaseEntity):
     notes: List[str] = Field(default_factory=list)
     
     # Task relationships
-    parent_id: Optional[UUID] = None
-    subtask_ids: Set[UUID] = Field(default_factory=set)
+    parent_id: Optional[str] = None
+    subtask_ids: Set[str] = Field(default_factory=set)
     
     # Custom metadata for extensibility
     custom_metadata: Dict[str, Union[str, int, float, bool, list, dict]] = Field(
@@ -130,17 +135,21 @@ class BaseTask(BaseEntity):
             return True
         return False
     
-    def add_subtask(self, subtask_id: UUID) -> None:
+    def add_subtask(self, subtask_id: Union[str, UUID]) -> None:
         """
         Add a subtask to this task.
         
         Args:
             subtask_id: ID of the subtask
         """
+        # Convert UUID to string if needed
+        if isinstance(subtask_id, UUID):
+            subtask_id = str(subtask_id)
+            
         self.subtask_ids.add(subtask_id)
         self.updated_at = datetime.now()
     
-    def remove_subtask(self, subtask_id: UUID) -> bool:
+    def remove_subtask(self, subtask_id: Union[str, UUID]) -> bool:
         """
         Remove a subtask from this task.
         
@@ -150,6 +159,10 @@ class BaseTask(BaseEntity):
         Returns:
             bool: True if subtask was removed, False if not found
         """
+        # Convert UUID to string if needed
+        if isinstance(subtask_id, UUID):
+            subtask_id = str(subtask_id)
+            
         if subtask_id in self.subtask_ids:
             self.subtask_ids.remove(subtask_id)
             self.updated_at = datetime.now()

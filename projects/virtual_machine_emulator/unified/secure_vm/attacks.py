@@ -147,7 +147,7 @@ class BufferOverflow(Attack):
             vm.cpu.registers.ip = self.target_address
 
             # Record this as a control flow event
-            vm.cpu.record_control_flow_event(
+            vm.cpu._record_control_flow(
                 original_ip,
                 self.target_address,
                 "hijacked-jump",

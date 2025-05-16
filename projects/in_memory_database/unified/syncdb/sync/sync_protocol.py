@@ -346,20 +346,27 @@ class SyncEngine:
                 # Create change records for all existing records in the table
                 for pk_tuple, record_id in table._pk_to_id.items():
                     # Get the record data
-                    record = table.get(list(pk_tuple))
-                    if record:
+                    table_record = table.get(list(pk_tuple))
+                    if table_record:
                         # Include all records for testing
                         print(f"  Found record with primary key: {pk_tuple}")
+                        
+                        # Convert to dictionary for serialization
+                        record_data = table_record.get_data_dict() if hasattr(table_record, 'get_data_dict') else table_record
+                        
+                        # Set the current time if no timestamp is available
+                        now = time.time()
+                        
                         # Create a change record for this record
                         change = ChangeRecord(
                             id=len(server_changes) + 1000,  # Use a high ID to avoid conflicts
                             table_name=table_name,
                             primary_key=pk_tuple,
                             operation="update",
-                            timestamp=table.last_modified.get(pk_tuple, time.time()),
+                            timestamp=table.last_modified.get(pk_tuple, now),
                             client_id=self.server_id,
                             old_data=None,  # We don't have old data in this context
-                            new_data=record
+                            new_data=record_data
                         )
                         server_changes.append(change)
 
@@ -434,9 +441,12 @@ class SyncEngine:
                         # Log the error but don't crash
                         print(f"Error resolving conflict: {e}")
 
+                # Convert server_record to dict for serialization if needed
+                server_record_dict = server_record.get_data_dict() if hasattr(server_record, 'get_data_dict') else server_record
+                
                 conflict = {
                     "client_change": change.to_dict(),
-                    "server_record": server_record,
+                    "server_record": server_record_dict,
                     "resolution": resolution
                 }
 
@@ -704,30 +714,37 @@ class SyncEngine:
             pk_list = list(change.primary_key)
             print(f"Applying server change to client: {change.operation} on {pk_list} in {table_name}")
 
-            if change.operation == "insert":
-                if change.new_data:
-                    # For insert, we need to check if the record already exists
-                    existing = client_database.get(table_name, pk_list)
-                    if existing is None:
-                        client_database.insert(table_name, change.new_data, change.client_id)
-                    else:
-                        client_database.update(table_name, change.new_data, change.client_id)
+            # Ensure we have dictionary data, not TableRecord objects
+            new_data = None
+            if change.new_data:
+                if hasattr(change.new_data, 'get_data_dict'):
+                    new_data = change.new_data.get_data_dict()
+                else:
+                    new_data = change.new_data
 
-            elif change.operation == "update":
-                if change.new_data:
-                    # For update, we need to check if the record exists first
-                    existing = client_database.get(table_name, pk_list)
-                    if existing is None:
-                        client_database.insert(table_name, change.new_data, change.client_id)
-                    else:
-                        client_database.update(table_name, change.new_data, change.client_id)
+            if change.operation == "insert" and new_data:
+                # For insert, we need to check if the record already exists
+                existing = client_database.get(table_name, pk_list)
+                if existing is None:
+                    client_database.insert(table_name, new_data, change.client_id)
+                else:
+                    client_database.update(table_name, new_data, change.client_id)
+
+            elif change.operation == "update" and new_data:
+                # For update, we need to check if the record exists first
+                existing = client_database.get(table_name, pk_list)
+                if existing is None:
+                    client_database.insert(table_name, new_data, change.client_id)
+                else:
+                    client_database.update(table_name, new_data, change.client_id)
 
             elif change.operation == "delete":
                 client_database.delete(table_name, pk_list, change.client_id)
 
             # Verify the application worked
             record = client_database.get(table_name, pk_list)
-            print(f"  Record after change: {record}")
+            record_str = record.get_data_dict() if hasattr(record, 'get_data_dict') else record
+            print(f"  Record after change: {record_str}")
 
         except Exception as e:
             # In a real implementation, we would log this error

@@ -8,12 +8,24 @@ import time
 from datetime import datetime, timedelta
 from enum import Enum
 from threading import Lock
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
+
+from common.core.models import (
+    BaseNode,
+    JobStatus,
+    NodeStatus as CommonNodeStatus,
+    Result,
+)
+from common.failure_resilience.failure_detector import (
+    FailureDetector as CommonFailureDetector,
+    FailureEvent,
+    FailureLevel,
+    FailureType as CommonFailureType,
+)
 
 from concurrent_task_scheduler.models import (
     ComputeNode,
     NodeStatus,
-    Result,
     Simulation,
     SimulationStage,
     SimulationStageStatus,
@@ -59,6 +71,37 @@ class DetectionMethod(str, Enum):
     SYSTEM_REPORT = "system_report"  # System-reported failure
     MANUAL = "manual"  # Manually reported
     PREDICTION = "prediction"  # Predictive detection
+
+
+# Mapping from domain-specific types to common library types
+def map_failure_type_to_common(failure_type: FailureType) -> CommonFailureType:
+    """Map domain-specific failure type to common failure type."""
+    mapping = {
+        FailureType.NODE_OFFLINE: CommonFailureType.NODE_OFFLINE,
+        FailureType.NODE_DEGRADED: CommonFailureType.NODE_TIMEOUT,
+        FailureType.PROCESS_CRASH: CommonFailureType.JOB_ERROR,
+        FailureType.MEMORY_EXHAUSTION: CommonFailureType.RESOURCE_EXHAUSTION,
+        FailureType.DISK_FULL: CommonFailureType.RESOURCE_EXHAUSTION,
+        FailureType.NETWORK_FAILURE: CommonFailureType.NETWORK_FAILURE,
+        FailureType.RESOURCE_CONTENTION: CommonFailureType.RESOURCE_EXHAUSTION,
+        FailureType.DEADLOCK: CommonFailureType.JOB_TIMEOUT,
+        FailureType.TIMEOUT: CommonFailureType.JOB_TIMEOUT,
+        FailureType.STORAGE_FAILURE: CommonFailureType.DATA_CORRUPTION,
+        FailureType.UNKNOWN: CommonFailureType.SYSTEM_FAILURE,
+    }
+    return mapping.get(failure_type, CommonFailureType.SYSTEM_FAILURE)
+
+
+def map_severity_to_common(severity: FailureSeverity) -> FailureLevel:
+    """Map domain-specific severity to common failure level."""
+    mapping = {
+        FailureSeverity.CRITICAL: FailureLevel.CRITICAL,
+        FailureSeverity.HIGH: FailureLevel.ERROR,
+        FailureSeverity.MEDIUM: FailureLevel.ERROR,
+        FailureSeverity.LOW: FailureLevel.WARNING,
+        FailureSeverity.INFO: FailureLevel.WARNING,
+    }
+    return mapping.get(severity, FailureLevel.WARNING)
 
 
 class FailureReport:
@@ -176,6 +219,23 @@ class FailureReport:
             "resolution_method": self.resolution_method,
         }
 
+    # Convert to FailureEvent for use with common library
+    def to_common_event(self) -> FailureEvent:
+        """Convert to a common library FailureEvent."""
+        common_type = map_failure_type_to_common(self.failure_type)
+        common_level = map_severity_to_common(self.severity)
+        
+        return FailureEvent(
+            failure_id=self.id,
+            failure_type=common_type,
+            level=common_level,
+            node_id=self.node_id,
+            job_id=self.simulation_id,
+            description=self.description,
+            details=self.details,
+            timestamp=self.detection_time,
+        )
+
 
 class NodeHealthCheck:
     """Health check for a compute node."""
@@ -207,7 +267,7 @@ class NodeHealthCheck:
         return self.status == NodeStatus.ONLINE and not self.errors
 
 
-class FailureDetector:
+class FailureDetector(CommonFailureDetector):
     """System for detecting node and simulation failures."""
 
     def __init__(
@@ -215,6 +275,7 @@ class FailureDetector:
         heartbeat_interval: int = 30,  # seconds
         heartbeat_timeout: int = 90,  # seconds
     ):
+        super().__init__()
         self.heartbeat_interval = heartbeat_interval
         self.heartbeat_timeout = heartbeat_timeout
         self.last_heartbeat: Dict[str, datetime] = {}  # node_id -> last_heartbeat_time
@@ -237,6 +298,7 @@ class FailureDetector:
     def record_heartbeat(self, node_id: str) -> None:
         """Record a heartbeat from a node."""
         self.last_heartbeat[node_id] = datetime.now()
+        super().register_heartbeat(node_id)  # Call parent method
     
     def check_node_health(self, node: ComputeNode) -> NodeHealthCheck:
         """Check the health of a node."""
@@ -350,6 +412,9 @@ class FailureDetector:
         
         # Update last progress update time
         self.simulation_health_history[simulation_id]["last_progress_update"] = now
+        
+        # Update progress in common library
+        super().update_job_progress(simulation_id, progress)
     
     def update_simulation_status(self, simulation_id: str, status: str) -> None:
         """Record a status change for a simulation."""
@@ -390,6 +455,11 @@ class FailureDetector:
                 failures.append(failure)
                 self.failure_reports[failure.id] = failure
                 
+                # Also add to common library
+                common_event = failure.to_common_event()
+                self.failure_history.append(common_event)
+                self.active_failures[common_event.id] = common_event
+                
                 # Update node failure count
                 count = self.node_failure_counts.get(node_id, 0) + 1
                 self.node_failure_counts[node_id] = count
@@ -428,6 +498,11 @@ class FailureDetector:
                 failures.append(failure)
                 self.failure_reports[failure.id] = failure
                 
+                # Also add to common library
+                common_event = failure.to_common_event()
+                self.failure_history.append(common_event)
+                self.active_failures[common_event.id] = common_event
+                
                 # Update simulation failure count
                 count = self.simulation_failure_counts.get(sim_id, 0) + 1
                 self.simulation_failure_counts[sim_id] = count
@@ -455,12 +530,58 @@ class FailureDetector:
                             
                             failures.append(failure)
                             self.failure_reports[failure.id] = failure
+                            
+                            # Also add to common library
+                            common_event = failure.to_common_event()
+                            self.failure_history.append(common_event)
+                            self.active_failures[common_event.id] = common_event
         
         return failures
+    
+    def detect_failures(
+        self, 
+        simulations: List[Simulation], 
+        nodes: List[ComputeNode]
+    ) -> List[FailureEvent]:
+        """
+        Detect failures in simulations and nodes.
+        
+        This overrides the parent class method to add simulation-specific detection.
+        """
+        detected_failures = []
+        
+        # Convert to dictionaries for domain-specific methods
+        nodes_dict = {node.id: node for node in nodes}
+        simulations_dict = {sim.id: sim for sim in simulations}
+        
+        # Detect using domain-specific methods
+        node_failures = self.detect_node_failures(nodes_dict)
+        sim_failures = self.detect_simulation_failures(simulations_dict)
+        
+        # Convert to common library format
+        for failure in node_failures + sim_failures:
+            common_event = failure.to_common_event()
+            detected_failures.append(common_event)
+        
+        # Also run the parent implementation
+        parent_failures = super().detect_failures(simulations, nodes)
+        
+        # Combine results (avoiding duplicates)
+        detected_ids = {failure.id for failure in detected_failures}
+        for failure in parent_failures:
+            if failure.id not in detected_ids:
+                detected_failures.append(failure)
+        
+        return detected_failures
     
     def record_failure(self, failure: FailureReport) -> None:
         """Record an existing failure report."""
         self.failure_reports[failure.id] = failure
+        
+        # Also add to common library
+        common_event = failure.to_common_event()
+        self.failure_history.append(common_event)
+        self.active_failures[common_event.id] = common_event
         
         # Update failure counts
         if failure.node_id:
@@ -495,17 +616,7 @@ class FailureDetector:
             details=details,
         )
         
-        self.failure_reports[failure.id] = failure
-        
-        # Update failure counts
-        if node_id:
-            count = self.node_failure_counts.get(node_id, 0) + 1
-            self.node_failure_counts[node_id] = count
-        
-        if simulation_id:
-            count = self.simulation_failure_counts.get(simulation_id, 0) + 1
-            self.simulation_failure_counts[simulation_id] = count
-        
+        self.record_failure(failure)
         return failure
     
     def get_active_failures(
@@ -543,8 +654,11 @@ class FailureDetector:
         if failure.resolved:
             return Result.err(f"Failure {failure_id} is already resolved")
         
+        # Resolve in domain-specific format
         failure.mark_resolved(resolution_method)
-        return Result.ok(True)
+        
+        # Also resolve in common library
+        return super().resolve_failure(failure_id, resolution_method)
     
     def get_node_reliability_score(self, node_id: str) -> float:
         """Calculate a reliability score for a node (0-1)."""
@@ -796,6 +910,13 @@ class FailureRecoveryManager:
         # If successful, mark failure as resolved
         if success:
             failure.mark_resolved(f"Recovery with strategy {strategy}")
+            
+            # Also resolve in common library
+            common_event = failure.to_common_event()
+            self.detector.resolve_failure(
+                common_event.id, 
+                f"Recovery with strategy {strategy}"
+            )
         
         # Update recovery history
         if failure.simulation_id and failure.simulation_id in self.recovery_history:

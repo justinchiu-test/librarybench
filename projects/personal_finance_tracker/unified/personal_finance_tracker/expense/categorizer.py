@@ -6,9 +6,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set, Tuple, Union, Any
 from uuid import UUID
 
-from common.core.categorization.categorizer import BaseCategorizer, CategorizationResult as CommonResult
-from common.core.categorization.transaction_categorizer import TransactionCategorizer
-from common.core.categorization.transaction_categorizer import MixedUseItem as CommonMixedUseItem
+from common.core.categorization.categorizer import BaseCategorizer, CategorizationResult as CommonResult, AuditRecord as CommonAuditRecord
+from common.core.categorization.transaction_categorizer import TransactionCategorizer, MixedUseItem as CommonMixedUseItem
 
 from personal_finance_tracker.models.common import (
     ExpenseCategory,
@@ -37,6 +36,7 @@ class ExpenseCategorizer:
 
     def __init__(self):
         """Initialize the expense categorizer."""
+        # Use the common TransactionCategorizer for the core functionality
         self._categorizer = TransactionCategorizer()
         self.mixed_use_items = []
         self.audit_trail = []

@@ -174,7 +174,7 @@ class TestResearchBrain:
         
         # Check knowledge graph connections
         assert brain._knowledge_graph.has_edge(str(question_id), str(note_id))
-        edge_data = brain._knowledge_graph.get_edge_data(str(question_id), str(note_id))
+        edge_data = brain._knowledge_graph.get_edge_attributes(str(question_id), str(note_id))
         assert edge_data["type"] == "evidence"
         assert edge_data["evidence_type"] == EvidenceType.SUPPORTING
         assert edge_data["strength"] == EvidenceStrength.STRONG
@@ -210,7 +210,7 @@ class TestResearchBrain:
         
         # Check knowledge graph connections
         assert brain._knowledge_graph.has_edge(str(experiment_id), str(question_id))
-        edge_data = brain._knowledge_graph.get_edge_data(str(experiment_id), str(question_id))
+        edge_data = brain._knowledge_graph.get_edge_attributes(str(experiment_id), str(question_id))
         assert edge_data["type"] == "investigates"
     
     def test_create_grant_proposal_and_add_items(self, brain):

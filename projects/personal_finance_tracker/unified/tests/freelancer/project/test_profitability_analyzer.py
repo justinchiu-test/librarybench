@@ -26,7 +26,8 @@ class TestProjectProfiler:
     def test_init(self):
         """Test initialization of the project profiler."""
         profiler = ProjectProfiler()
-        assert profiler._profitability_cache == {}
+        assert profiler._profitability_cache is not None
+        assert profiler._profitability_cache.size() == 0
 
     def test_analyze_project_profitability(
         self, sample_projects, sample_time_entries, sample_transactions, sample_invoices

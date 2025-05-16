@@ -124,6 +124,10 @@ class CommunicationAnalyzer:
             Parsed message, or None if parsing failed
         """
         try:
+            # Debug information
+            self.logger.info(f"Document type: {type(document)}")
+            self.logger.info(f"Document attributes: {dir(document)}")
+            
             # Create participants
             participants = []
             
@@ -172,6 +176,9 @@ class CommunicationAnalyzer:
                             )
                         )
             
+            # Access content property
+            document_content = document.content
+            
             # Create the message
             message = Message(
                 message_id=document.metadata.document_id,
@@ -179,7 +186,7 @@ class CommunicationAnalyzer:
                 in_reply_to=document.in_reply_to,
                 message_type=MessageType.EMAIL,
                 subject=document.subject,
-                content=document.content,
+                content=document_content,
                 sent_date=document.sent_date,
                 participants=participants,
                 status=MessageStatus.SENT,
@@ -225,8 +232,11 @@ class CommunicationAnalyzer:
                     # Add the message to the communication graph
                     self.communication_graph.add_message(message)
             elif isinstance(document, Document):
+                # Access content property
+                document_content = document.content
+                
                 # Try to detect if this is an email from content
-                content = document.content.lower()
+                content = document_content.lower()
                 if 'from:' in content and 'to:' in content and ('subject:' in content or 'sent:' in content):
                     # This might be an email, try to extract information
                     try:
@@ -291,7 +301,7 @@ class CommunicationAnalyzer:
                             message_id=doc_id,
                             message_type=MessageType.EMAIL,
                             subject=subject,
-                            content=content,
+                            content=document_content,
                             sent_date=sent_date,
                             participants=participants,
                             status=MessageStatus.SENT

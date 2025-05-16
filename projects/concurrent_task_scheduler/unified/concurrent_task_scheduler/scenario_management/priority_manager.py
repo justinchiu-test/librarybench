@@ -9,10 +9,20 @@ prioritization system to maximize research output.
 
 import logging
 import time
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Dict, List, Optional, Set, Tuple, Any, cast
 from datetime import datetime, timedelta
 from enum import Enum
 from collections import defaultdict
+
+from common.job_management.prioritization import (
+    PriorityManager as CommonPriorityManager,
+    PriorityPolicy,
+    Priority as CommonPriority,
+)
+from common.core.models import (
+    BaseJob,
+    Result,
+)
 
 from concurrent_task_scheduler.models.scenario import (
     Scenario, 
@@ -93,6 +103,9 @@ class PriorityManager:
     3. Tracking priority changes over time
     4. Implementing adaptive prioritization strategies
     5. Providing interfaces for manual priority adjustments
+    
+    This class extends the common PriorityManager, adapting it for scenario management
+    while maintaining compatibility with the common library functionality.
     """
     
     def __init__(
@@ -115,6 +128,13 @@ class PriorityManager:
             min_priority_change_threshold: Minimum change required to update priority
             max_reallocation_per_adjustment: Maximum resource % to reallocate in one adjustment
         """
+        # Initialize common library priority manager with weighted policy
+        self._common_priority_manager = CommonPriorityManager(
+            policy=PriorityPolicy.WEIGHTED,
+            aging_interval=evaluation_interval,
+            aging_factor=min_priority_change_threshold,
+        )
+        
         self.evaluator = evaluator or ScenarioEvaluator()
         self.comparator = comparator or ScenarioComparator()
         self.reallocation_strategy = reallocation_strategy
@@ -310,6 +330,68 @@ class PriorityManager:
         
         return change_record
     
+    def _scenario_to_job(self, scenario: Scenario) -> BaseJob:
+        """
+        Convert a Scenario to a BaseJob for use with the common priority manager.
+        
+        Args:
+            scenario: The scenario to convert
+            
+        Returns:
+            A BaseJob representation of the scenario
+        """
+        # Create a minimal BaseJob instance
+        job = BaseJob(
+            id=scenario.id,
+            name=scenario.name,
+            priority=self._map_scenario_priority_to_common(scenario.priority_score),
+            owner=scenario.owner if hasattr(scenario, 'owner') else "researcher",
+            project=scenario.project if hasattr(scenario, 'project') else "research",
+            submission_time=scenario.created_at if hasattr(scenario, 'created_at') else datetime.now(),
+            dependencies=[s.id for s in scenario.dependencies] if hasattr(scenario, 'dependencies') else [],
+        )
+        return job
+    
+    def _map_scenario_priority_to_common(self, priority_score: float) -> CommonPriority:
+        """
+        Map scenario priority score to common library Priority enum.
+        
+        Args:
+            priority_score: Scenario priority score (0-1)
+            
+        Returns:
+            Corresponding common Priority enum value
+        """
+        if priority_score >= 0.9:
+            return CommonPriority.CRITICAL
+        elif priority_score >= 0.7:
+            return CommonPriority.HIGH
+        elif priority_score >= 0.4:
+            return CommonPriority.MEDIUM
+        elif priority_score >= 0.2:
+            return CommonPriority.LOW
+        else:
+            return CommonPriority.BACKGROUND
+    
+    def _map_common_priority_to_scenario(self, priority: CommonPriority) -> float:
+        """
+        Map common library Priority enum to scenario priority score.
+        
+        Args:
+            priority: Common Priority enum value
+            
+        Returns:
+            Corresponding scenario priority score (0-1)
+        """
+        mapping = {
+            CommonPriority.CRITICAL: 0.95,
+            CommonPriority.HIGH: 0.75,
+            CommonPriority.MEDIUM: 0.5,
+            CommonPriority.LOW: 0.25,
+            CommonPriority.BACKGROUND: 0.1,
+        }
+        return mapping.get(priority, 0.5)
+    
     def compare_and_adjust_priorities(
         self, 
         scenarios: List[Scenario],
@@ -389,6 +471,10 @@ class PriorityManager:
                 
                 # Update last evaluation time
                 self.last_evaluation_time[scenario_id] = datetime.now()
+        
+        # Also update common priority manager with conversion from scenarios to jobs
+        jobs = [self._scenario_to_job(s) for s in scenarios]
+        self._common_priority_manager.update_priorities(jobs)
         
         return changes
     
@@ -601,6 +687,11 @@ class PriorityManager:
         
         # Update last evaluation time
         self.last_evaluation_time[scenario.id] = datetime.now()
+        
+        # Also update in common priority manager
+        job = self._scenario_to_job(scenario)
+        common_priority = self._map_scenario_priority_to_common(new_priority)
+        self._common_priority_manager.set_priority(job, common_priority)
         
         logger.info(
             f"Manual priority override for scenario {scenario.id}: "

@@ -19,6 +19,11 @@ class Program:
     data_segment: Dict[int, int] = field(default_factory=dict)
     symbols: Dict[str, int] = field(default_factory=dict)
     
+    def __post_init__(self):
+        # Add an id for compatibility with common.core.program.Program
+        import uuid
+        self.id = str(uuid.uuid4())
+    
     def get_instruction(self, pc: int) -> Optional[Instruction]:
         """Get the instruction at the given program counter."""
         if 0 <= pc < len(self.instructions):

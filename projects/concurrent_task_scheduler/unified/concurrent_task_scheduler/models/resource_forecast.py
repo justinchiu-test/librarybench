@@ -9,8 +9,10 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from pydantic import BaseModel, Field
 
-from concurrent_task_scheduler.models.simulation import ResourceType
+from common.core.models import ResourceType
 
+
+from common.resource_management.forecaster import ResourceData as CommonResourceData
 
 class ResourceUsagePattern(str, Enum):
     """Patterns of resource usage over time."""

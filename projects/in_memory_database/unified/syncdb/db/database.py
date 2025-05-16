@@ -1,12 +1,17 @@
 """
 Core in-memory database engine implementation.
 """
-from typing import Dict, List, Any, Optional, Tuple, Callable, Set
+from typing import Dict, List, Any, Optional, Tuple, Callable, Set, Union
 import copy
 import time
 import uuid
-from .schema import DatabaseSchema, TableSchema
+import json
+
+from common.core.serialization import Serializable
+from common.core.storage import InMemoryStorage
+from .schema import DatabaseSchema, TableSchema, schema_registry
 from .table import Table
+from .record import TableRecord
 
 
 class Transaction:
@@ -28,7 +33,7 @@ class Transaction:
             for pk_tuple, record_id in table._pk_to_id.items():
                 table_record = table._records.get(record_id)
                 if table_record:
-                    self.tables_snapshot[table_name][pk_tuple] = copy.deepcopy(table_record.data)
+                    self.tables_snapshot[table_name][pk_tuple] = copy.deepcopy(table_record.get_data_dict())
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -90,7 +95,6 @@ class Transaction:
                         pk_tuple = tuple(pk_values)
                         # Remove the record that was inserted
                         if pk_tuple in table._pk_to_id:
-                            record_id = table._pk_to_id[pk_tuple]
                             table.delete(pk_values, client_id="transaction_rollback")
 
         # Step 2: Restore previous state for updated records
@@ -121,17 +125,23 @@ class Transaction:
         self.rolled_back = True
 
 
-class Database:
+class Database(Serializable):
     """
     An in-memory database that stores tables and supports transactions.
     """
     def __init__(self, schema: DatabaseSchema):
         self.schema = schema
         self.tables: Dict[str, Table] = {}
+        self.created_at = time.time()
+        self.updated_at = self.created_at
+        self.metadata: Dict[str, Any] = {}
 
         # Create tables based on the schema
         for table_name, table_schema in schema.tables.items():
             self._create_table(table_schema)
+            
+        # Register all schemas with the global schema registry
+        self.schema.register_with_registry(schema_registry)
 
     def _create_table(self, table_schema: TableSchema) -> Table:
         """Create a new table based on the schema."""
@@ -149,8 +159,7 @@ class Database:
     def insert(self, 
               table_name: str, 
               record: Dict[str, Any], 
-              client_id: Optional[str] = None,
-              transaction: Optional[Transaction] = None) -> Dict[str, Any]:
+              client_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Insert a record into a table.
         
@@ -158,19 +167,18 @@ class Database:
             table_name: The name of the table
             record: The record to insert
             client_id: Optional ID of the client making the change
-            transaction: Optional transaction to use
             
         Returns:
             The inserted record
         """
         table = self._get_table(table_name)
+        self.updated_at = time.time()
         return table.insert(record, client_id)
     
     def update(self, 
               table_name: str, 
               record: Dict[str, Any], 
-              client_id: Optional[str] = None,
-              transaction: Optional[Transaction] = None) -> Dict[str, Any]:
+              client_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Update a record in a table.
         
@@ -178,19 +186,18 @@ class Database:
             table_name: The name of the table
             record: The record to update (must include primary key)
             client_id: Optional ID of the client making the change
-            transaction: Optional transaction to use
             
         Returns:
             The updated record
         """
         table = self._get_table(table_name)
+        self.updated_at = time.time()
         return table.update(record, client_id)
     
     def delete(self, 
               table_name: str, 
               primary_key_values: List[Any], 
-              client_id: Optional[str] = None,
-              transaction: Optional[Transaction] = None) -> None:
+              client_id: Optional[str] = None) -> None:
         """
         Delete a record from a table.
         
@@ -198,9 +205,9 @@ class Database:
             table_name: The name of the table
             primary_key_values: The values for the primary key columns
             client_id: Optional ID of the client making the change
-            transaction: Optional transaction to use
         """
         table = self._get_table(table_name)
+        self.updated_at = time.time()
         table.delete(primary_key_values, client_id)
     
     def get(self, table_name: str, primary_key_values: List[Any]) -> Optional[Dict[str, Any]]:
@@ -215,7 +222,7 @@ class Database:
             The record if found, None otherwise
         """
         table = self._get_table(table_name)
-        return table.get(primary_key_values)
+        return table.get_dict(primary_key_values)
     
     def query(self, 
              table_name: str, 
@@ -256,3 +263,83 @@ class Database:
     def generate_client_id(self) -> str:
         """Generate a unique client ID."""
         return str(uuid.uuid4())
+    
+    def add_metadata(self, key: str, value: Any) -> None:
+        """
+        Add metadata to the database.
+        
+        Args:
+            key: The metadata key
+            value: The metadata value
+        """
+        self.metadata[key] = value
+        self.updated_at = time.time()
+    
+    def get_metadata(self, key: str) -> Optional[Any]:
+        """
+        Get metadata from the database.
+        
+        Args:
+            key: The metadata key
+            
+        Returns:
+            The metadata value if found, None otherwise
+        """
+        return self.metadata.get(key)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the database to a dictionary representation for serialization.
+        
+        Returns:
+            A dictionary containing the database's metadata and schema.
+        """
+        return {
+            'schema': self.schema.to_dict(),
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'metadata': self.metadata
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Database':
+        """
+        Create a database from a dictionary representation.
+        
+        Args:
+            data: Dictionary containing database data.
+        
+        Returns:
+            A new Database instance.
+        """
+        schema = DatabaseSchema.from_dict(data['schema'])
+        db = cls(schema)
+        db.created_at = data.get('created_at', time.time())
+        db.updated_at = data.get('updated_at', db.created_at)
+        db.metadata = data.get('metadata', {})
+        return db
+    
+    def save_to_file(self, file_path: str) -> None:
+        """
+        Save the database schema and metadata to a file.
+        
+        Args:
+            file_path: The path to save the database to.
+        """
+        with open(file_path, 'w') as f:
+            json.dump(self.to_dict(), f, indent=2)
+    
+    @classmethod
+    def load_from_file(cls, file_path: str) -> 'Database':
+        """
+        Load a database from a file.
+        
+        Args:
+            file_path: The path to load the database from.
+            
+        Returns:
+            A new Database instance.
+        """
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        return cls.from_dict(data)

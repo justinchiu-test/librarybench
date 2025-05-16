@@ -253,6 +253,16 @@ class ResultCache:
         with self.lock:
             self.cache.clear()
             self.timestamps.clear()
+            
+    def get_all_keys(self) -> List[str]:
+        """
+        Get all keys in the cache.
+        
+        Returns:
+            List of all cache keys
+        """
+        with self.lock:
+            return list(self.cache.keys())
 
 
 class BaseAnalyzerAPI(Generic[R, A], ABC):

@@ -246,6 +246,9 @@ class PrivilegeDetector:
         Returns:
             True if the email belongs to an attorney, False otherwise
         """
+        if not email or not isinstance(email, str):
+            return False
+            
         email = email.lower()
         
         # Check if the email is directly in the attorneys dictionary
@@ -302,22 +305,24 @@ class PrivilegeDetector:
                 # Check the subject line if available
                 if hasattr(document, 'subject'):
                     subject = getattr(document, 'subject', '')
-                    if subject and pattern.search(subject):
+                    if subject and isinstance(subject, str) and pattern.search(subject):
                         detected_indicators[indicator_id] = indicator.weight
             
             elif indicator.category == PrivilegeIndicatorCategory.DOCUMENT_TYPE:
                 # Check the document type in metadata
                 doc_type = getattr(metadata, 'document_type', '')
-                if doc_type and pattern.search(doc_type):
+                if doc_type and isinstance(doc_type, str) and pattern.search(doc_type):
                     detected_indicators[indicator_id] = indicator.weight
             
             elif indicator.category == PrivilegeIndicatorCategory.METADATA:
                 # Check various metadata fields
                 for field in ('title', 'author', 'custodian', 'confidentiality'):
                     value = getattr(metadata, field, '')
-                    if value and pattern.search(str(value)):
-                        detected_indicators[indicator_id] = indicator.weight
-                        break
+                    if value:
+                        value_str = str(value)
+                        if pattern.search(value_str):
+                            detected_indicators[indicator_id] = indicator.weight
+                            break
             
             elif indicator.category == PrivilegeIndicatorCategory.CONTENT:
                 # Check the entire content

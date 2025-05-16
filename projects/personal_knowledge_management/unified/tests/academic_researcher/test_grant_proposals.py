@@ -147,9 +147,9 @@ class TestGrantProposals:
         
         # Verify in knowledge graph
         assert brain._knowledge_graph.has_node(str(grant_id))
-        node_data = brain._knowledge_graph.nodes[str(grant_id)]
-        assert node_data["type"] == "grant"
-        assert node_data["title"] == "Neural Activity and Myelination in Development"
+        node_attrs = brain._knowledge_graph.get_node_attributes(str(grant_id))
+        assert node_attrs["type"] == "grant"
+        assert node_attrs["title"] == "Neural Activity and Myelination in Development"
     
     def test_add_items_to_grant_workspace(self, brain, sample_proposal_data):
         """Test adding various items to a grant proposal workspace."""
@@ -193,18 +193,18 @@ class TestGrantProposals:
         # Verify knowledge graph connections
         for note_id in sample_proposal_data["notes"]:
             assert brain._knowledge_graph.has_edge(str(grant_id), str(note_id))
-            edge_data = brain._knowledge_graph.get_edge_data(str(grant_id), str(note_id))
-            assert edge_data["type"] == "includes"
+            edge_attrs = brain._knowledge_graph.get_edge_attributes(str(grant_id), str(note_id))
+            assert edge_attrs["type"] == "includes"
         
         for experiment_id in sample_proposal_data["experiments"]:
             assert brain._knowledge_graph.has_edge(str(grant_id), str(experiment_id))
-            edge_data = brain._knowledge_graph.get_edge_data(str(grant_id), str(experiment_id))
-            assert edge_data["type"] == "proposes"
+            edge_attrs = brain._knowledge_graph.get_edge_attributes(str(grant_id), str(experiment_id))
+            assert edge_attrs["type"] == "proposes"
         
         for question_id in sample_proposal_data["questions"]:
             assert brain._knowledge_graph.has_edge(str(grant_id), str(question_id))
-            edge_data = brain._knowledge_graph.get_edge_data(str(grant_id), str(question_id))
-            assert edge_data["type"] == "addresses"
+            edge_attrs = brain._knowledge_graph.get_edge_attributes(str(grant_id), str(question_id))
+            assert edge_attrs["type"] == "addresses"
     
     def test_adding_items_incrementally(self, brain, sample_proposal_data):
         """Test adding items to a grant proposal incrementally."""

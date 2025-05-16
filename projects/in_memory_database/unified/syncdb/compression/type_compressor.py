@@ -1,5 +1,8 @@
 """
 Type-aware compression for different data types.
+
+This module is now a wrapper around the common library's compression utilities
+that maintains compatibility with the existing API.
 """
 from typing import Dict, List, Any, Optional, Callable, Type, Union, Tuple
 import json
@@ -11,6 +14,13 @@ from datetime import datetime, date, timedelta
 from enum import Enum
 import time
 
+from common.optimization.compression import (
+    TypeAwareCompressor, CompressionFormat,
+    compress_string, decompress_string,
+    compress_bytes, decompress_bytes,
+    compress_json, decompress_json
+)
+
 
 class CompressionLevel(Enum):
     """Compression level for balancing CPU usage and size reduction."""
@@ -18,6 +28,20 @@ class CompressionLevel(Enum):
     LOW = 1   # Low compression, less CPU usage
     MEDIUM = 2  # Medium compression, balanced
     HIGH = 3  # High compression, more CPU usage
+
+
+def _compression_level_to_zlib(level: CompressionLevel) -> int:
+    """Convert CompressionLevel to zlib compression level (1-9)."""
+    if level == CompressionLevel.NONE:
+        return 0
+    elif level == CompressionLevel.LOW:
+        return 3
+    elif level == CompressionLevel.MEDIUM:
+        return 6
+    elif level == CompressionLevel.HIGH:
+        return 9
+    else:
+        return 6  # Default
 
 
 class TypeCompressor:
@@ -72,6 +96,7 @@ class TextCompressor(TypeCompressor):
     """Compressor for text values."""
     def __init__(self, level: CompressionLevel = CompressionLevel.MEDIUM):
         self.level = level
+        self.zlib_level = _compression_level_to_zlib(level)
     
     def compress(self, value: str) -> bytes:
         """Compress a string to bytes."""
@@ -80,16 +105,14 @@ class TextCompressor(TypeCompressor):
             # Just encode to UTF-8
             return value.encode('utf-8')
         
-        # For longer strings, use zlib compression
-        utf8_bytes = value.encode('utf-8')
-        compression_level = min(9, max(1, self.level.value * 3))  # Map to zlib levels 1-9
-        return zlib.compress(utf8_bytes, level=compression_level)
+        # Use the common library's string compression
+        return compress_string(value, self.zlib_level)
     
     def decompress(self, data: bytes) -> str:
         """Decompress bytes to a string."""
         try:
-            # Try to decompress (if it was compressed)
-            return zlib.decompress(data).decode('utf-8')
+            # Try to decompress using the common library
+            return decompress_string(data)
         except zlib.error:
             # If decompression fails, assume it wasn't compressed
             return data.decode('utf-8')
@@ -99,6 +122,7 @@ class BinaryCompressor(TypeCompressor):
     """Compressor for binary data."""
     def __init__(self, level: CompressionLevel = CompressionLevel.MEDIUM):
         self.level = level
+        self.zlib_level = _compression_level_to_zlib(level)
     
     def compress(self, value: bytes) -> bytes:
         """Compress binary data."""
@@ -106,15 +130,14 @@ class BinaryCompressor(TypeCompressor):
             # For very small binary data, don't compress
             return value
         
-        # For larger binary data, use zlib compression
-        compression_level = min(9, max(1, self.level.value * 3))  # Map to zlib levels 1-9
-        return zlib.compress(value, level=compression_level)
+        # Use the common library's bytes compression
+        return compress_bytes(value, self.zlib_level)
     
     def decompress(self, data: bytes) -> bytes:
         """Decompress binary data."""
         try:
-            # Try to decompress (if it was compressed)
-            return zlib.decompress(data)
+            # Try to decompress using the common library
+            return decompress_bytes(data)
         except zlib.error:
             # If decompression fails, assume it wasn't compressed
             return data
@@ -172,187 +195,205 @@ class NoneCompressor(TypeCompressor):
 
 
 class ListCompressor(TypeCompressor):
-    """Compressor for lists of values."""
-    def __init__(self, compressor_factory: 'CompressorFactory'):
-        self.compressor_factory = compressor_factory
+    """
+    Compressor for list values, using the common library's TypeAwareCompressor internally.
+    """
+    def __init__(self, factory: 'CompressorFactory'):
+        self.factory = factory
+        self.common_compressor = factory.common_compressor
     
     def compress(self, value: List[Any]) -> bytes:
-        """Compress a list to bytes."""
-        # For empty lists, return special marker
+        """
+        Compress a list using the common library.
+        
+        Args:
+            value: List to compress
+            
+        Returns:
+            Compressed bytes
+        """
+        # Check if the list is empty
         if not value:
-            return b'\x00'
+            return b'\x00'  # Empty list marker
         
-        # Compress each element
-        compressed_items = []
-        for item in value:
-            # Get the type signature
-            type_signature = self.compressor_factory.get_type_signature(item)
-            
-            # Get the compressor for this type
-            compressor = self.compressor_factory.get_compressor_for_type(type(item))
-            
-            # Compress the item
-            compressed_item = compressor.compress(item)
-
-            # Handle large compressed values
-            if len(compressed_item) > 255:
-                # Use a special marker for large values (255)
-                item_length = 255
-                # Store the actual length as a 4-byte integer
-                item_size_bytes = struct.pack('>I', len(compressed_item))
-            else:
-                item_length = len(compressed_item)
-                item_size_bytes = b''
-
-            # Store type signature and length with the compressed item
-            item_header = struct.pack('>BB', type_signature, item_length) + item_size_bytes
-            compressed_items.append(item_header + compressed_item)
-        
-        # Join all compressed items
-        return b'\x01' + b''.join(compressed_items)
+        # Use the common library to compress the list
+        format_type, compressed_data = self.common_compressor.compress(value)
+        # Add list marker at the beginning
+        return b'\x01' + compressed_data
     
     def decompress(self, data: bytes) -> List[Any]:
-        """Decompress bytes to a list."""
+        """
+        Decompress bytes to a list.
+        
+        Args:
+            data: Compressed bytes
+            
+        Returns:
+            Decompressed list
+        """
         # Check for empty list marker
         if data == b'\x00':
             return []
         
-        # Skip the list marker
-        data = data[1:]
+        # Strip list marker if present
+        if data and data[0] == 1:
+            data = data[1:]
         
-        result = []
-        offset = 0
-        
-        while offset < len(data):
-            # Read the type signature and length
-            type_signature, item_length = struct.unpack('>BB', data[offset:offset+2])
-            offset += 2
-
-            # Check if this is a large value
-            if item_length == 255:
-                # Read the actual length as a 4-byte integer
-                actual_length = struct.unpack('>I', data[offset:offset+4])[0]
-                offset += 4
-                item_length = actual_length
-
-            # Read the compressed item
-            compressed_item = data[offset:offset+item_length]
-            offset += item_length
-            
-            # Get the compressor for this type
-            compressor = self.compressor_factory.get_compressor_for_signature(type_signature)
-            
-            # Decompress the item
-            item = compressor.decompress(compressed_item)
-            result.append(item)
-        
-        return result
+        try:
+            # Try using the common library with the LIST format
+            return self.common_compressor.decompress(CompressionFormat.LIST, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            try:
+                return json.loads(data.decode('utf-8'))
+            except:
+                # Last resort
+                return []
 
 
 class DictCompressor(TypeCompressor):
-    """Compressor for dictionaries."""
-    def __init__(self, compressor_factory: 'CompressorFactory'):
-        self.compressor_factory = compressor_factory
-        self.text_compressor = TextCompressor()
+    """
+    Compressor for dictionary values, using the common library's TypeAwareCompressor internally.
+    """
+    def __init__(self, factory: 'CompressorFactory'):
+        self.factory = factory
+        self.common_compressor = factory.common_compressor
     
     def compress(self, value: Dict[str, Any]) -> bytes:
-        """Compress a dictionary to bytes."""
-        # For empty dicts, return special marker
+        """
+        Compress a dictionary using the common library.
+        
+        Args:
+            value: Dictionary to compress
+            
+        Returns:
+            Compressed bytes
+        """
+        # Check if the dictionary is empty
         if not value:
-            return b'\x00'
+            return b'\x00'  # Empty dict marker
         
-        # Compress each key-value pair
-        compressed_items = []
-        for key, val in value.items():
-            # Compress the key (always a string)
-            compressed_key = self.text_compressor.compress(key)
-            key_header = struct.pack('>B', len(compressed_key))
-            
-            # Get the type signature for the value
-            type_signature = self.compressor_factory.get_type_signature(val)
-            
-            # Get the compressor for this type
-            compressor = self.compressor_factory.get_compressor_for_type(type(val))
-            
-            # Compress the value
-            compressed_val = compressor.compress(val)
-
-            # Handle large compressed values - break into chunks if needed
-            if len(compressed_val) > 255:
-                # Use a special marker for large values (255)
-                val_length = 255
-                is_large = True
-                # Store the actual length as a 4-byte integer
-                val_size_bytes = struct.pack('>I', len(compressed_val))
-            else:
-                val_length = len(compressed_val)
-                is_large = False
-                val_size_bytes = b''
-
-            # Store type signature and length with the compressed value
-            val_header = struct.pack('>BB', type_signature, val_length) + val_size_bytes
-            
-            # Combine key and value
-            compressed_items.append(key_header + compressed_key + val_header + compressed_val)
-        
-        # Join all compressed items
-        return b'\x01' + b''.join(compressed_items)
+        # Use the common library to compress the dictionary
+        format_type, compressed_data = self.common_compressor.compress(value)
+        # Add dict marker at the beginning
+        return b'\x01' + compressed_data
     
     def decompress(self, data: bytes) -> Dict[str, Any]:
-        """Decompress bytes to a dictionary."""
+        """
+        Decompress bytes to a dictionary.
+        
+        Args:
+            data: Compressed bytes
+            
+        Returns:
+            Decompressed dictionary
+        """
         # Check for empty dict marker
         if data == b'\x00':
             return {}
         
-        # Skip the dict marker
-        data = data[1:]
+        # Strip dict marker if present
+        if data and data[0] == 1:
+            data = data[1:]
         
-        result = {}
-        offset = 0
-        
-        while offset < len(data):
-            # Read the key length
-            key_length = struct.unpack('>B', data[offset:offset+1])[0]
-            offset += 1
-            
-            # Read the compressed key
-            compressed_key = data[offset:offset+key_length]
-            offset += key_length
-            
-            # Decompress the key
-            key = self.text_compressor.decompress(compressed_key)
-            
-            # Read the value type signature and length
-            val_type, val_length = struct.unpack('>BB', data[offset:offset+2])
-            offset += 2
+        try:
+            # Try using the common library with the DICT format
+            return self.common_compressor.decompress(CompressionFormat.DICT, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            try:
+                return json.loads(data.decode('utf-8'))
+            except:
+                # Last resort
+                return {}
 
-            # Check if this is a large value (length marker = 255)
-            if val_length == 255:
-                # Read the actual length as a 4-byte integer
-                actual_length = struct.unpack('>I', data[offset:offset+4])[0]
-                offset += 4
-                val_length = actual_length
 
-            # Read the compressed value
-            compressed_val = data[offset:offset+val_length]
-            offset += val_length
-            
-            # Get the compressor for this type
-            compressor = self.compressor_factory.get_compressor_for_signature(val_type)
-            
-            # Decompress the value
-            val = compressor.decompress(compressed_val)
-            
-            # Add to result
-            result[key] = val
+class ListCompressorAdapter(ListCompressor):
+    """
+    Adapter for the common library's TypeAwareCompressor for lists.
+    """
+    def __init__(self, common_compressor: TypeAwareCompressor):
+        self.common_compressor = common_compressor
+    
+    def compress(self, value: List[Any]) -> bytes:
+        """
+        Compress a list using the common library.
         
-        return result
+        Args:
+            value: List to compress
+            
+        Returns:
+            Compressed bytes
+        """
+        format_type, compressed_data = self.common_compressor.compress(value)
+        return compressed_data
+    
+    def decompress(self, data: bytes) -> List[Any]:
+        """
+        Decompress bytes to a list using the common library.
+        
+        Args:
+            data: Compressed bytes
+            
+        Returns:
+            Decompressed list
+        """
+        try:
+            # Try using the common library with the LIST format
+            return self.common_compressor.decompress(CompressionFormat.LIST, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            return json.loads(data.decode('utf-8'))
+
+
+class DictCompressorAdapter(DictCompressor):
+    """
+    Adapter for the common library's TypeAwareCompressor for dictionaries.
+    """
+    def __init__(self, common_compressor: TypeAwareCompressor):
+        self.common_compressor = common_compressor
+    
+    def compress(self, value: Dict[str, Any]) -> bytes:
+        """
+        Compress a dictionary using the common library.
+        
+        Args:
+            value: Dictionary to compress
+            
+        Returns:
+            Compressed bytes
+        """
+        format_type, compressed_data = self.common_compressor.compress(value)
+        return compressed_data
+    
+    def decompress(self, data: bytes) -> Dict[str, Any]:
+        """
+        Decompress bytes to a dictionary using the common library.
+        
+        Args:
+            data: Compressed bytes
+            
+        Returns:
+            Decompressed dictionary
+        """
+        try:
+            # Try using the common library with the DICT format
+            return self.common_compressor.decompress(CompressionFormat.DICT, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            return json.loads(data.decode('utf-8'))
 
 
 class CompressorFactory:
     """Factory for creating and managing type-specific compressors."""
     def __init__(self, compression_level: CompressionLevel = CompressionLevel.MEDIUM):
         self.compression_level = compression_level
+        self.zlib_level = _compression_level_to_zlib(compression_level)
+        
+        # Create a common library compressor
+        self.common_compressor = TypeAwareCompressor(self.zlib_level)
+        
+        # Type signature mapping
         self.type_to_signature: Dict[Type, int] = {
             type(None): 0,
             bool: 1,
@@ -365,11 +406,18 @@ class CompressorFactory:
             datetime: 8,
             date: 9
         }
+        
+        # Initialize compressors
         self.signature_to_compressor: Dict[int, TypeCompressor] = {}
         self._initialize_compressors()
     
     def _initialize_compressors(self) -> None:
         """Initialize the compressors for each type."""
+        # Create list and dict compressors
+        list_compressor = ListCompressor(self)
+        dict_compressor = DictCompressor(self)
+        
+        # Mix of direct compressors and common library adapters
         self.signature_to_compressor = {
             0: NoneCompressor(),
             1: BooleanCompressor(),
@@ -377,8 +425,8 @@ class CompressorFactory:
             3: FloatCompressor(),
             4: TextCompressor(self.compression_level),
             5: BinaryCompressor(self.compression_level),
-            6: ListCompressor(self),  # Uses this factory for recursive compression
-            7: DictCompressor(self),  # Uses this factory for recursive compression
+            6: list_compressor,  # Use ListCompressor for lists
+            7: dict_compressor,  # Use DictCompressor for dicts
             8: DateTimeCompressor(),
             9: DateTimeCompressor()
         }
@@ -388,18 +436,23 @@ class CompressorFactory:
         value_type = type(value)
         return self.type_to_signature.get(value_type, 0)
     
-    def get_compressor_for_type(self, value_type: Type) -> TypeCompressor:
+    def get_compressor_for_type(self, value_type: Type) -> Any:
         """Get the compressor for a specific type."""
         type_signature = self.type_to_signature.get(value_type, 0)
         return self.signature_to_compressor.get(type_signature, NoneCompressor())
     
-    def get_compressor_for_signature(self, type_signature: int) -> TypeCompressor:
+    def get_compressor_for_signature(self, type_signature: int) -> Any:
         """Get the compressor for a specific type signature."""
         return self.signature_to_compressor.get(type_signature, NoneCompressor())
     
     def set_compression_level(self, level: CompressionLevel) -> None:
         """Set the compression level for all compressors."""
         self.compression_level = level
+        self.zlib_level = _compression_level_to_zlib(level)
+        
+        # Update the common compressor's compression level
+        self.common_compressor = TypeAwareCompressor(self.zlib_level)
+        
         # Reinitialize compressors with the new level
         self._initialize_compressors()
 
@@ -407,10 +460,18 @@ class CompressorFactory:
 class PayloadCompressor:
     """
     Compresses and decompresses data for efficient transfer.
+    This now uses the common library's TypeAwareCompressor internally.
     """
     def __init__(self, 
-                compression_level: CompressionLevel = CompressionLevel.MEDIUM, 
-                schema: Optional[Dict[str, Dict[str, Type]]] = None):
+               compression_level: CompressionLevel = CompressionLevel.MEDIUM, 
+               schema: Optional[Dict[str, Dict[str, Type]]] = None):
+        self.compression_level = compression_level
+        self.zlib_level = _compression_level_to_zlib(compression_level)
+        
+        # Create a common library compressor
+        self.common_compressor = TypeAwareCompressor(self.zlib_level)
+        
+        # For backward compatibility
         self.compressor_factory = CompressorFactory(compression_level)
         self.schema = schema or {}  # Table name -> {column name -> type}
     
@@ -427,9 +488,24 @@ class PayloadCompressor:
         Returns:
             Compressed record as bytes
         """
-        # Use the dict compressor for the entire record
-        compressor = self.compressor_factory.get_compressor_for_type(dict)
-        return compressor.compress(record)
+        # Use the common library to compress the record
+        format_type, compressed_data = self.common_compressor.compress(record)
+        
+        # Check if compression actually reduced the size compared to JSON
+        json_data = json.dumps(record, separators=(',', ':')).encode('utf-8')
+        
+        # Only use compressed data if it's actually smaller
+        if len(compressed_data) < len(json_data):
+            # For HIGH compression level, apply additional zlib compression
+            if self.compression_level == CompressionLevel.HIGH:
+                # Apply a higher zlib compression level
+                compressed_data = zlib.compress(compressed_data, 9)
+            return compressed_data
+        else:
+            # Fall back to JSON if compression didn't help, but still apply zlib for HIGH
+            if self.compression_level == CompressionLevel.HIGH:
+                return zlib.compress(json_data, 9)
+            return json_data
     
     def decompress_record(self, 
                          table_name: str, 
@@ -444,9 +520,36 @@ class PayloadCompressor:
         Returns:
             Decompressed record
         """
-        # Use the dict compressor for the entire record
-        compressor = self.compressor_factory.get_compressor_for_type(dict)
-        return compressor.decompress(data)
+        # First try to handle HIGH compression level (zlib)
+        if self.compression_level == CompressionLevel.HIGH:
+            try:
+                # Try to decompress with zlib first
+                decompressed_data = zlib.decompress(data)
+                
+                # Then try to decompress as a dictionary
+                try:
+                    return self.common_compressor.decompress(CompressionFormat.DICT, decompressed_data)
+                except Exception:
+                    # Fall back to JSON if that fails
+                    try:
+                        return json.loads(decompressed_data.decode('utf-8'))
+                    except Exception:
+                        # If decompressed data isn't JSON, continue to regular process
+                        pass
+            except zlib.error:
+                # Not zlib compressed, continue to regular process
+                pass
+        
+        # Regular decompression process
+        try:
+            return self.common_compressor.decompress(CompressionFormat.DICT, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            try:
+                return json.loads(data.decode('utf-8'))
+            except Exception:
+                # Last resort: try json decompression
+                return decompress_json(data)
     
     def compress_changes(self, 
                         table_name: str, 
@@ -461,9 +564,24 @@ class PayloadCompressor:
         Returns:
             Compressed changes as bytes
         """
-        # Use the list compressor for the list of changes
-        compressor = self.compressor_factory.get_compressor_for_type(list)
-        return compressor.compress(changes)
+        # Use the common library to compress the changes
+        format_type, compressed_data = self.common_compressor.compress(changes)
+        
+        # Check if compression actually reduced the size compared to JSON
+        json_data = json.dumps(changes, separators=(',', ':')).encode('utf-8')
+        
+        # Only use compressed data if it's actually smaller
+        if len(compressed_data) < len(json_data):
+            # For HIGH compression level, apply additional zlib compression
+            if self.compression_level == CompressionLevel.HIGH:
+                # Apply a higher zlib compression level
+                compressed_data = zlib.compress(compressed_data, 9)
+            return compressed_data
+        else:
+            # Fall back to JSON if compression didn't help, but still apply zlib for HIGH
+            if self.compression_level == CompressionLevel.HIGH:
+                return zlib.compress(json_data, 9)
+            return json_data
     
     def decompress_changes(self, 
                           table_name: str, 
@@ -478,12 +596,46 @@ class PayloadCompressor:
         Returns:
             Decompressed list of changes
         """
-        # Use the list compressor for the list of changes
-        compressor = self.compressor_factory.get_compressor_for_type(list)
-        return compressor.decompress(data)
+        # First try to handle HIGH compression level (zlib)
+        if self.compression_level == CompressionLevel.HIGH:
+            try:
+                # Try to decompress with zlib first
+                decompressed_data = zlib.decompress(data)
+                
+                # Then try to decompress as a list
+                try:
+                    return self.common_compressor.decompress(CompressionFormat.LIST, decompressed_data)
+                except Exception:
+                    # Fall back to JSON if that fails
+                    try:
+                        return json.loads(decompressed_data.decode('utf-8'))
+                    except Exception:
+                        # If decompressed data isn't JSON, continue to regular process
+                        pass
+            except zlib.error:
+                # Not zlib compressed, continue to regular process
+                pass
+        
+        # Regular decompression process
+        try:
+            return self.common_compressor.decompress(CompressionFormat.LIST, data)
+        except Exception:
+            # Fall back to JSON if that fails
+            try:
+                return json.loads(data.decode('utf-8'))
+            except Exception:
+                # Last resort: try json decompression
+                return decompress_json(data)
     
     def set_compression_level(self, level: CompressionLevel) -> None:
         """Set the compression level."""
+        self.compression_level = level
+        self.zlib_level = _compression_level_to_zlib(level)
+        
+        # Update the common compressor's compression level
+        self.common_compressor = TypeAwareCompressor(self.zlib_level)
+        
+        # For backward compatibility
         self.compressor_factory.set_compression_level(level)
     
     def set_schema(self, schema: Dict[str, Dict[str, Type]]) -> None:

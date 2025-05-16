@@ -529,7 +529,11 @@ class SchemaMigrator:
                 return
 
             # Get all records and their primary keys
-            records_by_pk = {pk: record for pk, record in table.records.items()}
+            records_by_pk = {}
+            for pk, record_id in table._pk_to_id.items():
+                table_record = table._records.get(record_id)
+                if table_record is not None:
+                    records_by_pk[pk] = table_record.get_data_dict()
 
             # Apply column changes to the schema
             for col_change in table_change.column_changes:
@@ -577,8 +581,26 @@ class SchemaMigrator:
             # Apply data migration if available
             if table_name in data_migrations:
                 migration_func = data_migrations[table_name]
-                for record in records_by_pk.values():
+                for pk_tuple, record in records_by_pk.items():
                     migration_func(record, table_schema)
+                    
+            # Now update all records in the database with the new schema
+            for pk_tuple, record in records_by_pk.items():
+                # Convert tuple back to list
+                pk_values = list(pk_tuple)
+                # Update the record in the database
+                try:
+                    table.update(record)
+                except Exception as e:
+                    print(f"Error updating record: {e}")
+                    # Try another approach
+                    try:
+                        current = table.get_dict(pk_values)
+                        if current is not None:
+                            current.update(record)
+                            table.update(current)
+                    except Exception as e2:
+                        print(f"Error in second approach: {e2}")
             
             # Rebuild the table's indexes if needed
             # This would be needed if primary keys changed

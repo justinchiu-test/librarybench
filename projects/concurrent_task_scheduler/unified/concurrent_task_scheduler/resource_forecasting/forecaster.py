@@ -7,7 +7,7 @@ import logging
 import math
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union, Any
 
 import numpy as np
 import pandas as pd
@@ -15,13 +15,21 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
 
+from common.core.interfaces import ResourceForecastingInterface
+from common.core.models import (
+    ResourceType,
+    Result,
+)
+from common.resource_management.forecaster import (
+    ForecastMethod,
+    ResourceForecaster as CommonResourceForecaster,
+)
+
 from concurrent_task_scheduler.models import (
     ForecastAccuracy,
     ForecastPeriod,
     ResourceForecast,
     ResourceProjection,
-    ResourceType,
-    Result,
     Simulation,
     UtilizationDataPoint,
 )
@@ -35,22 +43,25 @@ from concurrent_task_scheduler.resource_forecasting.data_collector import (
 logger = logging.getLogger(__name__)
 
 
+# Use common ForecastMethod from the common library, with additional methods
 class ForecastingMethod(str, Enum):
-    """Methods for forecasting resource usage."""
+    """Methods for forecasting resource usage, extending the common ForecastMethod."""
 
-    LINEAR_REGRESSION = "linear_regression"
-    EXPONENTIAL_SMOOTHING = "exponential_smoothing"
-    MOVING_AVERAGE = "moving_average"
+    LINEAR_REGRESSION = ForecastMethod.LINEAR_REGRESSION.value
+    EXPONENTIAL_SMOOTHING = ForecastMethod.EXPONENTIAL.value
+    MOVING_AVERAGE = ForecastMethod.MOVING_AVERAGE.value
+    WEIGHTED_AVERAGE = ForecastMethod.WEIGHTED_AVERAGE.value
     RANDOM_FOREST = "random_forest"
     ARIMA = "arima"
     PROPHET = "prophet"
     ENSEMBLE = "ensemble"
+    CUSTOM = ForecastMethod.CUSTOM.value
 
 
-class ResourceForecaster:
+class ResourceForecaster(ResourceForecastingInterface):
     """Forecaster for predicting future resource usage."""
 
-    def __init__(self, data_collector: ResourceDataCollector):
+    def __init__(self, data_collector: ResourceDataCollector, data_directory: Optional[str] = None):
         self.data_collector = data_collector
         self.models: Dict[str, Dict[ResourceType, object]] = {}  # sim_id -> resource_type -> model
         self.model_accuracy: Dict[str, Dict[ResourceType, ForecastAccuracy]] = {}
@@ -62,6 +73,13 @@ class ResourceForecaster:
             "mean_percentage_error": 0.15,  # 15%
             "mean_absolute_error": 0.1,
         }
+        
+        # Initialize the common resource forecaster for shared functionality
+        self.common_forecaster = CommonResourceForecaster(
+            data_directory=data_directory,
+            default_method=ForecastMethod.LINEAR_REGRESSION,
+            default_parameters={"window_size": 24},
+        )
     
     def add_scenario(self, scenario: Simulation) -> Result[bool]:
         """Add a scenario to the forecaster for future forecasting."""
@@ -146,7 +164,106 @@ class ResourceForecaster:
         
         return forecast
         
+    # Implementation of ResourceForecastingInterface methods
+    def generate_forecast(
+        self,
+        owner_id: str,
+        resource_type: ResourceType,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> Result[Dict[datetime, float]]:
+        """Generate a resource usage forecast as required by ResourceForecastingInterface.
+        
+        Args:
+            owner_id: ID of the owner/project
+            resource_type: Type of resource to forecast
+            start_date: Start date for the forecast
+            end_date: End date for the forecast
+            
+        Returns:
+            Result with dictionary mapping dates to forecasted values
+        """
+        # Use the common forecaster for the base functionality
+        common_result = self.common_forecaster.generate_forecast(
+            owner_id=owner_id,
+            resource_type=resource_type,
+            start_date=start_date,
+            end_date=end_date,
+            interval_hours=24,  # Daily forecasts
+        )
+        
+        if not common_result.success:
+            # Fall back to the domain-specific implementation
+            forecast_result = self.forecast_resource_usage(
+                resource_type=resource_type,
+                start_date=start_date,
+                end_date=end_date,
+                simulation_id=owner_id,
+                period=ForecastPeriod.DAILY,
+            )
+            
+            if not forecast_result.success:
+                return Result.err(forecast_result.error)
+            
+            # Convert our domain-specific forecast to the common format
+            forecast = forecast_result.value
+            result_dict = {}
+            
+            for date_str, value in forecast.forecasted_values.items():
+                try:
+                    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+                    result_dict[date_obj] = value
+                except ValueError:
+                    continue
+            
+            return Result.ok(result_dict)
+        
+        return common_result
+    
     def train_model(
+        self,
+        owner_id: str,
+        resource_type: ResourceType,
+        training_days: int = 30,
+    ) -> Result[bool]:
+        """Train a forecasting model as required by ResourceForecastingInterface.
+        
+        Args:
+            owner_id: ID of the owner/project
+            resource_type: Type of resource to forecast
+            training_days: Number of days of historical data to use
+            
+        Returns:
+            Result with success status
+        """
+        # Use the common forecaster for the base functionality
+        return self.common_forecaster.train_model(
+            owner_id=owner_id,
+            resource_type=resource_type,
+            training_days=training_days,
+        )
+    
+    def evaluate_accuracy(
+        self,
+        owner_id: str,
+        resource_type: ResourceType,
+    ) -> Result[Dict[str, float]]:
+        """Evaluate the accuracy of the forecasting model as required by ResourceForecastingInterface.
+        
+        Args:
+            owner_id: ID of the owner/project
+            resource_type: Type of resource to evaluate
+            
+        Returns:
+            Result with dictionary of accuracy metrics
+        """
+        return self.common_forecaster.evaluate_accuracy(
+            owner_id=owner_id,
+            resource_type=resource_type,
+        )
+    
+    # Domain-specific methods
+    def train_simulation_model(
         self,
         resource_type: ResourceType,
         simulation_id: Optional[str] = None,
@@ -230,7 +347,10 @@ class ResourceForecaster:
             # Train model based on method
             model = None
             
+            # Map our ForecastingMethod to common ForecastMethod when possible
+            common_method = None
             if method == ForecastingMethod.LINEAR_REGRESSION:
+                common_method = ForecastMethod.LINEAR_REGRESSION
                 model = LinearRegression()
                 model.fit(scaled_features, values)
             
@@ -240,10 +360,12 @@ class ResourceForecaster:
                 model.fit(scaled_features, values)
             
             elif method == ForecastingMethod.MOVING_AVERAGE:
+                common_method = ForecastMethod.MOVING_AVERAGE
                 # For moving average, we'll just store the window size
                 model = {"window_size": min(len(values), 24)}  # At most a day of hourly data
             
             elif method == ForecastingMethod.EXPONENTIAL_SMOOTHING:
+                common_method = ForecastMethod.EXPONENTIAL
                 # For exponential smoothing, we'll store alpha, beta, gamma
                 # Simplified implementation
                 model = {
@@ -403,7 +525,7 @@ class ResourceForecaster:
         
         # Check if we have a trained model, if not, train one
         if key not in self.models or resource_type not in self.models[key]:
-            train_result = self.train_model(
+            train_result = self.train_simulation_model(
                 resource_type=resource_type,
                 simulation_id=simulation_id,
                 node_id=node_id,

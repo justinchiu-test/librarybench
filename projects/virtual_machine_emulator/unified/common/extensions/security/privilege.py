@@ -1,263 +1,507 @@
 """
-Privilege management extension for VM security.
+Privilege management for the virtual machine emulator.
 
-This module provides mechanisms for managing and enforcing privilege levels
-and access controls within the virtual machine.
+This module provides privilege management and access control:
+- Privilege level management
+- Protected mode transitions
+- Access control with protection keys
 """
 
-from __future__ import annotations
-from enum import Enum
+from enum import Enum, auto, IntEnum
 from typing import Dict, List, Optional, Set, Tuple, Union, Any, Callable
 
-from common.core.processor import PrivilegeLevel
+from common.core.processor import PrivilegeLevel as BasePrivilegeLevel
+from common.core.memory import MemorySystem, MemorySegment, MemoryPermission
+from common.core.exceptions import PrivilegeViolationException
 
 
-class PrivilegeViolationEvent:
-    """Records a privilege violation event."""
-    
-    def __init__(
-        self,
-        instruction: str,
-        address: int,
-        required_level: PrivilegeLevel,
-        current_level: PrivilegeLevel,
-        context: Dict[str, Any] = None,
-    ):
-        """
-        Initialize the privilege violation event.
-        
-        Args:
-            instruction: The instruction that caused the violation
-            address: Memory address of the instruction
-            required_level: Required privilege level
-            current_level: Current privilege level
-            context: Additional context for the event
-        """
-        self.instruction = instruction
-        self.address = address
-        self.required_level = required_level
-        self.current_level = current_level
-        self.context = context or {}
-    
-    def __str__(self) -> str:
-        return (
-            f"Privilege violation at 0x{self.address:08x}: "
-            f"{self.instruction} requires {self.required_level.name}, "
-            f"current level is {self.current_level.name}"
-        )
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert the privilege violation to a dictionary."""
-        return {
-            "instruction": self.instruction,
-            "address": self.address,
-            "required_level": self.required_level.name,
-            "current_level": self.current_level.name,
-            "context": self.context,
-        }
+# Re-export the base privilege levels
+PrivilegeLevel = BasePrivilegeLevel
 
 
-class ProtectionKey:
-    """Memory protection key for fine-grained access control."""
-    
-    def __init__(
-        self,
-        key_id: int,
-        allow_read: bool = True,
-        allow_write: bool = False,
-        allow_execute: bool = False,
-        restricted: bool = True,
-    ):
-        """
-        Initialize the protection key.
-        
-        Args:
-            key_id: Unique identifier for the key
-            allow_read: Whether to allow read access
-            allow_write: Whether to allow write access
-            allow_execute: Whether to allow execute access
-            restricted: Whether the key is restricted to higher privilege levels
-        """
-        self.key_id = key_id
-        self.allow_read = allow_read
-        self.allow_write = allow_write
-        self.allow_execute = allow_execute
-        self.restricted = restricted
-    
-    def check_access(
-        self,
-        access_type: str,
-        level: PrivilegeLevel
-    ) -> bool:
-        """
-        Check if access is allowed with this key.
-        
-        Args:
-            access_type: Type of access (read, write, execute)
-            level: Current privilege level
-            
-        Returns:
-            Whether access is allowed
-        """
-        # Restricted keys require supervisor or kernel privilege
-        if self.restricted and level == PrivilegeLevel.USER:
-            return False
-        
-        # Check access type
-        if access_type == "read":
-            return self.allow_read
-        elif access_type == "write":
-            return self.allow_write
-        elif access_type == "execute":
-            return self.allow_execute
-        else:
-            return False
+class ProtectionDomain(IntEnum):
+    """Protection domains for memory protection keys."""
+    DOMAIN_0 = 0
+    DOMAIN_1 = 1
+    DOMAIN_2 = 2
+    DOMAIN_3 = 3
+    DOMAIN_4 = 4
+    DOMAIN_5 = 5
+    DOMAIN_6 = 6
+    DOMAIN_7 = 7
+    DOMAIN_8 = 8
+    DOMAIN_9 = 9
+    DOMAIN_10 = 10
+    DOMAIN_11 = 11
+    DOMAIN_12 = 12
+    DOMAIN_13 = 13
+    DOMAIN_14 = 14
+    DOMAIN_15 = 15
+
+
+class PrivilegeTransition(Enum):
+    """Types of privilege level transitions."""
+    ELEVATION = auto()     # Increasing privilege level
+    DEMOTION = auto()      # Decreasing privilege level
+    SAME_LEVEL = auto()    # Same privilege level
+    INVALID = auto()       # Invalid transition
 
 
 class PrivilegeManager:
     """
-    Manages privilege levels and transitions within the VM.
+    Manages security privilege levels and transitions.
     
-    This class provides mechanisms for enforcing privilege restrictions,
-    tracking privilege changes, and detecting privilege violations.
+    This manager enforces rules for privilege transitions and
+    provides a way to monitor and restrict privilege operations.
     """
     
-    def __init__(self):
-        """Initialize the privilege manager."""
-        self.privilege_changes: List[Dict[str, Any]] = []
-        self.protection_keys: Dict[int, ProtectionKey] = {}
-        self.violations: List[PrivilegeViolationEvent] = []
+    def __init__(self, initial_level: PrivilegeLevel = PrivilegeLevel.USER):
+        """
+        Initialize the privilege manager.
+        
+        Args:
+            initial_level: Initial privilege level
+        """
+        self.current_level = initial_level
+        self.transition_history: List[Dict[str, Any]] = []
+        
+        # Transition permissions matrix
+        # This controls which privilege levels can be transitioned to from each level
+        self.transition_permissions: Dict[PrivilegeLevel, Set[PrivilegeLevel]] = {
+            PrivilegeLevel.USER: {PrivilegeLevel.USER},              # User can only stay user
+            PrivilegeLevel.SUPERVISOR: {                             # Supervisor can go to user or stay
+                PrivilegeLevel.USER, 
+                PrivilegeLevel.SUPERVISOR
+            },
+            PrivilegeLevel.KERNEL: {                                 # Kernel can go anywhere
+                PrivilegeLevel.USER, 
+                PrivilegeLevel.SUPERVISOR, 
+                PrivilegeLevel.KERNEL
+            },
+        }
+        
+        # Special transitions that require syscalls or other mechanisms
+        self.special_transitions: Dict[Tuple[PrivilegeLevel, PrivilegeLevel], str] = {
+            (PrivilegeLevel.USER, PrivilegeLevel.SUPERVISOR): "syscall",
+            (PrivilegeLevel.USER, PrivilegeLevel.KERNEL): "interrupt",
+            (PrivilegeLevel.SUPERVISOR, PrivilegeLevel.KERNEL): "elevate",
+        }
     
-    def validate_transition(
+    def get_transition_type(
+        self,
+        from_level: PrivilegeLevel,
+        to_level: PrivilegeLevel
+    ) -> PrivilegeTransition:
+        """
+        Get the type of transition between privilege levels.
+        
+        Args:
+            from_level: Starting privilege level
+            to_level: Target privilege level
+            
+        Returns:
+            The transition type
+        """
+        if from_level.value < to_level.value:
+            return PrivilegeTransition.ELEVATION
+        elif from_level.value > to_level.value:
+            return PrivilegeTransition.DEMOTION
+        else:
+            return PrivilegeTransition.SAME_LEVEL
+    
+    def check_transition_permission(
         self,
         from_level: PrivilegeLevel,
         to_level: PrivilegeLevel,
-        instruction: str,
-        address: int,
-        context: Dict[str, Any] = None
-    ) -> bool:
+        mechanism: Optional[str] = None
+    ) -> Tuple[bool, str]:
         """
-        Validate a privilege level transition.
+        Check if a privilege transition is permitted.
         
         Args:
-            from_level: Current privilege level
+            from_level: Starting privilege level
             to_level: Target privilege level
-            instruction: Instruction causing the transition
-            address: Address of the instruction
-            context: Additional context
+            mechanism: Transition mechanism (e.g., syscall, interrupt)
             
         Returns:
-            Whether the transition is allowed
+            (is_allowed, reason) tuple
         """
-        # Record the transition attempt
-        transition = {
-            "from_level": from_level.name,
-            "to_level": to_level.name,
-            "instruction": instruction,
-            "address": address,
+        # Check if target level is in allowed transitions
+        if to_level not in self.transition_permissions.get(from_level, set()):
+            return False, f"Transition from {from_level.name} to {to_level.name} is not allowed"
+        
+        # Check if this is a special transition requiring a specific mechanism
+        transition_key = (from_level, to_level)
+        if transition_key in self.special_transitions:
+            required_mechanism = self.special_transitions[transition_key]
+            if mechanism != required_mechanism:
+                return False, f"Transition requires mechanism '{required_mechanism}', got '{mechanism}'"
+        
+        return True, "Transition allowed"
+    
+    def transition_level(
+        self,
+        to_level: PrivilegeLevel,
+        mechanism: Optional[str] = None,
+        context: Dict[str, Any] = None
+    ) -> Tuple[bool, str]:
+        """
+        Attempt to transition to a new privilege level.
+        
+        Args:
+            to_level: Target privilege level
+            mechanism: Transition mechanism
+            context: Additional context information
+            
+        Returns:
+            (success, message) tuple
+        """
+        from_level = self.current_level
+        
+        # Check if transition is allowed
+        allowed, reason = self.check_transition_permission(from_level, to_level, mechanism)
+        if not allowed:
+            return False, reason
+        
+        # Record the transition
+        transition_type = self.get_transition_type(from_level, to_level)
+        
+        transition_record = {
+            "from_level": from_level,
+            "to_level": to_level,
+            "transition_type": transition_type,
+            "mechanism": mechanism,
             "context": context or {},
+            "success": allowed,
         }
         
-        # Rules for privilege transitions:
-        # 1. Higher privilege levels can transition to any level
-        # 2. Lower privilege levels can only lower their privilege further
-        # 3. Lowering privilege is always allowed
-        # 4. Only KERNEL level can elevate to KERNEL
+        self.transition_history.append(transition_record)
         
-        valid = True
+        # Update current level if allowed
+        if allowed:
+            self.current_level = to_level
         
-        # Check elevation
-        if to_level.value > from_level.value:
-            # Attempting to elevate privilege
-            if to_level == PrivilegeLevel.KERNEL and from_level != PrivilegeLevel.KERNEL:
-                # Only KERNEL can elevate to KERNEL
-                valid = False
-                
-            # SUPERVISOR can only be reached from KERNEL or SUPERVISOR
-            if to_level == PrivilegeLevel.SUPERVISOR and from_level == PrivilegeLevel.USER:
-                # Only SUPERVISOR or KERNEL can elevate to SUPERVISOR
-                valid = False
-        
-        # Check special cases from context
-        if context and context.get("syscall"):
-            # Syscalls can temporarily elevate privilege from USER to SUPERVISOR
-            if from_level == PrivilegeLevel.USER and to_level == PrivilegeLevel.SUPERVISOR:
-                valid = True
-        
-        # Record the result
-        transition["valid"] = valid
-        self.privilege_changes.append(transition)
-        
-        # Record violation if invalid
-        if not valid:
-            violation = PrivilegeViolationEvent(
-                instruction=instruction,
-                address=address,
-                required_level=PrivilegeLevel.KERNEL if to_level == PrivilegeLevel.KERNEL else PrivilegeLevel.SUPERVISOR,
-                current_level=from_level,
-                context=context,
-            )
-            self.violations.append(violation)
-        
-        return valid
+        return allowed, reason
     
-    def register_protection_key(self, key: ProtectionKey) -> None:
+    def get_transition_history(self) -> List[Dict[str, Any]]:
         """
-        Register a protection key.
+        Get the privilege transition history.
+        
+        Returns:
+            List of transition records
+        """
+        return self.transition_history
+
+
+class ProtectionKeyManager:
+    """
+    Manages protection keys for memory isolation.
+    
+    Protection keys provide a way to restrict memory access based on
+    domains, independent of the memory permission system.
+    """
+    
+    def __init__(self, domain_count: int = 16):
+        """
+        Initialize the protection key manager.
         
         Args:
-            key: Protection key to register
+            domain_count: Number of protection domains
         """
-        self.protection_keys[key.key_id] = key
+        self.domain_count = domain_count
+        
+        # Domain to permission mapping (read, write)
+        self.domain_permissions: Dict[int, Tuple[bool, bool]] = {
+            domain: (True, True) for domain in range(domain_count)
+        }
+        
+        # Segment to domain mapping
+        self.segment_domains: Dict[MemorySegment, int] = {}
+        
+        # Active protection key for current context
+        self.active_keys: Set[int] = set()
     
-    def check_key_access(
+    def set_domain_permissions(
         self,
-        key_id: int,
-        access_type: str,
-        level: PrivilegeLevel
+        domain: int,
+        can_read: bool,
+        can_write: bool
     ) -> bool:
         """
-        Check if a protection key allows the specified access.
+        Set permissions for a protection domain.
         
         Args:
-            key_id: Protection key ID
-            access_type: Type of access (read, write, execute)
-            level: Current privilege level
+            domain: Protection domain
+            can_read: Whether read access is allowed
+            can_write: Whether write access is allowed
             
         Returns:
-            Whether access is allowed
+            True if successful, False otherwise
         """
-        # KERNEL level bypasses protection keys
-        if level == PrivilegeLevel.KERNEL:
-            return True
-        
-        # Check if the key exists
-        if key_id not in self.protection_keys:
+        if domain < 0 or domain >= self.domain_count:
             return False
         
-        # Check access with the key
-        return self.protection_keys[key_id].check_access(access_type, level)
+        self.domain_permissions[domain] = (can_read, can_write)
+        return True
     
-    def get_privilege_changes(self) -> List[Dict[str, Any]]:
+    def assign_segment_domain(
+        self,
+        segment: MemorySegment,
+        domain: int
+    ) -> bool:
         """
-        Get all recorded privilege changes.
+        Assign a segment to a protection domain.
+        
+        Args:
+            segment: Memory segment
+            domain: Protection domain
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        if domain < 0 or domain >= self.domain_count:
+            return False
+        
+        self.segment_domains[segment] = domain
+        return True
+    
+    def set_active_keys(self, keys: Set[int]) -> None:
+        """
+        Set the active protection keys.
+        
+        Args:
+            keys: Set of protection keys
+        """
+        self.active_keys = {key for key in keys if 0 <= key < self.domain_count}
+    
+    def add_active_key(self, key: int) -> bool:
+        """
+        Add a protection key to the active set.
+        
+        Args:
+            key: Protection key to add
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        if key < 0 or key >= self.domain_count:
+            return False
+        
+        self.active_keys.add(key)
+        return True
+    
+    def remove_active_key(self, key: int) -> bool:
+        """
+        Remove a protection key from the active set.
+        
+        Args:
+            key: Protection key to remove
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        if key not in self.active_keys:
+            return False
+        
+        self.active_keys.remove(key)
+        return True
+    
+    def check_access(
+        self,
+        segment: MemorySegment,
+        is_write: bool
+    ) -> bool:
+        """
+        Check if access to a segment is allowed based on protection keys.
+        
+        Args:
+            segment: Memory segment
+            is_write: Whether this is a write access
+            
+        Returns:
+            True if access is allowed, False otherwise
+        """
+        # If segment is not assigned to a domain, default allow
+        if segment not in self.segment_domains:
+            return True
+        
+        domain = self.segment_domains[segment]
+        
+        # If domain is in active keys, check specific permission
+        if domain in self.active_keys:
+            can_read, can_write = self.domain_permissions[domain]
+            
+            if is_write:
+                return can_write
+            else:
+                return can_read
+        
+        # Default deny if domain is not in active keys
+        return False
+
+
+class SecureMode(Enum):
+    """Secure execution modes for the VM."""
+    REAL = auto()           # No protection, direct access
+    PROTECTED = auto()      # Basic memory protection
+    VIRTUAL = auto()        # Virtual memory protection
+    SECURE = auto()         # Full security features
+    ENCLAVE = auto()        # Isolated trusted execution
+
+
+class SecureModeManager:
+    """
+    Manages secure execution modes for the VM.
+    
+    This class allows transitioning between different security
+    modes with varying protection features.
+    """
+    
+    def __init__(self, memory: MemorySystem, initial_mode: SecureMode = SecureMode.PROTECTED):
+        """
+        Initialize the secure mode manager.
+        
+        Args:
+            memory: Memory system
+            initial_mode: Initial secure mode
+        """
+        self.memory = memory
+        self.current_mode = initial_mode
+        self.transition_history: List[Dict[str, Any]] = []
+        
+        # Protection features enabled for each mode
+        self.mode_features: Dict[SecureMode, Dict[str, bool]] = {
+            SecureMode.REAL: {
+                "protection_checks": False,
+                "privilege_checks": False,
+                "segment_limits": False,
+                "paging": False,
+                "dep": False,
+                "aslr": False,
+                "protection_keys": False,
+            },
+            SecureMode.PROTECTED: {
+                "protection_checks": True,
+                "privilege_checks": True,
+                "segment_limits": True,
+                "paging": False,
+                "dep": True,
+                "aslr": False,
+                "protection_keys": False,
+            },
+            SecureMode.VIRTUAL: {
+                "protection_checks": True,
+                "privilege_checks": True,
+                "segment_limits": True,
+                "paging": True,
+                "dep": True,
+                "aslr": True,
+                "protection_keys": False,
+            },
+            SecureMode.SECURE: {
+                "protection_checks": True,
+                "privilege_checks": True,
+                "segment_limits": True,
+                "paging": True,
+                "dep": True,
+                "aslr": True,
+                "protection_keys": True,
+            },
+            SecureMode.ENCLAVE: {
+                "protection_checks": True,
+                "privilege_checks": True,
+                "segment_limits": True,
+                "paging": True,
+                "dep": True,
+                "aslr": True,
+                "protection_keys": True,
+                "enclave": True,
+            },
+        }
+        
+        # Apply initial mode features
+        self._apply_mode_features(self.current_mode)
+    
+    def _apply_mode_features(self, mode: SecureMode) -> None:
+        """
+        Apply security features for a specific mode.
+        
+        Args:
+            mode: Secure mode to apply
+        """
+        features = self.mode_features.get(mode, {})
+        
+        # Apply features to memory system
+        if hasattr(self.memory, "enable_dep"):
+            self.memory.enable_dep = features.get("dep", False)
+    
+    def transition_mode(
+        self,
+        target_mode: SecureMode,
+        privilege_level: PrivilegeLevel,
+        context: Dict[str, Any] = None
+    ) -> Tuple[bool, str]:
+        """
+        Transition to a new secure mode.
+        
+        Args:
+            target_mode: Target secure mode
+            privilege_level: Current privilege level
+            context: Additional context information
+            
+        Returns:
+            (success, message) tuple
+        """
+        # Check privilege level - higher modes require higher privileges
+        min_privilege = {
+            SecureMode.REAL: PrivilegeLevel.USER,
+            SecureMode.PROTECTED: PrivilegeLevel.USER,
+            SecureMode.VIRTUAL: PrivilegeLevel.SUPERVISOR,
+            SecureMode.SECURE: PrivilegeLevel.SUPERVISOR,
+            SecureMode.ENCLAVE: PrivilegeLevel.KERNEL,
+        }
+        
+        required_privilege = min_privilege.get(target_mode, PrivilegeLevel.KERNEL)
+        
+        if privilege_level.value < required_privilege.value:
+            return False, (f"Insufficient privilege: {privilege_level.name} "
+                          f"(required: {required_privilege.name})")
+        
+        # Record the transition
+        transition = {
+            "from_mode": self.current_mode,
+            "to_mode": target_mode,
+            "privilege_level": privilege_level,
+            "context": context or {},
+            "timestamp": 0,  # Would ideally use system time here
+        }
+        
+        self.transition_history.append(transition)
+        
+        # Apply new mode features
+        previous_mode = self.current_mode
+        self.current_mode = target_mode
+        self._apply_mode_features(target_mode)
+        
+        return True, f"Transitioned from {previous_mode.name} to {target_mode.name}"
+    
+    def get_current_features(self) -> Dict[str, bool]:
+        """
+        Get the security features of the current mode.
         
         Returns:
-            List of privilege change records
+            Dictionary of enabled security features
         """
-        return self.privilege_changes
+        return self.mode_features.get(self.current_mode, {})
     
-    def get_violations(self) -> List[PrivilegeViolationEvent]:
+    def is_feature_enabled(self, feature: str) -> bool:
         """
-        Get all recorded privilege violations.
+        Check if a specific security feature is enabled.
         
+        Args:
+            feature: Feature name
+            
         Returns:
-            List of privilege violation events
+            True if the feature is enabled, False otherwise
         """
-        return self.violations
-    
-    def reset(self) -> None:
-        """Reset the privilege manager state."""
-        self.privilege_changes = []
-        self.violations = []
-        # Keep protection keys
+        return self.get_current_features().get(feature, False)

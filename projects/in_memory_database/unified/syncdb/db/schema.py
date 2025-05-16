@@ -3,8 +3,10 @@ Schema definition for SyncDB tables.
 """
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Optional, Union, Type
+import time
 
-from common.core import Schema, SchemaField, FieldType
+from common.core.schema import Schema, SchemaField, FieldType, SchemaRegistry
+from common.core.serialization import Serializable
 
 
 @dataclass
@@ -95,12 +97,13 @@ class Column:
 
 
 @dataclass
-class TableSchema:
+class TableSchema(Serializable):
     """Defines the schema for a database table."""
     name: str
     columns: List[Column]
     version: int = 1
     _column_dict: Dict[str, Column] = field(default_factory=dict, init=False)
+    _common_schema: Optional[Schema] = field(default=None, init=False, repr=False)
     
     def __post_init__(self) -> None:
         """Process columns after initialization."""
@@ -111,16 +114,41 @@ class TableSchema:
         primary_keys = [col for col in self.columns if col.primary_key]
         if not primary_keys:
             raise ValueError(f"Table {self.name} must have at least one primary key column")
+        
+        # Create and cache the common Schema
+        self._common_schema = self.to_schema()
     
     def to_schema(self) -> Schema:
         """Convert to a Schema from the common library."""
         fields = [col.to_schema_field() for col in self.columns]
+        
+        # Add system fields for created_at and updated_at that are automatically added
+        if not any(field.name == 'created_at' for field in fields):
+            fields.append(SchemaField(
+                name='created_at',
+                field_type=FieldType.FLOAT,
+                required=False,
+                nullable=True,
+                default=None,
+                description="Automatically populated timestamp when record was created"
+            ))
+            
+        if not any(field.name == 'updated_at' for field in fields):
+            fields.append(SchemaField(
+                name='updated_at',
+                field_type=FieldType.FLOAT,
+                required=False,
+                nullable=True,
+                default=None,
+                description="Automatically populated timestamp when record was updated"
+            ))
+        
         return Schema(
             name=self.name,
             fields=fields,
             version=str(self.version),
             description=f"SyncDB table schema for {self.name}",
-            additional_properties=False
+            additional_properties=True  # Allow additional properties like system fields
         )
     
     @classmethod
@@ -154,16 +182,88 @@ class TableSchema:
         Validate a record against the schema.
         Returns a list of error messages, empty if valid.
         """
-        schema = self.to_schema()
-        valid, errors = schema.validate(record)
+        if not self._common_schema:
+            self._common_schema = self.to_schema()
+            
+        valid, errors = self._common_schema.validate(record)
         return errors
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the table schema to a dictionary representation.
+        
+        Returns:
+            A dictionary containing the table schema's data.
+        """
+        columns_data = []
+        for col in self.columns:
+            # Convert data_type to string representation
+            data_type_str = col.data_type.__name__ if hasattr(col.data_type, '__name__') else str(col.data_type)
+            columns_data.append({
+                'name': col.name,
+                'data_type': data_type_str,
+                'primary_key': col.primary_key,
+                'nullable': col.nullable,
+                'default': col.default
+            })
+            
+        return {
+            'name': self.name,
+            'columns': columns_data,
+            'version': self.version
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'TableSchema':
+        """
+        Create a table schema from a dictionary representation.
+        
+        Args:
+            data: Dictionary containing table schema data.
+        
+        Returns:
+            A new TableSchema instance.
+        """
+        # Convert string data_type back to Python type
+        columns = []
+        for col_data in data['columns']:
+            # Map string representation back to type
+            data_type_str = col_data['data_type']
+            data_type = Any
+            if data_type_str == 'str':
+                data_type = str
+            elif data_type_str == 'int':
+                data_type = int
+            elif data_type_str == 'float':
+                data_type = float
+            elif data_type_str == 'bool':
+                data_type = bool
+            elif data_type_str == 'list':
+                data_type = list
+            elif data_type_str == 'dict':
+                data_type = dict
+                
+            columns.append(Column(
+                name=col_data['name'],
+                data_type=data_type,
+                primary_key=col_data.get('primary_key', False),
+                nullable=col_data.get('nullable', True),
+                default=col_data.get('default')
+            ))
+            
+        return cls(
+            name=data['name'],
+            columns=columns,
+            version=data.get('version', 1)
+        )
 
 
 @dataclass
-class DatabaseSchema:
+class DatabaseSchema(Serializable):
     """Defines the schema for the entire database."""
     tables: Dict[str, TableSchema]
     version: int = 1
+    created_at: float = field(default_factory=time.time)
     
     def get_table(self, name: str) -> Optional[TableSchema]:
         """Get a table schema by name."""
@@ -172,3 +272,52 @@ class DatabaseSchema:
     def add_table(self, table: TableSchema) -> None:
         """Add a table to the schema."""
         self.tables[table.name] = table
+        
+    def register_with_registry(self, registry: SchemaRegistry) -> None:
+        """
+        Register all table schemas with the common SchemaRegistry.
+        
+        Args:
+            registry: The schema registry to register with.
+        """
+        for table_schema in self.tables.values():
+            common_schema = table_schema.to_schema()
+            registry.register(common_schema)
+            
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the database schema to a dictionary representation.
+        
+        Returns:
+            A dictionary containing the database schema's data.
+        """
+        return {
+            'tables': {name: table.to_dict() for name, table in self.tables.items()},
+            'version': self.version,
+            'created_at': self.created_at
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DatabaseSchema':
+        """
+        Create a database schema from a dictionary representation.
+        
+        Args:
+            data: Dictionary containing database schema data.
+        
+        Returns:
+            A new DatabaseSchema instance.
+        """
+        tables = {}
+        for name, table_data in data['tables'].items():
+            tables[name] = TableSchema.from_dict(table_data)
+            
+        return cls(
+            tables=tables,
+            version=data.get('version', 1),
+            created_at=data.get('created_at', time.time())
+        )
+
+
+# Global schema registry for the SyncDB implementation
+schema_registry = SchemaRegistry()

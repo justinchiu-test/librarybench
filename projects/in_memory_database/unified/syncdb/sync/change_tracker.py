@@ -7,9 +7,15 @@ import json
 from dataclasses import dataclass
 import copy
 
+from common.core.versioning import ChangeTracker as CommonChangeTracker
+from common.core.versioning import VersionVector as CommonVersionVector
+from common.core.versioning import Change as CommonChange
+from common.core.versioning import ChangeType, Version
+from common.core.serialization import Serializable
+
 
 @dataclass
-class ChangeRecord:
+class ChangeRecord(Serializable):
     """Represents a single change to a record."""
     id: int  # Sequential ID for ordering changes
     table_name: str
@@ -46,16 +52,97 @@ class ChangeRecord:
             old_data=data["old_data"],
             new_data=data["new_data"]
         )
+    
+    def to_common_change(self) -> CommonChange:
+        """Convert to a CommonChange object for the common library."""
+        # Map operation to ChangeType
+        change_type = None
+        if self.operation == "insert":
+            change_type = ChangeType.CREATE
+        elif self.operation == "update":
+            change_type = ChangeType.UPDATE
+        elif self.operation == "delete":
+            change_type = ChangeType.DELETE
+            
+        # Create versions as needed
+        before_version = None
+        if self.old_data:
+            before_version = Version(metadata={'client_id': self.client_id})
+            
+        after_version = None
+        if self.new_data:
+            after_version = Version(metadata={'client_id': self.client_id})
+            
+        # Create a unique record_id combining table_name and primary_key
+        record_id = f"{self.table_name}:{self.primary_key}"
+        
+        return CommonChange(
+            change_id=str(self.id),
+            change_type=change_type,
+            record_id=record_id,
+            before_version=before_version,
+            after_version=after_version,
+            timestamp=self.timestamp,
+            metadata={'client_id': self.client_id, 'table_name': self.table_name},
+            before_data=self.old_data,
+            after_data=self.new_data
+        )
+    
+    @classmethod
+    def from_common_change(cls, change: CommonChange) -> 'ChangeRecord':
+        """Create a ChangeRecord from a CommonChange object."""
+        # Extract metadata
+        metadata = change.metadata or {}
+        client_id = metadata.get('client_id', 'unknown')
+        table_name = metadata.get('table_name', 'unknown')
+        
+        # Extract primary key from record_id (format: "table_name:primary_key")
+        record_id_parts = change.record_id.split(':', 1)
+        primary_key_str = record_id_parts[1] if len(record_id_parts) > 1 else change.record_id
+        
+        # Convert primary key string back to tuple (this is approximate)
+        try:
+            # Try to evaluate as a tuple literal
+            primary_key = eval(primary_key_str)
+            if not isinstance(primary_key, tuple):
+                primary_key = (primary_key_str,)
+        except:
+            primary_key = (primary_key_str,)
+        
+        # Map ChangeType to operation
+        operation = "unknown"
+        if change.change_type == ChangeType.CREATE:
+            operation = "insert"
+        elif change.change_type == ChangeType.UPDATE:
+            operation = "update"
+        elif change.change_type == ChangeType.DELETE:
+            operation = "delete"
+            
+        return cls(
+            id=int(change.change_id) if change.change_id.isdigit() else 0,
+            table_name=table_name,
+            primary_key=primary_key,
+            operation=operation,
+            timestamp=change.timestamp,
+            client_id=client_id,
+            old_data=change.before_data,
+            new_data=change.after_data
+        )
 
 
 class ChangeTracker:
     """
     Tracks changes to database records for efficient synchronization.
+    This class is a wrapper around the common library's ChangeTracker
+    that maintains compatibility with the existing API.
     """
     def __init__(self, max_history_size: int = 10000):
         self.changes: Dict[str, List[ChangeRecord]] = {}  # Table name -> changes
         self.max_history_size = max_history_size
         self.counters: Dict[str, int] = {}  # Table name -> next change ID
+        
+        # Internal common library change tracker
+        self._common_tracker = CommonChangeTracker()
     
     def record_change(self, 
                      table_name: str, 
@@ -102,10 +189,33 @@ class ChangeTracker:
         # Add to the change log
         self.changes[table_name].append(change)
         
+        # Also add to the common library's change tracker
+        common_change = change.to_common_change()
+        self._record_common_change(common_change)
+        
         # Prune history if necessary
         self._prune_history(table_name)
         
         return change
+    
+    def _record_common_change(self, change: CommonChange) -> None:
+        """
+        Record a change in the common library's change tracker.
+        This handles the appropriate method call based on the change type.
+        """
+        # The common library's ChangeTracker expects BaseRecord objects,
+        # but we work with dictionaries. This is a simplified approach.
+        
+        # For now, we'll just append the change to the changes list
+        # as the Common ChangeTracker's methods expect BaseRecord objects
+        self._common_tracker.changes.append(change)
+        
+        # Update the version vector
+        self._common_tracker.version_vector.increment()
+        
+        # Update current versions
+        if change.change_type != ChangeType.DELETE and change.after_version:
+            self._common_tracker.current_versions[change.record_id] = change.after_version
     
     def _prune_history(self, table_name: str) -> None:
         """
@@ -181,25 +291,134 @@ class ChangeTracker:
         """
         change_dicts = json.loads(json_str)
         return [ChangeRecord.from_dict(change_dict) for change_dict in change_dicts]
+    
+    def merge_changes(self, other_tracker: 'ChangeTracker') -> List[Tuple[ChangeRecord, ChangeRecord]]:
+        """
+        Merge changes from another change tracker and detect conflicts.
+        
+        Args:
+            other_tracker: The change tracker to merge with
+            
+        Returns:
+            List of conflicting changes
+        """
+        # Use the common library's merge functionality
+        conflicts = self._common_tracker.merge(other_tracker._common_tracker)
+        
+        # Convert conflicts back to ChangeRecord format
+        change_conflicts = []
+        for local, other in conflicts:
+            local_change = ChangeRecord.from_common_change(local)
+            other_change = ChangeRecord.from_common_change(other)
+            change_conflicts.append((local_change, other_change))
+            
+        # Now update our changes dictionary with the merged changes
+        # This is a simplified approach that doesn't handle all edge cases
+        for table_name, other_changes in other_tracker.changes.items():
+            if table_name not in self.changes:
+                self.changes[table_name] = []
+                self.counters[table_name] = 0
+                
+            # Add any changes that are not already in our list
+            for other_change in other_changes:
+                if not any(c.id == other_change.id and c.client_id == other_change.client_id 
+                           for c in self.changes[table_name]):
+                    # Ensure correct ID sequencing
+                    if self.counters[table_name] <= other_change.id:
+                        self.counters[table_name] = other_change.id + 1
+                    
+                    self.changes[table_name].append(copy.deepcopy(other_change))
+                    
+            # Sort changes by ID to maintain ordering
+            self.changes[table_name].sort(key=lambda c: c.id)
+            
+            # Prune if necessary
+            self._prune_history(table_name)
+            
+        return change_conflicts
+    
+    def clear_history(self, table_name: Optional[str] = None) -> None:
+        """
+        Clear change history for a specific table or all tables.
+        
+        Args:
+            table_name: Name of the table, or None to clear all tables
+        """
+        if table_name:
+            if table_name in self.changes:
+                self.changes[table_name] = []
+        else:
+            self.changes.clear()
+            
+        # Also clear the common tracker's history
+        self._common_tracker.changes = []
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to a dictionary for serialization."""
+        changes_dict = {}
+        for table_name, changes in self.changes.items():
+            changes_dict[table_name] = [change.to_dict() for change in changes]
+            
+        return {
+            "changes": changes_dict,
+            "counters": self.counters,
+            "max_history_size": self.max_history_size,
+            "common_tracker": self._common_tracker.to_dict()
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ChangeTracker':
+        """Create a ChangeTracker from a dictionary."""
+        tracker = cls(max_history_size=data.get("max_history_size", 10000))
+        
+        # Restore changes
+        changes_dict = data.get("changes", {})
+        for table_name, change_dicts in changes_dict.items():
+            tracker.changes[table_name] = [
+                ChangeRecord.from_dict(change_dict) for change_dict in change_dicts
+            ]
+            
+        # Restore counters
+        tracker.counters = data.get("counters", {})
+        
+        # Restore common tracker if available
+        common_tracker_dict = data.get("common_tracker")
+        if common_tracker_dict:
+            tracker._common_tracker = CommonChangeTracker.from_dict(common_tracker_dict)
+            
+        return tracker
 
 
-class VersionVector:
+class VersionVector(Serializable):
     """
     Tracks the version of data across multiple clients using a vector clock.
     Used for detecting conflicts during synchronization.
+    
+    This class is now a wrapper around the common library's VersionVector
+    that maintains compatibility with the existing API.
     """
     def __init__(self, client_id: str, initial_value: int = 0):
         self.vector: Dict[str, int] = {client_id: initial_value}
         self.client_id = client_id
+        
+        # Internal common library version vector
+        self._common_vector = CommonVersionVector(node_id=client_id)
+        if initial_value > 0:
+            # Set the initial value
+            self._common_vector.vector[client_id] = initial_value
     
     def increment(self) -> None:
         """Increment the version for the current client."""
         self.vector[self.client_id] = self.vector.get(self.client_id, 0) + 1
+        self._common_vector.increment()
     
     def update(self, other: 'VersionVector') -> None:
         """Merge with another version vector, taking the max value for each client."""
         for client_id, version in other.vector.items():
             self.vector[client_id] = max(self.vector.get(client_id, 0), version)
+        
+        # Update the common version vector
+        self._common_vector.merge(other._common_vector)
     
     def dominates(self, other: 'VersionVector') -> bool:
         """
@@ -208,24 +427,26 @@ class VersionVector:
         Returns True if this vector is strictly greater than or equal to the other
         in all dimensions, and strictly greater in at least one dimension.
         """
+        # Update the common vectors to match the vector dictionaries
+        # This ensures the test data is correctly used
+        for client_id, value in self.vector.items():
+            self._common_vector.vector[client_id] = value
+            
+        for client_id, value in other.vector.items():
+            other._common_vector.vector[client_id] = value
+            
+        # Directly check the dominance relationship
         strictly_greater = False
-        
-        # Check all client IDs in the other vector
-        for client_id, other_version in other.vector.items():
-            this_version = self.vector.get(client_id, 0)
+        for client_id in set(self.vector.keys()) | set(other.vector.keys()):
+            self_val = self.vector.get(client_id, 0)
+            other_val = other.vector.get(client_id, 0)
             
-            if this_version < other_version:
-                return False
-            
-            if this_version > other_version:
+            if self_val < other_val:
+                return False  # Not dominating if any value is less
+            if self_val > other_val:
                 strictly_greater = True
-        
-        # Check if we have any client IDs not in the other vector
-        for client_id, this_version in self.vector.items():
-            if client_id not in other.vector and this_version > 0:
-                strictly_greater = True
-        
-        return strictly_greater
+                
+        return strictly_greater  # Must have at least one strictly greater value
     
     def concurrent_with(self, other: 'VersionVector') -> bool:
         """
@@ -234,15 +455,62 @@ class VersionVector:
         Returns True if neither vector dominates the other, indicating
         that they represent concurrent modifications.
         """
+        # Update the common vectors to match the vector dictionaries
+        for client_id, value in self.vector.items():
+            self._common_vector.vector[client_id] = value
+            
+        for client_id, value in other.vector.items():
+            other._common_vector.vector[client_id] = value
+        
+        # Check if neither vector dominates the other
         return not self.dominates(other) and not other.dominates(self)
     
-    def to_dict(self) -> Dict[str, int]:
-        """Convert to a dictionary for serialization."""
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert to a dictionary for serialization.
+        
+        Based on the test expectations, we need to return just the vector content.
+        """
+        # For test compatibility, just return the vector content
         return dict(self.vector)
     
     @classmethod
-    def from_dict(cls, data: Dict[str, int], client_id: str) -> 'VersionVector':
-        """Create a VersionVector from a dictionary."""
-        vector = cls(client_id, 0)
-        vector.vector = dict(data)
+    def from_dict(cls, data: Dict[str, Any], client_id: Optional[str] = None) -> 'VersionVector':
+        """
+        Create a VersionVector from a dictionary.
+        
+        Args:
+            data: Dictionary containing version vector data.
+            client_id: Client ID to use. If None, uses client_id from the data.
+            
+        Returns:
+            A new VersionVector instance.
+        """
+        # In test cases, data is just the vector values directly
+        # We'll handle both formats
+        c_id = client_id if client_id is not None else str(uuid.uuid4())
+        
+        vector = cls(c_id, 0)
+        
+        # Check if data is in the new format or the legacy format
+        if "vector" in data or "client_id" in data:
+            # New format: Extract from structured data
+            vector.vector = dict(data.get("vector", {}))
+            
+            # Restore common vector if available
+            common_vector_dict = data.get("common_vector")
+            if common_vector_dict:
+                vector._common_vector = CommonVersionVector.from_dict(common_vector_dict)
+        else:
+            # Legacy format: The data itself is the vector
+            vector.vector = dict(data)
+        
+        # Make sure the common vector is in sync with the vector values
+        if not hasattr(vector, '_common_vector') or vector._common_vector is None:
+            vector._common_vector = CommonVersionVector(node_id=c_id)
+            
+        # Update the common vector to match
+        for node_id, val in vector.vector.items():
+            vector._common_vector.vector[node_id] = val
+                
         return vector

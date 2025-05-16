@@ -62,9 +62,9 @@ for collection_path in glob.glob(os.path.join(path_to_big_repos, "*")):
         }
 
         # ensure pytest report exists
-        report_file = os.path.join(persona_path, "report.json")
+        report_file = os.path.join(persona_path, "pytest_results.json")
         if not os.path.exists(report_file): 
-            print(f"[ERROR] no pytest failed in {persona_path}")
+            print(f"[ERROR] no pytest in {persona_path}")
             continue
 
         # load pytest report
@@ -100,12 +100,17 @@ if repo_to_metrics:
     divisor = 0
     overall_avg_tests = 0
     for m in repo_to_metrics.values():
-        if "No. Tests" in m: overall_avg_tests += m["No. Tests"]
-        divisor += 1
+        if "No. Tests" in m: 
+            overall_avg_tests += m["No. Tests"]
+            divisor += 1
     overall_avg_tests = overall_avg_tests / divisor
     print(f"AVG TESTS per program: {overall_avg_tests:.2f}")
 else:
     print("No test data to average.")
 
 
-print("\n".join(repo_to_metrics.keys()))
+# print("\n".join(repo_to_metrics.keys()))
+# for key, metrics in repo_to_metrics.items():
+#     print(f"---{key}---")
+#     for metric, vlue in metrics.items():
+#         print(f"\t{metric}:{vlue}")

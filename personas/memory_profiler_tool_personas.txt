@@ -1,0 +1,99 @@
+# Persona 1: Data Scientist Dr. Anderson
+A data scientist working with large pandas DataFrames who experiences out-of-memory errors during model training. She needs to understand memory spikes during data transformations and identify opportunities for memory-efficient operations.
+
+Key Features:
+1. DataFrame memory footprint analysis with column-level breakdown
+2. Memory spike prediction before operations based on data shapes
+3. Alternative operation suggestions for memory-heavy transformations
+4. Jupyter notebook integration with cell-by-cell memory tracking
+5. GPU memory tracking for deep learning workloads
+
+# Persona 2: Web Application Developer Tom
+A Django developer whose application crashes under high load due to memory exhaustion. He needs to identify memory leaks in long-running web processes and optimize request handling for better scalability.
+
+Key Features:
+1. Request-scoped memory profiling with middleware integration
+2. Session and cache memory impact visualization
+3. Memory growth correlation with request patterns
+4. Celery task memory profiling across workers
+5. Database query result set memory tracking
+
+# Persona 3: Game Developer Studio Lead Maya
+A game studio lead optimizing a Python game engine who needs to track memory usage of game objects and assets. She wants to ensure smooth gameplay by preventing memory-related stutters and crashes.
+
+Key Features:
+1. Game loop memory profiling with frame-by-frame analysis
+2. Asset memory lifecycle tracking from load to unload
+3. Object pooling effectiveness measurement
+4. Memory budget enforcement with automatic asset eviction
+5. Platform-specific memory limit awareness (mobile, console)
+
+# Persona 4: Embedded Systems Engineer Pavel
+An embedded engineer running Python on resource-constrained devices who needs to minimize memory footprint. He requires precise control over memory allocation and detailed reporting of even small allocations.
+
+Key Features:
+1. Micro-allocation tracking with byte-level precision
+2. Static memory usage analysis before deployment
+3. Memory fragmentation visualization and metrics
+4. Compile-time memory optimization recommendations
+5. Cross-compilation memory prediction for target platforms
+
+# Persona 5: DevOps Manager Rachel
+A DevOps manager monitoring production services who needs to prevent memory-related outages. She wants automated memory leak detection and alerting integrated with existing monitoring infrastructure.
+
+Key Features:
+1. Prometheus/Grafana integration for memory metrics export
+2. Anomaly detection with ML-based memory pattern analysis
+3. Automated memory leak reporting with root cause analysis
+4. Kubernetes pod memory optimization recommendations
+5. Memory usage forecasting for capacity planning
+
+# Persona 6: Scientific Computing Researcher Dr. Chen
+A researcher running long computational simulations who needs to track memory usage across distributed computing nodes. He requires aggregated memory analysis for parallel processing applications.
+
+Key Features:
+1. MPI-aware memory profiling across compute nodes
+2. Memory usage correlation with computation phases
+3. Shared memory optimization for multi-processing
+4. Memory-bound vs compute-bound analysis
+5. Checkpoint memory footprint optimization
+
+# Persona 7: Fintech Backend Engineer Alex
+A backend engineer at a trading firm who needs microsecond-precision memory profiling without affecting latency. He requires understanding of memory allocation patterns during high-frequency trading operations.
+
+Key Features:
+1. Lock-free memory profiling for ultra-low latency
+2. Memory allocation jitter analysis and histograms
+3. Pre-allocated memory pool utilization tracking
+4. GC pause correlation with memory pressure
+5. Trading session memory pattern analysis
+
+# Persona 8: API Developer Fatima
+An API developer building RESTful services who needs to optimize memory usage for concurrent request handling. She wants to understand memory sharing patterns and identify per-request memory overhead.
+
+Key Features:
+1. Concurrent request memory isolation analysis
+2. Memory leak detection in connection pooling
+3. Request payload memory impact assessment
+4. Memory-based rate limiting recommendations
+5. API version migration memory impact analysis
+
+# Persona 9: Machine Learning Engineer Diego
+An ML engineer deploying models to production who needs to profile memory usage during inference. He wants to optimize model serving for cost efficiency while maintaining performance.
+
+Key Features:
+1. Model memory footprint analysis by layer type
+2. Batch size optimization for memory efficiency
+3. Model quantization memory impact visualization
+4. Multi-model memory sharing opportunities
+5. Edge deployment memory requirement prediction
+
+# Persona 10: Startup Founder Lisa
+A technical founder whose SaaS application needs to scale efficiently on limited infrastructure. She needs to understand memory usage patterns to optimize hosting costs and improve multi-tenancy.
+
+Key Features:
+1. Per-tenant memory usage isolation and reporting
+2. Memory-based pricing tier recommendations
+3. Tenant memory quota enforcement mechanisms
+4. Memory usage trends for investor metrics
+5. Cost-per-customer memory analysis

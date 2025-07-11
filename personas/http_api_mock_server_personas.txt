@@ -1,0 +1,99 @@
+# Persona 1: Mobile App Developer Carlos
+A mobile developer creating a offline-first app who needs to test various network conditions and API failures. He wants to simulate unreliable network scenarios to ensure the app handles connectivity issues gracefully.
+
+Key Features:
+1. Network condition simulation with packet loss and jitter
+2. Progressive response degradation for offline-to-online transitions
+3. Mobile-specific headers and user agent detection
+4. Push notification endpoint simulation with delivery callbacks
+5. Bandwidth throttling with chunked response streaming
+
+# Persona 2: QA Automation Engineer Priya
+A QA engineer building end-to-end test suites who needs deterministic API responses for test reliability. She requires the ability to programmatically control mock responses during test execution to validate different application states.
+
+Key Features:
+1. Test harness API for runtime mock configuration
+2. Deterministic sequence playback for multi-step test scenarios
+3. Response assertion recording for automated verification
+4. Test isolation with namespace-based mock separation
+5. Cucumber/BDD integration with scenario tag mapping
+
+# Persona 3: Frontend Team Lead Jennifer
+A team lead coordinating multiple frontend developers who needs to share mock configurations across the team. She wants centralized mock management to ensure consistency while allowing individual developers to create custom scenarios.
+
+Key Features:
+1. Git-based mock configuration sharing with merge conflict resolution
+2. Team workspace management with role-based permissions
+3. Mock inheritance hierarchy for base/override patterns
+4. Real-time collaboration with WebSocket-based updates
+5. Mock versioning with environment-specific deployments
+
+# Persona 4: API Contract Developer Raj
+A backend developer designing API contracts who uses mocks to validate API designs before implementation. He needs to ensure mocks accurately reflect the planned API specification and can generate documentation.
+
+Key Features:
+1. OpenAPI specification synchronization with bidirectional updates
+2. Contract validation mode with strict schema enforcement
+3. API documentation generation from mock definitions
+4. Breaking change detection between mock versions
+5. Mock-driven API design workflow with approval process
+
+# Persona 5: Performance Test Engineer Maria
+A performance engineer stress-testing frontend applications who needs to simulate various backend performance characteristics. She wants to identify frontend bottlenecks by controlling backend response times precisely.
+
+Key Features:
+1. Response time distribution curves with statistical modeling
+2. Concurrent request handling limits with queueing simulation
+3. Resource exhaustion scenarios with memory/CPU constraints
+4. Performance metric collection with export to monitoring tools
+5. Load pattern scripting for realistic traffic simulation
+
+# Persona 6: Security Tester Ahmed
+A security analyst testing application resilience who needs to simulate various attack scenarios and malformed responses. He wants to ensure applications handle malicious inputs and unexpected responses securely.
+
+Key Features:
+1. Malformed response injection with fuzzing capabilities
+2. Authentication bypass scenarios for security testing
+3. Rate limiting simulation with custom denial responses
+4. CORS policy testing with various origin configurations
+5. Security header manipulation for vulnerability assessment
+
+# Persona 7: Microservices Developer Lin
+A developer working on microservices who needs to mock multiple interdependent services. She requires service mesh simulation to test complex service interaction patterns and failure cascades.
+
+Key Features:
+1. Service dependency graph visualization and simulation
+2. Circuit breaker behavior emulation with failure thresholds
+3. Service discovery endpoint mocking with dynamic registration
+4. Distributed tracing header propagation and visualization
+5. Chaos engineering scenarios for cascade failure testing
+
+# Persona 8: IoT Developer Roberto
+An IoT developer testing device communication who needs to simulate various device endpoints and protocols. He requires lightweight mocking for resource-constrained environments and specific IoT protocols.
+
+Key Features:
+1. MQTT endpoint simulation alongside HTTP/REST
+2. Device fleet simulation with unique device identities
+3. Telemetry data streaming with realistic sensor patterns
+4. Command acknowledgment patterns for device control
+5. Edge computing scenario simulation with local processing
+
+# Persona 9: Demo Engineer Sarah
+A solutions engineer creating product demonstrations who needs polished, realistic mock data for presentations. She wants to quickly create impressive demos without complex setup or real data dependencies.
+
+Key Features:
+1. Industry-specific data generators (finance, healthcare, retail)
+2. Persona-based data consistency across endpoints
+3. Demo scenario scripting with timed progressions
+4. Beautiful response data with Lorem Ipsum alternatives
+5. Screen recording integration with annotation support
+
+# Persona 10: Blockchain Developer Wei
+A blockchain developer testing dApp frontends who needs to mock blockchain RPC endpoints and smart contract interactions. He requires specialized mocking for Web3 protocols and transaction simulations.
+
+Key Features:
+1. Ethereum JSON-RPC method simulation with block progression
+2. Transaction mining simulation with configurable confirmation times
+3. Smart contract event emission with log filtering
+4. Gas estimation mocking with dynamic pricing
+5. Multiple chain simulation for cross-chain testing

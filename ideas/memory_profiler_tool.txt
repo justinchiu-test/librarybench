@@ -1,0 +1,38 @@
+# Memory Profiler Tool
+
+## Requester Identity
+A performance engineer working on a data processing application experiencing memory issues in production. They need detailed insights into memory allocation patterns, object lifecycles, and potential memory leaks to optimize the application's memory footprint.
+
+## Project Title
+PyMemTrace - Advanced Memory Profiling and Analysis Tool
+
+## Core Functionality and Purpose
+PyMemTrace provides deep insights into Python application memory usage by tracking object allocations, detecting memory leaks, and visualizing memory consumption patterns over time. It offers both runtime profiling and post-mortem analysis capabilities, helping developers identify and fix memory-related performance issues with minimal overhead.
+
+## Key Features
+1. Object allocation tracking with call stack recording
+2. Memory leak detection using generation-based analysis
+3. Real-time memory usage visualization and reporting
+4. Heap snapshot comparison for identifying growth patterns
+5. Low-overhead profiling mode for production use
+
+## Implementation with Standard Library
+The profiler uses `sys` module for memory hooks and frame inspection, `gc` module for garbage collection analysis, `tracemalloc` for allocation tracking, `weakref` for non-intrusive object tracking, `collections` for memory statistics, `marshal` or `pickle` for snapshot serialization, `mmap` for efficient snapshot storage, `threading` for background analysis, `bisect` for efficient searching, and `contextlib` for profiling context managers. Custom memory tracking uses sys.setprofile() and gc callbacks.
+
+## Target Users
+Performance engineers, Python developers optimizing applications, DevOps teams monitoring production systems, data scientists working with large datasets, and anyone debugging memory-related issues.
+
+## Programming Concepts and Patterns
+The project demonstrates instrumentation techniques, memory management concepts, sampling algorithms for low overhead, circular buffer implementations, graph algorithms for reference tracking, and statistical analysis of memory patterns.
+
+## Possible Extensions or Variations
+1. Integration with popular web frameworks
+2. Memory usage prediction based on patterns
+3. Automatic memory optimization suggestions
+4. Distributed application memory tracking
+5. C extension memory tracking support
+6. Memory usage regression testing
+7. Interactive memory explorer GUI
+8. Memory allocation heatmaps
+9. Production-safe continuous profiling
+10. Memory usage alerting and monitoring

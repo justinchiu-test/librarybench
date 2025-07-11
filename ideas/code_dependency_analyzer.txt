@@ -1,0 +1,38 @@
+# Code Dependency Analyzer
+
+## Requester Identity
+A senior software architect responsible for managing technical debt and ensuring code quality across multiple projects. They need to understand complex dependency relationships and identify potential refactoring opportunities to improve maintainability.
+
+## Project Title
+PyDepScan - Python Code Dependency Analysis and Visualization Tool
+
+## Core Functionality and Purpose
+PyDepScan analyzes Python codebases to map out import dependencies, circular dependencies, and unused modules. It generates visual dependency graphs and detailed reports highlighting potential architectural issues, helping developers understand the structure and complexity of their projects while identifying opportunities for refactoring.
+
+## Key Features
+1. Recursive import analysis with support for relative and absolute imports
+2. Circular dependency detection with suggested resolution strategies
+3. Dead code identification and unused import detection
+4. Dependency graph visualization using ASCII art and HTML output
+5. Complexity metrics calculation including coupling and cohesion analysis
+
+## Implementation with Standard Library
+The tool leverages `ast` module for parsing Python source code, `os` and `pathlib` for file system traversal, `importlib` for module inspection, `collections` for graph data structures, `re` for import pattern matching, `json` for report serialization, `html` for generating interactive visualizations, `difflib` for code similarity analysis, and `argparse` for command-line interface. Graph algorithms like topological sorting and cycle detection are implemented from scratch.
+
+## Target Users
+Software architects, technical leads, code review teams, developers working on large codebases, and anyone responsible for maintaining code quality and managing technical debt.
+
+## Programming Concepts and Patterns
+The project showcases abstract syntax tree (AST) parsing, graph algorithms (DFS, BFS, cycle detection), visitor pattern for AST traversal, dependency injection principles, metrics calculation algorithms, and architectural pattern analysis.
+
+## Possible Extensions or Variations
+1. Support for other programming languages through pluggable parsers
+2. Integration with CI/CD pipelines for automated dependency monitoring
+3. Historical analysis to track dependency evolution over time
+4. Refactoring suggestions based on SOLID principles
+5. Package boundary enforcement rules
+6. Impact analysis for proposed changes
+7. License compatibility checking for dependencies
+8. Performance profiling of import times
+9. Docker container dependency analysis
+10. API usage tracking across modules

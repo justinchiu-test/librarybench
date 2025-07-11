@@ -1,0 +1,38 @@
+# Process Resource Monitor
+
+## Requester Identity
+A DevOps engineer responsible for optimizing application performance in production environments. They need detailed insights into process behavior, resource consumption patterns, and potential bottlenecks to make informed decisions about scaling and optimization.
+
+## Project Title
+PyProcWatch - Real-time Process Monitoring and Analysis Tool
+
+## Core Functionality and Purpose
+PyProcWatch monitors system processes in real-time, tracking CPU usage, memory consumption, I/O operations, and network activity. It provides both live monitoring and historical analysis capabilities, helping identify resource-hungry processes, memory leaks, and performance anomalies with customizable alerts and detailed reporting.
+
+## Key Features
+1. Real-time process monitoring with configurable sampling intervals
+2. Historical data collection with time-series analysis
+3. Process tree visualization showing parent-child relationships
+4. Anomaly detection for unusual resource consumption patterns
+5. Alert system with customizable thresholds and notifications
+
+## Implementation with Standard Library
+The tool leverages `os` and `subprocess` for process information, `psutil`-like functionality implemented via `/proc` filesystem parsing on Linux, `time` and `datetime` for timestamps, `collections.deque` for efficient circular buffers, `sqlite3` for historical data storage, `threading` for background monitoring, `statistics` for data analysis, `curses` for terminal UI, `json` for configuration, and `smtplib` for email alerts. Cross-platform support uses platform-specific system calls.
+
+## Target Users
+System administrators, DevOps engineers, performance engineers, developers debugging resource issues, and IT teams managing server infrastructure.
+
+## Programming Concepts and Patterns
+The project demonstrates observer pattern for event notifications, producer-consumer pattern for data collection, sliding window algorithms for real-time analysis, time-series data handling, multi-threaded programming with synchronization, and platform abstraction layers.
+
+## Possible Extensions or Variations
+1. Container and Docker process monitoring
+2. GPU resource tracking for ML workloads
+3. Network bandwidth monitoring per process
+4. Process behavior prediction using patterns
+5. Integration with monitoring stacks (Prometheus export)
+6. Process limiting and resource capping
+7. Distributed monitoring across multiple hosts
+8. Mobile app for remote monitoring
+9. Process dependency mapping
+10. Automated optimization recommendations

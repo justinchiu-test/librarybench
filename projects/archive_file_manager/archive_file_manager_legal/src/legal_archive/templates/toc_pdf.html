@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Times New Roman, serif; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .entry { margin: 5px 0; }
+        .level-0 { margin-left: 0px; }
+        .level-1 { margin-left: 20px; }
+        .level-2 { margin-left: 40px; }
+        .level-3 { margin-left: 60px; }
+        .level-4 { margin-left: 80px; }
+        .level-5 { margin-left: 100px; }
+        .page-number { float: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ title }}</h1>
+        {% if case_info.case_number %}
+        <p>Case No. {{ case_info.case_number }}</p>
+        {% endif %}
+    </div>
+    {%- macro render_entry(entry) -%}
+    <div class="entry level-{{ entry.level }}">
+        <span>{{ entry.title }}</span>
+        <span class="page-number">{{ entry.page_number or '' }}</span>
+    </div>
+    {%- if entry.children %}
+    {%- for child in entry.children %}
+    {{ render_entry(child) }}
+    {%- endfor %}
+    {%- endif %}
+    {%- endmacro -%}
+    
+    {%- for entry in entries %}
+    {{ render_entry(entry) }}
+    {%- endfor %}
+</body>
+</html>

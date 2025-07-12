@@ -1,0 +1,39 @@
+[project]
+name = "pymockapi-microservices"
+version = "0.1.0"
+description = "A specialized HTTP API mock server for microservices testing"
+requires-python = ">=3.10"
+dependencies = [
+    "aiohttp>=3.9.0",
+    "pydantic>=2.0.0",
+    "networkx>=3.0",
+    "uuid7>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "pytest-json-report>=1.5.0",
+    "ruff>=0.1.0",
+    "pyright>=1.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"

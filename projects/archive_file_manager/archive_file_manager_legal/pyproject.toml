@@ -1,0 +1,36 @@
+[project]
+name = "legal-document-archive"
+version = "1.0.0"
+description = "A specialized archive management system for legal document processors"
+authors = [{name = "Legal Archive Team"}]
+requires-python = ">=3.8"
+dependencies = [
+    "pydantic>=2.0.0",
+    "pillow>=10.0.0",
+    "pypdf>=3.0.0",
+    "lxml>=4.9.0",
+    "jinja2>=3.0.0",
+    "cryptography>=41.0.0",
+    "pytest>=7.0.0",
+    "pytest-json-report>=1.5.0",
+    "pytest-mock>=3.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.8"

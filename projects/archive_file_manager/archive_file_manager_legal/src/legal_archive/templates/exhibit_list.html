@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exhibit List - {{ party_name }}</title>
+</head>
+<body>
+    <h1>{{ party_name }} Exhibit List</h1>
+    <table>
+        <tr>
+            <th>Exhibit No.</th>
+            <th>Description</th>
+            <th>Page</th>
+        </tr>
+        {% for exhibit in exhibits %}
+        <tr>
+            <td>{{ exhibit.exhibit_number }}</td>
+            <td>{{ exhibit.description }}</td>
+            <td>{{ exhibit.page_number }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

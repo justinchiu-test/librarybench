@@ -132,7 +132,7 @@ DATABASE_USER = "admin"
 DATABASE_PASSWORD = "admin123"  # Hardcoded password
 
 # API Keys
-STRIPE_API_KEY = "sk_live_4eC39HqLyjWDarjtT1zdp7dc"
+STRIPE_API_KEY = "sk_live_FAKE_TEST_KEY_DO_NOT_USE_1234567890"
 PAYPAL_CLIENT_SECRET = "EBWKjlELKMYqRNQ6sYvFo64FtaRLRR5BdHEESmha49TM"
 
 # Encryption settings

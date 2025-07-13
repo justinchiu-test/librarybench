@@ -1,0 +1,1 @@
+"""Tests for Legal Document Archive System."""

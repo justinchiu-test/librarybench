@@ -1,0 +1,99 @@
+# Persona 1: Microservices Migration Architect
+A cloud architect leading the decomposition of monolithic applications into microservices. They need to identify natural service boundaries by analyzing code dependencies and ensuring clean separation of concerns.
+
+Key Features:
+1. Service boundary recommendation based on low-coupling clusters
+2. API surface analysis between proposed service boundaries
+3. Shared data model identification across module boundaries
+4. Migration effort estimation with dependency complexity scoring
+5. Cross-service circular dependency prevention analysis
+
+# Persona 2: Open Source Project Maintainer
+A community leader managing a popular open-source library who needs to ensure backward compatibility while evolving the codebase. They must understand how external projects depend on their APIs.
+
+Key Features:
+1. Public API usage tracking across dependent repositories
+2. Breaking change impact analysis with affected function mapping
+3. Semantic versioning recommendation based on changes
+4. Deprecation timeline planning with usage statistics
+5. Plugin architecture compatibility verification
+
+# Persona 3: Security Audit Specialist
+A cybersecurity consultant who examines codebases for supply chain vulnerabilities and insecure dependency patterns. They need to trace how untrusted input flows through dependencies.
+
+Key Features:
+1. Taint analysis tracking through dependency chains
+2. Third-party dependency risk scoring with CVE integration
+3. Privilege escalation path detection through imports
+4. Sandbox escape possibility analysis via module access
+5. Supply chain attack vector identification
+
+# Persona 4: Performance Optimization Engineer
+A systems engineer focused on application startup time and memory footprint optimization. They analyze import chains to identify bottlenecks and unnecessary dependencies.
+
+Key Features:
+1. Import time profiling with bottleneck identification
+2. Lazy loading opportunity detection for heavy modules
+3. Memory footprint analysis per dependency branch
+4. Circular import performance impact measurement
+5. Dynamic import optimization suggestions
+
+# Persona 5: Technical Debt Manager
+A engineering manager responsible for maintaining code health metrics and planning refactoring sprints. They need to quantify technical debt and prioritize refactoring efforts.
+
+Key Features:
+1. Technical debt scoring based on dependency complexity
+2. Refactoring impact prediction with risk assessment
+3. Code smell detection in dependency patterns
+4. Team ownership mapping for coupled modules
+5. Sprint planning integration with complexity estimates
+
+# Persona 6: Build System Engineer
+A DevOps specialist optimizing build pipelines and compilation times for large projects. They need to understand dependency graphs to parallelize builds effectively.
+
+Key Features:
+1. Build order optimization using topological sorting
+2. Incremental build impact analysis for changed files
+3. Parallel compilation opportunity identification
+4. Test suite dependency mapping for selective testing
+5. Binary artifact caching strategy based on dependencies
+
+# Persona 7: Documentation Architect
+A technical writer creating comprehensive documentation for complex systems. They need to understand code relationships to document APIs and integration points accurately.
+
+Key Features:
+1. Automatic API documentation generation with usage examples
+2. Integration point identification between modules
+3. Sequence diagram generation from call chains
+4. Documentation coverage analysis for public interfaces
+5. Cross-reference generation for related modules
+
+# Persona 8: Code Review Automation Developer
+A tools engineer building automated code review systems. They need to detect architectural violations and enforce coding standards based on dependency rules.
+
+Key Features:
+1. Architectural rule validation with custom policies
+2. Layered architecture violation detection
+3. Code review comment generation for dependency issues
+4. Git hook integration for pre-commit validation
+5. Team-specific dependency convention checking
+
+# Persona 9: Legacy System Modernizer
+A software consultant specializing in modernizing legacy codebases. They need to understand tangled dependencies to plan incremental modernization strategies.
+
+Key Features:
+1. Legacy pattern identification in dependency structures
+2. Strangler fig pattern application planning
+3. Module extraction feasibility analysis
+4. Database coupling detection through shared imports
+5. Modernization roadmap generation with milestones
+
+# Persona 10: Machine Learning Pipeline Architect
+A ML engineer designing reproducible training pipelines. They need to track dependencies between data processing, model training, and evaluation components.
+
+Key Features:
+1. Data lineage tracking through transformation dependencies
+2. Model versioning impact on downstream pipelines
+3. Feature engineering dependency validation
+4. Experiment reproducibility verification
+5. Pipeline stage isolation analysis

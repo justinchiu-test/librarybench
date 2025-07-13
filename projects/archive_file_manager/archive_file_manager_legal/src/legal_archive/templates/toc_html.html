@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .toc-entry { margin: 10px 0; }
+        .level-0 { margin-left: 0px; }
+        .level-1 { margin-left: 20px; }
+        .level-2 { margin-left: 40px; }
+        .level-3 { margin-left: 60px; }
+        .level-4 { margin-left: 80px; }
+        .level-5 { margin-left: 100px; }
+        .summary { font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <div class="toc-container">
+        {%- macro render_entry(entry) -%}
+        <div class="toc-entry level-{{ entry.level }}">
+            <a href="{{ entry.hyperlink or '#' }}">{{ entry.title }}</a>
+            {%- if include_summaries and entry.summary %}
+            <div class="summary">{{ entry.summary }}</div>
+            {%- endif %}
+            {%- if entry.children %}
+            {%- for child in entry.children %}
+            {{ render_entry(child) }}
+            {%- endfor %}
+            {%- endif %}
+        </div>
+        {%- endmacro -%}
+        
+        {%- for entry in entries %}
+        {{ render_entry(entry) }}
+        {%- endfor %}
+    </div>
+</body>
+</html>

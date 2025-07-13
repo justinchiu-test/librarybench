@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pymigrate-compliance"
+version = "0.1.0"
+description = "A compliance audit migration framework for regulated industries"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    {name = "PyMigrate Team", email = "contact@pymigrate.io"}
+]
+dependencies = [
+    "pydantic>=2.0",
+    "cryptography>=41.0",
+    "networkx>=3.0",
+    "python-dateutil>=2.8",
+    "pytz>=2023.3",
+    "click>=8.1",
+    "pyyaml>=6.0",
+    "jsonschema>=4.0",
+    "graphviz>=0.20",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-json-report>=1.5.0",
+    "pytest-mock>=3.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
+    "freezegun>=1.2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers"
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+exclude = [".git", "__pycache__", "build", "dist"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

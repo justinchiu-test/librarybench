@@ -1,0 +1,17 @@
+{
+  "search.py::search_items": {
+    "function_name": "search_items",
+    "module_path": "search.py",
+    "time_complexity": "O(n)",
+    "space_complexity": "O(1)",
+    "loop_depth": 1,
+    "is_recursive": false,
+    "has_database_ops": false,
+    "has_concurrency": false,
+    "line_count": 5,
+    "cyclomatic_complexity": 3,
+    "memory_allocations": 0,
+    "function_hash": "427bbe85",
+    "timestamp": "2025-07-13T01:38:17.838660"
+  }
+}

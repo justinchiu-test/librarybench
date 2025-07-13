@@ -1,0 +1,38 @@
+# Terminal Game Engine
+
+## Requester Identity
+An indie game developer with a passion for retro computing who wants to create text-based games with rich interactions. They need a flexible engine that handles common game development tasks while maintaining the aesthetic charm of terminal-based interfaces.
+
+## Project Title
+PyTermGame - Terminal-Based Game Development Engine
+
+## Core Functionality and Purpose
+PyTermGame is a comprehensive game engine for creating terminal-based games with support for animations, collision detection, and game state management. It provides high-level abstractions for common game development patterns while maintaining efficient rendering and input handling in terminal environments, enabling developers to focus on game logic rather than terminal manipulation.
+
+## Key Features
+1. Entity-component system for game object management
+2. Efficient terminal rendering with dirty rectangle optimization
+3. Collision detection system with spatial partitioning
+4. Input handling with customizable key bindings
+5. Scene management with transition effects
+
+## Implementation with Standard Library
+The engine uses `curses` for terminal manipulation, `time` for game loop timing, `collections` for entity management, `heapq` for event scheduling, `random` for procedural generation, `json` for save game serialization, `threading` for background music/sound simulation, `queue` for event handling, `weakref` for memory management, and `abc` for defining component interfaces. Performance optimization uses spatial hashing and dirty rectangle algorithms.
+
+## Target Users
+Indie game developers, computer science students learning game development, retro gaming enthusiasts, developers creating terminal-based tools with game-like interfaces, and educators teaching programming through game development.
+
+## Programming Concepts and Patterns
+The project showcases game loop architecture, entity-component-system pattern, observer pattern for events, state pattern for game states, object pooling for performance, spatial partitioning algorithms, and frame-independent movement.
+
+## Possible Extensions or Variations
+1. Multiplayer support with network play
+2. Procedural content generation systems
+3. Pathfinding algorithms for AI entities
+4. Particle system for visual effects
+5. Audio system using terminal beeps
+6. Level editor with serialization
+7. Achievement and progression systems
+8. Replay recording and playback
+9. Modding support with plugin system
+10. Performance profiler for optimization

@@ -1,0 +1,99 @@
+# Persona 1: Roguelike Developer Marcus
+An experienced roguelike developer creating a complex dungeon crawler who needs advanced procedural generation and permadeath mechanics. He requires sophisticated dungeon generation algorithms and deep gameplay systems typical of the roguelike genre.
+
+Key Features:
+1. Procedural dungeon generation with room templates and corridors
+2. Line-of-sight and fog-of-war calculations
+3. Permadeath save system with run statistics
+4. Loot table and item generation system
+5. Turn-based combat with action scheduling
+
+# Persona 2: Educational Game Creator Ms. Thompson
+A computer science teacher creating educational games to teach programming concepts who needs visual representations of algorithms and data structures. She wants to make learning interactive and engaging through terminal-based visualizations.
+
+Key Features:
+1. Algorithm visualization components (sorting, pathfinding)
+2. Step-by-step execution mode with breakpoints
+3. Student progress tracking and hints system
+4. Puzzle validation framework for assignments
+5. Code sandbox integration for in-game programming
+
+# Persona 3: Narrative Designer Sophie
+A narrative designer creating text adventures with branching storylines who needs robust dialogue systems and story state management. She requires tools for managing complex narrative trees and player choices.
+
+Key Features:
+1. Dialogue tree system with conditional branches
+2. Story state tracking with save/load functionality
+3. Character relationship and reputation systems
+4. Dynamic text generation with variable substitution
+5. Choice consequence visualization for debugging
+
+# Persona 4: Retro Arcade Developer Koji
+A developer recreating classic arcade games in terminal form who needs smooth animations and precise collision detection. He wants to capture the feel of classic games while working within terminal constraints.
+
+Key Features:
+1. Sub-character position tracking for smooth movement
+2. Sprite animation system with frame timing
+3. High-score table with local and online leaderboards
+4. Power-up and combo system management
+5. Boss pattern scripting engine
+
+# Persona 5: Terminal UI Developer Anna
+A developer creating terminal-based productivity tools with game-like elements who needs widget systems and data visualization. She wants to gamify terminal applications to increase user engagement.
+
+Key Features:
+1. Reusable UI widget library (menus, progress bars, charts)
+2. Achievement and experience point systems
+3. Data visualization components for statistics
+4. Notification and event scheduling system
+5. Theme customization with color palette support
+
+# Persona 6: Puzzle Game Designer Carlos
+A puzzle game enthusiast creating logic-based games who needs grid systems and puzzle validation. He requires tools for creating and validating various types of puzzles with increasing difficulty.
+
+Key Features:
+1. Grid-based puzzle framework with validation
+2. Puzzle generator with difficulty scaling
+3. Hint system with progressive reveals
+4. Move history with undo/redo functionality
+5. Puzzle sharing and import/export system
+
+# Persona 7: Multiplayer Game Developer Fatima
+A developer creating competitive terminal games who needs networking and lobby systems. She wants to enable real-time multiplayer gameplay in terminal environments.
+
+Key Features:
+1. Client-server architecture for multiplayer games
+2. Lobby system with matchmaking support
+3. Spectator mode with live game viewing
+4. Chat system with command integration
+5. Lag compensation for smooth gameplay
+
+# Persona 8: Simulation Game Creator Dr. Park
+A developer creating management and simulation games who needs complex economic systems and AI. He requires sophisticated simulation mechanics for city builders and management games.
+
+Key Features:
+1. Resource management framework with supply chains
+2. AI agent system for simulated entities
+3. Time acceleration with event scheduling
+4. Statistical analysis and graphing tools
+5. Scenario editor for custom challenges
+
+# Persona 9: ASCII Artist Developer Luna
+An ASCII art enthusiast creating visually rich terminal games who needs advanced rendering techniques. She wants to push the boundaries of terminal graphics with ASCII art.
+
+Key Features:
+1. ASCII art sprite editor and animator
+2. Layered rendering system with transparency
+3. Particle effects using ASCII characters
+4. Dynamic lighting and shadow effects
+5. ASCII art compression for large sprites
+
+# Persona 10: Mobile Terminal Gamer Ryan
+A developer creating games for mobile terminal emulators who needs touch-friendly controls and responsive layouts. He wants to make terminal games accessible on modern mobile devices.
+
+Key Features:
+1. Touch gesture recognition and mapping
+2. Responsive layout system for different screen sizes
+3. Virtual keyboard optimization for gameplay
+4. Battery-efficient rendering modes
+5. Cloud save synchronization across devices

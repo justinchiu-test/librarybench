@@ -1,0 +1,99 @@
+# Persona 1: Cloud Infrastructure Manager Carlos
+A cloud infrastructure manager overseeing hundreds of virtual machines who needs to identify cost optimization opportunities. He requires aggregate resource usage analysis across VM fleets to right-size instances and reduce cloud spending.
+
+Key Features:
+1. Multi-host resource aggregation with fleet-wide statistics
+2. Cloud instance right-sizing recommendations based on usage patterns
+3. Cost projection modeling with different instance types
+4. Idle resource detection for automated shutdown policies
+5. Resource usage chargeback reporting by department/project
+
+# Persona 2: Security Operations Analyst Sarah
+A SOC analyst monitoring for suspicious process behavior who needs to detect potential security threats through resource anomalies. She wants to identify cryptominers, data exfiltration, and other malicious activities through behavioral analysis.
+
+Key Features:
+1. Baseline behavior learning with deviation detection
+2. Cryptomining detection through CPU/GPU usage patterns
+3. Data exfiltration identification via network I/O spikes
+4. Process launch chain analysis for malware detection
+5. SIEM integration for security event correlation
+
+# Persona 3: Database Administrator Ming
+A DBA managing multiple database instances who needs to monitor query performance and resource impact. He requires process-level insights into database operations to optimize query execution and prevent resource contention.
+
+Key Features:
+1. Database process segregation with per-query resource tracking
+2. Lock contention visualization and deadlock detection
+3. Buffer cache and memory pool utilization monitoring
+4. I/O pattern analysis for query optimization hints
+5. Replication lag correlation with resource availability
+
+# Persona 4: Kubernetes Platform Engineer Aisha
+A platform engineer managing containerized workloads who needs to monitor resource usage within pods and nodes. She wants to ensure efficient resource allocation and prevent noisy neighbor problems.
+
+Key Features:
+1. Container-aware process monitoring with namespace isolation
+2. Pod resource limit enforcement and breach detection
+3. Node pressure analysis for scheduling optimization
+4. Horizontal pod autoscaler metric generation
+5. Resource quota utilization across namespaces
+
+# Persona 5: High-Frequency Trading Developer Yuki
+An HFT developer optimizing trading algorithms who needs microsecond-precision monitoring of process behavior. He requires understanding CPU cache performance and context switching impact on trading latency.
+
+Key Features:
+1. CPU affinity and cache miss rate monitoring
+2. Context switch tracking with microsecond precision
+3. Interrupt and softirq impact measurement
+4. NUMA node memory access pattern analysis
+5. Real-time thread priority and scheduling visualization
+
+# Persona 6: Scientific Computing Admin Dr. Patel
+A HPC cluster administrator supporting research workloads who needs to ensure fair resource allocation among users. She wants to track long-running jobs and prevent resource monopolization.
+
+Key Features:
+1. Job scheduler integration for workload monitoring
+2. Fair-share policy enforcement with usage tracking
+3. GPU utilization monitoring for ML workloads
+4. Memory bandwidth saturation detection
+5. Inter-process communication overhead analysis
+
+# Persona 7: Mobile App Backend Lead Thomas
+A backend team lead optimizing server resources for mobile app traffic who needs to correlate process resource usage with user activity patterns. He wants to predict resource needs based on user behavior.
+
+Key Features:
+1. API endpoint correlation with process resource usage
+2. User session impact on resource consumption
+3. Peak traffic resource requirement prediction
+4. Geographic distribution impact on resource usage
+5. Push notification service resource monitoring
+
+# Persona 8: Game Server Administrator Luna
+A game server admin managing multiplayer game instances who needs to monitor per-game-session resource usage. She wants to optimize server allocation and prevent lag during peak gaming hours.
+
+Key Features:
+1. Game session isolation with per-match monitoring
+2. Player count correlation with resource usage
+3. Network latency impact on process behavior
+4. Dynamic server scaling based on player activity
+5. Cheat detection through abnormal resource patterns
+
+# Persona 9: CI/CD Pipeline Engineer Roberto
+A CI/CD engineer optimizing build farm efficiency who needs to monitor resource usage during builds and tests. He wants to identify bottlenecks and optimize pipeline execution times.
+
+Key Features:
+1. Build job resource profiling with stage breakdown
+2. Parallel test execution resource optimization
+3. Docker layer caching impact on resource usage
+4. Build artifact storage I/O pattern analysis
+5. Agent pool utilization and queue time metrics
+
+# Persona 10: Embedded IoT Platform Developer Wei
+An IoT platform developer monitoring edge device resource usage who needs to ensure applications run within strict resource constraints. He requires detailed monitoring of resource usage on ARM and other embedded processors.
+
+Key Features:
+1. Cross-architecture process monitoring (ARM, MIPS, x86)
+2. Power consumption correlation with process activity
+3. Flash storage wear leveling impact tracking
+4. Temperature-based throttling detection
+5. Mesh network communication resource overhead

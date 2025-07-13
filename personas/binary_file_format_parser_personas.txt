@@ -1,0 +1,99 @@
+# Persona 1: Malware Reverse Engineer
+A cybersecurity researcher who analyzes malicious software by dissecting executable formats and obfuscated data structures. They need deep inspection capabilities to understand how malware hides its functionality within binary formats.
+
+Key Features:
+1. Entropy analysis visualization to identify encrypted or compressed sections
+2. Cross-reference tracking between binary offsets and disassembled code
+3. Heuristic pattern matching for common obfuscation techniques
+4. Export hooks for integration with IDA Pro and Ghidra
+5. Timeline reconstruction from binary timestamp fields
+
+# Persona 2: Game Save File Modder
+An enthusiastic gamer who creates tools and mods by editing save game files for various titles. They need to understand proprietary formats without official documentation and share their findings with the modding community.
+
+Key Features:
+1. Format learning mode that infers structure from multiple file samples
+2. Visual diff highlighting for comparing save file changes after game actions
+3. Type inference system for identifying integers, floats, and strings automatically
+4. Community schema sharing platform integration
+5. Safe value boundary detection to prevent save corruption
+
+# Persona 3: Embedded Firmware Developer
+An IoT engineer who works with microcontroller firmware images and needs to extract and analyze binary configurations. They frequently deal with packed structures and hardware-specific data layouts.
+
+Key Features:
+1. Memory map overlay support for firmware address space visualization
+2. Peripheral register definition mapping to binary offsets
+3. Endianness auto-detection with mixed-endian structure support
+4. CRC/checksum calculator with polynomial customization
+5. Binary patching with automatic checksum recalculation
+
+# Persona 4: Medical Imaging Technician
+A healthcare professional working with proprietary medical device formats who needs to extract patient data when vendor tools fail. They must ensure data integrity while converting between formats.
+
+Key Features:
+1. DICOM-style tag extraction from proprietary formats
+2. Floating-point precision validation for measurement data
+3. Multi-frame image data extraction with metadata preservation
+4. Patient identifier anonymization during parsing
+5. Audit trail generation for regulatory compliance
+
+# Persona 5: Digital Archaeologist
+A data preservation specialist who recovers information from obsolete file formats and legacy systems. They work with formats from defunct software and need to reconstruct data without original applications.
+
+Key Features:
+1. Character encoding detection for legacy text fields
+2. File format fingerprinting against historical format database
+3. Partial file recovery from corrupted media
+4. Schema reconstruction from binary analysis
+5. Migration path generation to modern formats
+
+# Persona 6: Network Protocol Analyst
+A network engineer who captures and analyzes proprietary protocol data from packet captures. They need to decode custom binary protocols used by IoT devices and industrial systems.
+
+Key Features:
+1. Stream reassembly for fragmented binary protocols
+2. State machine modeling for protocol flow analysis
+3. Field correlation analysis across multiple packets
+4. Protocol grammar extraction from captured sessions
+5. Real-time parsing of network capture streams
+
+# Persona 7: Satellite Data Processor
+An earth observation scientist working with raw satellite telemetry and sensor data in various binary formats. They need to extract calibrated measurements from complex packed structures.
+
+Key Features:
+1. Bit-field extraction for densely packed telemetry
+2. Scientific unit conversion with calibration curves
+3. Time series extraction from sequential binary records
+4. Quality flag interpretation and data filtering
+5. Georeferencing data extraction from navigation fields
+
+# Persona 8: Automotive Diagnostics Engineer
+A vehicle systems engineer who analyzes proprietary diagnostic data and firmware from various manufacturers. They need to decode controller-specific formats without vendor documentation.
+
+Key Features:
+1. CAN bus data structure mapping and decoding
+2. Diagnostic trouble code extraction from binary logs
+3. Sensor calibration data interpretation
+4. ECU flash memory layout analysis
+5. Vehicle-specific encryption key derivation
+
+# Persona 9: Audio Format Researcher
+A digital signal processing engineer studying proprietary audio codecs and container formats. They need to extract audio streams and metadata from undocumented formats.
+
+Key Features:
+1. Audio frame boundary detection in binary streams
+2. Codec parameter extraction from file headers
+3. Sample rate and bit depth auto-detection
+4. Metadata tag parsing from custom containers
+5. Psychoacoustic model parameter extraction
+
+# Persona 10: Financial Data Analyst
+A quantitative analyst working with proprietary market data feeds and historical tick data in binary formats. They need high-performance parsing for real-time trading systems.
+
+Key Features:
+1. Zero-copy parsing for minimal latency processing
+2. Timestamp precision handling for nanosecond accuracy
+3. Market data symbol mapping and normalization
+4. Order book reconstruction from binary snapshots
+5. Compression scheme detection for historical data

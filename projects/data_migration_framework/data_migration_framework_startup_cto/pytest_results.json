@@ -1,0 +1,16 @@
+{
+  "created": 1752281731.9598823,
+  "duration": 60.0,
+  "exitcode": 0,
+  "root": "/home/justinchiu_cohere_com/librarybench/projects/data_migration_framework/data_migration_framework_startup_cto",
+  "summary": {
+    "total": 106,
+    "collected": 106,
+    "passed": 100,
+    "failed": 6,
+    "error": 0
+  },
+  "collectors": [],
+  "tests": [],
+  "warnings": []
+}

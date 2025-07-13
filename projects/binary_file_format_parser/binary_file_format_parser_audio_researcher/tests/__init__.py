@@ -1,0 +1,1 @@
+"""PyBinParser test suite"""

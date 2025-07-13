@@ -2,15 +2,13 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from k8s_resource_monitor.models import (
+    AggregationType,
     ContainerStats,
     HPAMetric,
     MetricType,
-    AggregationType,
-    ResourceType,
     OptimizationTarget,
+    ResourceType,
 )
 from k8s_resource_monitor.monitor import K8sResourceMonitor
 

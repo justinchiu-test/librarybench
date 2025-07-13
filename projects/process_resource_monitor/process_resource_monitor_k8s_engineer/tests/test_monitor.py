@@ -1,7 +1,7 @@
 """Tests for K8s resource monitor."""
 
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest

@@ -3,7 +3,6 @@
 from datetime import datetime, timedelta
 
 import pytest
-from pydantic import ValidationError
 
 from k8s_resource_monitor.models import (
     AggregationType,

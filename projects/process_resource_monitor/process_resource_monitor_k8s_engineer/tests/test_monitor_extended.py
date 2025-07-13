@@ -1,15 +1,13 @@
 """Extended tests for monitor with edge cases and error handling."""
 
 from datetime import datetime
-from typing import Any, Dict, List
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from kubernetes.client import (
     ApiException,
     V1Container,
     V1ContainerStatus,
-    V1Namespace,
     V1NamespaceList,
     V1Node,
     V1NodeCondition,
@@ -20,19 +18,9 @@ from kubernetes.client import (
     V1PodList,
     V1PodSpec,
     V1PodStatus,
-    V1ResourceQuota,
-    V1ResourceQuotaList,
-    V1ResourceQuotaSpec,
-    V1ResourceQuotaStatus,
     V1ResourceRequirements,
 )
 
-from k8s_resource_monitor.models import (
-    AggregationType,
-    MetricType,
-    OptimizationTarget,
-    ResourceType,
-)
 from k8s_resource_monitor.monitor import K8sResourceMonitor
 
 

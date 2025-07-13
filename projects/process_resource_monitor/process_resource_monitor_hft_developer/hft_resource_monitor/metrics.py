@@ -104,3 +104,9 @@ class LatencySpike:
     details: Dict[str, any]
     stack_trace: Optional[List[str]] = None
     related_events: Optional[List[str]] = None
+
+
+# Type aliases for better API clarity
+InterruptMetrics = List[InterruptInfo]
+ContextSwitchMetrics = List[ContextSwitchInfo]
+SchedulingMetrics = List[ThreadSchedulingInfo]

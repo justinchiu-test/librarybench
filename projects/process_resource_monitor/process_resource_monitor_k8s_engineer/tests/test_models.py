@@ -1,8 +1,6 @@
 """Tests for data models."""
 
-from datetime import datetime
 
-import pytest
 
 from k8s_resource_monitor.models import (
     AggregationType,

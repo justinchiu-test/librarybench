@@ -1,14 +1,12 @@
 """Core Kubernetes resource monitoring implementation."""
 
-import time
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-import psutil
-from kubernetes import client, config, watch
+from kubernetes import client, config
 from kubernetes.client import ApiException
-from prometheus_client import Counter, Gauge, Histogram
+from prometheus_client import Counter, Gauge
 
 from k8s_resource_monitor.models import (
     AggregationType,
@@ -894,7 +892,6 @@ class K8sResourceMonitor:
         # In production, you would query a time-series database
 
         # For now, return mock data
-        import random
 
         base_value = 100 if resource_type == ResourceType.CPU else 100 * 1024 * 1024
 

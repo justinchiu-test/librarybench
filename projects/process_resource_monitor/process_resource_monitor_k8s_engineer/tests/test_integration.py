@@ -1,8 +1,7 @@
 """Integration tests for K8s resource monitor."""
 
-import time
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -136,11 +135,6 @@ class TestIntegrationScenarios:
         from kubernetes.client import (
             V1Container,
             V1ContainerStatus,
-            V1Deployment,
-            V1DeploymentList,
-            V1DeploymentSpec,
-            V1DeploymentStatus,
-            V1LabelSelector,
             V1Namespace,
             V1NamespaceList,
             V1Node,
@@ -603,8 +597,6 @@ class TestIntegrationScenarios:
         from kubernetes.client import (
             V1Container,
             V1ContainerStatus,
-            V1Namespace,
-            V1NamespaceList,
             V1ObjectMeta,
             V1Pod,
             V1PodList,
@@ -736,10 +728,6 @@ class TestIntegrationScenarios:
             V1ContainerStatus,
             V1Namespace,
             V1NamespaceList,
-            V1Node,
-            V1NodeCondition,
-            V1NodeList,
-            V1NodeStatus,
             V1ObjectMeta,
             V1Pod,
             V1PodList,

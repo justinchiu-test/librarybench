@@ -24,7 +24,38 @@ For development:
 pip install -e ".[dev]"
 ```
 
-## Usage Examples
+## CLI Usage
+
+The library includes a kubectl-style CLI tool for easy interaction with your cluster:
+
+```bash
+# Get namespace resource usage
+k8s-monitor namespace production
+
+# Detect resource limit breaches
+k8s-monitor breaches --threshold 80
+
+# Analyze node pressure
+k8s-monitor nodes
+
+# Get resource recommendations
+k8s-monitor recommendations production --target balanced
+
+# Generate HPA metrics
+k8s-monitor hpa my-deployment -n production --metric-type requests_per_second
+```
+
+### CLI Commands
+
+- `namespace`: Get resource usage for a specific namespace
+- `breaches`: Detect pods approaching or exceeding resource limits
+- `nodes`: Analyze resource pressure on all nodes
+- `recommendations`: Get resource optimization recommendations
+- `hpa`: Generate metrics for Horizontal Pod Autoscaler
+
+Use `k8s-monitor --help` for full command documentation.
+
+## Library Usage
 
 ### Basic Connection
 

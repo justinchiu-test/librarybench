@@ -29,28 +29,31 @@ for path in Path(BASE_DIR).glob("*/*"):
 
     print(f"\n=== Setting up {new_repo_name} ===")
 
-    # Git setup
-    subprocess.run(["gh", "repo", "create", f"{ORG_NAME}/{new_repo_name}", "--public"], cwd=path)
+    if check_result.returncode == 0:
+        print(f"Repository {ORG_NAME}/{new_repo_name} already exists. Skipping...")
+    else:
+        # Git setup
+        subprocess.run(["gh", "repo", "create", f"{ORG_NAME}/{new_repo_name}", "--public"], cwd=path)
 
-    subprocess.run(["git", "init"], cwd=path)
+        subprocess.run(["git", "init"], cwd=path)
 
-    # Create .gitignore to skip unwanted files
-    gitignore_path = os.path.join(path, ".gitignore")
-    with open(gitignore_path, "w") as f:
-        f.write("__pycache__/\n")
-        f.write(".pytest_cache/\n")
-        f.write("report.json\n")
-        f.write("LIBRARYBENCH_metrics.json\n")
-        f.write("test_output.txt\n")
+        # Create .gitignore to skip unwanted files
+        gitignore_path = os.path.join(path, ".gitignore")
+        with open(gitignore_path, "w") as f:
+            f.write("__pycache__/\n")
+            f.write(".pytest_cache/\n")
+            f.write("report.json\n")
+            f.write("LIBRARYBENCH_metrics.json\n")
+            f.write("test_output.txt\n")
 
 
-    subprocess.run(["git", "add", "."], cwd=path)
-    subprocess.run(["git", "commit", "-m", "initial commit"], cwd=path)
+        subprocess.run(["git", "add", "."], cwd=path)
+        subprocess.run(["git", "commit", "-m", "initial commit"], cwd=path)
 
-    # Add remote and push
-    subprocess.run(["git", "remote", "add", "origin", remote_url], cwd=path)
-    subprocess.run(["git", "branch", "-M", "main"], cwd=path)
-    subprocess.run(["git", "push", "-u", "origin", "main"], cwd=path)
+        # Add remote and push
+        subprocess.run(["git", "remote", "add", "origin", remote_url], cwd=path)
+        subprocess.run(["git", "branch", "-M", "main"], cwd=path)
+        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=path)
 
     # Record
     repo_links.append((library, persona, public_url))
